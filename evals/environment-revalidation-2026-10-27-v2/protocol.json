@@ -1,0 +1,22 @@
+{
+  "evidence_class": "separate_known_contract_environment_revalidation_after_long_session_check",
+  "status_at_registration": "registered_not_run",
+  "planned_native_attempts": 12,
+  "cases": [
+    "d09",
+    "d10",
+    "d11",
+    "d12"
+  ],
+  "repeats": 3,
+  "max_concurrency": 3,
+  "model": "gpt-6.1-sol",
+  "model_reasoning_effort": "xhigh",
+  "runtime": "Unchanged CLI, Python, candidate, authentication, provider, fixed OS proxy and explicit MXC workspace-write / never approvals",
+  "prerequisite": "Closed six-session long diagnostic passed; source, route, binaries and all prior failed reports remain bound",
+  "gate": "12/12 accepted in normal and optimized grading, successful normal native completion, full frozen rule output, unique native threads and frozen bytes unchanged",
+  "failure_policy": "No replacement model launches; keep all API errors, timeouts, usage nulls and interrupted or unattempted slots. Never relabel any prior window.",
+  "scope": "Known contracts only; not fresh/generalization/performance evidence",
+  "fresh_tasks": "All13 reserved fresh tasks remain sealed. Their draft still points to the old failed readiness window until this new window actually passes.",
+  "execution_in_this_request": "Prepare-only registration; zero new maintenance model calls"
+}

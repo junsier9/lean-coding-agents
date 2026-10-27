@@ -1,0 +1,80 @@
+{
+  "protocol": {
+    "evidence_class": "prospective_native_Codex_long_session_operational_diagnostic",
+    "planned_sessions": 6,
+    "waves": 2,
+    "concurrency_per_wave": 3,
+    "rounds_per_session": 12,
+    "tool_delay_seconds_per_round": 25,
+    "minimum_session_seconds": 300,
+    "native_timeout_seconds": 600,
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh",
+    "runtime": "Unchanged mxc_proxy_transport.py: explicit MXC, workspace-write, never approvals, existing OS loopback proxy with all proxy/bypass variants fixed. Existing ChatGPT authentication. No model/provider/auth/TLS or saved configuration changes.",
+    "success": "All six distinct native threads complete within600 seconds with CLI0, turn.completed, complete usage, no error/turn.failed events, no failed shell/MCP/file-change items, twelve separate successful shell outputs in order, valid chained challenge tokens, unchanged probe script, and independently checked state/output files. Each session lasts at least300 seconds.",
+    "early_stop": "After a wave completes, any failed session stops the next wave. All six planned slots remain in the report: unattempted slots are explicit and cannot pass. No replacement launches or retesting this window to pass.",
+    "scope": "Dedicated synthetic local tool probe only. Do not load or edit the candidate skill, known maintenance cases, reserved fresh tasks or their graders. No network from solver tools, installs, delegation, commits or publication.",
+    "next_action_if_passed": "Register, prepare and freeze one separate12-attempt known-contract environment revalidation over unchanged d09-d12 and v6 candidate. Do not execute that window or unseal fresh tasks in this request.",
+    "next_action_if_failed": "Retain failure and raw artifacts. Do not register a ready next window or launch fresh tasks.",
+    "limits": [
+      "Six sessions are an operational spot check, not proof of a production availability SLA or future capacity.",
+      "Twelve model/tool round trips span each session; this is not a five-minute uninterrupted SSE-stream test.",
+      "No skill effectiveness, generalization, speed, token-saving or causal inference.",
+      "All old failures remain unchanged; no missing usage imputation."
+    ]
+  },
+  "transport": {
+    "source": "existing_OS_loopback_proxy",
+    "environment": {
+      "HTTP_PROXY": "http://127.0.0.1:18081",
+      "HTTPS_PROXY": "http://127.0.0.1:18081",
+      "http_proxy": "http://127.0.0.1:18081",
+      "https_proxy": "http://127.0.0.1:18081",
+      "ALL_PROXY": "http://127.0.0.1:18081",
+      "all_proxy": "http://127.0.0.1:18081",
+      "NO_PROXY": "localhost,127.0.0.1,::1",
+      "no_proxy": "localhost,127.0.0.1,::1"
+    },
+    "windows_sandbox": "mxc",
+    "permission_mode": "workspace-write",
+    "approval_policy": "never",
+    "TLS_verification_unchanged": true,
+    "saved_config_or_ACL_changes_by_controller": false,
+    "model_provider_or_auth_changed": false
+  },
+  "source_sha256": {
+    "evals/long-session-2026-10-27-v1/run.py": "A98965B1AD788CDD09FE7E4FBA12588DF1657324E38800D296303F7E3BC46D9C",
+    "evals/long-session-2026-10-27-v1/probe.py": "4CC293707FAA35843A62E5ED09FAC9507D2E454B065D131EFA69E2819D9B459F",
+    "evals/long-session-2026-10-27-v1/protocol.json": "3EB83B39D7FE3B47E5E4F5C9582B72E6DC61271B139A86022E3C54A1B4428E7B",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/full-validation/run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB"
+  },
+  "historical_reports_sha256": {
+    "evals/transport-revalidation-mxc-2026-10-27/results/summary.json": "0E00B3021A468873135FC31BA66BC367CC23CEE78C473E7CEDE31B68B5D8B658",
+    "evals/transport-revalidation-mxc-2026-10-27/results/freeze.json": "B64EFBD93C419A8300BAD3F9831780444F4DD2CDCED2B89648CE78EFE1E6BD83",
+    "evals/transport-revalidation-mxc-2026-10-27/results/operational-diagnosis.json": "F912EE7920C5CCED00D12BDAE6730581907D4B2173AEBF383138824F12739430",
+    "evals/development-2026-10-27/results/summary.json": "A450591E99566D5D357A61DDADF1948AB21AB8B3B00DB3B07B02A1E782452C70",
+    "evals/development-2026-10-27/results/recovery-result.json": "86A523A65E15299599E5995EE6A4B690DB0024CA028CA19772BEB90C77FBA646",
+    "evals/transport-revalidation-2026-10-27/results/interrupted-summary.json": "7E68A0B8ED3136FD3413FEB348A3E86ECEBC69F19E65D1FC9C62FC8A12B1F1EB",
+    "evals/generalization-2026-10-26/results/beta-qualification.json": "CE03714E6872757F6047BDFD99B7864605C400746E3508B058C912A651A00796",
+    "evals/production-2026-10-25/results/v4/release-qualification.json": "159860E797D28D458E0D5CEAB8BF4AF90ED1D442A84FECB8EBAC855B7839F94F"
+  },
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "CLI_sha256": "1103E9E09C71FA2CD0AFD6D8F3B9A2D63174FE8EFD7CB5BD09F1CB14EF58A098",
+  "python_sha256": "7A4102B91959BB234507850EA584E1D31D300A6831B171E4AADC59FF592F0234",
+  "session_ids": [
+    "session-01",
+    "session-02",
+    "session-03",
+    "session-04",
+    "session-05",
+    "session-06"
+  ],
+  "fresh_tasks_remain_sealed": true,
+  "candidate_or_maintenance_case_reads": 0
+}

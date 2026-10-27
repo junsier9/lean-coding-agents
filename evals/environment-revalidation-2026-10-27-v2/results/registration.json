@@ -1,0 +1,9 @@
+{
+  "status": "registered_not_run",
+  "planned_native_attempts": 12,
+  "new_native_maintenance_calls": 0,
+  "long_session_diagnostic_passed": true,
+  "previous_11_of12_window_still_failed": true,
+  "fresh_tasks_remain_sealed": true,
+  "fresh_draft_readiness_path_unchanged": true
+}

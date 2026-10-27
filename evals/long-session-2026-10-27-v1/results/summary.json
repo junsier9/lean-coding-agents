@@ -1,0 +1,296 @@
+{
+  "evaluated_at": "2026-10-27T15:01:21.132478+00:00",
+  "evidence_class": "prospective_native_Codex_long_session_operational_diagnostic",
+  "planned_sessions": 6,
+  "attempted": 6,
+  "passed_sessions": 6,
+  "long_session_gate_passed": true,
+  "fresh_tasks_remain_sealed": true,
+  "fresh_native_calls": 0,
+  "old_failures_preserved": true,
+  "next_environment_window_registered": false,
+  "sessions": [
+    {
+      "key": "session-01",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:47:48.129768+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 418.530999999959,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17dd4-eb75-7b73-a7b2-548e574231eb"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 262948,
+          "cached_input_tokens": 223488,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1230,
+          "reasoning_output_tokens": 29
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "E3F2E7FFABB4747F00DCB61C45196260A5847C235353E312C9D2A3B7E94F3691",
+        "events.jsonl": "EE84915C858BE1FEBD76987F7CBF2945F2E2F6267C00BC0627CDEB304516B732",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "0149DB80E8037170037D3871330A0214ED58E6772C1A66F21BD15BCD28A699EB",
+        "stderr.txt": "491381B7E5ABD223E7ABCC0998CC0D3483F464F7BD65B0DE47DBAA0B17B02340"
+      }
+    },
+    {
+      "key": "session-02",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:47:48.129768+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 419.9220000000205,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17dd4-eb80-7763-9d79-1cb69766f805"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 262503,
+          "cached_input_tokens": 240000,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1166,
+          "reasoning_output_tokens": 51
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "F749A6B55EA2F1934758CC701BEA649B0C882E186B1C38396A8F27EFF5680969",
+        "events.jsonl": "76A4DC04D13FE8CD29E094C78836ABAD66D9B525ABD5F07DFBC3084E24E13243",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "BEA62981C2E17DC2F2F34CD3EA14CA68DD80579506DC3F8F9516E9A01AA3E17A",
+        "stderr.txt": "3ACDC6F949088173E0D54D6C32A4BDFB2E4ABCD27972198FD0177213E2D38C02"
+      }
+    },
+    {
+      "key": "session-03",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:47:48.130758+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 412.5470000000205,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17dd4-eb7a-7793-a94a-e07d092cf309"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 263111,
+          "cached_input_tokens": 235648,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1245,
+          "reasoning_output_tokens": 25
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "3BD00EE105E6C2D1F4A7CAE0A1037BC0C5E179FEE874FF3F118F9A64EABC8AED",
+        "events.jsonl": "5E4501D206B0F165A982232D66625A5AEFB4A70B2742F6F6B55747AAAFE3916A",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "0E63856E133C83DF1491FBCD632ADE8EFA388CC650D678F0F85637DFD24BB9D9",
+        "stderr.txt": "5BD6E2BE77BEF11203EEFED8FD3D79A12881F25380434F8503AADD283485278F"
+      }
+    },
+    {
+      "key": "session-04",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:54:48.532204+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 392.125,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17ddb-55a0-74e2-8403-b2719e7b172e"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 235576,
+          "cached_input_tokens": 207104,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1155,
+          "reasoning_output_tokens": 26
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "CD6AC7062715C652398905A2B2E6D47A10F88F6D06EFB9E71EF626D7B8B408DD",
+        "events.jsonl": "3861CF550E03F775F5D4E475BB9CF5516EA5810243620674D5E6C1C0D5E36BFD",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "BDBFAE26D4A4589EEB5476296A27427B75FEE586163F28C6C09B23F148B19CC5",
+        "stderr.txt": "12680B3C03038D9F934658B16845A79F94020E5514701031E4F836C05A0DCEA5"
+      }
+    },
+    {
+      "key": "session-05",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:54:48.533204+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 391.95300000021234,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17ddb-557e-7fe1-ba77-d83eacfd1821"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 236350,
+          "cached_input_tokens": 211072,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1251,
+          "reasoning_output_tokens": 40
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "18783C1F05A06BFDEF8E9C9E97683011C170A622BC563F8F0D0F398566CD76B9",
+        "events.jsonl": "74E0867523DEA1416F30243498E3601002205E989783CBC1E684DE1EEB498F4A",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "680B92C2553FC10C520AD254D2A59104F8349027B1E3C496F950E4E9A5DDBB52",
+        "stderr.txt": "65A713C14B799602EFB09760246123F52C3A8DAE1D6CBE149E3120A053DBF592"
+      }
+    },
+    {
+      "key": "session-06",
+      "diagnostic_only": true,
+      "not_a_skill_or_fresh_task_sample": true,
+      "started_at": "2026-10-27T14:54:48.533204+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 385.18800000008196,
+      "attempted": true,
+      "passed": true,
+      "status": "pass",
+      "thread_ids": [
+        "01a17ddb-55a3-7693-8ac3-54f9d367ff1b"
+      ],
+      "terminal_events": [
+        "turn.completed"
+      ],
+      "errors": [],
+      "malformed_lines": 0,
+      "failed_tool_types": [],
+      "separate_probe_outputs": 12,
+      "output_shape_ok": true,
+      "unexpected_item_types": [],
+      "token_chain_and_disk_outputs_verified": true,
+      "complete_usage": true,
+      "usage": [
+        {
+          "input_tokens": 235877,
+          "cached_input_tokens": 178432,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1250,
+          "reasoning_output_tokens": 27
+        }
+      ],
+      "exact_command_and_route_verified": true,
+      "probe_unchanged": true,
+      "final": "LONG_SESSION_OK",
+      "raw_artifact_sha256": {
+        "client-done.json": "F0735339820FF3E4C54135EB55BEBF8A4EE3ECC7204069F71295B1C0B1D34D9D",
+        "events.jsonl": "7D46FEFE9D3346B4062F27C804E61B4DB6A99BC488E3138E04A7B1BEF16FCEC2",
+        "final.txt": "4D86DF5046C358F1BACDED7F3CE6FE0448E12011D04FA710EA6014DAB25BDAAE",
+        "prompt.txt": "ECD97D4D3452154DF7202BC087C5F683F4F180C6281A6FA3727097532C4AC29F",
+        "started.json": "FFB52B6928284A4470FD6B06D2AA3B4130B0AB8EF2246BCA370B13041FD97C38",
+        "stderr.txt": "B2FA20266F00E37E5CDE7154A440B207DDD08293FC73F2EE9EE2792F8573C9CA"
+      }
+    }
+  ],
+  "limits": [
+    "Six sessions are an operational spot check, not proof of a production availability SLA or future capacity.",
+    "Twelve model/tool round trips span each session; this is not a five-minute uninterrupted SSE-stream test.",
+    "No skill effectiveness, generalization, speed, token-saving or causal inference.",
+    "All old failures remain unchanged; no missing usage imputation."
+  ]
+}

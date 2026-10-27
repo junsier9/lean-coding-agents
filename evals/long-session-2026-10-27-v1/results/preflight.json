@@ -1,0 +1,9 @@
+{
+  "native_model_calls": 0,
+  "actual_MXC_probe_positive_and_negative_controls": true,
+  "saved_transcript_positive_control": true,
+  "network_error_negative_control": true,
+  "missing_round_negative_control": true,
+  "probe_sha256": "4CC293707FAA35843A62E5ED09FAC9507D2E454B065D131EFA69E2819D9B459F",
+  "driver_sha256": "A98965B1AD788CDD09FE7E4FBA12588DF1657324E38800D296303F7E3BC46D9C"
+}

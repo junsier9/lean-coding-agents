@@ -1,0 +1,24 @@
+{
+  "evidence_class": "prospective_native_Codex_long_session_operational_diagnostic",
+  "planned_sessions": 6,
+  "waves": 2,
+  "concurrency_per_wave": 3,
+  "rounds_per_session": 12,
+  "tool_delay_seconds_per_round": 25,
+  "minimum_session_seconds": 300,
+  "native_timeout_seconds": 600,
+  "model": "gpt-6.1-sol",
+  "model_reasoning_effort": "xhigh",
+  "runtime": "Unchanged mxc_proxy_transport.py: explicit MXC, workspace-write, never approvals, existing OS loopback proxy with all proxy/bypass variants fixed. Existing ChatGPT authentication. No model/provider/auth/TLS or saved configuration changes.",
+  "success": "All six distinct native threads complete within600 seconds with CLI0, turn.completed, complete usage, no error/turn.failed events, no failed shell/MCP/file-change items, twelve separate successful shell outputs in order, valid chained challenge tokens, unchanged probe script, and independently checked state/output files. Each session lasts at least300 seconds.",
+  "early_stop": "After a wave completes, any failed session stops the next wave. All six planned slots remain in the report: unattempted slots are explicit and cannot pass. No replacement launches or retesting this window to pass.",
+  "scope": "Dedicated synthetic local tool probe only. Do not load or edit the candidate skill, known maintenance cases, reserved fresh tasks or their graders. No network from solver tools, installs, delegation, commits or publication.",
+  "next_action_if_passed": "Register, prepare and freeze one separate12-attempt known-contract environment revalidation over unchanged d09-d12 and v6 candidate. Do not execute that window or unseal fresh tasks in this request.",
+  "next_action_if_failed": "Retain failure and raw artifacts. Do not register a ready next window or launch fresh tasks.",
+  "limits": [
+    "Six sessions are an operational spot check, not proof of a production availability SLA or future capacity.",
+    "Twelve model/tool round trips span each session; this is not a five-minute uninterrupted SSE-stream test.",
+    "No skill effectiveness, generalization, speed, token-saving or causal inference.",
+    "All old failures remain unchanged; no missing usage imputation."
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "source": "Actual saved per-session stderr; no new model calls",
+  "sessions": [
+    {
+      "key": "session-01",
+      "stderr_sha256": "491381B7E5ABD223E7ABCC0998CC0D3483F464F7BD65B0DE47DBAA0B17B02340",
+      "model_catalog_refresh_failures": 16,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 4,
+      "analytics_send_failures": 0
+    },
+    {
+      "key": "session-02",
+      "stderr_sha256": "3ACDC6F949088173E0D54D6C32A4BDFB2E4ABCD27972198FD0177213E2D38C02",
+      "model_catalog_refresh_failures": 16,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 0,
+      "analytics_send_failures": 0
+    },
+    {
+      "key": "session-03",
+      "stderr_sha256": "5BD6E2BE77BEF11203EEFED8FD3D79A12881F25380434F8503AADD283485278F",
+      "model_catalog_refresh_failures": 14,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 1,
+      "analytics_send_failures": 0
+    },
+    {
+      "key": "session-04",
+      "stderr_sha256": "12680B3C03038D9F934658B16845A79F94020E5514701031E4F836C05A0DCEA5",
+      "model_catalog_refresh_failures": 2,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 0,
+      "analytics_send_failures": 0
+    },
+    {
+      "key": "session-05",
+      "stderr_sha256": "65A713C14B799602EFB09760246123F52C3A8DAE1D6CBE149E3120A053DBF592",
+      "model_catalog_refresh_failures": 2,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 1,
+      "analytics_send_failures": 0
+    },
+    {
+      "key": "session-06",
+      "stderr_sha256": "B2FA20266F00E37E5CDE7154A440B207DDD08293FC73F2EE9EE2792F8573C9CA",
+      "model_catalog_refresh_failures": 2,
+      "remote_plugin_catalog_failures": 1,
+      "MCP_server_startup_failures": 1,
+      "analytics_send_failures": 1
+    }
+  ],
+  "preregistered_gate_scope": "Successful shell/model round trips; optional metadata/plugin startup warnings are separately disclosed and do not alter the frozen gate",
+  "full_MCP_or_plugin_availability_validated": false,
+  "production_SLA_proven": false
+}
