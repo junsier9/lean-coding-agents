@@ -19,13 +19,13 @@ from prepare_second_real import restore_case
 from export_results import FIELDS, public_value
 from audit_production_trace import scan
 from observe import observe, body
+from readiness import bind_readiness, READINESS
 
 if not __debug__:
     raise RuntimeError('Run the frozen controller without optimization')
 
 ROOT = PROJECT / '.local/production-runtime/generalization-v6-2026-10-27'
 SKILL = ROOT / 'skill-input/SKILL.md'
-READINESS = HERE.parent / 'transport-revalidation-mxc-2026-10-27/results'
 TRANSPORT = proxy_transport.install(runner)
 
 
@@ -55,6 +55,11 @@ def observer_checks():
 
 def prepare():
     protocol = runner.read(HERE / 'protocol.json')
+    readiness_binding = bind_readiness(protocol, TRANSPORT)
+    method_review = runner.read(HERE / 'results/readiness-binding-method-review.json')
+    assert method_review['completed'] is True and not method_review['blocking_findings']
+    for name, expected in method_review['source_sha256'].items():
+        assert runner.digest(PROJECT / name) == expected, 'Method review refers to different code'
     oldroot = Path(runner.read(PROJECT / '.local/state.json')['runtime_root'])
     originals = {case['id']: case for case in runner.read(oldroot / 'eligible.json')['cases']}
     selection = runner.read(OLD / 'results/second-corpus-selection.json')['remaining_adequate'][20:]
@@ -139,23 +144,10 @@ def prepare():
     assert closed['production_assistant_qualified'] is False
     for name, expected in closed['source_report_sha256'].items():
         assert runner.digest(OLD / 'results/v4' / name) == expected
-    dev = runner.read(READINESS / 'summary.json')
-    assert dev['development_gate_passed'] is True
     readiness_freeze = runner.read(READINESS / 'freeze.json')
-    assert dev['evidence_class'] == readiness_freeze['evidence_class'] == 'known_contract_revalidation_after_proxy_and_MXC_correction'
-    assert dev['transport'] == readiness_freeze['transport'] == TRANSPORT
-    assert readiness_freeze['skill_sha256'] == runner.digest(SKILL)
-    assert readiness_freeze['ui_sha256'] == runner.digest(SKILL.parent / 'agents/openai.yaml')
-    assert readiness_freeze['settings'] == runner.SETTINGS
-    assert readiness_freeze['cli_sha256'] == runner.digest(runner.CODEX)
-    assert readiness_freeze['python_sha256'] == runner.digest(Path(sys.executable))
-    for name, expected in readiness_freeze['source_sha256'].items():
-        assert runner.digest(PROJECT / name) == expected
-    for name, field in [('summary.json', 'original_failed_v6_summary_sha256'), ('recovery-result.json', 'original_recovery_result_sha256')]:
-        assert runner.digest(HERE.parent / 'development-2026-10-27/results' / name) == readiness_freeze[field]
-    assert runner.digest(HERE.parent / 'transport-revalidation-2026-10-27/results/interrupted-summary.json') == readiness_freeze['stopped_proxy_only_window_sha256']
-    closure = [Path(__file__), HERE / 'verify.py', HERE / 'close.py', HERE / 'prepare_reviews.py', HERE / 'incomplete.py', HERE / 'results/mxc-transport-method-review.json', Path(runner.__file__), Path(runner.transport.__file__),
-               Path(proxy_transport.__file__), HERE.parent / 'transport-revalidation-mxc-2026-10-27/run.py',
+    closure = [Path(__file__), HERE / 'verify.py', HERE / 'readiness.py', HERE / 'close.py', HERE / 'prepare_reviews.py', HERE / 'incomplete.py',
+               HERE / 'results/mxc-transport-method-review.json', HERE / 'results/readiness-binding-method-review.json', Path(runner.__file__), Path(runner.transport.__file__),
+               Path(proxy_transport.__file__), HERE.parent / 'environment-revalidation-2026-10-27-v2/run.py',
                Path(runner.upstream_grader.__file__), Path(resource_gate.__file__),
                Path(__import__('prepare_second_real').__file__), Path(__import__('export_results').__file__),
                Path(__import__('audit_production_trace').__file__),
@@ -169,6 +161,7 @@ def prepare():
         'prior_attempt_metadata_count': len(attempt_metadata),
         'readiness_summary_sha256': runner.digest(READINESS / 'summary.json'),
         'readiness_freeze_sha256': runner.digest(READINESS / 'freeze.json'),
+        'readiness_binding': readiness_binding,
         'transport': TRANSPORT,
         'original_failed_v6_summary_sha256': readiness_freeze['original_failed_v6_summary_sha256'],
         'original_recovery_result_sha256': readiness_freeze['original_recovery_result_sha256'],
@@ -182,6 +175,8 @@ def prepare():
         'cli_sha256': runner.digest(runner.CODEX), 'settings': runner.SETTINGS,
         'selection_source_sha256': runner.digest(OLD / 'results/second-corpus-selection.json'),
         'fresh': selection, 'known_critical': [case['id'] for case in known],
+        'native_schedule': {phase: runner.schedule(cases, phase, repeats, ('with-skill',))
+                            for phase, cases, repeats in [('generalization', fresh, 3), ('known-critical', known, 1)]},
         'case_sha256': {case['id']: runner.case_digest(case) for case in fresh + known},
         'fresh_sources': [{'id': key, 'repo': originals[key]['repo'], 'base_sha': originals[key]['base_sha'],
                            'fix_sha': originals[key]['fix_sha'], 'source_url': normalized_url(originals[key])} for key in selection],

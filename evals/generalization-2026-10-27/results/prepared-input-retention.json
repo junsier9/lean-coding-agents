@@ -1,0 +1,14 @@
+{
+  "retained_at": "2026-10-27T16:02:10.161857+00:00",
+  "private_archive": ".local/generalization-v6-prepared-inputs.zip",
+  "archive_sha256": "526D414BEE491E4F85E1F7666BB65330CCC2F217FD6C48EC86EB0ECE734A0F16",
+  "bytes": 23903932,
+  "entries": 7518,
+  "includes_prepared_snapshots_archives_dependencies_and_candidate": true,
+  "includes_exact_prior_native_metadata_and_journals_for_overlap_check": true,
+  "readiness_reports_checkers_and_original_evidence_retained": true,
+  "CRC_and_all_entry_SHA256_verified": true,
+  "native_model_calls": 0,
+  "authentication_files_not_in_source_inventory": true,
+  "external_publication": false
+}

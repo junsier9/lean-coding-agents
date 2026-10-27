@@ -1,0 +1,278 @@
+{
+  "completed": true,
+  "blocking_findings": [],
+  "source_sha256": {
+    "evals/generalization-2026-10-27/protocol.json": "7B31B94D6B9B949F14CB713067A18BBA8D21538D3BE75FB75F2CCD99160931A1",
+    "evals/generalization-2026-10-27/run.py": "DD862595BF50972CA3FD10FF111DEFF55EB736DE892521AC36DD108B7973F160",
+    "evals/generalization-2026-10-27/readiness.py": "89CF2B79A70D958AC9A3493398E2ADBD0EE4429DC4B702340899D177B8DF2C2A",
+    "evals/generalization-2026-10-27/verify.py": "D778A41684BE6C06F3BF7CC2E9D22D9AA1BA03EAE98BA29605DF96B4BA64F3B4",
+    "evals/generalization-2026-10-27/close.py": "80F4D022E7A74DF888E32218D852E373911D8413590483AE817DC486FB1DD790",
+    "evals/generalization-2026-10-27/prepare_reviews.py": "AF89A650E5AD274A052644606B15489699557E11B93A6944B675EFD3FA92CCA6",
+    "evals/generalization-2026-10-27/incomplete.py": "83D13E13E8FD8AC4133BADD4F54B35C38A5FE611067B9B569378262BCB76944C"
+  },
+  "native_model_calls": 0,
+  "network_calls": 0,
+  "formal_prepare_calls": 0,
+  "formal_freeze_generated": false,
+  "reviewed_at": "2026-10-27T15:53:12.369444+00:00",
+  "checks": {
+    "static_contracts": {
+      "protocol_13x3_plus12_equals51": true,
+      "protocol_thresholds38_2_12": true,
+      "protocol_eight_unique_r0": true,
+      "max_workers3": true,
+      "same_shared_readiness_called_before_prepare_and_in_qualify": true,
+      "readiness_source_and_method_review_in_closure": true,
+      "fixed_r0_review_preparer": true,
+      "missing_records_force_false_and_full_denominator": true,
+      "incomplete_never_fabricates_grade_or_usage": true,
+      "frozen_input_rerun_immutable": true,
+      "optimization_disabled_for_controller": true,
+      "failed_phase_evidence_preserved_no_replacement": true
+    },
+    "readiness_synthetic_behavior": {
+      "readiness_valid_synthetic_chain": {
+        "rejected": false,
+        "value": {
+          "readiness_gate_passed": true,
+          "old_failures_preserved": true,
+          "reports": 7,
+          "source_bindings": 6
+        }
+      },
+      "old_failed_class": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Wrong readiness evidence class"
+      },
+      "failed_original_gate": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness did not pass its original gate"
+      },
+      "different_candidate": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness tested another candidate"
+      },
+      "different_ui": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness tested another candidate"
+      },
+      "different_settings": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness model/settings differ"
+      },
+      "different_route": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness route or permission policy differs"
+      },
+      "incomplete_counts": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness count differs: normal_completions"
+      },
+      "unresolved_trace_review": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness trace review unresolved"
+      },
+      "registration_relabel": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Original registration changed"
+      },
+      "missing_required_raw": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Actual readiness evidence omitted: runtime/runs/development/synthetic-slot/events.jsonl"
+      },
+      "entry_bytes_differ": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness archived bytes differ"
+      },
+      "byte_drift_freeze.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: freeze.json"
+      },
+      "byte_drift_frozen-at.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: frozen-at.json"
+      },
+      "byte_drift_summary.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: summary.json"
+      },
+      "byte_drift_execution-result.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: execution-result.json"
+      },
+      "byte_drift_verification.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: verification.json"
+      },
+      "byte_drift_evidence-retention.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: evidence-retention.json"
+      },
+      "byte_drift_registration.json": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Pinned readiness bytes changed: registration.json"
+      },
+      "archive_byte_drift": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness archive changed"
+      },
+      "historical_failed_evidence_drift": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness or old failed evidence changed: evals/synthetic-old-failed/results/summary.json"
+      },
+      "runtime_source_drift": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness or old failed evidence changed: evals/runtime-synthetic/helper.py"
+      },
+      "checker_drift": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness checker changed"
+      },
+      "long_freeze_drift": {
+        "rejected": true,
+        "error_type": "JSONDecodeError",
+        "message": "Extra data: line 9 column 1 (char 303)"
+      },
+      "wrong_window_directory": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness window differs"
+      },
+      "missing_report_pin": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Readiness report inventory differs"
+      }
+    },
+    "frozen_slot_plan": {
+      "unique_slots": 51,
+      "fresh_slots": 39,
+      "known_slots": 12,
+      "manifest_guard_probes": {
+        "same_plan": {
+          "rejected": false,
+          "value": true
+        },
+        "slot_replaced": {
+          "rejected": true,
+          "error_type": "ValueError",
+          "message": "Frozen dispatch plan differs"
+        },
+        "schedule_reordered": {
+          "rejected": true,
+          "error_type": "ValueError",
+          "message": "Frozen dispatch plan differs"
+        },
+        "workers4": {
+          "rejected": true,
+          "error_type": "ValueError",
+          "message": "Frozen dispatch plan differs"
+        },
+        "repeat_changed": {
+          "rejected": true,
+          "error_type": "ValueError",
+          "message": "Frozen dispatch plan differs"
+        },
+        "extra_arm": {
+          "rejected": true,
+          "error_type": "ValueError",
+          "message": "Frozen dispatch plan differs"
+        }
+      }
+    },
+    "actual_gate_probes": {
+      "all_success": {
+        "fresh_end_to_end_at_least38_of39": true,
+        "each_fresh_task_at_least2_of3": true,
+        "known_critical_end_to_end12_of12": true,
+        "eight_preselected_reviews_pass": true,
+        "source_trace_archive_package_integrity": true
+      },
+      "38_of39_each_at_least2": {
+        "fresh_end_to_end_at_least38_of39": true,
+        "each_fresh_task_at_least2_of3": true,
+        "known_critical_end_to_end12_of12": true,
+        "eight_preselected_reviews_pass": true,
+        "source_trace_archive_package_integrity": true
+      },
+      "37_of39_one_task_only1": {
+        "fresh_end_to_end_at_least38_of39": false,
+        "each_fresh_task_at_least2_of3": false,
+        "known_critical_end_to_end12_of12": true,
+        "eight_preselected_reviews_pass": true,
+        "source_trace_archive_package_integrity": true
+      },
+      "known_failure": {
+        "fresh_end_to_end_at_least38_of39": true,
+        "each_fresh_task_at_least2_of3": true,
+        "known_critical_end_to_end12_of12": false,
+        "eight_preselected_reviews_pass": true,
+        "source_trace_archive_package_integrity": true
+      },
+      "missing_fresh_row": {
+        "fresh_end_to_end_at_least38_of39": false,
+        "each_fresh_task_at_least2_of3": true,
+        "known_critical_end_to_end12_of12": true,
+        "eight_preselected_reviews_pass": true,
+        "source_trace_archive_package_integrity": true
+      },
+      "review_does_not_pass": {
+        "fresh_end_to_end_at_least38_of39": true,
+        "each_fresh_task_at_least2_of3": true,
+        "known_critical_end_to_end12_of12": true,
+        "eight_preselected_reviews_pass": false,
+        "source_trace_archive_package_integrity": true
+      }
+    },
+    "frozen_source_guard": {
+      "same": {
+        "rejected": false,
+        "value": true
+      },
+      "changed": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Frozen implementation changed: method.py"
+      }
+    },
+    "source_unchanged_during_review": {
+      "evals/generalization-2026-10-27/protocol.json": true,
+      "evals/generalization-2026-10-27/run.py": true,
+      "evals/generalization-2026-10-27/readiness.py": true,
+      "evals/generalization-2026-10-27/verify.py": true,
+      "evals/generalization-2026-10-27/close.py": true,
+      "evals/generalization-2026-10-27/prepare_reviews.py": true,
+      "evals/generalization-2026-10-27/incomplete.py": true
+    }
+  },
+  "scope_limits": [
+    "Only the seven permitted method/protocol files were read; no real readiness results, new task content, candidate SKILL, solver artifacts or case/grade results were opened.",
+    "No prepare() was invoked. Only the actual standalone bind_readiness and extracted non-launching gate/schedule/manifest/source expressions ran with fictional data.",
+    "Synthetic JSON and ZIP files exist only under .local/v6-plan-freeze-audit; they are not a formal fresh-task freeze.",
+    "The review checks declared report/source/history inventories and exact-byte bindings; it does not independently regrade or authenticate the actual pinned readiness reports or their historical coverage.",
+    "Previously reviewed B1-B3/T1 were not expanded. The future results/readiness-binding-method-review.json absence is expected and not a finding."
+  ],
+  "next_objective": "Copy this completed review to the reserved results path, then run the authorized formal preparation and inspect its frozen plan before any fresh native calls."
+}

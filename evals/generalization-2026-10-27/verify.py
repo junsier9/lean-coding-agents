@@ -16,6 +16,7 @@ import qualify_beta as legacy
 from observe import observe
 from audit_production_trace import scan
 from incomplete import describe
+from readiness import bind_readiness
 
 ROOT = PROJECT / '.local/production-runtime/generalization-v6-2026-10-27'
 legacy.ROOT = ROOT  # Reuse the bound identity/raw-event/grade checker with this batch root.
@@ -119,12 +120,7 @@ def qualify():
     for name, expected in frozen['source_closure_sha256'].items():
         require(runner.digest(PROJECT / name) == expected, 'Frozen implementation changed: ' + name)
     require(runner.digest(PROJECT / 'LICENSE') == frozen['license_sha256'], 'License changed')
-    readiness = HERE.parent / 'transport-revalidation-mxc-2026-10-27/results'
-    require(runner.digest(readiness / 'summary.json') == frozen['readiness_summary_sha256'], 'Transport readiness result changed')
-    require(runner.digest(readiness / 'freeze.json') == frozen['readiness_freeze_sha256'], 'Transport readiness freeze changed')
-    ready = runner.read(readiness / 'summary.json')
-    require(ready['development_gate_passed'] is True and ready['transport'] == frozen['transport'], 'Transport readiness gate failed or route differs')
-    require(runner.read(readiness / 'freeze.json')['transport'] == frozen['transport'], 'Frozen readiness route differs')
+    require(bind_readiness(protocol, frozen['transport']) == frozen['readiness_binding'], 'Verified readiness binding changed')
     for name, field in [('summary.json', 'original_failed_v6_summary_sha256'), ('recovery-result.json', 'original_recovery_result_sha256')]:
         require(runner.digest(HERE.parent / 'development-2026-10-27/results' / name) == frozen[field], 'Original failed v6 evidence changed')
     require(runner.digest(HERE.parent / 'transport-revalidation-2026-10-27/results/interrupted-summary.json') == frozen['stopped_proxy_only_window_sha256'], 'Stopped proxy-only window changed')
@@ -144,6 +140,10 @@ def qualify():
     keys = {f'{phase}--{key}--r{repeat}--with-skill': (phase, key, repeat)
             for phase, tasks, repeats in [('generalization', frozen['fresh'], 3), ('known-critical', frozen['known_critical'], 1)]
             for key in tasks for repeat in range(repeats)}
+    for phase, repeats in [('generalization', 3), ('known-critical', 1)]:
+        manifest = runner.read(ROOT / (phase + '-manifest.json'))
+        require(manifest['schedule'] == frozen['native_schedule'][phase] and manifest['repeats'] == repeats
+                and manifest['workers'] == 3 and manifest['arms'] == ['with-skill'], 'Frozen dispatch plan differs')
     paths = sorted((ROOT / 'runs').glob('*/*/started.json'))
     require(len(paths) == 51 and {p.parent.name for p in paths} == set(keys), 'Missing/extra native attempts must be retained, never replaced')
     records, identities, flags, required_raw = [], [], [], {}

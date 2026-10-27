@@ -6,7 +6,9 @@
   "fresh_repeats": 3,
   "known_critical_tasks": 12,
   "known_critical_repeats": 1,
-  "arms": ["with-skill"],
+  "arms": [
+    "with-skill"
+  ],
   "max_native_attempts": 51,
   "max_concurrent_native_clients": 3,
   "model": "gpt-6.1-sol",
@@ -19,17 +21,54 @@
     "all_51_attempts_retained_once_with_bound_raw_evidence": true,
     "preselected_independent_artifact_reviews": 8,
     "confirmed_review_defects": 0,
-    "known_v6_development_regression_gate": "A separately preregistered 12-attempt d09-d12 execution window using corrected OS proxy inheritance and the supported MXC workspace sandbox must pass; identical candidate, CLI, model/provider and authentication. Original failed 12+1 attempts and the stopped proxy-only window remain failed and unchanged. This window is readiness evidence, not new-task or comparative-efficiency evidence.",
+    "known_v6_development_regression_gate": "The separately registered environment-revalidation-2026-10-27-v2 d09-d12 window passed its original12/12 gate after the six-session long diagnostic; bind its exact reports, checkers, original raw evidence archive, unchanged candidate, CLI, model/provider/authentication and proxy/MXC policy. Original12+1 failures, the stopped proxy-only window and the prior11/12 MXC window remain unchanged and failed. Known readiness is not fresh/generalization or comparative-efficiency evidence.",
     "source_trace_review_input_archive_and_distribution_integrity": true
   },
-  "review_selection": {"zero_based_selected_task_positions": [0,1,3,5,7,8,10,12], "repeat": 0},
+  "review_selection": {
+    "zero_based_selected_task_positions": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      8,
+      10,
+      12
+    ],
+    "repeat": 0
+  },
   "review_method": "Original task, base and candidate source only, neutral names; no skill, intended answer, reference repair, hidden grader, parent grades/costs or previous conclusions. Fixed r0 artifacts cannot be replaced after failures.",
   "execution_policy": "No repeated model attempts to replace failures. Retain failed launches, API errors, timeouts, incomplete usage and grade-only recovery histories; no missing usage imputation. Do not change model/provider to work around capacity. Actual exhausted quota stops queued calls; no purchases, authentication copying or quota resets.",
   "transport_change": "Before any fresh calls, bind the existing credential-free loopback OS proxy plus all HTTP(S)/ALL_PROXY and NO_PROXY variants into native CLI child environment. Select windows.sandbox=mxc for this process, keeping workspace-write and never approvals. MXC compatibility and workspace-write/outside-write-denial probes plus a native shell/read/write/Python canary must pass. The controller does not edit saved settings, ACLs, provider, model, authentication or TLS. The prior legacy elevated sandbox attempted its own provisioning and failed; this automatic setup is disclosed, not described as absence of host-side effects. Freeze the helper, exact complete route/bypass policy, successful canaries, stopped prior window and separate known-contract readiness. These environment corrections do not erase earlier failures or demonstrate skill efficiency.",
   "incomplete_record_policy": "A nonzero CLI/API failure without a thread may count only as a negative end-to-end outcome. Missing record/grade is described from actual frozen-plan failure/started/done evidence, never synthesized into successful records. Not-attempted work is explicit. Any incomplete attempt records make the overall evidence-integrity verdict false until checkpoint-only recovery resolves them; no model replacement and no qualification based only on surviving rows.",
   "frozen_candidate_sha256": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
   "frozen_ui_sha256": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
-  "publication": {"github": "public", "license": "MIT for original work; preserve upstream licenses", "agensi": "free beta only after quality gates pass", "no_unproven_efficiency_claim": true},
+  "publication": {
+    "github": "public",
+    "license": "MIT for original work; preserve upstream licenses",
+    "agensi": "free beta only after quality gates pass",
+    "no_unproven_efficiency_claim": true
+  },
   "criterion_change_disclosure": "This is a new prospective end-to-end quality criterion after the failed v5 batch. It treats incomplete sessions as failures within the same >=95% task threshold, rather than separately requiring100% operational completion. v5 remains failed and is never reevaluated under this criterion. Its confirmed regressions are known development cases, not fresh samples.",
-  "limitations": ["No baseline arm, efficiency or causal effect estimate", "Only13 previously source-contract-screened reserve tasks; existing repositories, not repository-disjoint or training-contamination-free", "Known critical and development tasks are not new generalization evidence", "Same configured Codex/Python endpoint; Claude untested", "Old v4 and v5 failures remain unchanged; prior efficiency-confirmation budget stays closed", "Passing a scoped beta quality gate does not establish industrial production qualification"]
+  "limitations": [
+    "No baseline arm, efficiency or causal effect estimate",
+    "Only13 previously source-contract-screened reserve tasks; existing repositories, not repository-disjoint or training-contamination-free",
+    "Known critical and development tasks are not new generalization evidence",
+    "Same configured Codex/Python endpoint; Claude untested",
+    "Old v4 and v5 failures remain unchanged; prior efficiency-confirmation budget stays closed",
+    "Passing a scoped beta quality gate does not establish industrial production qualification"
+  ],
+  "readiness_binding": {
+    "directory": "evals/environment-revalidation-2026-10-27-v2/results",
+    "reports_sha256": {
+      "freeze.json": "B12BA1BAC37CD9EBDBD5EDF0765CC73E54BCA070DA3260F8041200CA7F2BA9F7",
+      "frozen-at.json": "C18EDFB84814D31329B9D49C5719D6DECB2B06DEE247187EF151A13CB2959B0C",
+      "summary.json": "E25608F2328C6C152A8663E6616FA70B9E8B891608EC6909D53A4B10F2CF8F6D",
+      "execution-result.json": "3CBA54A127762D6EECAC9665D1F942DA0E0400164BEE86CFF68C0E2ADD373E21",
+      "verification.json": "2DD6D97196F2FD796E0545473B58F6D4102ED6E0973D4B3CA56863F1BBD90CA3",
+      "evidence-retention.json": "AC30B9924F6903D407D5AAF9F4D999A8C8EB5210931D45D05D65CBB274E8B5C0",
+      "registration.json": "82B2045FE1A8A6A3ADA31EFC9BB3031A7619EFF0F8FEF5BDC5F24FB127D057EC"
+    },
+    "archive_sha256": "DB7462A8AED8E0D353B3CE0FCE0F86DEBE14CDB4A44BF2C55F8A7E0B698C3BE1"
+  }
 }
