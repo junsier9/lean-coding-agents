@@ -1,0 +1,15 @@
+{
+  "retained_at": "2026-10-27T15:33:44.659022+00:00",
+  "private_archive": ".local/environment-revalidation-v2-evidence.zip",
+  "archive_sha256": "DB7462A8AED8E0D353B3CE0FCE0F86DEBE14CDB4A44BF2C55F8A7E0B698C3BE1",
+  "bytes": 1827281,
+  "entries": 575,
+  "all_actual_native_and_grade_logs_retained": true,
+  "CRC_and_all_entry_hashes_verified": true,
+  "external_publication": false,
+  "exclusions": [
+    "workspace .git internals",
+    "__pycache__"
+  ],
+  "limits": "Native emitted events do not attest every OS-level access; earlier failed windows and long diagnostics retain their separate bound archives."
+}

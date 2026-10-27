@@ -1,0 +1,56 @@
+diff --git a/click/parser.py b/click/parser.py
+index 1ea1f71..86dfc06 100644
+--- a/click/parser.py
++++ b/click/parser.py
+@@ -374,7 +374,9 @@ class _OptionParser:
+             if explicit_value is not None:
+                 state.rargs.insert(0, explicit_value)
+ 
+-            value = self._get_value_from_state(opt, option, state)
++            value = self._get_value_from_state(
++                opt, option, state, attached_value=explicit_value is not None
++            )
+ 
+         elif explicit_value is not None:
+             raise BadOptionUsage(
+@@ -409,7 +411,9 @@ class _OptionParser:
+                     state.rargs.insert(0, arg[i:])
+                     stop = True
+ 
+-                value = self._get_value_from_state(opt, option, state)
++                value = self._get_value_from_state(
++                    opt, option, state, attached_value=stop
++                )
+ 
+             else:
+                 value = UNSET
+@@ -427,7 +431,12 @@ class _OptionParser:
+             state.largs.append(f"{prefix}{''.join(unknown_options)}")
+ 
+     def _get_value_from_state(
+-        self, option_name: str, option: _Option, state: _ParsingState
++        self,
++        option_name: str,
++        option: _Option,
++        state: _ParsingState,
++        *,
++        attached_value: bool = False,
+     ) -> str | cabc.Sequence[str] | T_FLAG_NEEDS_VALUE:
+         nargs = option.nargs
+ 
+@@ -451,12 +460,13 @@ class _OptionParser:
+ 
+             if (
+                 option.obj._flag_needs_value
++                and not attached_value
+                 and isinstance(next_rarg, str)
+                 and next_rarg[:1] in self._opt_prefixes
+                 and len(next_rarg) > 1
+             ):
+-                # The next arg looks like the start of an option, don't
+-                # use it as the value if omitting the value is allowed.
++                # An independent next arg that looks like an option is not
++                # a value if omitting the value is allowed.
+                 value = FLAG_NEEDS_VALUE
+             else:
+                 value = state.rargs.pop(0)

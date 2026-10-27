@@ -1,0 +1,21 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index 1e84994..bca39d7 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -2,6 +2,7 @@
+ 
+ from contextlib import suppress
+ from itertools import islice
++from operator import index
+ 
+ 
+ def iter_index(iterable, value, start=0, stop=None):
+@@ -38,6 +39,8 @@ def iter_index(iterable, value, start=0, stop=None):
+     seq_index = getattr(iterable, 'index', None)
+     if seq_index is None:
+         # Slow path for general iterables
++        start = index(start)
++        stop = None if stop is None else index(stop)
+         if start < 0 or (stop is not None and stop < 0):
+             iterable = list(iterable)
+             start, stop, _ = slice(start, stop).indices(len(iterable))
