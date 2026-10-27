@@ -1,0 +1,46 @@
+{
+  "key": "native-MXC-tools-diagnostic",
+  "diagnostic_only": true,
+  "started_at": "2026-10-27T12:17:30.723990+00:00",
+  "cli_exit_code": 0,
+  "timeout": false,
+  "client_seconds": 27.968000000109896,
+  "transport": {
+    "source": "existing_OS_loopback_proxy",
+    "environment": {
+      "HTTP_PROXY": "http://127.0.0.1:18081",
+      "HTTPS_PROXY": "http://127.0.0.1:18081",
+      "http_proxy": "http://127.0.0.1:18081",
+      "https_proxy": "http://127.0.0.1:18081",
+      "ALL_PROXY": "http://127.0.0.1:18081",
+      "all_proxy": "http://127.0.0.1:18081",
+      "NO_PROXY": "localhost,127.0.0.1,::1",
+      "no_proxy": "localhost,127.0.0.1,::1"
+    },
+    "windows_sandbox": "mxc",
+    "permission_mode": "workspace-write",
+    "approval_policy": "never",
+    "TLS_verification_unchanged": true,
+    "saved_config_or_ACL_changes_by_controller": false,
+    "model_provider_or_auth_changed": false
+  },
+  "terminal_events": [
+    "turn.completed"
+  ],
+  "successful_shell_commands": 1,
+  "failed_shell_commands": 0,
+  "file_content_verified": true,
+  "stream_errors": [],
+  "final": "NATIVE_MXC_TOOLS_OK",
+  "usage": [
+    {
+      "input_tokens": 37792,
+      "cached_input_tokens": 18816,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 212,
+      "reasoning_output_tokens": 8
+    }
+  ],
+  "not_a_skill_or_fresh_task_sample": true,
+  "succeeded": true
+}

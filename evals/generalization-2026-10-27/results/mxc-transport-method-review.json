@@ -1,0 +1,149 @@
+{
+  "review_kind": "independent-unfrozen-MXC-proxy-method-review",
+  "reviewed_at": "2026-10-27T12:25:09.966532+00:00",
+  "source_sha256": {
+    "mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "mxc_readiness_run.py": "68B8A6E6FB14601DF2822D5217F0FD4A2F3FA5519CF6B7A22C203A69E3011222",
+    "fresh_run.py": "293D485651F7C3237D1DC9D3452361E92A7DA3A36C2916535F02FDD3C562E03B",
+    "fresh_verify.py": "B97F0AF61C91343C4AA88A342D3CFC9AA839AF93106C04C9A5AD4AEBB1D5797F",
+    "old_runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46"
+  },
+  "sources_unchanged_during_probes": {
+    "mxc_proxy_transport.py": true,
+    "mxc_readiness_run.py": true,
+    "fresh_run.py": true,
+    "fresh_verify.py": true,
+    "old_runner.py": true
+  },
+  "native_model_calls": 0,
+  "network_calls": 0,
+  "real_process_launches": 0,
+  "stub_process_launches": 4,
+  "real_case_candidate_or_result_reads": 0,
+  "T1_status": "closed_for_tested_proxy_and_bypass_environment",
+  "T1_probes": {
+    "metadata_equal": true,
+    "effective_proxy_fields_equal": true,
+    "wildcard_replaced_with_fixed_local_bypass": true,
+    "standard_provider_bypass": false,
+    "all_route_fields_in_descriptor": true
+  },
+  "old_new_launcher_comparison": {
+    "normal": {
+      "command_equals_old_after_removing_only_mxc_option": true,
+      "environment_and_cwd_equal": true,
+      "limits_and_cleanup_equal": true,
+      "return_state_equal": true,
+      "started_only_adds_expected_mxc_command_and_transport_descriptor": true,
+      "descriptor_matches_frozen_policy": true
+    },
+    "timeout": {
+      "command_equals_old_after_removing_only_mxc_option": true,
+      "environment_and_cwd_equal": true,
+      "limits_and_cleanup_equal": true,
+      "return_state_equal": true,
+      "started_only_adds_expected_mxc_command_and_transport_descriptor": true,
+      "descriptor_matches_frozen_policy": true
+    }
+  },
+  "fresh_readiness_binding_probes": {
+    "same": {
+      "rejected": false,
+      "value": true
+    },
+    "changed_NO_PROXY_policy": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "different_candidate": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "different_sandbox": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    }
+  },
+  "native_canary_gate_probes": {
+    "success_same": {
+      "rejected": false,
+      "value": true
+    },
+    "failed": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Native tools must work with this exact transport"
+    },
+    "different_route": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Native tools must work with this exact transport"
+    },
+    "different_command": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Native tool canary command differs"
+    }
+  },
+  "per_attempt_descriptor_probes": {
+    "readiness": {
+      "same": {
+        "rejected": false,
+        "value": true
+      },
+      "route_mismatch": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Attempt transport differs"
+      },
+      "command_only_mismatch": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Attempt command differs"
+      }
+    },
+    "fresh": {
+      "same": {
+        "rejected": false,
+        "value": true
+      },
+      "route_mismatch": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Attempt transport differs"
+      },
+      "command_only_mismatch": {
+        "rejected": true,
+        "error_type": "ValueError",
+        "message": "Attempt command differs"
+      }
+    }
+  },
+  "confirmed_in_scope_zh": [
+    "\u4ee3\u74068\u4e2a\u5927\u5c0f\u5199\u5b57\u6bb5\u88ab\u7edf\u4e00\u8986\u76d6\u5e76\u8fdb\u5165\u5b8c\u6574descriptor\uff1b\u7236\u73af\u5883\u4e2d\u7684NO_PROXY=*\u4e0d\u518d\u6539\u53d8\u6709\u6548\u5b50\u8fdb\u7a0bbypass\u3002",
+    "\u65b0\u65e7\u5b9e\u9645launch\u51fd\u6570\u5728\u6b63\u5e38\u548c\u8d85\u65f6stub\u4e0b\uff0c\u9664\u660e\u786eMXC\u9009\u9879\u548c\u65b0\u589estarted descriptor\u5916argv\u3001\u73af\u5883\u3001cwd\u3001600\u79d2\u9650\u5236\u300120\u79d2\u6e05\u7406\u53ca\u8fd4\u56de\u72b6\u6001\u4e00\u81f4\u3002",
+    "\u4ecd\u4e3aworkspace-write\u548cnever\uff1b\u6a21\u578bprovider\u53ca\u8ba4\u8bc1\u5f00\u5173\u4e0e\u65e7\u547d\u4ee4\u9010\u5b57\u4e00\u81f4\uff0c\u6ca1\u6709TLS\u6821\u9a8c\u4fee\u6539\u3002",
+    "native canary\u5931\u8d25\u6216\u5b8c\u6574transport\u4e0d\u5339\u914d\u4f1a\u963b\u65adfreeze\uff1breadiness/fresh\u5747\u62d2\u7edd\u6bcf\u6b21started\u7684\u4e0d\u540c\u73af\u5883descriptor\u3002",
+    "fresh readiness\u62d2\u7edd\u4e0d\u540cNO_PROXY\u7b56\u7565\u3001\u5019\u9009\u548csandbox\uff1b\u65b0\u7a97\u53e3\u3001helper\u53ca\u76f8\u5173\u6765\u6e90\u6458\u8981\u8fdb\u5165\u51bb\u7ed3\u94fe\u3002"
+  ],
+  "command_binding_status": {
+    "evidence": [
+      "mxc_proxy_transport.py:15-26,47-51",
+      "transport-revalidation-mxc-2026-10-27/run.py:37-40,100-102",
+      "generalization-2026-10-27/verify.py:153-156"
+    ],
+    "status": "closed_in_current_bytes",
+    "verified_zh": "native canary\u3001readiness\u6bcf\u6b21started\u548cfresh\u6bcf\u6b21started\u5747\u590d\u7528\u5171\u4eabbuild_command\u9010\u5b57\u6bd4\u8f83\u5b8c\u6574argv\uff1b\u6b63\u786edescriptor\u4f46\u9519\u8bef-s\u547d\u4ee4\u88ab\u4e24\u5904\u62d2\u7edd\uff0ccanary\u989d\u5916\u8986\u76d6sandbox\u4e5f\u88ab\u62d2\u7edd\u3002"
+  },
+  "blocking_findings": [],
+  "overall_zh": "\u539fT1\u53ca\u65b0\u589ecanary/descriptor/\u9010\u6b21argv\u95e8\u69db\u5728\u6b64\u8303\u56f4\u9a8c\u8bc1\u901a\u8fc7\uff1b\u5b9e\u9645launcher\u672a\u53d1\u73b0\u8d8a\u6743\u6216auth/TLS/provider\u53d8\u5316\u3002\u6b64\u6709\u9650\u8303\u56f4\u65e0\u5269\u4f59\u963b\u65ad\u3002",
+  "scope_limits_zh": [
+    "\u6ca1\u6709\u8bfb\u53d6\u771f\u5b9ecanary\u3001\u4efb\u52a1\u3001skill\u3001\u5019\u9009\u6216\u4efb\u4f55\u8fd0\u884c\u7ed3\u679c\uff1b\u4ec5\u4f7f\u7528stub\u73af\u5883\u3001\u5185\u5b58schema\u548c\u6a21\u62dfPopen\u3002",
+    "\u672a\u4fee\u6539\u65e7runner\u6216\u4efb\u4f55\u65b0\u5b9e\u73b0\uff0c\u6240\u6709\u5199\u5165\u53ea\u5728.local/v6-method-audit\u3002",
+    "\u672a\u6269\u5c55B1-B3\u8303\u56f4\uff1b\u7ed3\u8bba\u7ed1\u5b9a\u8bb0\u5f55\u7684\u6e90\u7801\u6458\u8981\u3002"
+  ],
+  "next_objective_zh": "\u51bb\u7ed3\u901a\u8fc7\u590d\u6838\u7684\u65b0runtime/readiness\u7a97\u53e3\uff0c\u518d\u6309\u56fa\u5b9a\u8ba1\u5212\u9a8c\u8bc1\u3002"
+}

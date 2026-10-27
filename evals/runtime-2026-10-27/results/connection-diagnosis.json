@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-10-27T11:57:00.120001+00:00",
+  "model_requests": 0,
+  "paired_http_checks": [
+    {
+      "route": "explicit_direct",
+      "error_type": "TimeoutError",
+      "seconds": 8.078999999910593
+    },
+    {
+      "route": "existing_os_loopback_proxy",
+      "http_status": 401,
+      "seconds": 0.6720000000204891
+    }
+  ],
+  "git_using_existing_proxy": {
+    "exit_code": 128,
+    "stdout": "",
+    "stderr": "fatal: unable to access 'https://github.com/junsier9/lean-coding-agents.git/': Recv failure: Connection was reset"
+  },
+  "global_settings_changed": false,
+  "proxy_credentials_present": false
+}

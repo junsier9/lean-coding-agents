@@ -1,0 +1,67 @@
+diff --git a/click/parser.py b/click/parser.py
+index 1ea1f71..72e044c 100644
+--- a/click/parser.py
++++ b/click/parser.py
+@@ -367,14 +367,14 @@ class _OptionParser:
+ 
+         option = self._long_opt[opt]
+         if option.takes_value:
+-            # At this point it's safe to modify rargs by injecting the
+-            # explicit value, because no exception is raised in this
+-            # branch.  This means that the inserted value will be fully
+-            # consumed.
++            # Inject attached values so multi-value options can collect
++            # the remaining values from rargs as usual.
+             if explicit_value is not None:
+                 state.rargs.insert(0, explicit_value)
+ 
+-            value = self._get_value_from_state(opt, option, state)
++            value = self._get_value_from_state(
++                opt, option, state, attached_value=explicit_value is not None
++            )
+ 
+         elif explicit_value is not None:
+             raise BadOptionUsage(
+@@ -409,7 +409,9 @@ class _OptionParser:
+                     state.rargs.insert(0, arg[i:])
+                     stop = True
+ 
+-                value = self._get_value_from_state(opt, option, state)
++                value = self._get_value_from_state(
++                    opt, option, state, attached_value=stop
++                )
+ 
+             else:
+                 value = UNSET
+@@ -427,7 +429,12 @@ class _OptionParser:
+             state.largs.append(f"{prefix}{''.join(unknown_options)}")
+ 
+     def _get_value_from_state(
+-        self, option_name: str, option: _Option, state: _ParsingState
++        self,
++        option_name: str,
++        option: _Option,
++        state: _ParsingState,
++        *,
++        attached_value: bool = False,
+     ) -> str | cabc.Sequence[str] | T_FLAG_NEEDS_VALUE:
+         nargs = option.nargs
+ 
+@@ -450,13 +457,14 @@ class _OptionParser:
+             next_rarg = state.rargs[0]
+ 
+             if (
+-                option.obj._flag_needs_value
++                not attached_value
++                and option.obj._flag_needs_value
+                 and isinstance(next_rarg, str)
+                 and next_rarg[:1] in self._opt_prefixes
+                 and len(next_rarg) > 1
+             ):
+-                # The next arg looks like the start of an option, don't
+-                # use it as the value if omitting the value is allowed.
++                # Only an independent argument can start another option.
++                # Attached values are already bound to this option.
+                 value = FLAG_NEEDS_VALUE
+             else:
+                 value = state.rargs.pop(0)

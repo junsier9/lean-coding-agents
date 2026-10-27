@@ -9,7 +9,9 @@ HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent.parent
 sys.path.insert(0, str(HERE.parent / 'production-2026-10-25'))
 sys.path.insert(0, str(HERE.parent / 'generalization-2026-10-26'))
+sys.path.insert(0, str(HERE.parent / 'runtime-2026-10-27'))
 import runner
+import mxc_proxy_transport
 import qualify_beta as legacy
 from observe import observe
 from audit_production_trace import scan
@@ -117,8 +119,15 @@ def qualify():
     for name, expected in frozen['source_closure_sha256'].items():
         require(runner.digest(PROJECT / name) == expected, 'Frozen implementation changed: ' + name)
     require(runner.digest(PROJECT / 'LICENSE') == frozen['license_sha256'], 'License changed')
-    require(runner.digest(HERE.parent / 'development-2026-10-27/results/summary.json') == frozen['known_development_summary_sha256'], 'Known development result changed')
-    require(runner.read(HERE.parent / 'development-2026-10-27/results/summary.json')['development_gate_passed'] is True, 'Known development gate failed')
+    readiness = HERE.parent / 'transport-revalidation-mxc-2026-10-27/results'
+    require(runner.digest(readiness / 'summary.json') == frozen['readiness_summary_sha256'], 'Transport readiness result changed')
+    require(runner.digest(readiness / 'freeze.json') == frozen['readiness_freeze_sha256'], 'Transport readiness freeze changed')
+    ready = runner.read(readiness / 'summary.json')
+    require(ready['development_gate_passed'] is True and ready['transport'] == frozen['transport'], 'Transport readiness gate failed or route differs')
+    require(runner.read(readiness / 'freeze.json')['transport'] == frozen['transport'], 'Frozen readiness route differs')
+    for name, field in [('summary.json', 'original_failed_v6_summary_sha256'), ('recovery-result.json', 'original_recovery_result_sha256')]:
+        require(runner.digest(HERE.parent / 'development-2026-10-27/results' / name) == frozen[field], 'Original failed v6 evidence changed')
+    require(runner.digest(HERE.parent / 'transport-revalidation-2026-10-27/results/interrupted-summary.json') == frozen['stopped_proxy_only_window_sha256'], 'Stopped proxy-only window changed')
     skill = ROOT / 'skill-input/SKILL.md'
     require(runner.digest(skill) == frozen['skill_sha256'], 'Frozen rule changed')
     incomplete = describe(ROOT, frozen, runner)
@@ -140,7 +149,11 @@ def qualify():
     records, identities, flags, required_raw = [], [], [], {}
     for path in paths:
         logs, key = path.parent, path.parent.name
+        started = runner.read(path)
+        require(started['transport_environment'] == frozen['transport']['environment'] and started['windows_sandbox'] == 'mxc', 'Attempt transport differs')
         record = runner.read(logs / 'record.json')
+        workspace = Path(record['workspace'])
+        require(started['command'] == mxc_proxy_transport.build_command(runner, workspace, logs, runner.environment(workspace)), 'Attempt command differs')
         require((record['phase'], record['case_id'], record['repeat']) == keys[key] and record['key'] == key, 'Attempt identity differs')
         case = runner.read(ROOT / 'fresh-cases' / (record['case_id'] + '.json')) if record['phase'] == 'generalization' else runner.read(
             HERE.parent / 'production-2026-10-25/holdout-sealed-v2' / (record['case_id'] + '.json'))

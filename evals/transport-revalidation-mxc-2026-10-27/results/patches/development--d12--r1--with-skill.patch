@@ -1,0 +1,18 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index d6e1b79..0e71241 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -288,11 +288,10 @@ def update_wrapper(wrapper, func, injected=None, expected=None, build_from=None,
+ 
+     try:
+         parameters = inspect.signature(wrapper, follow_wrapped=False).parameters
+-    except (TypeError, ValueError):
+-        kwonlyargs = ()  # some builtins and callable objects have no signature
+-    else:
+         kwonlyargs = {name for name, param in parameters.items()
+                       if param.kind is inspect.Parameter.KEYWORD_ONLY}
++    except Exception:
++        kwonlyargs = ()  # signature inspection is optional for opaque callables
+     invocation_str = fb.get_invocation_str(kwonlyargs=kwonlyargs)
+ 
+     if fb.is_async:

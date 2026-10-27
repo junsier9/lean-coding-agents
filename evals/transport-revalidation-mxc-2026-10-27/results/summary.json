@@ -1,0 +1,33 @@
+{
+  "completed_at": "2026-10-27T12:46:17.074032+00:00",
+  "evidence_class": "known_contract_revalidation_after_proxy_and_MXC_correction",
+  "native_attempts": 12,
+  "contract_accepted": 11,
+  "normal_completions": 11,
+  "full_body_outputs": 12,
+  "usage_complete": 11,
+  "potential_trace_flags": 0,
+  "closed_v5_failure_preserved": true,
+  "original_v6_failures_preserved": true,
+  "transport": {
+    "source": "existing_OS_loopback_proxy",
+    "environment": {
+      "HTTP_PROXY": "http://127.0.0.1:18081",
+      "HTTPS_PROXY": "http://127.0.0.1:18081",
+      "http_proxy": "http://127.0.0.1:18081",
+      "https_proxy": "http://127.0.0.1:18081",
+      "ALL_PROXY": "http://127.0.0.1:18081",
+      "all_proxy": "http://127.0.0.1:18081",
+      "NO_PROXY": "localhost,127.0.0.1,::1",
+      "no_proxy": "localhost,127.0.0.1,::1"
+    },
+    "windows_sandbox": "mxc",
+    "permission_mode": "workspace-write",
+    "approval_policy": "never",
+    "TLS_verification_unchanged": true,
+    "saved_config_or_ACL_changes_by_controller": false,
+    "model_provider_or_auth_changed": false
+  },
+  "development_gate_passed": false,
+  "no_fresh_generalization_efficiency_or_production_claim": true
+}

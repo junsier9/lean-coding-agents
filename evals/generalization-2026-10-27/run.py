@@ -10,9 +10,11 @@ HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent.parent
 OLD = HERE.parent / 'production-2026-10-25'
 sys.path.insert(0, str(OLD))
+sys.path.insert(0, str(HERE.parent / 'runtime-2026-10-27'))
 sys.path.insert(0, str(HERE.parent / 'generalization-2026-10-26'))
 import runner
 import resource_gate
+import mxc_proxy_transport as proxy_transport
 from prepare_second_real import restore_case
 from export_results import FIELDS, public_value
 from audit_production_trace import scan
@@ -23,6 +25,8 @@ if not __debug__:
 
 ROOT = PROJECT / '.local/production-runtime/generalization-v6-2026-10-27'
 SKILL = ROOT / 'skill-input/SKILL.md'
+READINESS = HERE.parent / 'transport-revalidation-mxc-2026-10-27/results'
+TRANSPORT = proxy_transport.install(runner)
 
 
 def immutable(path, value):
@@ -135,9 +139,23 @@ def prepare():
     assert closed['production_assistant_qualified'] is False
     for name, expected in closed['source_report_sha256'].items():
         assert runner.digest(OLD / 'results/v4' / name) == expected
-    dev = runner.read(HERE.parent / 'development-2026-10-27/results/summary.json')
+    dev = runner.read(READINESS / 'summary.json')
     assert dev['development_gate_passed'] is True
-    closure = [Path(__file__), HERE / 'verify.py', HERE / 'close.py', HERE / 'prepare_reviews.py', HERE / 'incomplete.py', Path(runner.__file__), Path(runner.transport.__file__),
+    readiness_freeze = runner.read(READINESS / 'freeze.json')
+    assert dev['evidence_class'] == readiness_freeze['evidence_class'] == 'known_contract_revalidation_after_proxy_and_MXC_correction'
+    assert dev['transport'] == readiness_freeze['transport'] == TRANSPORT
+    assert readiness_freeze['skill_sha256'] == runner.digest(SKILL)
+    assert readiness_freeze['ui_sha256'] == runner.digest(SKILL.parent / 'agents/openai.yaml')
+    assert readiness_freeze['settings'] == runner.SETTINGS
+    assert readiness_freeze['cli_sha256'] == runner.digest(runner.CODEX)
+    assert readiness_freeze['python_sha256'] == runner.digest(Path(sys.executable))
+    for name, expected in readiness_freeze['source_sha256'].items():
+        assert runner.digest(PROJECT / name) == expected
+    for name, field in [('summary.json', 'original_failed_v6_summary_sha256'), ('recovery-result.json', 'original_recovery_result_sha256')]:
+        assert runner.digest(HERE.parent / 'development-2026-10-27/results' / name) == readiness_freeze[field]
+    assert runner.digest(HERE.parent / 'transport-revalidation-2026-10-27/results/interrupted-summary.json') == readiness_freeze['stopped_proxy_only_window_sha256']
+    closure = [Path(__file__), HERE / 'verify.py', HERE / 'close.py', HERE / 'prepare_reviews.py', HERE / 'incomplete.py', HERE / 'results/mxc-transport-method-review.json', Path(runner.__file__), Path(runner.transport.__file__),
+               Path(proxy_transport.__file__), HERE.parent / 'transport-revalidation-mxc-2026-10-27/run.py',
                Path(runner.upstream_grader.__file__), Path(resource_gate.__file__),
                Path(__import__('prepare_second_real').__file__), Path(__import__('export_results').__file__),
                Path(__import__('audit_production_trace').__file__),
@@ -149,7 +167,12 @@ def prepare():
         'source_closure_sha256': {p.relative_to(PROJECT).as_posix(): runner.digest(p) for p in closure},
         'prior_attempt_metadata_index_sha256': runner.digest(PROJECT / '.local/v6-prior-attempt-metadata-index.json'),
         'prior_attempt_metadata_count': len(attempt_metadata),
-        'known_development_summary_sha256': runner.digest(HERE.parent / 'development-2026-10-27/results/summary.json'),
+        'readiness_summary_sha256': runner.digest(READINESS / 'summary.json'),
+        'readiness_freeze_sha256': runner.digest(READINESS / 'freeze.json'),
+        'transport': TRANSPORT,
+        'original_failed_v6_summary_sha256': readiness_freeze['original_failed_v6_summary_sha256'],
+        'original_recovery_result_sha256': readiness_freeze['original_recovery_result_sha256'],
+        'stopped_proxy_only_window_sha256': readiness_freeze['stopped_proxy_only_window_sha256'],
         'closed_v5_qualification_sha256': runner.digest(HERE.parent / 'generalization-2026-10-26/results/beta-qualification.json'),
         'protocol_sha256': runner.digest(HERE / 'protocol.json'),
         'skill_sha256': runner.digest(SKILL), 'ui_sha256': runner.digest(ROOT / 'skill-input/agents/openai.yaml'),

@@ -1,0 +1,183 @@
+{
+  "evaluated_at": "2026-10-27T12:46:28.545717+00:00",
+  "proxy_inheritance_fix_supported_by_controlled_canary": true,
+  "MXC_workspace_boundary_and_native_tool_probes_passed": true,
+  "long_session_network_stability_proven": false,
+  "model_capacity_failure_attempts": 1,
+  "connection_error_attempts": 5,
+  "native_attempts": 12,
+  "contract_accepted": 11,
+  "normal_completions": 11,
+  "usage_complete": 11,
+  "full_body_outputs": 12,
+  "timeouts": 0,
+  "readiness_gate_passed": false,
+  "fresh_native_calls": 0,
+  "no_original_failed_result_replaced_or_missing_usage_imputed": true,
+  "skill_changed_for_infrastructure_errors": false,
+  "per_attempt": [
+    {
+      "key": "development--d09--r0--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "AC0A77C649547D5B3013D884BA87FC0F56F741DC9797938AEA7883B3A6E328BC"
+    },
+    {
+      "key": "development--d09--r1--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 3,
+      "model_capacity_error": false,
+      "errors": [
+        "Reconnecting... waiting for network (Connection failed: error sending request)",
+        "Reconnecting... waiting for network (Connection failed: error sending request)",
+        "Reconnecting... waiting for network (Connection failed: error sending request)"
+      ],
+      "production_diff_empty": false,
+      "raw_sha256": "0D74F149AD30E24D4EAA89D5326512315F949FEA5FA0A9AC02993B60EE74664F"
+    },
+    {
+      "key": "development--d09--r2--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "3F6170EA125C264BBECBAE27B9F49EC60DFEF09A499D6EC1AA0455852EB17F52"
+    },
+    {
+      "key": "development--d10--r0--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "41F93C1558CAD245E531231B48D45BFC0547A020093C363EAB5096FC8C9D2050"
+    },
+    {
+      "key": "development--d10--r1--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 2,
+      "model_capacity_error": false,
+      "errors": [
+        "Reconnecting... waiting for network (Connection failed: error sending request)",
+        "Reconnecting... waiting for network (Connection failed: error sending request)"
+      ],
+      "production_diff_empty": false,
+      "raw_sha256": "2E52B8C401C2263AEFA8FAB57B2A009A12DC3836F88ED65F2508C3A858DA45CA"
+    },
+    {
+      "key": "development--d10--r2--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "D930E86BD757B3E002E8D926BEAE816C2A808CDE0FFB830A333555AF284CD540"
+    },
+    {
+      "key": "development--d11--r0--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "FBC85DCA4A6BB6C775BCEC445D5817462DDC58E6DB73795A9358B50B79787B0D"
+    },
+    {
+      "key": "development--d11--r1--with-skill",
+      "accepted": false,
+      "normal_completion": false,
+      "timeout": false,
+      "usage_complete": false,
+      "connection_error_events": 1,
+      "model_capacity_error": true,
+      "errors": [
+        "Reconnecting... waiting for network (Connection failed: error sending request)",
+        "Selected model is at capacity. Please try a different model.",
+        "Selected model is at capacity. Please try a different model."
+      ],
+      "production_diff_empty": true,
+      "raw_sha256": "34C0D520E732D5D0D084978DD13E7FD4076005CDE74F0FD1D75BECAFECD91885"
+    },
+    {
+      "key": "development--d11--r2--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 2,
+      "model_capacity_error": false,
+      "errors": [
+        "Reconnecting... waiting for network (Connection failed: error sending request)",
+        "Reconnecting... waiting for network (Connection failed: error sending request)"
+      ],
+      "production_diff_empty": false,
+      "raw_sha256": "4F062E918354033C13DDF6594E5C41EAA73EC24B4B827289DE7E57FEB9944F01"
+    },
+    {
+      "key": "development--d12--r0--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 1,
+      "model_capacity_error": false,
+      "errors": [
+        "Reconnecting... waiting for network (Connection failed: error sending request)"
+      ],
+      "production_diff_empty": false,
+      "raw_sha256": "61869CC5F56639B0EB6E102BBF56C01B775AF1F22FDB61826B6E09DC21FFE5C5"
+    },
+    {
+      "key": "development--d12--r1--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [],
+      "production_diff_empty": false,
+      "raw_sha256": "74ADE0D267056DE4EFDB6A18DAED7994CB29974DE27075675784A09DBF2A785A"
+    },
+    {
+      "key": "development--d12--r2--with-skill",
+      "accepted": true,
+      "normal_completion": true,
+      "timeout": false,
+      "usage_complete": true,
+      "connection_error_events": 0,
+      "model_capacity_error": false,
+      "errors": [
+        "Reconnecting... 1/5 (stream disconnected before completion: Transport error: network error: error decoding response body)"
+      ],
+      "production_diff_empty": false,
+      "raw_sha256": "218218C3F0B26AA54AD79CF7F7DE4A4185B39574D1877614E5CE130AC785C6C4"
+    }
+  ],
+  "qualification": "No beta or industrial qualification; no comparative efficiency evidence"
+}

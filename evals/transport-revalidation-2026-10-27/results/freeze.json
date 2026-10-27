@@ -1,0 +1,61 @@
+{
+  "evidence_class": "known_contract_revalidation_after_transport_change",
+  "transport": {
+    "source": "existing_OS_proxy",
+    "scheme": "http",
+    "host": "127.0.0.1",
+    "port": 18081,
+    "credentials_present": false,
+    "CLI_environment_only": true,
+    "global_settings_changed": false,
+    "model_provider_or_auth_changed": false
+  },
+  "planned_native_attempts": 12,
+  "cases": {
+    "d09": "9A9537DAC44F277BDE53559EBC3F3DD0A0011CBDCE59BBEAA577BA4479D03312",
+    "d10": "8052C58F8A8547FCE9FD5FA3C808CE75A9106F0B988E7F2C6F869574C9921BDC",
+    "d11": "1BA1A6491C9F4D606C9E603AF11DD3CD0065504DAD7B3E32CFED7B08DEE8EA1C",
+    "d12": "AA3CD4B9F18E0D116B611B13977CE6BD066D405797765808762621137BF312B9"
+  },
+  "fixture_files_sha256": {
+    "d09.json": "B8BC64CF252D5A0D817B130447557EC00D721854D99A61204C8264D4A2C1BBB1",
+    "d10.json": "1A0EAE0354DA04B0526F84052661FE0DCB292523EAF149E9E1EFD608D3CFBC47",
+    "d11.json": "1CC2EF00AB39F5844EFA1847D357D524F209C200C1497FA4B192CBB91F681830",
+    "d12.json": "023440778432CB0480FE40A2FD6E36091909842E738BE8531DDC33E05774BA00"
+  },
+  "skill_sha256": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
+  "ui_sha256": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+  "source_sha256": {
+    "evals/transport-revalidation-2026-10-27/run.py": "229AF0FD176C60C41656E700521A7E1802B7C85097AC1D6F25CC189B46086EC8",
+    "evals/runtime-2026-10-27/proxy_transport.py": "AA828D01431A7BC0EECE590103CE753187DB2330CBF0EBE143795DDFEAE1A312",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/full-validation/run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "evals/full-validation/preflight.py": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199"
+  },
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "python_version": "3.12.14",
+  "python_sha256": "7A4102B91959BB234507850EA584E1D31D300A6831B171E4AADC59FF592F0234",
+  "cli_sha256": "1103E9E09C71FA2CD0AFD6D8F3B9A2D63174FE8EFD7CB5BD09F1CB14EF58A098",
+  "original_failed_v6_summary_sha256": "A450591E99566D5D357A61DDADF1948AB21AB8B3B00DB3B07B02A1E782452C70",
+  "original_recovery_result_sha256": "86A523A65E15299599E5995EE6A4B690DB0024CA028CA19772BEB90C77FBA646",
+  "connection_canary_sha256": "07B509D7078165428A1C22F3E4B8191756057546FB8B999AE0504ED8BF45E963",
+  "closed_v5_qualification_sha256": "CE03714E6872757F6047BDFD99B7864605C400746E3508B058C912A651A00796",
+  "rollback_negative_controls": {
+    "d11": {
+      "direct_rollback_rejected": true,
+      "normal_tests": 11,
+      "optimized_tests": 11
+    },
+    "d12": {
+      "direct_rollback_rejected": true,
+      "normal_tests": 16,
+      "optimized_tests": 16
+    }
+  },
+  "gate": "All12 saved grades pass, one unique native thread per attempt, CLI success/turn.completed without timeout, full rule output, frozen bytes unchanged; no efficiency or fresh-task claim"
+}

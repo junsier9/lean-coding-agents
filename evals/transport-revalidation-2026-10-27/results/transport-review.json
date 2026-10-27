@@ -1,0 +1,97 @@
+{
+  "review_kind": "restricted-independent-pre-fresh-proxy-readiness-review",
+  "reviewed_at": "2026-10-27T12:12:50.884525+00:00",
+  "source_sha256": {
+    "proxy_transport.py": "AA828D01431A7BC0EECE590103CE753187DB2330CBF0EBE143795DDFEAE1A312",
+    "revalidation_run.py": "229AF0FD176C60C41656E700521A7E1802B7C85097AC1D6F25CC189B46086EC8",
+    "fresh_run.py": "509747BDDB97CDCF00AD9FCD45C774358A693C7CB0B1765C02721BD8270C93C3",
+    "fresh_verify.py": "80679A408DA9CC0EA648336FC0286406A05BF873B99AAD22AA43E40EF747777A",
+    "protocol.json": "D916308168FD927F090701ADC50410218F2F2F732425509E32F453B0CE89ABA8",
+    "README.zh-CN.md": "FD4C934817BEFC0D5EF1DA780359ADEDDE1224BBBBA38E4D02E2B6FBA03E35C4"
+  },
+  "sources_unchanged_during_probes": {
+    "proxy_transport.py": true,
+    "revalidation_run.py": true,
+    "fresh_run.py": true,
+    "fresh_verify.py": true,
+    "protocol.json": true,
+    "README.zh-CN.md": true
+  },
+  "native_model_calls": 0,
+  "network_calls": 0,
+  "real_case_candidate_skill_or_result_reads": 0,
+  "environment_stub_checks": {
+    "original_stub_environment_unchanged": true,
+    "auth_model_tls_fields_unchanged": true,
+    "only_proxy_and_default_bypass_fields_added_or_updated": true
+  },
+  "invalid_proxy_controls_rejected": {
+    "non_loopback": true,
+    "credentials": true,
+    "non_http_scheme": true,
+    "path_suffix": true
+  },
+  "actual_fresh_readiness_binding_probes": {
+    "same_route_and_candidate": {
+      "rejected": false,
+      "value": true
+    },
+    "changed_proxy_port": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "changed_candidate": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "changed_ui": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "changed_model_settings": {
+      "rejected": true,
+      "error_type": "AssertionError",
+      "message": ""
+    },
+    "changed_no_proxy_bypass_with_equal_route_metadata": {
+      "rejected": false,
+      "value": true
+    }
+  },
+  "NO_PROXY_counterexample": {
+    "transport_metadata_equal": true,
+    "readiness_standard_proxy_bypass": false,
+    "fresh_standard_proxy_bypass": true,
+    "fresh_no_proxy_wildcard_preserved": true
+  },
+  "verified_in_scope_zh": [
+    "helper只包装runner.environment，写入子进程环境的HTTP(S)_PROXY；静态代码没有全局环境/配置、provider、model、auth或TLS校验修改。",
+    "fresh prepare拒绝不同proxy端口、候选、UI和模型settings；并核对CLI/Python/source实现指纹。",
+    "fresh freeze绑定独立readiness summary/freeze摘要；verify重查这些摘要和route；原12+1失败结果只作摘要绑定，不被summary重标。",
+    "新protocol/README明确复核窗口属于已知契约readiness，不能作为fresh或效率证据；未据此评价实际复核结果。"
+  ],
+  "blocking_findings": [
+    {
+      "id": "T1",
+      "title_zh": "NO_PROXY绕过设置未纳入冻结路由，实际子进程路由可变化而绑定仍通过",
+      "evidence": [
+        "proxy_transport.py:26-38",
+        "generalization-2026-10-27/run.py:145-153,169-171",
+        "generalization-2026-10-27/verify.py:120-125"
+      ],
+      "reproduction_zh": "同一stub回环proxy下，ready环境NO_PROXY仅localhost，fresh改为*；helper保留*且两次TRANSPORT字典相同。标准无联网bypass判定从false变true；实际fresh readiness断言仍通过。",
+      "impact_zh": "现有字典绑定scheme/host/port，不能单独证明ready与fresh使用相同的有效代理/绕过规则；不是对真实运行曾发生绕过的断言。",
+      "repair_boundary_zh": "不回写已冻结复核helper/run。若修复，创建新runtime版本，在子进程层规范或绑定NO_PROXY/no_proxy及影响实际请求路由的有效环境；新readiness窗口与fresh freeze须绑定同一完整路由策略。保留当前部分失败/未尝试。"
+    }
+  ],
+  "reported_stop_context_zh": "父代理已告知当前独立复核窗口停止、fresh未调用；本审查不读取或认证实际部分结果，仅确认上述代码边界。",
+  "scope_limits_zh": [
+    "未访问实际case、skill、候选、参考、当前或历史任务结果；未运行模型、联网或修改已冻结实现。",
+    "只用stub环境和内存readiness schema执行新代码。NO_PROXY反例是路由绑定缺口，不声称真实CLI采用某个绕过状态。",
+    "未重新扩展B1-B3审查；本报告的源码摘要限定了审查版本。"
+  ],
+  "next_objective_zh": "保留已停止窗口，先在新runtime版本固定完整代理与bypass策略，再按新的独立readiness计划验证。"
+}

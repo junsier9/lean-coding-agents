@@ -1,0 +1,17 @@
+{
+  "retained_at": "2026-10-27T12:46:31.061358+00:00",
+  "private_archive": ".local/native-runtime-revalidation-2026-10-27.zip",
+  "archive_sha256": "A9EF7657226E779290E9DF78C3A24319129E0617D8C761366E169EC9C328B7B1",
+  "bytes": 2777626,
+  "entries": 1118,
+  "includes_interrupted_and_completed_windows": true,
+  "includes_raw_runs_grades_workspaces_controls_and_diagnostics": true,
+  "CRC_and_all_entry_SHA256_verified": true,
+  "external_publication": false,
+  "exclusions": [
+    "workspace .git internals",
+    "__pycache__",
+    "original v6 12+1 attempts retained in their previously bound separate archive",
+    "No OS-level access attestation"
+  ]
+}
