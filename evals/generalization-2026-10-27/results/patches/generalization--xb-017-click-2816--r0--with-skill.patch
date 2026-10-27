@@ -1,0 +1,59 @@
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index 4cb53b9..e5d0b70 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -544,16 +544,14 @@ def _is_incomplete_option(ctx: Context, args: list[str], param: Parameter) -> bo
+     if param.is_flag or param.count:
+         return False
+ 
+-    last_option = None
+-
+     for index, arg in enumerate(reversed(args)):
+         if index + 1 > param.nargs:
+             break
+ 
+         if _start_of_option(ctx, arg):
+-            last_option = arg
++            return arg in param.opts
+ 
+-    return last_option is not None and last_option in param.opts
++    return False
+ 
+ 
+ def _resolve_context(
+diff --git a/tests/test_shell_completion.py b/tests/test_shell_completion.py
+index 819ca8b..23fc954 100644
+--- a/tests/test_shell_completion.py
++++ b/tests/test_shell_completion.py
+@@ -255,6 +255,31 @@ def test_option_nargs():
+     assert _get_words(cli, ["-c", "a", "b"], "") == []
+ 
+ 
++@pytest.mark.parametrize("flag", ["--on", "--off", "-v"])
++@pytest.mark.parametrize("option", ["-c", "--choice"])
++@pytest.mark.parametrize("nargs", [2, 3])
++def test_option_nargs_after_flag(flag, option, nargs):
++    cli = Command(
++        "cli",
++        params=[
++            Option(["--on/--off"]),
++            Option(["-v"], count=True),
++            Option(["-c", "--choice"], type=Choice(["a1", "a2", "b"]), nargs=nargs),
++            Argument(["rest"], type=Choice(["c", "d"])),
++        ],
++    )
++    assert _get_words(cli, [flag], "") == ["c", "d"]
++
++    for count in range(nargs):
++        args = [flag, option, *(["a1"] * count)]
++        assert _get_words(cli, args, "") == ["a1", "a2", "b"]
++        assert _get_words(cli, args, "a") == ["a1", "a2"]
++
++    args = [flag, option, *(["a1"] * nargs)]
++    assert _get_words(cli, args, "") == ["c", "d"]
++    assert _get_words(cli, [*args, flag], "") == ["c", "d"]
++
++
+ def test_argument_nargs():
+     cli = Command(
+         "cli",

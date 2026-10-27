@@ -1,0 +1,140 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index 616d92f..3aef080 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -691,21 +691,21 @@ class ParsedException(object):
+         This method does not search a larger body of text for
+         tracebacks. If the first line of the text passed does not
+         match one of the known patterns, a :exc:`ValueError` will be
+-        raised. This method will ignore trailing text after the end of
+-        the first traceback.
++        raised. All text after the traceback frames is treated as the
++        exception message, with the final formatting newline removed.
+ 
+         Args:
+             tb_str (str): The traceback text (:class:`unicode` or UTF-8 bytes)
+         """
+         if not isinstance(tb_str, text):
+             tb_str = tb_str.decode('utf-8')
+-        tb_lines = tb_str.lstrip().splitlines()
++        tb_lines = tb_str.lstrip().splitlines(True)
+ 
+         # First off, handle some ignored exceptions. These can be the
+         # result of exceptions raised by __del__ during garbage
+         # collection
+         while tb_lines:
+-            cl = tb_lines[-1]
++            cl = tb_lines[-1].rstrip('\r\n')
+             if cl.startswith('Exception ') and cl.endswith('ignored'):
+                 tb_lines.pop()
+             else:
+@@ -752,11 +752,14 @@ class ParsedException(object):
+             line_no += 1
+             frames.append(frame_dict)
+ 
+-        try:
+-            exc_line = tb_lines[line_no]
+-            exc_type, _, exc_msg = exc_line.partition(':')
+-        except Exception:
+-            exc_type, exc_msg = '', ''
++        exc_line = ''.join(tb_lines[line_no:])
++        if exc_line.endswith('\r\n'):
++            exc_line = exc_line[:-2]
++        elif exc_line.endswith(('\r', '\n')):
++            exc_line = exc_line[:-1]
++        exc_type, _, exc_msg = exc_line.partition(':')
++        if exc_msg.startswith(' '):
++            exc_msg = exc_msg[1:]
+ 
+         return cls(exc_type, exc_msg, frames)
+ 
+diff --git a/tests/tbutils_test.py b/tests/tbutils_test.py
+index 64eb17a..2b8f160 100644
+--- a/tests/tbutils_test.py
++++ b/tests/tbutils_test.py
+@@ -1,6 +1,10 @@
+ from __future__ import absolute_import
+ from __future__ import unicode_literals
+ 
++import traceback
++
++import pytest
++
+ from boltons.tbutils import ParsedException
+ 
+ 
+@@ -15,7 +19,7 @@ MyException: ExceptionValue
+ '''
+     parsed = ParsedException.from_string(tb)
+     assert parsed.exc_type == 'MyException'
+-    assert parsed.exc_msg == ' ExceptionValue'
++    assert parsed.exc_msg == 'ExceptionValue'
+     assert parsed.frames == [
+         {
+             'source_line': 'return some_other_function(1)',
+@@ -52,3 +56,65 @@ MyException: ExceptionValue
+ '''
+     parsed = ParsedException.from_string(tb)
+     assert parsed.exc_type == 'MyException'
++
++
++@pytest.mark.parametrize('message', [
++    'first line\nsecond line\nthird line',
++    'first line\n\n    indented detail: value\nlast line',
++    '\nfirst line was empty\n',
++    '  leading spaces\ntrailing spaces  ',
++    'first line\r\nsecond line\rthird line',
++    '\u7b2c\u4e00\u884c\n\u7b2c\u4e8c\u884c',
++])
++@pytest.mark.parametrize('as_bytes', [False, True])
++def test_multiline_exception_message(message, as_bytes):
++    try:
++        raise ValueError(message)
++    except ValueError:
++        tb = traceback.format_exc()
++
++    if as_bytes:
++        tb = tb.encode('utf-8')
++    parsed = ParsedException.from_string(tb)
++
++    assert parsed.exc_type == 'ValueError'
++    assert parsed.exc_msg == message
++    assert len(parsed.frames) == 1
++    assert parsed.frames[0]['funcname'] == 'test_multiline_exception_message'
++    assert parsed.frames[0]['source_line'] == 'raise ValueError(message)'
++
++
++@pytest.mark.parametrize('exception_line, message', [
++    ('MyException: ExceptionValue', 'ExceptionValue'),
++    ('MyException:ExceptionValue', 'ExceptionValue'),
++    ('MyException: detail: value', 'detail: value'),
++    ('MyException: ', ''),
++    ('MyException', ''),
++])
++@pytest.mark.parametrize('ending', ['', '\n', '\r\n'])
++def test_single_line_exception_message(exception_line, message, ending):
++    tb = ('Traceback (most recent call last):\n'
++          '  File "<string>", line 2, in _some_function\n'
++          + exception_line + ending)
++    parsed = ParsedException.from_string(tb)
++
++    assert parsed.exc_type == 'MyException'
++    assert parsed.exc_msg == message
++    assert parsed.frames == [{
++        'source_line': '',
++        'filepath': '<string>',
++        'lineno': '2',
++        'funcname': '_some_function',
++    }]
++
++
++def test_multiline_exception_with_ignored_footer():
++    tb = ('Traceback (most recent call last):\n'
++          '  File "<string>", line 2, in _some_function\n'
++          'MyException: first line\nsecond line\n'
++          'Exception MyException ignored\n')
++    parsed = ParsedException.from_string(tb)
++
++    assert parsed.exc_type == 'MyException'
++    assert parsed.exc_msg == 'first line\nsecond line'
++    assert parsed.source_file == '<string>'

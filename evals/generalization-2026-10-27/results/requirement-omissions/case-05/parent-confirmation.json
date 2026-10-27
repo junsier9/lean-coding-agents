@@ -1,0 +1,23 @@
+{
+  "finding": "case-05-F1",
+  "purpose": "Parent confirmation of requirement omission; pre-existing in base, not an introduced regression",
+  "probe_sha256": "900EE5B9304EE1560AB3C0C4E3DD6B5820D81746F65CF4FA3727D7F6934C9664",
+  "results": {
+    "base": {
+      "default_help": "(<Color.Red: 1>, <Color.Blue: 2>)",
+      "default_parse_matches": true,
+      "explicit_parse_matches": true,
+      "help": "Usage: cli [OPTIONS]\n\nOptions:\n  --color [Red|Blue]...  [default: (<Color.Red: 1>, <Color.Blue: 2>)]\n  --help                 Show this message and exit.\n"
+    },
+    "candidate": {
+      "default_help": "(<Color.Red: 1>, <Color.Blue: 2>)",
+      "default_parse_matches": true,
+      "explicit_parse_matches": true,
+      "help": "Usage: cli [OPTIONS]\n\nOptions:\n  --color [Red|Blue]...  [default: (<Color.Red: 1>, <Color.Blue: 2>)]\n  --help                 Show this message and exit.\n"
+    }
+  },
+  "confirmed": true,
+  "probe_sha256_basis": "Exact UTF-8 code string passed to Python -c; stored script uses platform line endings",
+  "stored_probe_file_sha256": "BA26597C49DAEA8905022D60116D42B75EA6D4DBEFAB69422E4D30E559116BC6",
+  "original_confirmation_sha256": "92150117EF703A0D78B833B5EF751ED1FB2352C3AE3F6434FC9D8536177BD36B"
+}

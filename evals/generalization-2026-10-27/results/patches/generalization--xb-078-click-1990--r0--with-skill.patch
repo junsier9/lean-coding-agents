@@ -1,0 +1,104 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index a01dd43..de0ecb2 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -3,6 +3,8 @@
+ Version 8.1.0
+ -------------
+ 
++-   Required boolean flags without an explicit default raise a missing
++    parameter error when omitted.
+ -   Drop support for Python 3.6. :pr:`2129`
+ -   Remove previously deprecated code. :pr:`2130`
+ 
+diff --git a/src/click/core.py b/src/click/core.py
+index 97d699e..1d5dfb8 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2444,6 +2444,9 @@ class Option(Parameter):
+         The default of a single option boolean flag is not shown if the
+         default value is ``False``.
+ 
++    .. versionchanged:: 8.1.0
++        A boolean flag with ``required=True`` has no implicit default.
++
+     .. versionchanged:: 8.0.1
+         ``type`` is detected from ``flag_value`` if given.
+     """
+@@ -2511,7 +2514,7 @@ class Option(Parameter):
+             # flag if flag_value is set.
+             self._flag_needs_value = flag_value is not None
+ 
+-        if is_flag and default_is_missing:
++        if is_flag and default_is_missing and not self.required:
+             self.default: t.Union[t.Any, t.Callable[[], t.Any]] = False
+ 
+         if flag_value is None:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index ab230c4..f4595a7 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -658,6 +658,63 @@ def test_bool_flag_with_type(runner):
+     assert not result.exception
+ 
+ 
++@pytest.mark.parametrize(
++    ("declaration", "is_flag"), [("--shout", True), ("--shout/--no-shout", None)]
++)
++def test_required_bool_flag(runner, declaration, is_flag):
++    @click.command()
++    @click.option(declaration, is_flag=is_flag, required=True)
++    def cli(shout):
++        click.echo(f"shout={shout}")
++
++    result = runner.invoke(cli)
++    assert result.exit_code == 2
++    assert "Error: Missing option '--shout'." in result.output
++    assert "shout=" not in result.output
++
++    result = runner.invoke(cli, ["--shout"])
++    assert result.exit_code == 0
++    assert result.output == "shout=True\n"
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert "[required]" in result.output
++
++
++@pytest.mark.parametrize(
++    "invoke_args",
++    [
++        {"args": ["--no-shout"]},
++        {"env": {"SHOUT": "false"}},
++        {"default_map": {"shout": False}},
++        {"input": "n\n"},
++    ],
++)
++def test_required_bool_flag_false(runner, invoke_args):
++    @click.command()
++    @click.option("--shout/--no-shout", required=True, envvar="SHOUT", prompt=True)
++    def cli(shout):
++        click.echo(f"shout={shout}")
++
++    result = runner.invoke(cli, **invoke_args)
++    assert result.exit_code == 0
++    assert result.output.endswith("shout=False\n")
++
++
++@pytest.mark.parametrize("required", [False, True])
++@pytest.mark.parametrize("default", [False, True, lambda: False, lambda: True])
++def test_bool_flag_explicit_default(runner, required, default):
++    @click.command()
++    @click.option("--shout/--no-shout", required=required, default=default)
++    def cli(shout):
++        click.echo(shout)
++
++    result = runner.invoke(cli)
++    assert result.exit_code == 0
++    expect = default() if callable(default) else default
++    assert result.output == f"{expect}\n"
++
++
+ def test_aliases_for_flags(runner):
+     @click.command()
+     @click.option("--warnings/--no-warnings", " /-W", default=True)

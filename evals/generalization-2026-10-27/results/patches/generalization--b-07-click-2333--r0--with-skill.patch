@@ -1,0 +1,149 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 9cf54ad..a172e2c 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,7 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Detect the correct program name in zipapps such as Shiv and PEX.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 8c01216..40c4956 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -495,7 +495,7 @@ def _detect_program_name(
+     path: t.Optional[str] = None, _main: t.Optional[ModuleType] = None
+ ) -> str:
+     """Determine the command used to run the program, for use in help
+-    text. If a file or entry point was executed, the file name is
++    text. If a file, zipapp, or entry point was executed, the file name is
+     returned. If ``python -m`` was used to execute a module or package,
+     ``python -m name`` is returned.
+ 
+@@ -509,6 +509,9 @@ def _detect_program_name(
+     :param _main: The ``__main__`` module. This should only be passed
+         during internal testing.
+ 
++    .. versionchanged:: 8.1.4
++        Detect the name of zipapp entry points.
++
+     .. versionadded:: 8.0
+         Based on command args detection in the Werkzeug reloader.
+ 
+@@ -532,6 +535,10 @@ def _detect_program_name(
+         # Executed a file, like "python app.py".
+         return os.path.basename(path)
+ 
++    # Zipapps, such as Shiv or PEX, execute a module named "__main__".
++    if getattr(getattr(_main, "__spec__", None), "name", None) == "__main__":
++        return os.path.basename(path)
++
+     # Executed a module, like "python -m example".
+     # Rewritten by Python from "-m script" to "/path/to/script.py".
+     # Need to look at main module to determine how it was executed.
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 5dfeb02..0951edb 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -1,7 +1,9 @@
+ import os
+ import pathlib
+ import stat
++import subprocess
+ import sys
++import zipfile
+ from io import StringIO
+ 
+ import pytest
+@@ -444,6 +446,7 @@ class MockMain:
+         ("example.py", None, "example.py"),
+         (str(pathlib.Path("/foo/bar/example.py")), None, "example.py"),
+         ("example", None, "example"),
++        ("example.py", "", "python -m example"),
+         (str(pathlib.Path("example/__main__.py")), "example", "python -m example"),
+         (str(pathlib.Path("example/cli.py")), "example", "python -m example.cli"),
+     ],
+@@ -452,6 +455,80 @@ def test_detect_program_name(path, main, expected):
+     assert click.utils._detect_program_name(path, _main=MockMain(main)) == expected
+ 
+ 
++@pytest.mark.parametrize("filename", ["example.pyz", "example.pex", "example"])
++@pytest.mark.parametrize(("args", "exit_code"), [(["--help"], 0), ([], 2)])
++def test_zipapp_program_name(tmp_path, monkeypatch, filename, args, exit_code):
++    monkeypatch.setenv("PYTHONPATH", os.pathsep.join(sys.path))
++    archive = tmp_path / filename
++
++    with zipfile.ZipFile(archive, "w") as zf:
++        zf.writestr(
++            "__main__.py",
++            "import click\n"
++            "@click.command()\n"
++            "@click.argument('value')\n"
++            "def cli(value):\n"
++            "    pass\n"
++            "cli()\n",
++        )
++
++    result = subprocess.run(
++        [sys.executable, str(archive), *args],
++        capture_output=True,
++        text=True,
++        timeout=20,
++    )
++    assert result.returncode == exit_code
++    output = result.stdout if exit_code == 0 else result.stderr
++    assert output.startswith(f"Usage: {filename} [OPTIONS] VALUE\n")
++
++    if exit_code:
++        assert f"Try '{filename} --help' for help." in output
++        assert "Error: Missing argument 'VALUE'." in output
++
++
++@pytest.mark.parametrize(
++    ("module", "path"),
++    [
++        ("example", "example.py"),
++        ("example", "example/__main__.py"),
++        ("example.cli", "example/cli.py"),
++    ],
++)
++@pytest.mark.parametrize(("args", "exit_code"), [(["--help"], 0), ([], 2)])
++def test_module_program_name(tmp_path, monkeypatch, module, path, args, exit_code):
++    monkeypatch.setenv("PYTHONPATH", os.pathsep.join(sys.path))
++    script = tmp_path / path
++    script.parent.mkdir(parents=True, exist_ok=True)
++
++    if script.parent != tmp_path:
++        (script.parent / "__init__.py").write_text("", encoding="utf-8")
++
++    script.write_text(
++        "import click\n"
++        "@click.command()\n"
++        "@click.argument('value')\n"
++        "def cli(value):\n"
++        "    pass\n"
++        "cli()\n",
++        encoding="utf-8",
++    )
++    result = subprocess.run(
++        [sys.executable, "-m", module, *args],
++        cwd=tmp_path,
++        capture_output=True,
++        text=True,
++        timeout=20,
++    )
++    assert result.returncode == exit_code
++    output = result.stdout if exit_code == 0 else result.stderr
++    assert output.startswith(f"Usage: python -m {module} [OPTIONS] VALUE\n")
++
++    if exit_code:
++        assert f"Try 'python -m {module} --help' for help." in output
++        assert "Error: Missing argument 'VALUE'." in output
++
++
+ def test_expand_args(monkeypatch):
+     user = os.path.expanduser("~")
+     assert user in click.utils._expand_args(["~"])

@@ -1,0 +1,108 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index bc04f64..f104fee 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1189,7 +1189,8 @@ class Command:
+             text = ""
+ 
+         if self.deprecated:
+-            text = f"{_(text)} {_format_deprecated_label(self.deprecated)}"
++            label = _format_deprecated_label(self.deprecated)
++            text = f"{_(text)} {label}" if text else label
+ 
+         if text:
+             formatter.write_paragraph()
+@@ -2826,7 +2827,7 @@ class Option(Parameter):
+ 
+         if deprecated:
+             label = _format_deprecated_label(deprecated)
+-            help = f"{help} {label}" if help is not None else label
++            help = f"{help} {label}" if help else label
+ 
+         self.prompt = prompt_text
+         self.confirmation_prompt = confirmation_prompt
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ddce905..bb9efd5 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -477,18 +477,38 @@ def test_unprocessed_options(runner):
+     ]
+ 
+ 
+-@pytest.mark.parametrize("doc", ["CLI HELP", None])
++@pytest.mark.parametrize(
++    ("doc", "help_prefix"),
++    [
++        ("CLI HELP", "CLI HELP "),
++        (None, ""),
++        ("", ""),
++        (" \t\n", ""),
++        ("\n\f\nPrivate help", ""),
++    ],
++)
+ @pytest.mark.parametrize("deprecated", [True, "USE OTHER COMMAND INSTEAD"])
+-def test_deprecated_in_help_messages(runner, doc, deprecated):
++def test_deprecated_in_help_messages(runner, doc, help_prefix, deprecated):
+     @click.command(deprecated=deprecated, help=doc)
+     def cli():
+         pass
+ 
+     result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
+     assert "(DEPRECATED" in result.output
+ 
+     if isinstance(deprecated, str):
+         assert deprecated in result.output
++        label = f"(DEPRECATED: {deprecated})"
++    else:
++        label = "(DEPRECATED)"
++
++    assert result.output == (
++        "Usage: cli [OPTIONS]\n\n"
++        f"  {help_prefix}{label}\n\n"
++        "Options:\n"
++        "  --help  Show this message and exit.\n"
++    )
+ 
+ 
+ @pytest.mark.parametrize("deprecated", [True, "USE OTHER COMMAND INSTEAD"])
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 44cb58f..18acde7 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -44,18 +44,33 @@ def test_invalid_option(runner):
+     assert "'--foo'" in message
+ 
+ 
++@pytest.mark.parametrize(
++    ("doc", "help_prefix"),
++    [(None, ""), ("", ""), (" \t\n", ""), ("CLI HELP", "CLI HELP ")],
++)
+ @pytest.mark.parametrize("deprecated", [True, "USE B INSTEAD"])
+-def test_deprecated_usage(runner, deprecated):
++def test_deprecated_usage(runner, doc, help_prefix, deprecated):
+     @click.command()
+-    @click.option("--foo", default="bar", deprecated=deprecated)
++    @click.option("--foo", default="bar", deprecated=deprecated, help=doc)
+     def cmd(foo):
+         click.echo(foo)
+ 
+     result = runner.invoke(cmd, ["--help"])
++    assert result.exit_code == 0
+     assert "(DEPRECATED" in result.output
+ 
+     if isinstance(deprecated, str):
+         assert deprecated in result.output
++        label = f"(DEPRECATED: {deprecated})"
++    else:
++        label = "(DEPRECATED)"
++
++    assert result.output == (
++        "Usage: cmd [OPTIONS]\n\n"
++        "Options:\n"
++        f"  --foo TEXT  {help_prefix}{label}\n"
++        "  --help      Show this message and exit.\n"
++    )
+ 
+ 
+ @pytest.mark.parametrize("deprecated", [True, "USE B INSTEAD"])

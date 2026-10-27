@@ -1,0 +1,567 @@
+{
+  "case_id": "case-04",
+  "review_phase": "初审后定向补充",
+  "completed": true,
+  "status": "pass",
+  "input_manifest_sha256": "6CA8CE2963E54C52C35BBD725F7C40AA218C7E787C0B6835D25125BFA517F1E6",
+  "confirmed_findings": [],
+  "unresolved": [],
+  "formal_review_updated": false,
+  "original_case04_entry": {
+    "case_id": "case-04",
+    "completed": true,
+    "status": "pass",
+    "input_manifest_sha256": "6CA8CE2963E54C52C35BBD725F7C40AA218C7E787C0B6835D25125BFA517F1E6",
+    "confirmed_findings": [],
+    "unresolved": [],
+    "checks": [
+      {
+        "name": "输入完整性",
+        "result": "pass",
+        "details": "检查前核对清单全部 277 项文件 SHA256；检查后再次核对全部 278 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+      },
+      {
+        "name": "需求和局部调用链",
+        "result": "pass",
+        "details": "需求是在 zipapp 的帮助及错误 Usage 中使用实际程序名，同时保留模块入口行为。唯一生产逻辑变更为 utils.py:538-540 在 __main__.__spec__.name == \"__main__\" 时返回 os.path.basename(path)；Command.main 在未显式给定 prog_name 时使用此函数，既有文件入口和 Windows 入口判定仍优先，其他模块仍进入原有逻辑。"
+      },
+      {
+        "name": "相关原有与新增测试",
+        "result": "pass",
+        "command": "python.exe -B -m pytest -q -p pytest_timeout --timeout=30 --basetemp=<各自副本>/pytest-temp tests/test_utils.py tests/test_basic.py tests/test_commands.py",
+        "details": "独立副本运行：candidate 164 passed, 23 skipped；base 151 passed, 23 skipped。相同跳过项为代码中既有 Windows 条件（终端、pager、文件权限等），新增 zipapp 和模块入口测试均通过。TEMP/TMP/TMPDIR 设在各自副本，PYTHONPATH 指向 deps 与各自 src，禁用自动插件加载。"
+      },
+      {
+        "name": "真实解释器入口边界对照",
+        "result": "pass",
+        "details": "各版本 22 项子进程观测：文件、zipapp、顶层模块、包、子模块、从归档导入的包与子模块，分别运行 --help、缺失参数错误、成功调用；另测显式 prog_name 覆盖。base 的 zipapp 显示 Usage: python -m program，candidate 为 Usage: program.pyz，错误建议同步改正。其余 20 项实际输出和退出码与 base 完全一致，包括 python -m zip_pkg 及 python -m zip_pkg.cli。证据见 probes-a/case-04/run_boundary.py 和两份 boundary-results.json。"
+      },
+      {
+        "name": "现有报告保留",
+        "result": "pass",
+        "details": "追加前保存自身报告到 probes-a/case-04/review-a-before.json；case-01、case-02 条目内容均保持不变。"
+      }
+    ],
+    "scope_limits": [
+      "未安装或构建第三方 Shiv/PEX；使用现有解释器执行真实标准 zipapp，并由候选新增测试覆盖 .pyz、.pex、无扩展名三种归档名称。没有遗留影响本次正确性的疑点。",
+      "本机为 Windows，未运行 POSIX 环境或无关模块全量测试。所有测试、子进程夹具及临时目录均位于 probes-a/case-04 副本内。"
+    ]
+  },
+  "decision": "补充证据未确认原需求或既有模块入口契约遭到破坏，正式 case-04 状态维持初审 pass，review-a.json 未改写。",
+  "integrity": {
+    "all_input_files_unchanged": true,
+    "input_file_count": 278,
+    "review_a_byte_unchanged": true,
+    "review_a_sha256_before": "2E537DF331BEF53B95AD100C187BE286F853959EF165A10FF59BFA05F7C0256A",
+    "review_a_sha256_after": "2E537DF331BEF53B95AD100C187BE286F853959EF165A10FF59BFA05F7C0256A"
+  },
+  "matrix": {
+    "construction": "各版本均用 ModuleType 构造仅供内部测试的 _main，未修改输入源码。",
+    "packages": [
+      null,
+      "",
+      "sample_pkg"
+    ],
+    "spec_cases": [
+      "属性缺失",
+      "None",
+      "无 name 属性",
+      "name=None",
+      "name=空串",
+      "name=__main__",
+      "name=ordinary",
+      "name=sample_pkg.__main__",
+      "name=sample_pkg.cli"
+    ],
+    "paths": [
+      "program.py",
+      "program.pyz",
+      "sample_pkg/__main__.py"
+    ],
+    "rows_per_version": 81,
+    "same_outcomes": 75,
+    "changed_outcomes": 6,
+    "exceptions_in_either_version": 0,
+    "differing_rows": [
+      {
+        "package": "",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "program.py",
+        "base": {
+          "kind": "value",
+          "value": "python -m program"
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "program.py"
+        },
+        "state_evidence": "空包名及 name=__main__ 的元数据组合由真实 zipapp、目录入口、runpy.run_path 实际观测到；本行具体路径为模拟输入。"
+      },
+      {
+        "package": "",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "program.pyz",
+        "base": {
+          "kind": "value",
+          "value": "python -m program"
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "program.pyz"
+        },
+        "state_evidence": "空包名及 name=__main__ 的元数据组合由真实 zipapp、目录入口、runpy.run_path 实际观测到；本行具体路径为模拟输入。"
+      },
+      {
+        "package": "",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "sample_pkg\\__main__.py",
+        "base": {
+          "kind": "value",
+          "value": "python -m "
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "__main__.py"
+        },
+        "state_evidence": "空包名及 name=__main__ 的元数据组合由真实 zipapp、目录入口、runpy.run_path 实际观测到；本行具体路径为模拟输入。"
+      },
+      {
+        "package": "sample_pkg",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "program.py",
+        "base": {
+          "kind": "value",
+          "value": "python -m sample_pkg.program"
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "program.py"
+        },
+        "state_evidence": "仅模拟对象构造；所测真实模块入口没有产生该包名与 spec.name 组合，未认定为不可能状态。"
+      },
+      {
+        "package": "sample_pkg",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "program.pyz",
+        "base": {
+          "kind": "value",
+          "value": "python -m sample_pkg.program"
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "program.pyz"
+        },
+        "state_evidence": "仅模拟对象构造；所测真实模块入口没有产生该包名与 spec.name 组合，未认定为不可能状态。"
+      },
+      {
+        "package": "sample_pkg",
+        "spec_kind": "name_main",
+        "spec_name": "__main__",
+        "path": "sample_pkg\\__main__.py",
+        "base": {
+          "kind": "value",
+          "value": "python -m sample_pkg"
+        },
+        "candidate": {
+          "kind": "value",
+          "value": "__main__.py"
+        },
+        "state_evidence": "仅模拟对象构造；所测真实模块入口没有产生该包名与 spec.name 组合，未认定为不可能状态。"
+      }
+    ],
+    "raw_evidence": [
+      "base-supplemental-matrix.json",
+      "candidate-supplemental-matrix.json",
+      "supplemental_metadata_matrix.py"
+    ]
+  },
+  "real_interpreter_checks": {
+    "observations_per_version": 20,
+    "unchanged_file_and_module_observations": 14,
+    "corrected_zipapp_directory_observations": 6,
+    "observations": [
+      {
+        "entry": "file",
+        "mode": "help",
+        "package": null,
+        "spec_present": true,
+        "spec_is_none": true,
+        "spec_name": null,
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: ordinary.py [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: ordinary.py [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "file",
+        "mode": "error",
+        "package": null,
+        "spec_present": true,
+        "spec_is_none": true,
+        "spec_name": null,
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: ordinary.py [OPTIONS] VALUE\nTry 'ordinary.py --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: ordinary.py [OPTIONS] VALUE\nTry 'ordinary.py --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "zipapp",
+        "mode": "help",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m program [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: program.pyz [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "zipapp",
+        "mode": "error",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m program [OPTIONS] VALUE\nTry 'python -m program --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: program.pyz [OPTIONS] VALUE\nTry 'program.pyz --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "directory",
+        "mode": "help",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m directory_app [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: directory_app [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "directory",
+        "mode": "error",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m directory_app [OPTIONS] VALUE\nTry 'python -m directory_app --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: directory_app [OPTIONS] VALUE\nTry 'directory_app --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "top_module",
+        "mode": "help",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "ordinary",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m ordinary [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m ordinary [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "top_module",
+        "mode": "error",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "ordinary",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m ordinary [OPTIONS] VALUE\nTry 'python -m ordinary --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m ordinary [OPTIONS] VALUE\nTry 'python -m ordinary --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "package",
+        "mode": "help",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.__main__",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "package",
+        "mode": "error",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.__main__",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg [OPTIONS] VALUE\nTry 'python -m sample_pkg --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg [OPTIONS] VALUE\nTry 'python -m sample_pkg --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "submodule",
+        "mode": "help",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.cli",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "submodule",
+        "mode": "error",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.cli",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\nTry 'python -m sample_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\nTry 'python -m sample_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "archive_package",
+        "mode": "help",
+        "package": "archive_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "archive_pkg.__main__",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m archive_pkg [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m archive_pkg [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "archive_package",
+        "mode": "error",
+        "package": "archive_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "archive_pkg.__main__",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m archive_pkg [OPTIONS] VALUE\nTry 'python -m archive_pkg --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m archive_pkg [OPTIONS] VALUE\nTry 'python -m archive_pkg --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "archive_submodule",
+        "mode": "help",
+        "package": "archive_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "archive_pkg.cli",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m archive_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m archive_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "archive_submodule",
+        "mode": "error",
+        "package": "archive_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "archive_pkg.cli",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m archive_pkg.cli [OPTIONS] VALUE\nTry 'python -m archive_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m archive_pkg.cli [OPTIONS] VALUE\nTry 'python -m archive_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "run_path_zipapp",
+        "mode": "help",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m program [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: program.pyz [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "run_path_zipapp",
+        "mode": "error",
+        "package": "",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "__main__",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m program [OPTIONS] VALUE\nTry 'python -m program --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: program.pyz [OPTIONS] VALUE\nTry 'program.pyz --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      },
+      {
+        "entry": "run_module",
+        "mode": "help",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.cli",
+        "base_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        },
+        "candidate_result": {
+          "returncode": 0,
+          "stdout": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\n\nOptions:\n  --help  Show this message and exit.\n",
+          "stderr": ""
+        }
+      },
+      {
+        "entry": "run_module",
+        "mode": "error",
+        "package": "sample_pkg",
+        "spec_present": true,
+        "spec_is_none": false,
+        "spec_name": "sample_pkg.cli",
+        "base_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\nTry 'python -m sample_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        },
+        "candidate_result": {
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "Usage: python -m sample_pkg.cli [OPTIONS] VALUE\nTry 'python -m sample_pkg.cli --help' for help.\n\nError: Missing argument 'VALUE'.\n"
+        }
+      }
+    ],
+    "raw_evidence": [
+      "base-supplemental-real-entries.json",
+      "candidate-supplemental-real-entries.json",
+      "run_supplemental.py",
+      "analyze_supplemental.py"
+    ]
+  },
+  "contract_assessment": [
+    "原需求要求 zipapp 的帮助与错误提示使用实际程序名，同时保留 python -m 模块入口。真实 zipapp 中 __package__ 是空串，__spec__.name 是 __main__；base 显示 python -m program，candidate 显示 program.pyz，错误帮助建议同步修正。",
+    "真实顶层模块的 __spec__.name 为 ordinary；包入口为 sample_pkg.__main__；子模块为 sample_pkg.cli；从归档导入的模块同样保留完整模块名。候选在这些真实状态中的 Usage、错误、退出码与 base 相同。",
+    "当模拟对象为 __package__=sample_pkg 且 __spec__.name=__main__ 时，candidate 按文件名返回而 base 按包名推导 python -m。该差异可复现，但尚未建立它由本需求涉及的真实普通模块入口产生的证据。_main 参数文档限于内部测试，不能仅凭任意模拟元数据将此判为公开调用兼容缺陷。",
+    "__spec__ 缺失、None、无 name、name=None 或空串，均未引入异常或与 base 不同的结果。__package__ 为 None 时既有文件入口分支仍优先。"
+  ],
+  "scope_limits": [
+    "真实解释器观测来自本机现有 Python 和标准库 zipfile/runpy，未安装、构建第三方 Shiv 或 PEX，也未在 POSIX 或其他 Python 版本复测。",
+    "未在真实入口中观测到的模拟状态只表示本次证据边界，不表示该状态绝对无法由自定义加载器或手工修改元数据产生。没有据此新增功能建议或缺陷。",
+    "本次只读原 request/base/candidate、清单及自身检查产物/报告；未访问初审历史副本、其他报告、评分或参考修复。所有运行夹具与临时目录均在 probes-a/case-04/supplemental 内。"
+  ]
+}

@@ -1,0 +1,521 @@
+{
+  "evaluated_at": "2026-10-27T17:45:19.992084+00:00",
+  "candidate": "v6-python",
+  "skill_sha256": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
+  "beta_quality_gate_passed": false,
+  "gates": {
+    "fresh_end_to_end_at_least38_of39": true,
+    "each_fresh_task_at_least2_of3": true,
+    "known_critical_end_to_end12_of12": true,
+    "eight_preselected_reviews_pass": false,
+    "source_trace_archive_package_integrity": true
+  },
+  "production_assistant_qualified": false,
+  "stable_efficiency_benefit_proven": false,
+  "comparative_efficiency_assessed": false,
+  "fresh_contract_accepted": 38,
+  "fresh_end_to_end_success": 38,
+  "known_critical_end_to_end_success": 12,
+  "normal_completions": 51,
+  "full_body_outputs": 51,
+  "complete_usage_records": 51,
+  "independent_reviews": {
+    "completed": 8,
+    "confirmed_defects": 2,
+    "all_passed": false,
+    "reviews": [
+      {
+        "source_report": "review-a.json",
+        "source_report_sha256": "573E70E36160665D1B9B0F388F092E8C8450E22FABA60511A4E70B56B47CEF0F",
+        "case_id": "xb-040-pydash-254",
+        "completed": true,
+        "status": "pass",
+        "input_manifest_sha256": "96183384841EA632590AE18A4395D35C9ABDA398CD74243AFB440F8FC4840234",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性",
+            "result": "pass",
+            "details": "检查前核对清单全部 153 项文件 SHA256；检查后再次核对全部 154 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+          },
+          {
+            "name": "需求与静态差异",
+            "result": "pass",
+            "details": "需求为修复空列表、空映射的 median 返回未定义数值。唯一生产代码改动为 numerical.py:637-638 在既有迭代、排序后按 length == 0 返回 float(\"nan\")；非空计算和回调初始化顺序保留。文档及测试相应更新。"
+          },
+          {
+            "name": "候选数值、链式调用及文档示例",
+            "result": "pass",
+            "command": "python.exe -B -m pytest -o addopts= -q tests/test_numerical.py tests/test_chaining.py --doctest-modules src/pydash/numerical.py",
+            "details": "独立 candidate 副本运行，152 passed。PYTHONPATH 指向公共 deps 与副本 src，禁用自动插件加载，覆盖需求新增测试。"
+          },
+          {
+            "name": "原版本对照测试",
+            "result": "pass",
+            "command": "python.exe -B -m pytest -o addopts= -q tests/test_numerical.py tests/test_chaining.py --doctest-modules src/pydash/numerical.py",
+            "details": "独立 base 副本运行，144 passed。"
+          },
+          {
+            "name": "空输入边界对照",
+            "result": "pass",
+            "details": "8 项：空列表和空映射分别经直接调用、属性 iteratee、可调用 iteratee、链式 median。base 均抛 IndexError；candidate 均返回 float NaN；可调用 iteratee 在空输入均未被调用。探针见 probes-a/case-01/boundary_probe.py 与两份 boundary-results.json。"
+          },
+          {
+            "name": "兼容、错误处理及副作用对照",
+            "result": "pass",
+            "details": "7 项非空输入（单元素、奇数、偶数、映射、元组、Decimal、Fraction）的数值、返回类型、回调参数/顺序、原集合不变性均与 base 相同；5 项既有错误（None、标量、生成器、混合不可比较值、复数）的异常类型与消息均相同。"
+          }
+        ],
+        "scope_limits": [
+          "审查聚焦本次 median 维护需求及局部调用链，未运行无关模块全量测试、类型检查或文档构建；没有因此遗留影响本次正确性的疑点。",
+          "只在授权独立副本中运行测试与探针；未修改输入源码、请求或清单。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-a.json",
+        "source_report_sha256": "573E70E36160665D1B9B0F388F092E8C8450E22FABA60511A4E70B56B47CEF0F",
+        "case_id": "xb-007-click-3509",
+        "completed": true,
+        "status": "pass",
+        "input_manifest_sha256": "DA3F9E1C93804A5A5B1B29744B33DFB7F8DF52BC0B32D532693219A243135678",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性",
+            "result": "pass",
+            "details": "检查前核对清单全部 301 项文件 SHA256；检查后再次核对全部 302 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+          },
+          {
+            "name": "需求与代码差异",
+            "result": "pass",
+            "details": "需求是命令或选项在没有帮助正文且 deprecated 启用时消除标签前的多余空格和缩进。core.py:1192-1193 对清理后的空命令帮助直接使用标签；core.py:2828-2830 对空选项帮助直接使用标签。非空帮助拼接、短帮助返回 strip、选项其他处理保持原有实现。仅这些生产代码及相关测试有变化。"
+          },
+          {
+            "name": "相关测试候选与原版对照",
+            "result": "pass",
+            "command": "python.exe -B -m pytest -q -p pytest_timeout --timeout=20 tests/test_commands.py tests/test_options.py tests/test_formatting.py",
+            "details": "独立副本运行：candidate 785 passed，base 757 passed。PYTHONPATH 指向公共 deps 与各自 src，禁用自动插件加载。"
+          },
+          {
+            "name": "空帮助展示边界",
+            "result": "pass",
+            "details": "10 项组合：None、空串、空格/换行/tab、Unicode 空白、formfeed，分别启用布尔弃用与字符串原因。候选命令帮助标签保持两空格标准缩进；Option.help 无前导空白，默认值和环境变量附注保持完整；短帮助与 base 一致。证据保存在 probes-a/case-02/boundary_probe.py 与两份 boundary-results.json。"
+          },
+          {
+            "name": "既有调用兼容和错误处理",
+            "result": "pass",
+            "details": "16 项正常帮助组合：正文、多个段落、缩进、禁止自动重排文本，分别使用 False、True、原因字符串、空原因；命令帮助、选项帮助、组短帮助、实际调用输出及弃用警告均与 base 相同。deprecated 与 required/prompt 的两项既有 ValueError 类型及消息均保持不变。"
+          },
+          {
+            "name": "报告追加完整性",
+            "result": "pass",
+            "details": "追加前备份自身旧报告到 probes-a/case-02/review-a-before.json，case-01 条目内容保持不变。"
+          }
+        ],
+        "scope_limits": [
+          "审查聚焦空帮助下的弃用标签及相关命令、选项、格式化路径；未执行其他模块全量测试、类型检查或翻译目录构建。没有遗留影响本次正确性的疑点。",
+          "只在 probes-a/case-02 隔离副本中运行测试和探针，未修改输入文件。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-a.json",
+        "source_report_sha256": "573E70E36160665D1B9B0F388F092E8C8450E22FABA60511A4E70B56B47CEF0F",
+        "case_id": "xb-032-pydash-266",
+        "completed": true,
+        "status": "pass_with_scope_note",
+        "input_manifest_sha256": "9F5C3E4A64410EBC278458CD96A7519360D883D937EEC81A94F012C8BD273846",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性",
+            "result": "pass",
+            "details": "检查前核对清单全部 153 项文件 SHA256；检查后再次核对全部 154 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+          },
+          {
+            "name": "需求及局部调用链",
+            "result": "pass",
+            "details": "需求为不同可哈希性但相等的值正确去重并保留首个对象。唯一生产变更在 arrays.py:2898-2911 的 iterunique 默认比较分支：先显式判定 hashability，再在两个 seen 容器间比较，记录代表值后 yield。uniq/uniq_by 及 union、排序、链式调用等使用该 helper；显式 comparator 分支未改动。"
+          },
+          {
+            "name": "相关测试对照",
+            "result": "pass",
+            "command": "python.exe -B -m pytest -o addopts= -q -p pytest_timeout --timeout=30 --basetemp=<各自副本>/pytest-temp tests/test_arrays.py tests/test_chaining.py --doctest-modules src/pydash/arrays.py",
+            "details": "独立副本运行：candidate 393 passed，base 372 passed。公共 deps、各自 src 为 PYTHONPATH，TEMP/TMP/TMPDIR 均设于副本，禁用自动插件加载。"
+          },
+          {
+            "name": "相等关系与首对象边界",
+            "result": "pass",
+            "details": "30 项：set/frozenset、bytes/bytearray/memoryview、具有正常相等关系的自定义可哈希/不可哈希对象、int/bool/float、list/dict；正序、逆序、重复输入，分别使用 generator uniq 与 callback uniq_by。candidate 全部匹配线性首对象参考结果并保持对象身份与输入不变，回调按原顺序每项一次。base 的其中 16 项不匹配该参考。证据见 probes-a/case-03/boundary_probe.py 及两份 boundary-results.json。"
+          },
+          {
+            "name": "既有调用、回调及普通异常",
+            "result": "pass",
+            "details": "9 项常规 uniq、chain、union、uniq_by 和显式 comparator 的结果与回调/比较器调用记录在两版间相同。5 项异常（比较 ValueError、hash ValueError、非 iterable 输入、iteratee ValueError、comparator ValueError）的类型与消息相同。"
+          },
+          {
+            "name": "比较 TypeError 语义观察",
+            "result": "scope_note",
+            "file": "candidate/src/pydash/arrays.py",
+            "lines": [
+              2899,
+              2911
+            ],
+            "minimal_reproduction": "class T:\n    def __hash__(self): return 0\n    def __eq__(self, other): raise TypeError(\"comparison failed\")\npydash.uniq([T(), T()])",
+            "base_actual": "返回含两个原对象的列表，长度为 2。",
+            "candidate_actual": "传播 TypeError(\"comparison failed\")。",
+            "assessment": "base 的 try 范围同时覆盖 membership 的比较异常，candidate 的 try 只判定 hashability，因此出现这一真实行为差异。该输入的比较没有产生可求值的相等关系；需求及既有文档/测试未确立必须吞掉比较错误并返回对象的契约。未将此差异推定为确认缺陷，也不据此提出额外功能要求。"
+          },
+          {
+            "name": "现有报告保留",
+            "result": "pass",
+            "details": "追加前将自身报告字节备份到 probes-a/case-03/review-a-before.json；case-01、case-02、case-04 条目内容均保持原样，本次未改写 case-04 初审或补充报告。"
+          }
+        ],
+        "scope_limits": [
+          "pass_with_scope_note 表示需求及有依据的兼容检查通过，同时明确记录自定义 __eq__ 抛 TypeError 时的错误传播差异；没有尚未解决的实际正确性疑点。",
+          "审查聚焦 uniq/iterunique 及其局部调用链，未运行无关模块全量测试或类型检查。所有运行、夹具和临时目录均在 probes-a/case-03 内，输入文件未改动。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-a.json",
+        "source_report_sha256": "573E70E36160665D1B9B0F388F092E8C8450E22FABA60511A4E70B56B47CEF0F",
+        "case_id": "b-07-click-2333",
+        "completed": true,
+        "status": "pass",
+        "input_manifest_sha256": "6CA8CE2963E54C52C35BBD725F7C40AA218C7E787C0B6835D25125BFA517F1E6",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性",
+            "result": "pass",
+            "details": "检查前核对清单全部 277 项文件 SHA256；检查后再次核对全部 278 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+          },
+          {
+            "name": "需求和局部调用链",
+            "result": "pass",
+            "details": "需求是在 zipapp 的帮助及错误 Usage 中使用实际程序名，同时保留模块入口行为。唯一生产逻辑变更为 utils.py:538-540 在 __main__.__spec__.name == \"__main__\" 时返回 os.path.basename(path)；Command.main 在未显式给定 prog_name 时使用此函数，既有文件入口和 Windows 入口判定仍优先，其他模块仍进入原有逻辑。"
+          },
+          {
+            "name": "相关原有与新增测试",
+            "result": "pass",
+            "command": "python.exe -B -m pytest -q -p pytest_timeout --timeout=30 --basetemp=<各自副本>/pytest-temp tests/test_utils.py tests/test_basic.py tests/test_commands.py",
+            "details": "独立副本运行：candidate 164 passed, 23 skipped；base 151 passed, 23 skipped。相同跳过项为代码中既有 Windows 条件（终端、pager、文件权限等），新增 zipapp 和模块入口测试均通过。TEMP/TMP/TMPDIR 设在各自副本，PYTHONPATH 指向 deps 与各自 src，禁用自动插件加载。"
+          },
+          {
+            "name": "真实解释器入口边界对照",
+            "result": "pass",
+            "details": "各版本 22 项子进程观测：文件、zipapp、顶层模块、包、子模块、从归档导入的包与子模块，分别运行 --help、缺失参数错误、成功调用；另测显式 prog_name 覆盖。base 的 zipapp 显示 Usage: python -m program，candidate 为 Usage: program.pyz，错误建议同步改正。其余 20 项实际输出和退出码与 base 完全一致，包括 python -m zip_pkg 及 python -m zip_pkg.cli。证据见 probes-a/case-04/run_boundary.py 和两份 boundary-results.json。"
+          },
+          {
+            "name": "现有报告保留",
+            "result": "pass",
+            "details": "追加前保存自身报告到 probes-a/case-04/review-a-before.json；case-01、case-02 条目内容均保持不变。"
+          }
+        ],
+        "scope_limits": [
+          "未安装或构建第三方 Shiv/PEX；使用现有解释器执行真实标准 zipapp，并由候选新增测试覆盖 .pyz、.pex、无扩展名三种归档名称。没有遗留影响本次正确性的疑点。",
+          "本机为 Windows，未运行 POSIX 环境或无关模块全量测试。所有测试、子进程夹具及临时目录均位于 probes-a/case-04 副本内。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-b.json",
+        "source_report_sha256": "1DEA43BAEF4705CDF000B2804F0E2976C111698C58B07BFB60C89F7530F4531B",
+        "case_id": "xb-014-click-3004",
+        "completed": true,
+        "status": "needs_changes",
+        "input_manifest_sha256": "4485B8BD13E078769BDDCC73F52F5D418F99BA5CEC41CE32C487AAC0C0AF5F9B",
+        "confirmed_findings": [
+          {
+            "id": "case-05-F1",
+            "title": "multiple 与 nargs 同时启用时的枚举默认值仍未按选择名称显示",
+            "severity": "P2",
+            "file": "candidate/src/click/core.py",
+            "line_start": 2873,
+            "line_end": 2878,
+            "description": "列表或元组分支仅规范化第一层中直接属于 enum.Enum 的元素。multiple=True 与 nargs=2 同时使用时，合法默认值的第一层元素是包含枚举的元组，因此进入 str(d)，帮助继续显示 (<Color.Red: 1>, <Color.Blue: 2>)，与 [Red|Blue] 的选择名称不一致。该情形属于原需求修复遗漏，base 与 candidate 都保留原问题，并非新增解析回归。",
+            "contract_basis": [
+              "原需求要求由 Enum、IntEnum 或 Flag 等枚举组成的 Choice 默认值，以用户可以识别的选择名称展示；未排除组合使用 multiple 与 nargs 的合法默认值。",
+              "base/src/click/core.py:2055-2056 明确说明 multiple=True、nargs>1 的默认值具有嵌套序列结构；core.py:2135-2162 也按该结构校验默认值。",
+              "base/src/click/types.py:288-306 使用枚举成员名称并应用大小写或上下文规范化；types.py:308-324 通过同一映射生成帮助中的选择名称。",
+              "最小复现中，两版均成功将默认值及显式 --color Red Blue 转为同一嵌套枚举元组，确认这是已支持的有效输入，而非非法默认值。"
+            ],
+            "minimal_reproduction": "import enum\nfrom click import Choice, Command, Context, Option\nfrom click.testing import CliRunner\nclass Color(enum.Enum):\n    Red = 1\n    Blue = 2\ndefault = ((Color.Red, Color.Blue),)\nopt = Option(['--color'], type=Choice(Color), multiple=True, nargs=2,\n             default=default, show_default=True)\ncli = Command('cli', params=[opt], callback=lambda color: color)\nassert CliRunner().invoke(cli, [], standalone_mode=False).return_value == default\nassert CliRunner().invoke(cli, ['--color', 'Red', 'Blue'], standalone_mode=False).return_value == default\nprint(opt.get_help_extra(Context(cli))['default'])\nprint(CliRunner().invoke(cli, ['--help']).output)\n",
+            "base_actual": {
+              "choice_metavar": "[Red|Blue]",
+              "default_help": "(<Color.Red: 1>, <Color.Blue: 2>)",
+              "default_and_explicit_parse": "退出码 0，均得到 ((Color.Red, Color.Blue),) 对应枚举值",
+              "focused_requirement_tests": "8 failed"
+            },
+            "candidate_actual": {
+              "choice_metavar": "[Red|Blue]",
+              "default_help": "(<Color.Red: 1>, <Color.Blue: 2>)",
+              "default_and_explicit_parse": "退出码 0，均得到 ((Color.Red, Color.Blue),) 对应枚举值",
+              "focused_requirement_tests": "8 failed"
+            },
+            "reproduction_files": [
+              "probes-b/case-05/test_nested_enum_default.py",
+              "probes-b/case-05/probe_enum_defaults.py",
+              "probes-b/case-05/probe-results-base.json",
+              "probes-b/case-05/probe-results-candidate.json"
+            ],
+            "confidence": "高；Enum、IntEnum、Flag、IntFlag 及 case_sensitive 真/假共 8 个合法组合均重现，断言仅要求显示选择名称，不规定括号或分组格式。"
+          }
+        ],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性与报告保留",
+            "result": "通过",
+            "evidence": "检查前后均核验 input-integrity.json 的 SHA256 及清单中全部 283 个文件；所有哈希相符，文件集合无增减，清单字节未变。追加前已逐字节备份原报告到 probes-b/case-05/review-b-before-case05.json，原 case-06 和 case-08 条目内容保持不变。"
+          },
+          {
+            "name": "改动与局部契约审查",
+            "result": "完成",
+            "evidence": "仅 src/click/core.py 与 tests/test_options.py 改动。检查 Option.get_help_extra、Option.get_default、默认值形状校验及 Choice.normalize_choice/get_metavar/convert 的相关契约。"
+          },
+          {
+            "name": "现有选项测试",
+            "result": "通过",
+            "evidence": "独立副本分别运行 python -B -m pytest -p pytest_timeout --timeout=30 -q tests/test_options.py；base 277 passed，candidate 302 passed，退出码均为 0。候选新增测试覆盖四类枚举、大小写、单值、multiple、nargs 及 default_map 上下文规范化。"
+          },
+          {
+            "name": "枚举默认值有效域探针",
+            "result": "部分通过",
+            "evidence": "32 个组合覆盖 Enum、IntEnum、Flag、IntFlag、大小写及单值/multiple/nargs/multiple+nargs。候选的 24 个平面默认值均按规范化选择名称显示；8 个嵌套默认值仍含枚举 repr。全部 32 个帮助生成、默认值解析和显式值解析均成功，默认值保持一致；帮助未调用命令 callback。"
+          },
+          {
+            "name": "嵌套默认值需求探针",
+            "result": "失败",
+            "evidence": "test_nested_enum_default.py 中四种枚举与两种大小写设置共 8 项，base 和 candidate 均因默认值仍含 Color. 类名前缀而失败；详见确认缺陷 case-05-F1。"
+          },
+          {
+            "name": "既有错误处理和其他显示兼容",
+            "result": "通过",
+            "evidence": "隐藏默认值、自定义默认说明、普通字符串 Choice、普通数字 Choice、非 Choice 的枚举默认值及动态默认函数共 6 组对照结果完全一致；相关非法选择的退出码/错误文本一致，动态默认函数在帮助生成期间未被调用。"
+          }
+        ],
+        "scope_limits": [
+          "审查覆盖维护需求、默认值帮助和 Choice 的局部调用链、现有选项测试及有效默认值形状探针；未运行项目完整测试、静态类型检查，未穷举任意 Choice 子类、自定义 Enum.__str__ 或组合类型内嵌 Choice。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-b.json",
+        "source_report_sha256": "1DEA43BAEF4705CDF000B2804F0E2976C111698C58B07BFB60C89F7530F4531B",
+        "case_id": "xb-035-pydash-262",
+        "completed": true,
+        "status": "pass",
+        "input_manifest_sha256": "BC45B15B8E4D249CF2EC7F33BFC149F6191148491F6C6A2ACDEFA04A8FCE25D4",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性",
+            "result": "通过",
+            "evidence": "检查前后均核验 input-integrity.json 的 SHA256 及清单中全部 153 个文件；所有哈希相符，文件集合无增减。清单本身字节未变。"
+          },
+          {
+            "name": "改动与局部调用链审查",
+            "result": "通过",
+            "evidence": "仅 src/pydash/arrays.py:1802 与 tests/test_arrays.py 改动。sorted_last_index_of 经 sorted_last_index、sorted_last_index_by 调用 bisect_right；插入点范围为 0..len(array)，减一后的上界始终有效，新下界检查可阻止空输入访问 -1。公开导出、签名和链式包装未变。"
+          },
+          {
+            "name": "现有数组测试",
+            "result": "通过",
+            "evidence": "独立副本分别运行 python -B -m pytest -p pytest_timeout --timeout=30 -q -o addopts= tests/test_arrays.py；base 263 passed，candidate 277 passed，退出码均为 0。"
+          },
+          {
+            "name": "直接及链式边界对照",
+            "result": "通过",
+            "evidence": "probe_sorted_last_index_of.py 的 14 组案例同时检查直接调用和 chain(...).sorted_last_index_of(...).value()。空 list、tuple、range 在 base 均抛 IndexError，在 candidate 均返回 -1；首项、重复值、低于最小值、介于元素间、高于最大值及字符串搜索返回值与 base 一致，输入内容未变。结果存于 probes-b/case-06/probe-results-base.json 和 probe-results-candidate.json。"
+          },
+          {
+            "name": "有限有效域结果对照",
+            "result": "通过",
+            "evidence": "对长度 1..5、元素来自 (-1,0,2) 的有序 list/tuple 及代表性非空 range 共 676 次调用，base 与 candidate 均符合最后匹配索引或 -1 的枚举预期。"
+          },
+          {
+            "name": "既有错误处理对照",
+            "result": "通过",
+            "evidence": "不可比较的 str/int、None/int 以及 None 序列三个探针的 TypeError 类型和信息均与 base 一致。"
+          }
+        ],
+        "scope_limits": [
+          "审查覆盖原需求、变更函数的局部调用链、数组测试与有依据的直接和链式边界探针；未运行项目完整测试及静态类型测试，也未穷举任意自定义序列或并发修改输入。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-b.json",
+        "source_report_sha256": "1DEA43BAEF4705CDF000B2804F0E2976C111698C58B07BFB60C89F7530F4531B",
+        "case_id": "xb-078-click-1990",
+        "completed": true,
+        "status": "pass_with_scope_note",
+        "input_manifest_sha256": "C4ABE2A361E3E1E25698D23ACEEE55C6E29BED2993BD49E91774C930C97D9227",
+        "confirmed_findings": [],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性与报告保留",
+            "result": "通过",
+            "evidence": "检查前后均核验 input-integrity.json 的 SHA256 及清单中全部 271 个文件；所有哈希相符，文件集合无增减，清单字节未变。追加前已逐字节备份原报告到 probes-b/case-07/review-b-before-case07.json，case-06、case-08 和 case-05 条目内容均保持不变。"
+          },
+          {
+            "name": "改动与局部错误处理契约",
+            "result": "通过",
+            "evidence": "改动限于 CHANGES.rst、Option.__init__ 中隐式默认值设置及 tests/test_options.py。检查 Parameter.consume_value/type_cast_value/value_is_missing/process_value、Option.get_default/consume_value/prompt_for_value 及 confirm 相关路径。候选对 required 且无显式默认值的布尔标志保留 None，使现有 MissingParameter 检查生效；显式 False 不按缺失处理。"
+          },
+          {
+            "name": "现有选项及基本行为测试",
+            "result": "通过",
+            "evidence": "独立副本运行 python -B -m pytest -p pytest_timeout --timeout=30 -q tests/test_options.py tests/test_basic.py；base 164 passed，candidate 178 passed，退出码均为 0。临时目录位于 probes-b/case-07 各副本内。"
+          },
+          {
+            "name": "声明、默认值和别名对照",
+            "result": "通过",
+            "evidence": "192 组探针覆盖正反标志、长短别名、单向真/假标志、required 真/假、未给默认值、显式 None/False/True 与 callable 默认值，以及缺省/指定各别名/--help。188 组结果与 base 完全一致；4 组唯一差异均为 required 且无显式默认值时不再调用参数或命令 callback，改为退出码 2 的 Missing option 错误，符合需求。详见 probe_required_flags.py 和 comparison-results.json。"
+          },
+          {
+            "name": "正常参数错误及韧性解析",
+            "result": "通过",
+            "evidence": "直接 cli.make_context 在候选抛出 MissingParameter，异常关联原 Option 对象；普通命令入口输出 Usage、Missing option 并以 2 退出。resilient_parsing=True 时不抛异常，缺省值为 None。"
+          },
+          {
+            "name": "参数来源、提示与错误边界",
+            "result": "通过",
+            "evidence": "11 组来源探针中，环境变量及 default_map 的 True/False 均保留原来源和布尔值；非法布尔环境值继续给出相同的退出码 2 错误。空环境值与 default_map=None 不再隐式补 False，按缺失处理。提示输入 y/n 正常返回且来源仍为 PROMPT；隐式默认值取消后，空回答按 confirm(default=None) 的既有契约要求重新输入。"
+          },
+          {
+            "name": "非布尔标志和计数兼容",
+            "result": "通过",
+            "evidence": "非布尔 required 标志的缺省错误、显式值、同名组默认值及另一组值，以及 required 计数标志默认值共 5 组结果与 base 完全一致。"
+          },
+          {
+            "name": "输入耗尽的提示路径复核",
+            "result": "已定位既有测试适配器限制",
+            "evidence": "有 2 秒时限的独立进程显示：CliRunner.invoke 在 required=True,prompt=True、无显式默认值且 input 为空时，candidate 进入持续重试；base 隐式 False 会完成，但 base 显式 default=None 与 candidate 显式 default=None 同样持续重试。src/click/testing.py:278-283 的 visible_input 对 EOF 返回空串而不抛 EOFError；confirm(default=None) 会依据既有契约要求明确回答。用真实 Command.main 入口加耗尽 stdin 对照，两版均以 Aborted! 和退出码 1 正常中止。该限制归于既有 CliRunner 输入模拟，不作为本次请求的确认缺陷。详见 prompt-bounded-results.json。"
+          }
+        ],
+        "scope_limits": [
+          "既有 required 参数契约允许显式默认值、环境变量、default_map 或提示输入提供值；此次验收据此解释为取消必填布尔标志的隐式 False，并未要求只接受命令行标志。",
+          "CliRunner 对输入耗尽且 confirm(default=None) 的模拟存在上述既有限制；真实命令入口的 EOF 行为已单独验证。",
+          "审查覆盖原需求、默认值及缺失参数的局部调用链、选项/基本行为测试和针对性有效边界；未运行项目完整测试或所有操作系统上的交互终端会话。"
+        ],
+        "repeat": 0
+      },
+      {
+        "source_report": "review-b.json",
+        "source_report_sha256": "1DEA43BAEF4705CDF000B2804F0E2976C111698C58B07BFB60C89F7530F4531B",
+        "case_id": "xb-017-click-2816",
+        "completed": true,
+        "status": "needs_changes",
+        "input_manifest_sha256": "34C8E7C5E4F81423C4CA5A822E8E773DB3024C1DA12DC8B4EF075981A368EAFD",
+        "confirmed_findings": [
+          {
+            "id": "case-08-F1",
+            "title": "以选项前缀开头的合法值导致多值选项补全退回错误参数",
+            "severity": "P2",
+            "file": "candidate/src/click/shell_completion.py",
+            "line_start": 551,
+            "line_end": 552,
+            "description": "倒序扫描遇到首个以选项前缀开头的字符串就立即返回，未区分该字符串是否是前方多值选项已经接收的值。--pair 的首值是 -1、- 或 --flag 等合法字符串时，仍缺第二个值，却被判为不等待值，并由位置参数提供错误候选；这是原版已支持路径的回归。",
+            "contract_basis": [
+              "原需求要求正在等待多个值的选项获得自己的候选，不受前面标志干扰。示例 --flag --pair -1 中 --pair 仍缺第二个值。",
+              "base/src/click/parser.py:463-465 明确按 nargs 消耗后续值，不因值以 - 开头就视作新选项；补齐后实际解析 pair 为 (-1, 1) 对应的字符串元组。",
+              "base 的 ShellComplete 在该合法命令前缀上返回 --pair 的 Choice 候选，公开补全路径存在既有兼容结果。"
+            ],
+            "minimal_reproduction": "from click import Argument, Choice, Command, Option\nfrom click.shell_completion import ShellComplete\ncli = Command('cli', params=[\n    Option(['--flag'], is_flag=True),\n    Option(['--pair'], nargs=2, type=Choice(['-1', '1', '2'])),\n    Argument(['rest'], type=Choice(['rest'])),\n])\n# 确认该值合法，且属于 --pair。\nwith cli.make_context('cli', ['--flag', '--pair', '-1', '1', 'rest']) as ctx:\n    assert ctx.params['pair'] == ('-1', '1')\ncomp = ShellComplete(cli, {}, cli.name, '_CLI_COMPLETE')\nprint([c.value for c in comp.get_completions(['--flag', '--pair', '-1'], '')])\n",
+            "base_actual": {
+              "completion": [
+                "-1",
+                "1",
+                "2"
+              ],
+              "full_parse_pair": [
+                "-1",
+                "1"
+              ],
+              "focused_regression_tests": "6 passed"
+            },
+            "candidate_actual": {
+              "completion": [
+                "rest"
+              ],
+              "full_parse_pair": [
+                "-1",
+                "1"
+              ],
+              "focused_regression_tests": "6 failed"
+            },
+            "reproduction_files": [
+              "probes-b/case-08/test_option_like_values.py",
+              "probes-b/case-08/probe_completion.py",
+              "probes-b/case-08/probe-results-base.json",
+              "probes-b/case-08/probe-results-candidate.json"
+            ],
+            "confidence": "高；三个合法前缀值、带或不带前置布尔标志的六组用例均稳定复现，且两版的完整命令解析均确认值归属。"
+          }
+        ],
+        "unresolved": [],
+        "checks": [
+          {
+            "name": "输入完整性与报告保留",
+            "result": "通过",
+            "evidence": "检查前后均核验 input-integrity.json 的 SHA256 及清单中全部 283 个文件；所有哈希相符，文件集合无增减，清单字节未变。追加前已将原报告逐字节备份到 probes-b/case-08/review-b-before-case08.json，并确认原有 case-06 条目内容不变。"
+          },
+          {
+            "name": "改动和补全局部调用链",
+            "result": "完成",
+            "evidence": "仅 src/click/shell_completion.py 和 tests/test_shell_completion.py 改动。检查 ShellComplete.get_completions、_resolve_context、_resolve_incomplete、_is_incomplete_option 与 parser._get_value_from_state 的相关调用及合法值处理。"
+          },
+          {
+            "name": "现有补全测试",
+            "result": "通过",
+            "evidence": "独立副本分别运行 python -B -m pytest -p pytest_timeout --timeout=30 -q tests/test_shell_completion.py；base 50 passed，candidate 62 passed，退出码均为 0。"
+          },
+          {
+            "name": "原需求与完成状态边界",
+            "result": "通过",
+            "evidence": "87 次针对 nargs=2/3/5、正反布尔标志、计数标志、长短选项别名、等待第 1..n 个值、全部值已提供及标志追加在后的探针；base 有 42 个原问题偏差，candidate 全部符合预期。"
+          },
+          {
+            "name": "合法选项前缀值兼容探针",
+            "result": "失败",
+            "evidence": "test_option_like_values.py 对 -1、-、--flag 三种合法值以及有无前置布尔标志组合做 6 次验证；两版均可将补齐命令解析为 pair=(value, 1) 对应字符串元组，base 补全 6 passed，candidate 因返回 rest 而 6 failed。详见确认缺陷 case-08-F1。"
+          },
+          {
+            "name": "错误处理与副作用对照",
+            "result": "通过",
+            "evidence": "空命令、孤立标志、未知选项、非法 Choice 值、已完成多值选项、选项名补全和 -- 终止符共 7 组探针结果在两版一致；所有补全过程未调用命令 callback，传入 args 列表未被更改。"
+          }
+        ],
+        "scope_limits": [
+          "审查限于原维护需求、补全和解析局部调用链、现有补全测试及有效边界探针；未运行项目完整测试或真实 Bash/Zsh/Fish 会话，未穷举任意自定义参数类型或自定义选项前缀。"
+        ],
+        "repeat": 0
+      }
+    ]
+  },
+  "retention_report_sha256": "9FE7BEA568C799105387340005EA1947ABA253536A25D35422E6A775D2688CED",
+  "archive_sha256": "1EFB435EB948292F4764532B2AA3B43A066F5CB4BF49AC47080E113742917562",
+  "package_sha256": "1DB0FB6EFED0AC0C8C5220092FF71924724A4DB5380CC0403D3664CA10383442",
+  "freeze_sha256": "03DD0491731E70B85192DD95F49DFC59702A3C93744EFE87BFDEDB55000A90E1",
+  "verifier_sha256": "D778A41684BE6C06F3BF7CC2E9D22D9AA1BA03EAE98BA29605DF96B4BA64F3B4",
+  "limits": [
+    "No baseline arm, efficiency or causal effect estimate",
+    "Only13 previously source-contract-screened reserve tasks; existing repositories, not repository-disjoint or training-contamination-free",
+    "Known critical and development tasks are not new generalization evidence",
+    "Same configured Codex/Python endpoint; Claude untested",
+    "Old v4 and v5 failures remain unchanged; prior efficiency-confirmation budget stays closed",
+    "Passing a scoped beta quality gate does not establish industrial production qualification"
+  ],
+  "old_v4_v5_failures_preserved": true
+}

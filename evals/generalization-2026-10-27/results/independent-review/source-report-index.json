@@ -1,0 +1,21 @@
+{
+  "method": "Verbatim completed independent neutral review reports and input hashes; no outcome replacement",
+  "cases": 8,
+  "source_files_sha256": {
+    "review-a.json": "573E70E36160665D1B9B0F388F092E8C8450E22FABA60511A4E70B56B47CEF0F",
+    "review-b.json": "1DEA43BAEF4705CDF000B2804F0E2976C111698C58B07BFB60C89F7530F4531B",
+    "case-04-initial-review-a.json": "2E537DF331BEF53B95AD100C187BE286F853959EF165A10FF59BFA05F7C0256A",
+    "case-04-post-blind-supplement.json": "8276F85A0C93C9DD476F98E830DD937580638D03AF19FAA4C440F6FAF202F5BE",
+    "review-mapping.json": "6A8D07B3ED0A30DBCD428B7B0DD5D4E73695EE698E17E2EBA346824CE8EAEAA0",
+    "case-01-input-integrity.json": "96183384841EA632590AE18A4395D35C9ABDA398CD74243AFB440F8FC4840234",
+    "case-02-input-integrity.json": "DA3F9E1C93804A5A5B1B29744B33DFB7F8DF52BC0B32D532693219A243135678",
+    "case-04-input-integrity.json": "6CA8CE2963E54C52C35BBD725F7C40AA218C7E787C0B6835D25125BFA517F1E6",
+    "case-03-input-integrity.json": "9F5C3E4A64410EBC278458CD96A7519360D883D937EEC81A94F012C8BD273846",
+    "case-06-input-integrity.json": "BC45B15B8E4D249CF2EC7F33BFC149F6191148491F6C6A2ACDEFA04A8FCE25D4",
+    "case-08-input-integrity.json": "34C8E7C5E4F81423C4CA5A822E8E773DB3024C1DA12DC8B4EF075981A368EAFD",
+    "case-05-input-integrity.json": "4485B8BD13E078769BDDCC73F52F5D418F99BA5CEC41CE32C487AAC0C0AF5F9B",
+    "case-07-input-integrity.json": "C4ABE2A361E3E1E25698D23ACEEE55C6E29BED2993BD49E91774C930C97D9227"
+  },
+  "post_blind_supplement": "case-04-post-blind-supplement.json",
+  "limits": "Raw review trees, probes and logs are retained in the private evidence archive. Initial case-04 pass and original failing contract grade are both preserved."
+}

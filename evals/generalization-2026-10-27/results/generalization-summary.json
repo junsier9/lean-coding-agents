@@ -1,0 +1,66 @@
+{
+  "phase": "generalization",
+  "attempts": 39,
+  "accepted": 38,
+  "usage_complete": 39,
+  "timeout": 0,
+  "cli_completed_without_timeout": 39,
+  "full_body_outputs": 39,
+  "cases": {
+    "b-07-click-2333": {
+      "attempts": 3,
+      "accepted": 2
+    },
+    "b-27-click-1354": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "extra-a2-boltons-32": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-007-click-3509": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-014-click-3004": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-016-click-2930": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-017-click-2816": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-018-click-2788": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-032-pydash-266": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-035-pydash-262": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-036-pydash-261": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-040-pydash-254": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "xb-078-click-1990": {
+      "attempts": 3,
+      "accepted": 3
+    }
+  },
+  "integrity_issues": [],
+  "trace_flags_requiring_review": 1,
+  "no_comparative_efficiency_or_industrial_qualification_claim": true
+}

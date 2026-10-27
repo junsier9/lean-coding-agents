@@ -1,0 +1,229 @@
+diff --git a/src/pydash/chaining/all_funcs.pyi b/src/pydash/chaining/all_funcs.pyi
+index 7c0efa7..5f7cbb5 100644
+--- a/src/pydash/chaining/all_funcs.pyi
++++ b/src/pydash/chaining/all_funcs.pyi
+@@ -2075,7 +2075,7 @@ class AllFuncs:
+         return self._wrap(pyd.min_by)(iteratee, default)
+ 
+     def moving_mean(
+-        self: "Chain[t.Sequence['SupportsAdd[int, t.Any]']]", size: t.SupportsInt
++        self: "Chain[t.Iterable['SupportsAdd[int, t.Any]']]", size: t.SupportsInt
+     ) -> "Chain[t.List[float]]":
+         return self._wrap(pyd.moving_mean)(size)
+ 
+@@ -2142,7 +2142,7 @@ class AllFuncs:
+     def slope(self, point2):
+         return self._wrap(pyd.slope)(point2)
+ 
+-    def std_deviation(self: "Chain[t.List[NumberT]]") -> "Chain[float]":
++    def std_deviation(self: "Chain[t.Iterable[NumberT]]") -> "Chain[float]":
+         return self._wrap(pyd.std_deviation)()
+ 
+     @t.overload
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 710f250..88eda92 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -294,6 +294,8 @@ def mean_by(collection, iteratee=None):
+ 
+     .. versionadded:: 4.0.0
+     """
++    if not isinstance(collection, t.Sized):
++        collection = list(collection)
+     length = len(collection)
+     if not length:
+         return float("nan")
+@@ -795,7 +797,7 @@ def min_by(collection, iteratee=None, default=UNSET):
+     return min(iterator_with_default(collection, default), key=pyd.iteratee(iteratee))
+ 
+ 
+-def moving_mean(array: t.Sequence["SupportsAdd[int, t.Any]"], size: t.SupportsInt) -> t.List[float]:
++def moving_mean(array: t.Iterable["SupportsAdd[int, t.Any]"], size: t.SupportsInt) -> t.List[float]:
+     """
+     Calculate moving mean of each element of `array`.
+ 
+@@ -822,6 +824,7 @@ def moving_mean(array: t.Sequence["SupportsAdd[int, t.Any]"], size: t.SupportsIn
+     """
+     result = []
+     size = int(size)
++    array = list(array)
+ 
+     for i in range(size - 1, len(array) + 1):
+         window = array[i - size : i]
+@@ -1004,6 +1007,7 @@ def scale(array, maximum: NumberT = 1):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = list(array)
+     array_max = max(array)
+     factor = maximum / array_max
+     return [item * factor for item in array]
+@@ -1052,9 +1056,9 @@ def slope(point1, point2):
+     return result
+ 
+ 
+-def std_deviation(array: t.List[NumberT]) -> float:
++def std_deviation(array: t.Iterable[NumberT]) -> float:
+     """
+-    Calculate standard deviation of list of numbers.
++    Calculate standard deviation of an iterable of numbers.
+ 
+     Args:
+         array: List to process.
+@@ -1159,6 +1163,7 @@ def variance(array):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = pyd.map_(array) if isinstance(array, t.Sized) else list(array)
+     avg = mean(array)
+ 
+     def var(x):
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 4817be3..6cb5bfb 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -1,3 +1,5 @@
++from collections import UserDict
++from decimal import Decimal
+ import math
+ 
+ import pytest
+@@ -390,3 +392,138 @@ def test_variance(case, expected):
+ )
+ def test_zscore(case, expected):
+     assert _.map_(_.zscore(*case), lambda v: round(v, 3)) == expected
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("func", [_.mean, _.mean_by, _.variance, _.std_deviation])
++@parametrize(
++    "values",
++    [[], [7], [1, 2, 3], [-2, 0.5, 4], [1e16, 1, -1e16], [Decimal("1.1"), Decimal("2.3")]],
++)
++def test_statistics_single_pass(make_input, func, values):
++    expected = func(values)
++    result = func(make_input(values))
++    if math.isnan(expected):
++        assert math.isnan(result)
++    else:
++        assert result == expected
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize(
++    "values,iteratee,expected",
++    [
++        ([{"value": 2}, {"value": 6}], "value", 4),
++        ([2, 6], lambda value: value * 2, 8),
++        ([2, 6], lambda value, index: value + index, 4.5),
++        ([2, 6], lambda value, index, collection: value / len(collection), 2),
++    ],
++)
++def test_mean_by_single_pass_iteratee(make_input, values, iteratee, expected):
++    assert _.mean_by(make_input(values), iteratee) == expected
++
++
++@parametrize("make_input", [list, tuple, dict])
++def test_mean_by_iteratee_receives_original_collection(make_input):
++    source = make_input([(2, 4), (6, 8)])
++    calls = []
++
++    def iteratee(value, key, collection):
++        assert collection is source
++        calls.append((value, key))
++        return value if isinstance(value, int) else value[1]
++
++    assert _.mean_by(source, iteratee) == 6
++    if isinstance(source, dict):
++        assert calls == [(4, 2), (8, 6)]
++    else:
++        assert calls == [((2, 4), 0), ((6, 8), 1)]
++
++
++@parametrize("mapping_type", [dict, UserDict])
++@parametrize("func", [_.mean, _.mean_by, _.variance, _.std_deviation])
++def test_statistics_mapping_values(mapping_type, func):
++    values = mapping_type(one=1, two=2, three=3)
++    assert func(values) == func([1, 2, 3])
++    assert math.isnan(func(mapping_type()))
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("values", [[], [7], [1, 2, 3, 4, 5]])
++@parametrize("size", [1, 3, 8])
++def test_moving_mean_single_pass(make_input, values, size):
++    assert _.moving_mean(make_input(values), size) == _.moving_mean(values, size)
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("maximum", [1, 5])
++def test_scale_single_pass(make_input, maximum):
++    values = [1, 2, 5]
++    assert _.scale(make_input(values), maximum) == _.scale(values, maximum)
++
++
++@parametrize("make_input", [list, iter, lambda values: (value for value in values)])
++@parametrize("values,error", [([], ValueError), ([0, 0], ZeroDivisionError)])
++def test_scale_single_pass_errors(make_input, values, error):
++    with pytest.raises(error):
++        _.scale(make_input(values))
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("values", [[], [1, 2, 3]])
++def test_zscore_single_pass(make_input, values):
++    assert _.zscore(make_input(values)) == _.zscore(values)
++
++
++@parametrize("func", [_.mean, _.mean_by, _.variance, _.std_deviation, _.scale])
++def test_numerical_iterator_error_propagates(func):
++    def values():
++        yield 1
++        raise RuntimeError("input failed")
++
++    with pytest.raises(RuntimeError, match="input failed"):
++        func(values())
++
++
++def test_mean_by_iterator_callback_error_propagates():
++    def iteratee(value):
++        raise RuntimeError("callback failed")
++
++    with pytest.raises(RuntimeError, match="callback failed"):
++        _.mean_by(iter([1, 2, 3]), iteratee)
++
++
++@parametrize("func", [_.mean, _.mean_by, _.variance, _.std_deviation])
++@parametrize("value", [None, 5])
++def test_statistics_invalid_input(func, value):
++    with pytest.raises(TypeError):
++        func(value)
++
++
++def test_mean_by_empty_skips_iteratee_inspection():
++    class Iteratee:
++        @property
++        def __signature__(self):
++            raise RuntimeError("signature unavailable")
++
++        def __call__(self, value):
++            raise AssertionError("empty input must not call iteratee")
++
++    assert math.isnan(_.mean_by([], Iteratee()))
++
++
++@parametrize(
++    "name,args",
++    [
++        ("mean", ()),
++        ("mean_by", (lambda value: value * 2,)),
++        ("variance", ()),
++        ("std_deviation", ()),
++        ("scale", ()),
++        ("moving_mean", (2,)),
++    ],
++)
++def test_numerical_chain_single_pass(name, args):
++    values = [1, 2, 3]
++    result = getattr(_.chain(iter(values)), name)(*args).value()
++    assert result == getattr(_, name)(values, *args)

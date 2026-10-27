@@ -1,0 +1,135 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 710f250..68424fe 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -6,6 +6,7 @@ Numerical/mathematical related functions.
+ 
+ from __future__ import annotations
+ 
++from collections.abc import Sized
+ import math
+ import operator
+ import typing as t
+@@ -294,6 +295,10 @@ def mean_by(collection, iteratee=None):
+ 
+     .. versionadded:: 4.0.0
+     """
++    if not isinstance(collection, Sized):
++        collection = pyd.map_(collection, iteratee)
++        iteratee = None
++
+     length = len(collection)
+     if not length:
+         return float("nan")
+@@ -1004,6 +1009,7 @@ def scale(array, maximum: NumberT = 1):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = list(array)
+     array_max = max(array)
+     factor = maximum / array_max
+     return [item * factor for item in array]
+@@ -1159,6 +1165,7 @@ def variance(array):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = pyd.map_(array)
+     avg = mean(array)
+ 
+     def var(x):
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 4817be3..b4a420e 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -170,6 +170,91 @@ def test_median_empty_iterator():
+     assert math.isnan(_.median(iter([])))
+ 
+ 
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("function", [_.mean, _.mean_by, _.variance, _.std_deviation, _.scale, _.zscore])
++@parametrize("values", [[1, 2, 3], [0, 0.5, 1], [-4, -1, 2]])
++def test_numerical_single_pass_input(make_input, function, values):
++    assert function(make_input(values)) == function(values)
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++def test_mean_by_single_pass_input(make_input):
++    values = [{"value": 2}, {"value": 4}, {"value": 9}]
++    assert _.mean_by(make_input(values), "value") == _.mean_by(values, "value")
++    assert _.mean_by(make_input(values), lambda value: value["value"] ** 2) == _.mean_by(
++        values, lambda value: value["value"] ** 2
++    )
++
++
++@parametrize("make_input", [list, iter, lambda values: (value for value in values)])
++def test_mean_by_callback_arguments(make_input):
++    collection = make_input([2, 4, 9])
++    calls = []
++
++    def iteratee(value, index, original):
++        assert original is collection
++        calls.append((value, index))
++        return value + index
++
++    assert _.mean_by(collection, iteratee) == 6
++    assert calls == [(2, 0), (4, 1), (9, 2)]
++
++
++def test_mean_by_mapping_callback_arguments():
++    collection = {"one": 2, "two": 4, "three": 9}
++    calls = []
++
++    def iteratee(value, key, original):
++        assert original is collection
++        calls.append((value, key))
++        return value
++
++    assert _.mean_by(collection, iteratee) == 5
++    assert calls == [(2, "one"), (4, "two"), (9, "three")]
++
++
++@parametrize("make_input", [iter, lambda values: (value for value in values)])
++@parametrize("function", [_.mean, _.mean_by, _.variance, _.std_deviation])
++def test_numerical_empty_single_pass_input(make_input, function):
++    assert math.isnan(function(make_input([])))
++
++
++@parametrize("function", [_.mean, _.mean_by, _.variance, _.std_deviation, _.scale])
++def test_numerical_iterator_error(function):
++    def values():
++        yield 1
++        raise RuntimeError("iteration failed")
++
++    with pytest.raises(RuntimeError, match="iteration failed"):
++        function(values())
++
++
++def test_mean_by_iterator_callback_error():
++    def iteratee(value):
++        raise RuntimeError("callback failed")
++
++    with pytest.raises(RuntimeError, match="callback failed"):
++        _.mean_by(iter([1]), iteratee)
++
++
++@parametrize("make_input", [list, iter, lambda values: (value for value in values)])
++def test_scale_empty(make_input):
++    with pytest.raises(ValueError, match="max"):
++        _.scale(make_input([]))
++
++
++@parametrize("make_input", [list, iter, lambda values: (value for value in values)])
++def test_scale_zero_maximum(make_input):
++    with pytest.raises(ZeroDivisionError):
++        _.scale(make_input([0, 0]))
++
++
++@parametrize("function", [_.mean, _.variance, _.std_deviation])
++def test_numerical_mapping_values(function):
++    values = {"one": 1, "two": 2, "three": 3}
++    assert function(values) == function(list(values.values()))
++
++
+ def test_median_empty():
+     assert math.isnan(_.median([]))
+     assert math.isnan(_.median({}))

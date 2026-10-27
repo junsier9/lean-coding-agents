@@ -1,0 +1,103 @@
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 8c01216..12e700a 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -521,17 +521,18 @@ def _detect_program_name(
+         path = sys.argv[0]
+ 
+     # The value of __package__ indicates how Python was called. It may
+-    # not exist if a setuptools script is installed as an egg. It may be
+-    # set incorrectly for entry points created with pip on Windows.
+-    if getattr(_main, "__package__", None) is None or (
+-        os.name == "nt"
+-        and _main.__package__ == ""
+-        and not os.path.exists(path)
+-        and os.path.exists(f"{path}.exe")
+-    ):
+-        # Executed a file, like "python app.py".
++    # not exist if a setuptools script is installed as an egg.
++    if getattr(_main, "__package__", None) is None:
+         return os.path.basename(path)
+ 
++    # Zipapps and some script entry points set __package__ to an empty
++    # string. A top-level module run with -m also has an empty package,
++    # but its spec identifies the module rather than __main__.
++    if _main.__package__ == "":
++        spec = getattr(_main, "__spec__", None)
++        if spec is None or spec.name == "__main__":
++            return os.path.basename(path)
++
+     # Executed a module, like "python -m example".
+     # Rewritten by Python from "-m script" to "/path/to/script.py".
+     # Need to look at main module to determine how it was executed.
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 5dfeb02..8970867 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -1,7 +1,9 @@
+ import os
+ import pathlib
+ import stat
++import subprocess
+ import sys
++import zipfile
+ from io import StringIO
+ 
+ import pytest
+@@ -444,6 +446,11 @@ class MockMain:
+         ("example.py", None, "example.py"),
+         (str(pathlib.Path("/foo/bar/example.py")), None, "example.py"),
+         ("example", None, "example"),
++        ("example", "", "example"),
++        ("example.py", "", "example.py"),
++        ("example.pyz", "", "example.pyz"),
++        ("example.pex", "", "example.pex"),
++        (str(pathlib.Path("/foo/bar/example.pyz")), "", "example.pyz"),
+         (str(pathlib.Path("example/__main__.py")), "example", "python -m example"),
+         (str(pathlib.Path("example/cli.py")), "example", "python -m example.cli"),
+     ],
+@@ -452,6 +459,44 @@ def test_detect_program_name(path, main, expected):
+     assert click.utils._detect_program_name(path, _main=MockMain(main)) == expected
+ 
+ 
++@pytest.mark.parametrize(
++    ("entry_point", "expected"),
++    [
++        ("example", "example"),
++        ("example.pyz", "example.pyz"),
++        ("example.pex", "example.pex"),
++        ("example.py", "python -m example"),
++    ],
++)
++@pytest.mark.parametrize(("arg", "exit_code"), [("--help", 0), ("--invalid", 2)])
++def test_detect_program_name_entry_point(
++    tmp_path, monkeypatch, entry_point, expected, arg, exit_code
++):
++    source = "import click\n@click.command()\ndef cli():\n    pass\ncli()\n"
++    path = tmp_path / entry_point
++
++    if path.suffix == ".py":
++        path.write_text(source, encoding="utf-8")
++        command = [sys.executable, "-m", path.stem, arg]
++    else:
++        with zipfile.ZipFile(path, "w") as archive:
++            archive.writestr("__main__.py", source)
++
++        command = [sys.executable, str(path), arg]
++
++    monkeypatch.setenv("PYTHONPATH", str(pathlib.Path(click.__file__).parent.parent))
++    result = subprocess.run(
++        command, cwd=tmp_path, capture_output=True, text=True, timeout=30
++    )
++    assert result.returncode == exit_code
++    output = result.stdout if exit_code == 0 else result.stderr
++    assert output.startswith(f"Usage: {expected} [OPTIONS]\n")
++
++    if exit_code:
++        assert f"Try '{expected} --help' for help." in output
++        assert "Error: No such option: --invalid" in output
++
++
+ def test_expand_args(monkeypatch):
+     user = os.path.expanduser("~")
+     assert user in click.utils._expand_args(["~"])

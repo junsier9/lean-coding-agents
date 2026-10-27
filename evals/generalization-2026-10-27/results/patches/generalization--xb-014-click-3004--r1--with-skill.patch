@@ -1,0 +1,118 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index efa23d3..11d7fa9 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,7 @@ Version 8.2.2
+ 
+ Unreleased
+ 
++-   Show enum member names for defaults of ``Choice`` options in help text.
+ -   Fix reconciliation of `default`, `flag_value` and `type` parameters for
+     flag options, as well as parsing and normalization of environment variables.
+     :issue:`2952` :pr:`2956`
+diff --git a/src/click/core.py b/src/click/core.py
+index 445460b..e48c141 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2870,8 +2870,17 @@ class Option(Parameter):
+         if show_default_is_str or (show_default and (default_value is not None)):
+             if show_default_is_str:
+                 default_string = f"({self.show_default})"
++            elif isinstance(self.type, types.Choice) and isinstance(
++                default_value, enum.Enum
++            ):
++                default_string = str(default_value.name)
+             elif isinstance(default_value, (list, tuple)):
+-                default_string = ", ".join(str(d) for d in default_value)
++                default_string = ", ".join(
++                    str(d.name)
++                    if isinstance(self.type, types.Choice) and isinstance(d, enum.Enum)
++                    else str(d)
++                    for d in default_value
++                )
+             elif inspect.isfunction(default_value):
+                 default_string = _("(dynamic)")
+             elif self.is_bool_flag and self.secondary_opts:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index f501738..1e2800e 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -1,3 +1,4 @@
++import enum
+ import os
+ import re
+ 
+@@ -351,6 +352,73 @@ def test_multiple_default_help(runner):
+     assert "1, 2" in result.output
+ 
+ 
++@pytest.mark.parametrize("enum_type", [enum.Enum, enum.IntEnum, enum.Flag, enum.IntFlag])
++@pytest.mark.parametrize("multiple", [False, True])
++@pytest.mark.parametrize("use_default_map", [False, True])
++def test_choice_enum_default_help(runner, enum_type, multiple, use_default_map):
++    class Selection(enum_type):
++        FIRST = 1
++        SECOND = 2
++
++    default = (Selection.FIRST, Selection.SECOND) if multiple else Selection.FIRST
++    expected = "FIRST, SECOND" if multiple else "FIRST"
++
++    @click.command()
++    @click.option(
++        "--selection",
++        type=click.Choice(Selection),
++        default=None if use_default_map else default,
++        multiple=multiple,
++        show_default=True,
++    )
++    def cmd(selection):
++        assert selection == default
++        if not multiple:
++            assert selection is Selection.FIRST
++
++    invoke_args = {"default_map": {"selection": default}} if use_default_map else {}
++    result = runner.invoke(cmd, ["--help"], **invoke_args)
++    assert result.exit_code == 0
++    assert "--selection [FIRST|SECOND]" in result.output
++    assert f"[default: {expected}]" in result.output
++
++    result = runner.invoke(cmd, [], **invoke_args)
++    assert result.exit_code == 0
++    args = ["--selection", "FIRST"]
++    if multiple:
++        args.extend(["--selection", "SECOND"])
++    result = runner.invoke(cmd, args, **invoke_args)
++    assert result.exit_code == 0
++
++    result = runner.invoke(cmd, ["--selection", "invalid"], **invoke_args)
++    assert result.exit_code == 2
++    assert "'invalid' is not one of 'FIRST', 'SECOND'." in result.output
++
++
++@pytest.mark.parametrize("multiple", [False, True])
++def test_choice_string_enum_default_help(runner, multiple):
++    class Selection(str, enum.Enum):
++        EMPTY = ""
++        VALUE = "value"
++
++    @click.command()
++    @click.option(
++        "--selection",
++        type=click.Choice(Selection),
++        default=[Selection.EMPTY, Selection.VALUE] if multiple else Selection.EMPTY,
++        multiple=multiple,
++        show_default=True,
++    )
++    def cmd(selection):
++        pass
++
++    result = runner.invoke(cmd, ["--help"])
++    assert result.exit_code == 0
++    assert "--selection [EMPTY|VALUE]" in result.output
++    expected = "EMPTY, VALUE" if multiple else "EMPTY"
++    assert f"[default: {expected}]" in result.output
++
++
+ def test_show_default_default_map(runner):
+     @click.command()
+     @click.option("--arg", default="a", show_default=True)

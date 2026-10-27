@@ -1,0 +1,177 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 7bb0762..9e41802 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Non-boolean flags enabled by environment variables use ``flag_value``,
++    matching command line behavior.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/docs/options.rst b/docs/options.rst
+index 39f66c4..1441023 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -725,6 +725,11 @@ And from the command line:
+ In that case it can also be a list of different environment variables
+ where the first one is picked.
+ 
++For non-boolean flags, a non-empty environment variable enables the flag
++and passes its ``flag_value``, just as specifying the flag on the command
++line does. The environment variable's text is not used as the value. For
++``multiple=True``, this enables one occurrence of the flag.
++
+ Multiple Values from Environment Values
+ ---------------------------------------
+ 
+diff --git a/src/click/core.py b/src/click/core.py
+index 5420c4b..04df575 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2430,6 +2430,10 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.2
++        Non-boolean flags use ``flag_value`` when enabled by an
++        environment variable.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2885,6 +2889,9 @@ class Option(Parameter):
+         if rv is None:
+             return None
+ 
++        if self.is_flag and not self.is_bool_flag:
++            return (self.flag_value,) if self.multiple else self.flag_value
++
+         value_depth = (self.nargs != 1) + bool(self.multiple)
+ 
+         if value_depth > 0:
+diff --git a/tests/test_arguments.py b/tests/test_arguments.py
+index 825bcc4..8a89121 100644
+--- a/tests/test_arguments.py
++++ b/tests/test_arguments.py
+@@ -4,6 +4,7 @@ from unittest import mock
+ import pytest
+ 
+ import click
++from click.core import ParameterSource
+ 
+ 
+ def test_nargs_star(runner):
+@@ -211,6 +212,110 @@ def test_nargs_envvar_only_if_values_empty(runner):
+     assert result.return_value == ("a",)
+ 
+ 
++@pytest.mark.parametrize("env_key", ["X", "AUTO_ARG"])
++@pytest.mark.parametrize("multiple", [False, True])
++@pytest.mark.parametrize(
++    ("flag_value", "type", "expected"),
++    [
++        ("configured", None, "configured"),
++        ("two words", None, "two words"),
++        (0, None, 0),
++        ("", None, ""),
++        ("42", int, 42),
++        (("fixed", 42), (str, int), ("fixed", 42)),
++    ],
++)
++def test_flag_value_from_envvar(runner, env_key, multiple, flag_value, type, expected):
++    @click.command()
++    @click.option(
++        "--arg", envvar="X", flag_value=flag_value, type=type, multiple=multiple
++    )
++    @click.pass_context
++    def cli(ctx, arg):
++        return arg, ctx.get_parameter_source("arg")
++
++    if multiple:
++        expected = (expected,)
++
++    result = runner.invoke(cli, ["--arg"], standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == (expected, ParameterSource.COMMANDLINE)
++
++    result = runner.invoke(
++        cli,
++        env={env_key: "environment text"},
++        auto_envvar_prefix="AUTO",
++        standalone_mode=False,
++    )
++    assert result.exception is None
++    assert result.return_value == (expected, ParameterSource.ENVIRONMENT)
++
++
++@pytest.mark.parametrize("env_key", ["X", "AUTO_ARG"])
++@pytest.mark.parametrize("env_value", [None, ""])
++@pytest.mark.parametrize("default", [False, True])
++def test_flag_value_from_empty_envvar(runner, env_key, env_value, default):
++    @click.command()
++    @click.option("--arg", flag_value="configured", envvar="X", default=default)
++    def cli(arg):
++        return arg
++
++    result = runner.invoke(
++        cli,
++        env={env_key: env_value},
++        auto_envvar_prefix="AUTO",
++        standalone_mode=False,
++    )
++    assert result.exception is None
++    assert result.return_value == ("configured" if default else None)
++
++
++def test_flag_value_envvar_commandline_override(runner):
++    @click.command()
++    @click.option("--upper", "case", flag_value="upper", envvar="CASE")
++    @click.option("--lower", "case", flag_value="lower")
++    def cli(case):
++        return case
++
++    result = runner.invoke(
++        cli, ["--lower"], env={"CASE": "enabled"}, standalone_mode=False
++    )
++    assert result.exception is None
++    assert result.return_value == "lower"
++
++
++@pytest.mark.parametrize("multiple", [False, True])
++def test_non_flag_value_from_envvar(runner, multiple):
++    @click.command()
++    @click.option(
++        "--arg", is_flag=False, flag_value="configured", envvar="X", multiple=multiple
++    )
++    def cli(arg):
++        return arg
++
++    result = runner.invoke(cli, env={"X": "environment text"}, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == (
++        ("environment", "text") if multiple else "environment text"
++    )
++
++
++@pytest.mark.parametrize("env_value", ["true", "false", "invalid"])
++def test_boolean_flag_value_from_envvar(runner, env_value):
++    @click.command()
++    @click.option("--arg/--no-arg", envvar="X")
++    def cli(arg):
++        return arg
++
++    result = runner.invoke(cli, env={"X": env_value}, standalone_mode=False)
++    if env_value == "invalid":
++        assert isinstance(result.exception, click.BadParameter)
++        assert "'invalid' is not a valid boolean." in str(result.exception)
++    else:
++        assert result.exception is None
++        assert result.return_value is (env_value == "true")
++
++
+ def test_empty_nargs(runner):
+     @click.command()
+     @click.argument("arg", nargs=-1)

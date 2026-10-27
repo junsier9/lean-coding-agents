@@ -1,0 +1,34 @@
+[
+  {
+    "review": "case-01",
+    "run": "generalization--xb-040-pydash-254--r0--with-skill"
+  },
+  {
+    "review": "case-02",
+    "run": "generalization--xb-007-click-3509--r0--with-skill"
+  },
+  {
+    "review": "case-03",
+    "run": "generalization--xb-032-pydash-266--r0--with-skill"
+  },
+  {
+    "review": "case-04",
+    "run": "generalization--b-07-click-2333--r0--with-skill"
+  },
+  {
+    "review": "case-05",
+    "run": "generalization--xb-014-click-3004--r0--with-skill"
+  },
+  {
+    "review": "case-06",
+    "run": "generalization--xb-035-pydash-262--r0--with-skill"
+  },
+  {
+    "review": "case-07",
+    "run": "generalization--xb-078-click-1990--r0--with-skill"
+  },
+  {
+    "review": "case-08",
+    "run": "generalization--xb-017-click-2816--r0--with-skill"
+  }
+]

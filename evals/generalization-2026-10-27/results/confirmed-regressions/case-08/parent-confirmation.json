@@ -1,0 +1,39 @@
+{
+  "finding": "case-08-F1",
+  "purpose": "Parent confirmation of reviewer minimal reproduction; no change to frozen scoring or inputs",
+  "probe_sha256": "F87F55FC8E3689819F918945C8FAC78751552378E62820DB07936BC6C0EC3262",
+  "results": {
+    "base": {
+      "parsed": {
+        "flag": true,
+        "pair": [
+          "-1",
+          "1"
+        ],
+        "rest": "rest"
+      },
+      "completion": [
+        "-1",
+        "1",
+        "2"
+      ]
+    },
+    "candidate": {
+      "parsed": {
+        "flag": true,
+        "pair": [
+          "-1",
+          "1"
+        ],
+        "rest": "rest"
+      },
+      "completion": [
+        "rest"
+      ]
+    }
+  },
+  "confirmed": true,
+  "probe_sha256_basis": "Exact UTF-8 code string passed to Python -c; stored script uses platform line endings",
+  "stored_probe_file_sha256": "EA1F530BCEF21C18E7674A1B042971FD4302BBE9FB68C361AE0EBC83ECB6D38D",
+  "original_confirmation_sha256": "EC11F364A7E8EC612D3A560FE4BE8222D78AFF9A86A84E87927472E0E8AF1203"
+}

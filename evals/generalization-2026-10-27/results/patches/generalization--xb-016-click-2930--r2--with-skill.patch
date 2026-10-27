@@ -1,0 +1,73 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 4745b53..e695a6c 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2611,12 +2611,13 @@ class Option(Parameter):
+                 self.default = False
+ 
+         self.type: types.ParamType
+-        if is_flag and type is None:
++        if is_flag:
+             if flag_value is None:
+                 flag_value = not self.default
+-            # Re-guess the type from the flag value instead of the
+-            # default.
+-            self.type = types.convert_type(None, flag_value)
++            if type is None:
++                # Re-guess the type from the flag value instead of the
++                # default.
++                self.type = types.convert_type(None, flag_value)
+ 
+         self.is_flag: bool = is_flag
+         self.is_bool_flag: bool = is_flag and isinstance(self.type, types.BoolParamType)
+diff --git a/tests/test_options.py b/tests/test_options.py
+index dd87bc8..7b7a08e 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -763,14 +763,41 @@ def test_help_option_custom_names_and_class(runner, custom_class, name_specs, ex
+         assert expected in result.output
+ 
+ 
+-def test_bool_flag_with_type(runner):
++@pytest.mark.parametrize("type", [bool, click.BOOL])
++@pytest.mark.parametrize("default", [False, True])
++def test_bool_flag_with_type(runner, type, default):
+     @click.command()
+-    @click.option("--shout/--no-shout", default=False, type=bool)
++    @click.option("--shout/--no-shout", default=default, type=type)
+     def cmd(shout):
+-        pass
++        return shout
+ 
+-    result = runner.invoke(cmd)
+-    assert not result.exception
++    for args, expected in [([], default), (["--shout"], True), (["--no-shout"], False)]:
++        result = runner.invoke(cmd, args, standalone_mode=False)
++        assert result.exception is None
++        assert result.return_value is expected
++
++
++@pytest.mark.parametrize("type", [bool, click.BOOL])
++@pytest.mark.parametrize(
++    ("kwargs", "default", "flag_value"),
++    [
++        ({}, False, True),
++        ({"default": False}, False, True),
++        ({"default": True}, True, False),
++        ({"default": False, "flag_value": False}, False, False),
++        ({"default": True, "flag_value": True}, True, True),
++    ],
++)
++def test_single_bool_flag_with_type(runner, type, kwargs, default, flag_value):
++    @click.command()
++    @click.option("--shout", is_flag=True, type=type, **kwargs)
++    def cmd(shout):
++        return shout
++
++    for args, expected in [([], default), (["--shout"], flag_value)]:
++        result = runner.invoke(cmd, args, standalone_mode=False)
++        assert result.exception is None
++        assert result.return_value is expected
+ 
+ 
+ def test_aliases_for_flags(runner):

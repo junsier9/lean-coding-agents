@@ -1,0 +1,10 @@
+{
+  "retained_at": "2026-10-27T17:44:43.154037+00:00",
+  "private_archive": ".local/generalization-v6-evidence.zip",
+  "archive_sha256": "1EFB435EB948292F4764532B2AA3B43A066F5CB4BF49AC47080E113742917562",
+  "entries": 5098,
+  "bytes": 21366510,
+  "archive_crc_and_all_entry_hashes_verified": true,
+  "external_publication_of_private_archive": false,
+  "limits": "Bound dependencies and retained live workspaces are outside this archive. No OS-level access trace is claimed."
+}

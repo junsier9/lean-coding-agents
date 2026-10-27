@@ -1,0 +1,145 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 9cf54ad..5be64e1 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Show the correct program name in help and error messages for zipapps
++    such as Shiv and PEX, while preserving module entry point names.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 8c01216..1042435 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -509,6 +509,9 @@ def _detect_program_name(
+     :param _main: The ``__main__`` module. This should only be passed
+         during internal testing.
+ 
++    .. versionchanged:: 8.1.4
++        Detect script names for zipapps with an empty package name.
++
+     .. versionadded:: 8.0
+         Based on command args detection in the Werkzeug reloader.
+ 
+@@ -520,22 +523,24 @@ def _detect_program_name(
+     if not path:
+         path = sys.argv[0]
+ 
+-    # The value of __package__ indicates how Python was called. It may
+-    # not exist if a setuptools script is installed as an egg. It may be
+-    # set incorrectly for entry points created with pip on Windows.
+-    if getattr(_main, "__package__", None) is None or (
+-        os.name == "nt"
+-        and _main.__package__ == ""
+-        and not os.path.exists(path)
+-        and os.path.exists(f"{path}.exe")
+-    ):
+-        # Executed a file, like "python app.py".
++    # A missing package indicates a script (including setuptools eggs).
++    package = getattr(_main, "__package__", None)
++
++    if package is None:
+         return os.path.basename(path)
+ 
++    # An empty package is a script or zipapp unless the spec names a
++    # top-level module executed with "python -m".
++    if package == "":
++        spec = getattr(_main, "__spec__", None)
++
++        if spec is None or spec.name == "__main__":
++            return os.path.basename(path)
++
+     # Executed a module, like "python -m example".
+     # Rewritten by Python from "-m script" to "/path/to/script.py".
+     # Need to look at main module to determine how it was executed.
+-    py_module = t.cast(str, _main.__package__)
++    py_module = t.cast(str, package)
+     name = os.path.splitext(os.path.basename(path))[0]
+ 
+     # A submodule like "example.cli".
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 5dfeb02..0b402be 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -1,8 +1,10 @@
+ import os
+ import pathlib
+ import stat
++import subprocess
+ import sys
+ from io import StringIO
++from zipfile import ZipFile
+ 
+ import pytest
+ 
+@@ -444,6 +446,11 @@ class MockMain:
+         ("example.py", None, "example.py"),
+         (str(pathlib.Path("/foo/bar/example.py")), None, "example.py"),
+         ("example", None, "example"),
++        ("example.py", "", "example.py"),
++        (str(pathlib.Path("/foo/bar/example.py")), "", "example.py"),
++        ("example", "", "example"),
++        ("example.pyz", "", "example.pyz"),
++        ("example.pex", "", "example.pex"),
+         (str(pathlib.Path("example/__main__.py")), "example", "python -m example"),
+         (str(pathlib.Path("example/cli.py")), "example", "python -m example.cli"),
+     ],
+@@ -452,6 +459,54 @@ def test_detect_program_name(path, main, expected):
+     assert click.utils._detect_program_name(path, _main=MockMain(main)) == expected
+ 
+ 
++@pytest.mark.parametrize(
++    ("entry_point", "expected"),
++    [
++        ("script", "example.py"),
++        ("example.pyz", "example.pyz"),
++        ("example.pex", "example.pex"),
++        ("example.shiv", "example.shiv"),
++        ("module", "python -m example"),
++        ("package", "python -m example"),
++        ("submodule", "python -m example.cli"),
++    ],
++)
++@pytest.mark.parametrize(("arg", "exit_code"), [("--help", 0), ("--unknown", 2)])
++def test_program_name_usage(tmp_path, entry_point, expected, arg, exit_code):
++    source = "import click\n@click.command()\ndef cli():\n    pass\ncli()\n"
++
++    if entry_point in {"package", "submodule"}:
++        package = tmp_path / "example"
++        package.mkdir()
++        (package / "__init__.py").touch()
++        name = "__main__.py" if entry_point == "package" else "cli.py"
++        (package / name).write_text(source, encoding="utf-8")
++        module = "example" if entry_point == "package" else "example.cli"
++        command = ["-m", module]
++    elif entry_point in {"script", "module"}:
++        (tmp_path / "example.py").write_text(source, encoding="utf-8")
++        command = ["example.py"] if entry_point == "script" else ["-m", "example"]
++    else:
++        with ZipFile(tmp_path / entry_point, "w") as archive:
++            archive.writestr("__main__.py", source)
++
++        command = [entry_point]
++
++    result = subprocess.run(
++        [sys.executable, *command, arg],
++        cwd=tmp_path,
++        capture_output=True,
++        text=True,
++        timeout=10,
++    )
++    output = result.stdout + result.stderr
++    assert result.returncode == exit_code, output
++    assert output.splitlines()[0] == f"Usage: {expected} [OPTIONS]"
++
++    if exit_code:
++        assert "Error: No such option: --unknown" in output
++
++
+ def test_expand_args(monkeypatch):
+     user = os.path.expanduser("~")
+     assert user in click.utils._expand_args(["~"])

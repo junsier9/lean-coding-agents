@@ -1,0 +1,22 @@
+{
+  "key": "generalization--b-07-click-2333--r0--with-skill",
+  "original_frozen_grade": {
+    "accepted": false,
+    "tests_ran": 72,
+    "passed": 71,
+    "failed": 1,
+    "skipped": 23,
+    "failed_test": "tests.test_utils::test_detect_program_name[example--example]",
+    "path_argument": "example",
+    "main_package": "",
+    "expected": "example",
+    "actual": "python -m example"
+  },
+  "initial_independent_review_status": "pass",
+  "post_blind_targeted_supplement_status": "pass",
+  "supplement_sha256": "8276F85A0C93C9DD476F98E830DD937580638D03AF19FAA4C440F6FAF202F5BE",
+  "formal_review_changed": false,
+  "original_grade_changed": false,
+  "replacement_model_calls": 0,
+  "decision": "The frozen contract failure remains a failure in the full39 denominator. Independent review and its explicitly post-blind supplement did not establish a real-entrypoint defect; neither overrides the original grade. Windows standard zipapps and actual python -m entry modes were exercised; Shiv and PEX builds were not exercised. No universal compatibility claim is made."
+}

@@ -1,0 +1,39 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index f87e38b..8555c03 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -1799,7 +1799,7 @@ def sorted_last_index_of(
+     """
+     index = sorted_last_index(array, value) - 1
+ 
+-    if index < len(array) and array[index] == value:
++    if index >= 0 and array[index] == value:
+         return index
+     else:
+         return -1
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index dedd309..6ba832e 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -662,7 +662,21 @@ def test_sorted_last_index_by(case, expected):
+ @parametrize(
+     "array,value,expected",
+     [
++        ([], 1, -1),
++        ((), 1, -1),
++        (range(0), 1, -1),
++        ([2], 1, -1),
++        ([2], 2, 0),
++        ([2], 3, -1),
++        ([2, 3, 4, 10, 10], 1, -1),
++        ([2, 3, 4, 10, 10], 2, 0),
++        ([2, 2, 3], 2, 1),
++        ([2, 3, 4, 10, 10], 5, -1),
+         ([2, 3, 4, 10, 10], 10, 4),
++        ([2, 3, 4, 10, 10], 11, -1),
++        ((2, 3, 3, 4), 3, 2),
++        (range(2, 5), 2, 0),
++        (range(2, 5), 4, 2),
+         ([10, 10, 4, 2, 3], 11, -1),
+     ],
+ )

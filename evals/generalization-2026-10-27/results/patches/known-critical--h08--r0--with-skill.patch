@@ -1,0 +1,55 @@
+diff --git a/app.py b/app.py
+index 69b025d..d6f7ed8 100644
+--- a/app.py
++++ b/app.py
+@@ -1,22 +1,38 @@
+ import os
++import tempfile
+ from pathlib import Path
+ from errors import AssetMissing, Opener
+ 
+-def download(opener: Opener, target, replace=os.replace):
+-    """Download into a caller-selected destination.
+ 
+-    The caller owns the destination path; we own an opened response.
+-    """
++def download(opener: Opener, target, replace=os.replace):
++    """Download completely, close owned resources, then atomically replace target."""
+     try:
+         response = opener()
+     except AssetMissing:
+         return False
+-    target = Path(target)
+-    with target.open("wb") as output:
+-        while True:
+-            chunk = response.read(65536)
+-            if not chunk:
+-                break
+-            output.write(chunk)
+-    response.close()
++
++    temporary = None
++    try:
++        try:
++            target = Path(target)
++            with tempfile.NamedTemporaryFile(mode="wb", dir=target.parent, delete=False) as output:
++                temporary = Path(output.name)
++                while True:
++                    chunk = response.read(65536)
++                    if not chunk:
++                        break
++                    output.write(chunk)
++        except BaseException:
++            try:
++                response.close()
++            except Exception:
++                # Keep the original download or file error when cleanup also fails.
++                pass
++            raise
++
++        response.close()
++        replace(temporary, target)
++    finally:
++        if temporary is not None:
++            temporary.unlink(missing_ok=True)
+     return True

@@ -1,0 +1,81 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index fcfcf08..8993e31 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2897,13 +2897,17 @@ def iterunique(array, comparator=None, iteratee=None):  # noqa: PLR0912
+ 
+         if comparator is None:
+             try:
+-                if cmp_item not in seen_hashable:
++                hash(cmp_item)
++            except TypeError:
++                if cmp_item not in seen_unhashable and not any(
++                    seen_item == cmp_item for seen_item in seen_hashable
++                ):
++                    seen_unhashable.append(cmp_item)
+                     yield item
++            else:
++                if cmp_item not in seen_hashable and cmp_item not in seen_unhashable:
+                     seen_hashable.add(cmp_item)
+-            except TypeError:
+-                if cmp_item not in seen_unhashable:
+                     yield item
+-                    seen_unhashable.append(cmp_item)
+         else:
+             unseen = True
+             for seen_item in seen_unhashable:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index dea72cf..db020cd 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -817,6 +817,27 @@ def test_uniq(case, expected):
+     assert _.uniq(case) == expected
+ 
+ 
++@parametrize("uniq", [_.uniq, _.uniq_with])
++@parametrize(
++    "case,indices",
++    [
++        ([{1}], [0]),
++        ([{1}, frozenset({1}), {1}], [0]),
++        ([frozenset({1}), {1}, frozenset({1})], [0]),
++        ([set(), frozenset(), set()], [0]),
++        ([frozenset(), set(), frozenset()], [0]),
++        ([{1}, frozenset({2}), frozenset({1}), {2}, {3}, frozenset({3})], [0, 1, 4]),
++        ([frozenset({1}), {2}, {1}, frozenset({2}), frozenset({3}), {3}], [0, 1, 4]),
++    ],
++)
++def test_uniq_mixed_hashability(uniq, case, indices):
++    result = uniq(iter(case))
++    expected = [case[index] for index in indices]
++
++    assert result == expected
++    assert all(item is first for item, first in zip(result, expected))
++
++
+ @parametrize(
+     "case,iteratee,expected",
+     [
+@@ -845,6 +866,22 @@ def test_uniq_by(case, iteratee, expected):
+     assert _.uniq_by(case, iteratee) == expected
+ 
+ 
++@parametrize(
++    "keys",
++    [
++        [{1}, frozenset({1}), frozenset({2}), {2}, {1}],
++        [frozenset({1}), {1}, {2}, frozenset({2}), {1}],
++    ],
++)
++def test_uniq_by_mixed_hashability(keys):
++    case = [{"key": key} for key in keys]
++    result = _.uniq_by(iter(case), "key")
++
++    assert result == [case[0], case[2]]
++    assert result[0] is case[0]
++    assert result[1] is case[2]
++
++
+ @parametrize(
+     "case,iteratee,expected",
+     [

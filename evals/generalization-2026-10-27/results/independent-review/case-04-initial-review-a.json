@@ -1,0 +1,135 @@
+{
+  "cases": [
+    {
+      "case_id": "case-01",
+      "completed": true,
+      "status": "pass",
+      "input_manifest_sha256": "96183384841EA632590AE18A4395D35C9ABDA398CD74243AFB440F8FC4840234",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "checks": [
+        {
+          "name": "输入完整性",
+          "result": "pass",
+          "details": "检查前核对清单全部 153 项文件 SHA256；检查后再次核对全部 154 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+        },
+        {
+          "name": "需求与静态差异",
+          "result": "pass",
+          "details": "需求为修复空列表、空映射的 median 返回未定义数值。唯一生产代码改动为 numerical.py:637-638 在既有迭代、排序后按 length == 0 返回 float(\"nan\")；非空计算和回调初始化顺序保留。文档及测试相应更新。"
+        },
+        {
+          "name": "候选数值、链式调用及文档示例",
+          "result": "pass",
+          "command": "python.exe -B -m pytest -o addopts= -q tests/test_numerical.py tests/test_chaining.py --doctest-modules src/pydash/numerical.py",
+          "details": "独立 candidate 副本运行，152 passed。PYTHONPATH 指向公共 deps 与副本 src，禁用自动插件加载，覆盖需求新增测试。"
+        },
+        {
+          "name": "原版本对照测试",
+          "result": "pass",
+          "command": "python.exe -B -m pytest -o addopts= -q tests/test_numerical.py tests/test_chaining.py --doctest-modules src/pydash/numerical.py",
+          "details": "独立 base 副本运行，144 passed。"
+        },
+        {
+          "name": "空输入边界对照",
+          "result": "pass",
+          "details": "8 项：空列表和空映射分别经直接调用、属性 iteratee、可调用 iteratee、链式 median。base 均抛 IndexError；candidate 均返回 float NaN；可调用 iteratee 在空输入均未被调用。探针见 probes-a/case-01/boundary_probe.py 与两份 boundary-results.json。"
+        },
+        {
+          "name": "兼容、错误处理及副作用对照",
+          "result": "pass",
+          "details": "7 项非空输入（单元素、奇数、偶数、映射、元组、Decimal、Fraction）的数值、返回类型、回调参数/顺序、原集合不变性均与 base 相同；5 项既有错误（None、标量、生成器、混合不可比较值、复数）的异常类型与消息均相同。"
+        }
+      ],
+      "scope_limits": [
+        "审查聚焦本次 median 维护需求及局部调用链，未运行无关模块全量测试、类型检查或文档构建；没有因此遗留影响本次正确性的疑点。",
+        "只在授权独立副本中运行测试与探针；未修改输入源码、请求或清单。"
+      ]
+    },
+    {
+      "case_id": "case-02",
+      "completed": true,
+      "status": "pass",
+      "input_manifest_sha256": "DA3F9E1C93804A5A5B1B29744B33DFB7F8DF52BC0B32D532693219A243135678",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "checks": [
+        {
+          "name": "输入完整性",
+          "result": "pass",
+          "details": "检查前核对清单全部 301 项文件 SHA256；检查后再次核对全部 302 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+        },
+        {
+          "name": "需求与代码差异",
+          "result": "pass",
+          "details": "需求是命令或选项在没有帮助正文且 deprecated 启用时消除标签前的多余空格和缩进。core.py:1192-1193 对清理后的空命令帮助直接使用标签；core.py:2828-2830 对空选项帮助直接使用标签。非空帮助拼接、短帮助返回 strip、选项其他处理保持原有实现。仅这些生产代码及相关测试有变化。"
+        },
+        {
+          "name": "相关测试候选与原版对照",
+          "result": "pass",
+          "command": "python.exe -B -m pytest -q -p pytest_timeout --timeout=20 tests/test_commands.py tests/test_options.py tests/test_formatting.py",
+          "details": "独立副本运行：candidate 785 passed，base 757 passed。PYTHONPATH 指向公共 deps 与各自 src，禁用自动插件加载。"
+        },
+        {
+          "name": "空帮助展示边界",
+          "result": "pass",
+          "details": "10 项组合：None、空串、空格/换行/tab、Unicode 空白、formfeed，分别启用布尔弃用与字符串原因。候选命令帮助标签保持两空格标准缩进；Option.help 无前导空白，默认值和环境变量附注保持完整；短帮助与 base 一致。证据保存在 probes-a/case-02/boundary_probe.py 与两份 boundary-results.json。"
+        },
+        {
+          "name": "既有调用兼容和错误处理",
+          "result": "pass",
+          "details": "16 项正常帮助组合：正文、多个段落、缩进、禁止自动重排文本，分别使用 False、True、原因字符串、空原因；命令帮助、选项帮助、组短帮助、实际调用输出及弃用警告均与 base 相同。deprecated 与 required/prompt 的两项既有 ValueError 类型及消息均保持不变。"
+        },
+        {
+          "name": "报告追加完整性",
+          "result": "pass",
+          "details": "追加前备份自身旧报告到 probes-a/case-02/review-a-before.json，case-01 条目内容保持不变。"
+        }
+      ],
+      "scope_limits": [
+        "审查聚焦空帮助下的弃用标签及相关命令、选项、格式化路径；未执行其他模块全量测试、类型检查或翻译目录构建。没有遗留影响本次正确性的疑点。",
+        "只在 probes-a/case-02 隔离副本中运行测试和探针，未修改输入文件。"
+      ]
+    },
+    {
+      "case_id": "case-04",
+      "completed": true,
+      "status": "pass",
+      "input_manifest_sha256": "6CA8CE2963E54C52C35BBD725F7C40AA218C7E787C0B6835D25125BFA517F1E6",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "checks": [
+        {
+          "name": "输入完整性",
+          "result": "pass",
+          "details": "检查前核对清单全部 277 项文件 SHA256；检查后再次核对全部 278 个输入文件（包含清单自身），路径集合及 SHA256 均未变化。"
+        },
+        {
+          "name": "需求和局部调用链",
+          "result": "pass",
+          "details": "需求是在 zipapp 的帮助及错误 Usage 中使用实际程序名，同时保留模块入口行为。唯一生产逻辑变更为 utils.py:538-540 在 __main__.__spec__.name == \"__main__\" 时返回 os.path.basename(path)；Command.main 在未显式给定 prog_name 时使用此函数，既有文件入口和 Windows 入口判定仍优先，其他模块仍进入原有逻辑。"
+        },
+        {
+          "name": "相关原有与新增测试",
+          "result": "pass",
+          "command": "python.exe -B -m pytest -q -p pytest_timeout --timeout=30 --basetemp=<各自副本>/pytest-temp tests/test_utils.py tests/test_basic.py tests/test_commands.py",
+          "details": "独立副本运行：candidate 164 passed, 23 skipped；base 151 passed, 23 skipped。相同跳过项为代码中既有 Windows 条件（终端、pager、文件权限等），新增 zipapp 和模块入口测试均通过。TEMP/TMP/TMPDIR 设在各自副本，PYTHONPATH 指向 deps 与各自 src，禁用自动插件加载。"
+        },
+        {
+          "name": "真实解释器入口边界对照",
+          "result": "pass",
+          "details": "各版本 22 项子进程观测：文件、zipapp、顶层模块、包、子模块、从归档导入的包与子模块，分别运行 --help、缺失参数错误、成功调用；另测显式 prog_name 覆盖。base 的 zipapp 显示 Usage: python -m program，candidate 为 Usage: program.pyz，错误建议同步改正。其余 20 项实际输出和退出码与 base 完全一致，包括 python -m zip_pkg 及 python -m zip_pkg.cli。证据见 probes-a/case-04/run_boundary.py 和两份 boundary-results.json。"
+        },
+        {
+          "name": "现有报告保留",
+          "result": "pass",
+          "details": "追加前保存自身报告到 probes-a/case-04/review-a-before.json；case-01、case-02 条目内容均保持不变。"
+        }
+      ],
+      "scope_limits": [
+        "未安装或构建第三方 Shiv/PEX；使用现有解释器执行真实标准 zipapp，并由候选新增测试覆盖 .pyz、.pex、无扩展名三种归档名称。没有遗留影响本次正确性的疑点。",
+        "本机为 Windows，未运行 POSIX 环境或无关模块全量测试。所有测试、子进程夹具及临时目录均位于 probes-a/case-04 副本内。"
+      ]
+    }
+  ]
+}

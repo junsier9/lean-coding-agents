@@ -1,0 +1,62 @@
+{
+  "phase": "known-critical",
+  "attempts": 12,
+  "accepted": 12,
+  "usage_complete": 12,
+  "timeout": 0,
+  "cli_completed_without_timeout": 12,
+  "full_body_outputs": 12,
+  "cases": {
+    "h01": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h02": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h03": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h04": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h05": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h06": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h07": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h08": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h09": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h10": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h11": {
+      "attempts": 1,
+      "accepted": 1
+    },
+    "h12": {
+      "attempts": 1,
+      "accepted": 1
+    }
+  },
+  "integrity_issues": [],
+  "trace_flags_requiring_review": 0,
+  "no_comparative_efficiency_or_industrial_qualification_claim": true
+}

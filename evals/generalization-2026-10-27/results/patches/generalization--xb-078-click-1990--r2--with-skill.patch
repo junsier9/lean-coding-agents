@@ -1,0 +1,104 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index a01dd43..b34814a 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -3,6 +3,8 @@
+ Version 8.1.0
+ -------------
+ 
++-   Required flags do not use an implicit default, so they report an
++    error when omitted.
+ -   Drop support for Python 3.6. :pr:`2129`
+ -   Remove previously deprecated code. :pr:`2130`
+ 
+diff --git a/src/click/core.py b/src/click/core.py
+index 97d699e..6cb6a15 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2432,6 +2432,10 @@ class Option(Parameter):
+     :param help: the help string.
+     :param hidden: hide this option from help outputs.
+ 
++    .. versionchanged:: 8.1.0
++        Required flags without a default value raise an error if not
++        given.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2511,7 +2515,7 @@ class Option(Parameter):
+             # flag if flag_value is set.
+             self._flag_needs_value = flag_value is not None
+ 
+-        if is_flag and default_is_missing:
++        if is_flag and default_is_missing and not self.required:
+             self.default: t.Union[t.Any, t.Callable[[], t.Any]] = False
+ 
+         if flag_value is None:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index ab230c4..3043c60 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -118,6 +118,62 @@ def test_multiple_required(runner):
+     assert "Error: Missing option '-m' / '--message'." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("declaration", "args", "expect"),
++    [
++        ("--flag", [], None),
++        ("--flag", ["--flag"], True),
++        ("--flag/--no-flag", [], None),
++        ("--flag/--no-flag", ["--flag"], True),
++        ("--flag/--no-flag", ["--no-flag"], False),
++    ],
++)
++def test_required_boolean_flag(runner, declaration, args, expect):
++    @click.command()
++    @click.option(declaration, is_flag=True, required=True)
++    def cli(flag):
++        click.echo(flag)
++
++    result = runner.invoke(cli, args)
++
++    if expect is None:
++        assert result.exit_code == 2
++        assert "Error: Missing option '--flag'." in result.output
++    else:
++        assert result.exit_code == 0
++        assert result.output == f"{expect}\n"
++
++
++@pytest.mark.parametrize("default", [True, False, lambda: True, lambda: False])
++def test_required_boolean_flag_default(runner, default):
++    @click.command()
++    @click.option("--flag/--no-flag", required=True, default=default)
++    def cli(flag):
++        click.echo(flag)
++
++    result = runner.invoke(cli)
++    expect = default() if callable(default) else default
++    assert result.exit_code == 0
++    assert result.output == f"{expect}\n"
++
++
++@pytest.mark.parametrize("value", [True, False])
++@pytest.mark.parametrize("source", ["envvar", "default_map"])
++def test_required_boolean_flag_value_source(runner, value, source):
++    @click.command()
++    @click.option("--flag/--no-flag", required=True, envvar="FLAG")
++    def cli(flag):
++        click.echo(flag)
++
++    if source == "envvar":
++        result = runner.invoke(cli, env={"FLAG": str(value)})
++    else:
++        result = runner.invoke(cli, default_map={"flag": value})
++
++    assert result.exit_code == 0
++    assert result.output == f"{value}\n"
++
++
+ @pytest.mark.parametrize(
+     ("multiple", "nargs", "default"),
+     [

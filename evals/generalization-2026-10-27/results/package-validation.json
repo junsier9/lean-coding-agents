@@ -1,0 +1,15 @@
+{
+  "archive": ".local/v6-package-stage/lean-coding-0.4.0-beta.1.zip",
+  "archive_sha256": "1DB0FB6EFED0AC0C8C5220092FF71924724A4DB5380CC0403D3664CA10383442",
+  "files_sha256": {
+    "SKILL.md": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
+    "agents/openai.yaml": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+    "LICENSE": "FC57D087DCB51E869A7CA4AD1F0E446C2AF04A966062DBDF1C41F1B6B4E0B83B",
+    "NOTICE.txt": "C985DEEA36FC600CBD043E73FC0121CC8EB6B9FF450C0FD8DFFE79DA88254ED2"
+  },
+  "runtime_files": 2,
+  "license_and_status_notices": 2,
+  "install_and_rollback_verified": true,
+  "external_publication": false,
+  "status": "private_staging_pending_qualification"
+}

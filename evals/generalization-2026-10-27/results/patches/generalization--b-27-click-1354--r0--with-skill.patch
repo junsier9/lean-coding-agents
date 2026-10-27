@@ -1,0 +1,141 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 6d596b5..f5656c4 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -14,6 +14,8 @@ Unreleased
+     parameter. :issue:`1264`, :pr:`1329`
+ -   Add an optional parameter to ``ProgressBar.update`` to set the
+     ``current_item``. :issue:`1226`, :pr:`1332`
++-   ``progressbar`` displays the current item before processing it,
++    preserving the ``update_min_steps`` rendering interval.
+ -   ``version_option`` uses ``importlib.metadata`` (or the
+     ``importlib_metadata`` backport) instead of ``pkg_resources``.
+     :issue:`1582`
+diff --git a/src/click/_termui_impl.py b/src/click/_termui_impl.py
+index c1cc936..f50e1e5 100644
+--- a/src/click/_termui_impl.py
++++ b/src/click/_termui_impl.py
+@@ -321,7 +321,8 @@ class ProgressBar:
+     def generator(self):
+         """Return a generator which yields the items added to the bar
+         during construction, and updates the progress bar *after* the
+-        yielded block returns.
++        yielded block returns. The current item is shown before the block
++        executes.
+         """
+         # WARNING: the iterator interface for `ProgressBar` relies on
+         # this and only works because this is a simple generator which
+@@ -338,6 +339,8 @@ class ProgressBar:
+         else:
+             for rv in self.iter:
+                 self.current_item = rv
++                if self._completed_intervals == 0:
++                    self.render_progress()
+                 yield rv
+                 self.update(1)
+             self.finish()
+diff --git a/src/click/termui.py b/src/click/termui.py
+index 4fc7229..ca0a135 100644
+--- a/src/click/termui.py
++++ b/src/click/termui.py
+@@ -390,6 +390,9 @@ def progressbar(
+     :param update_min_steps: Render only when this many updates have
+         completed. This allows tuning for very fast iterators.
+ 
++    .. versionchanged:: 8.0
++        The current item is shown in ``item_show_func`` during iteration.
++
+     .. versionchanged:: 8.0
+         Output is shown even if execution time is less than 0.5 seconds.
+ 
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index da586af..cd02a60 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -295,11 +295,81 @@ def test_progressbar_item_show_func(runner, monkeypatch):
+     monkeypatch.setattr(click._termui_impl, "isatty", lambda _: True)
+     output = runner.invoke(cli, []).output
+     lines = [line for line in output.splitlines() if "[" in line]
+-    assert "Custom None" in lines[0]
+-    assert "Custom 0" in lines[1]
+-    assert "Custom 1" in lines[2]
+-    assert "Custom 2" in lines[3]
+-    assert "Custom None" in lines[4]
++    expected = [
++        ("0%", None),
++        ("0%", 0),
++        ("33%", 0),
++        ("33%", 1),
++        ("66%", 1),
++        ("66%", 2),
++        ("100%", 2),
++        ("100%", None),
++    ]
++    assert len(lines) == len(expected)
++    for line, (percent, item) in zip(lines, expected):
++        assert percent in line
++        assert line.rstrip().endswith(f"Custom {item}")
++
++
++@pytest.mark.parametrize("update_min_steps", [1, 2, 4])
++@pytest.mark.parametrize("length_known", [True, False])
++@pytest.mark.parametrize("items", [[], [0], [0, None, False, "last", 5]])
++def test_progressbar_item_show_func_during_iteration(
++    runner, monkeypatch, update_min_steps, length_known, items
++):
++    shown = []
++
++    def item_show_func(item):
++        shown.append((item, progress.pos))
++        return f"Custom {item}"
++
++    monkeypatch.setattr(click._termui_impl, "isatty", lambda _: True)
++
++    with runner.isolation() as (stdout, _):
++        progress = click.progressbar(
++            items if length_known else iter(items),
++            item_show_func=item_show_func,
++            update_min_steps=update_min_steps,
++        )
++        with progress:
++            for index, item in enumerate(progress):
++                batch_start = index - index % update_min_steps
++                assert item is items[index]
++                assert progress.current_item is item
++                assert shown[-1] == (items[batch_start], batch_start)
++
++            assert progress.finished
++            assert progress.current_item is None
++            assert progress.pos == len(items) - len(items) % update_min_steps
++            assert progress._completed_intervals == len(items) % update_min_steps
++            assert shown[-1] == (None, progress.pos)
++
++        assert stdout.getvalue().endswith(b"\n")
++
++    assert all(pos % update_min_steps == 0 for _, pos in shown)
++
++
++def test_progressbar_item_show_func_with_next(runner, monkeypatch):
++    shown = []
++
++    def item_show_func(item):
++        shown.append(item)
++        return f"Custom {item}"
++
++    monkeypatch.setattr(click._termui_impl, "isatty", lambda _: True)
++
++    with runner.isolation():
++        with click.progressbar([0, None, "last"], item_show_func=item_show_func) as progress:
++            for item in [0, None, "last"]:
++                assert next(progress) == item
++                assert shown[-1] == item
++
++            with pytest.raises(StopIteration):
++                next(progress)
++
++            assert progress.finished
++            assert progress.current_item is None
++            assert shown[-1] is None
+ 
+ 
+ def test_progressbar_update_with_item_show_func(runner, monkeypatch):

@@ -1,0 +1,66 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 42d6f91..94df883 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -619,7 +619,7 @@ def median(collection, iteratee=None):
+         iteratee: Iteratee applied per iteration.
+ 
+     Returns:
+-        Result of median.
++        Result of median, or ``NaN`` if `collection` is empty.
+ 
+     Example:
+ 
+@@ -634,6 +634,9 @@ def median(collection, iteratee=None):
+     middle = (length + 1) / 2
+     collection = sorted(ret[0] for ret in iteriteratee(collection, iteratee))
+ 
++    if not length:
++        return float("nan")
++
+     if pyd.is_odd(length):
+         result = collection[int(middle - 1)]
+     else:
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index f7b4144..528d1aa 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -1,3 +1,5 @@
++import math
++
+ import pytest
+ 
+ import pydash as _
+@@ -138,12 +140,32 @@ def test_mean_by(case, expected):
+         (([0, 0, 1, 2, 5],), 1),
+         (([0, 0, 1, 2],), 0.5),
+         (([0, 0, 1, 2, 3, 4],), 1.5),
++        (([0],), 0),
++        (([5, 1, 3],), 3),
++        (({"a": 5, "b": 1, "c": 3, "d": 7},), 4),
++        (([{"value": 5}, {"value": 1}, {"value": 3}], "value"), 3),
+     ],
+ )
+ def test_median(case, expected):
+     assert _.median(*case) == expected
+ 
+ 
++@parametrize("collection", [[], {}])
++@parametrize("iteratee", [None, lambda value: value, "value"])
++def test_median_empty(collection, iteratee):
++    assert math.isnan(_.median(collection, iteratee))
++    assert math.isnan(_.median(collection=collection, iteratee=iteratee))
++    assert math.isnan(_.chain(collection).median(iteratee).value())
++
++
++def test_median_iteratee_error():
++    def iteratee(value):
++        raise IndexError("iteratee failed")
++
++    with pytest.raises(IndexError, match="iteratee failed"):
++        _.median([1], iteratee)
++
++
+ @parametrize(
+     "case,expected",
+     [

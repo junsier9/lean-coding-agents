@@ -1,0 +1,138 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index 616d92f..1cc48da 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -691,21 +691,21 @@ class ParsedException(object):
+         This method does not search a larger body of text for
+         tracebacks. If the first line of the text passed does not
+         match one of the known patterns, a :exc:`ValueError` will be
+-        raised. This method will ignore trailing text after the end of
+-        the first traceback.
++        raised. All remaining lines after the frames are treated as
++        the exception message.
+ 
+         Args:
+             tb_str (str): The traceback text (:class:`unicode` or UTF-8 bytes)
+         """
+         if not isinstance(tb_str, text):
+             tb_str = tb_str.decode('utf-8')
+-        tb_lines = tb_str.lstrip().splitlines()
++        tb_lines = tb_str.lstrip().splitlines(True)
+ 
+         # First off, handle some ignored exceptions. These can be the
+         # result of exceptions raised by __del__ during garbage
+         # collection
+         while tb_lines:
+-            cl = tb_lines[-1]
++            cl = tb_lines[-1].rstrip('\r\n')
+             if cl.startswith('Exception ') and cl.endswith('ignored'):
+                 tb_lines.pop()
+             else:
+@@ -752,11 +752,11 @@ class ParsedException(object):
+             line_no += 1
+             frames.append(frame_dict)
+ 
+-        try:
+-            exc_line = tb_lines[line_no]
+-            exc_type, _, exc_msg = exc_line.partition(':')
+-        except Exception:
+-            exc_type, exc_msg = '', ''
++        # Remove the traceback's final line ending, not the message's newlines.
++        tb_lines[-1] = tb_lines[-1].rstrip('\r\n')
++        exc_type, _, exc_msg = ''.join(tb_lines[line_no:]).partition(':')
++        if exc_msg.startswith(' '):
++            exc_msg = exc_msg[1:]
+ 
+         return cls(exc_type, exc_msg, frames)
+ 
+diff --git a/tests/tbutils_test.py b/tests/tbutils_test.py
+index 64eb17a..6a1c1ee 100644
+--- a/tests/tbutils_test.py
++++ b/tests/tbutils_test.py
+@@ -1,6 +1,8 @@
+ from __future__ import absolute_import
+ from __future__ import unicode_literals
+ 
++import pytest
++
+ from boltons.tbutils import ParsedException
+ 
+ 
+@@ -15,7 +17,7 @@ MyException: ExceptionValue
+ '''
+     parsed = ParsedException.from_string(tb)
+     assert parsed.exc_type == 'MyException'
+-    assert parsed.exc_msg == ' ExceptionValue'
++    assert parsed.exc_msg == 'ExceptionValue'
+     assert parsed.frames == [
+         {
+             'source_line': 'return some_other_function(1)',
+@@ -52,3 +54,68 @@ MyException: ExceptionValue
+ '''
+     parsed = ParsedException.from_string(tb)
+     assert parsed.exc_type == 'MyException'
++
++
++@pytest.mark.parametrize('message', [
++    'first line\nsecond line: detail\n\n    indented detail',
++    '\nsecond line',
++    '  first line\n\tsecond line\n',
++    '\u7b2c\u4e00\u884c\n\u7b2c\u4e8c\u884c',
++])
++@pytest.mark.parametrize('newline', ['\n', '\r\n'])
++@pytest.mark.parametrize('as_bytes', [False, True])
++def test_multiline_message(message, newline, as_bytes):
++    tb = ('Traceback (most recent call last):\n'
++          '  File "example.py", line 2, in some_function\n'
++          '    raise ValueError(message)\n'
++          'ValueError: ' + message + '\n').replace('\n', newline)
++    if as_bytes:
++        tb = tb.encode('utf-8')
++
++    parsed = ParsedException.from_string(tb)
++    assert parsed.exc_type == 'ValueError'
++    assert parsed.exc_msg == message.replace('\n', newline)
++    assert parsed.frames == [{
++        'filepath': 'example.py',
++        'lineno': '2',
++        'funcname': 'some_function',
++        'source_line': 'raise ValueError(message)',
++    }]
++
++
++@pytest.mark.parametrize('exc_line, message', [
++    ('ValueError', ''),
++    ('ValueError:', ''),
++    ('ValueError: ', ''),
++    ('ValueError: value: detail', 'value: detail'),
++    ('ValueError:value', 'value'),
++])
++@pytest.mark.parametrize('trailing_newline', ['', '\n'])
++def test_message_without_source(exc_line, message, trailing_newline):
++    tb = ('Traceback (most recent call last):\n'
++          '  File "<string>", line 2, in some_function\n'
++          + exc_line + trailing_newline)
++    parsed = ParsedException.from_string(tb)
++    assert parsed.exc_type == 'ValueError'
++    assert parsed.exc_msg == message
++    assert parsed.frames == [{
++        'filepath': '<string>',
++        'lineno': '2',
++        'funcname': 'some_function',
++        'source_line': '',
++    }]
++
++
++def test_multiline_message_with_ignored_exception():
++    tb = ('Traceback (most recent call last):\n'
++          '  File "<string>", line 2, in some_function\n'
++          'ValueError: first line\nsecond line\n'
++          'Exception ValueError in __del__ ignored\n')
++    parsed = ParsedException.from_string(tb)
++    assert parsed.exc_type == 'ValueError'
++    assert parsed.exc_msg == 'first line\nsecond line'
++
++
++def test_unrecognized_traceback():
++    with pytest.raises(ValueError, match='unrecognized traceback string format'):
++        ParsedException.from_string('ValueError: message\n')
