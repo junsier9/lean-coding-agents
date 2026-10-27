@@ -1,0 +1,66 @@
+{
+  "completed_at": "2026-10-27T19:47:27.774125+00:00",
+  "evidence_class": "known_revealed_development_only",
+  "attempts": 10,
+  "contract_accepted": 10,
+  "end_to_end_success": 10,
+  "normal_completions": 10,
+  "full_body_outputs": 10,
+  "complete_usage": 10,
+  "cases": {
+    "d13": {
+      "attempts": 3,
+      "end_to_end_success": 3
+    },
+    "d14": {
+      "attempts": 3,
+      "end_to_end_success": 3
+    },
+    "d09": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d10": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d11": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d12": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    }
+  },
+  "development_gate_passed": false,
+  "confirmed_artifact_findings": [
+    {
+      "id": "v7-d13-r1-F1",
+      "severity": "P2",
+      "key": "known-new--d13--r1--with-skill",
+      "file": "src/click/core.py",
+      "line_start": 1197,
+      "line_end": 1198,
+      "title": "New parser-private completion attributes reject an existing custom make_parser producer",
+      "contract_basis": "Command.make_parser is an existing documented factory; its parser subtype and parse_args tuple interface previously accepted this subclass. Completion bookkeeping must not become mandatory for unrelated normal calls.",
+      "reproduction": "Subclass _OptionParser with parse_args returning ({}, list(args), []); return it from CustomCommand.make_parser; invoke an empty command callback through CliRunner with standalone_mode=False.",
+      "initial_result": "normal/-O exit0, return42",
+      "candidate_result": "normal/-O exit1, AttributeError: AlternateParser object has no attribute _shell_complete_option",
+      "scope": "Introduced normal-call regression, not a requirement to provide new completion behavior for every custom parser. The parser module is deprecated but the factory remains present in the source and official API.",
+      "primary_api_source": "https://click.palletsprojects.com/en/stable/api/#click.Command.make_parser",
+      "probe": "parent-probes/custom-parser/probe.py",
+      "probe_results": "parent-probes/custom-parser/results.json",
+      "original_grade_changed": false,
+      "confidence": "high"
+    }
+  ],
+  "freeze_sha256": "469DDF22B9214CE487CCAE6917AD078592EFB2D8A95317BFA2689D50F91F84AE",
+  "archive_sha256": "65B7FAA87D58A475FF072F5DDC5638C914FF88E4CC35A2D34BF5CAFCFDF8C905",
+  "beta_quality_gate_passed": false,
+  "production_assistant_qualified": false,
+  "stable_efficiency_benefit_proven": false,
+  "comparative_efficiency_assessed": false,
+  "agensi_submitted": false,
+  "closed_v6_failure_preserved": true
+}

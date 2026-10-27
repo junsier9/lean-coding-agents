@@ -6,7 +6,11 @@
 
 ## 当前候选与状态
 
-[v6 候选入口](evals/development-2026-10-27/candidates/v6-python/SKILL.md)仍为 4 条规则，入口文件按空白分词为 403 词（含 frontmatter）。它针对已确认的整数协议及可选签名检查兼容回归做了小幅修订。
+当前为 [v7.1 候选](evals/development-2026-10-28-v7-1/candidates/v7-1-python/SKILL.md)，仍为 **4 条规则、456 词**（含 frontmatter）。修订明确沿现有解析状态区分值与控制语法、检查 API 组合引入的嵌套形状，并覆盖 override/bypass 生产路径，避免观测元数据成为既有调用的新前置要求。
+
+[v7 初稿开发窗口](evals/development-2026-10-28/README.zh-CN.md)完成 10 次，契约与端到端均 10/10，但产物审查确认 1 个自定义 parser 兼容回归，开发门槛保持 false。随后单独登记的 [v7.1 已知开发窗口](evals/development-2026-10-28-v7-1/README.zh-CN.md)完成 **6/6**，普通与 `-O`、正常结束、完整规则输出和 usage 全部通过，两个新契约产物无确认缺陷；开发门槛 true。两窗口分别保留，不合并重算或替换失败。**这不是新题泛化、因果效果或工业级生产资格，Agensi 未提交。**
+
+历史 [v6 候选](evals/development-2026-10-27/candidates/v6-python/SKILL.md)为 4 条规则、403 词，针对整数协议与可选签名检查回归修订；其后续失败证据继续保留。
 
 [已知开发验证](evals/development-2026-10-27/README.zh-CN.md)共 13 次：原冻结批次 11/12 契约通过，另行注册的中断产物恢复任务 1/1 契约通过；两次会话超时，因此正常结束及完整 usage 为 11/13。原开发门槛和恢复门槛都保持 false，未将恢复成绩替换原失败。缺失计量保留 null。
 
@@ -18,13 +22,14 @@
 
 ## 阅读与复核
 
-- [当前候选 SKILL.md](evals/development-2026-10-27/candidates/v6-python/SKILL.md)
+- [当前 v7.1 候选 SKILL.md](evals/development-2026-10-28-v7-1/candidates/v7-1-python/SKILL.md)
+- [v7 与 v7.1 的已知开发验证、产物审查及留存](evals/development-2026-10-28-v7-1/README.zh-CN.md)
 - [v6 开发契约、冻结输入与实际结果](evals/development-2026-10-27/README.zh-CN.md)
 - [v5 未参与修订任务的泛化结果与独立审查](evals/generalization-2026-10-26/README.zh-CN.md)
 - [完整生产维护验证入口](evals/production-2026-10-25/README.zh-CN.md)
 - [论坛、GitHub 案例与研究来源](research/2026-10-24-findings.zh-CN.md)
 
-`skills/lean-coding/` 保留历史 prototype-2，供复跑旧研究；`dist/` 中旧 rc 包也不代表已获资格。当前 v6 位于上方候选目录，尚未替换历史入口或安装到全局 skill 目录。
+`skills/lean-coding/` 保留历史 prototype-2，供复跑旧研究；`dist/` 中旧 rc 包也不代表已获资格。当前 v7.1 位于上方候选目录，尚未替换历史入口或安装到全局 skill 目录。
 
 ## 保留的历史证据
 
@@ -36,6 +41,8 @@
 | [v5 新题泛化](evals/generalization-2026-10-26/results/conclusion.zh-CN.md) | 新题契约 59/60、已知关键边界 12/12；两次会话未正常结束，8 份预选审查发现两项兼容回归；完整测试版资格 false |
 | [v6 已知开发](evals/development-2026-10-27/README.zh-CN.md) | 契约接受 12/13，正常结束 11/13；仅为已知开发题 |
 | [v6 新题泛化](evals/generalization-2026-10-27/README.zh-CN.md) | 全部 51 次完成；新题端到端 38/39、已知关键回归 12/12；8 份预选审查确认 2 个 P2，测试版资格 false |
+| [v7 初稿开发](evals/development-2026-10-28/README.zh-CN.md) | 10/10 契约与端到端；产物审查确认 1 个 P2，开发门槛 false |
+| [v7.1 已知开发](evals/development-2026-10-28-v7-1/README.zh-CN.md) | 6/6 契约与端到端；两个新契约产物无确认缺陷，开发门槛 true；尚无新题或效率证据 |
 
 不剔除失败、不把缺失 usage 填零、不按新门槛重评旧失败。已揭露回归只用作开发题；后续新题另行固定。没有无 skill 对照的批次不能估计 skill 因果收益。现有任务来自有限 Python 维护项目，不证明新仓库泛化或训练数据无污染。
 

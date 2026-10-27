@@ -1,0 +1,264 @@
+{
+  "review_type": "initial_outcome_blind_development_method_audit",
+  "reviewed_at": "2026-10-27T19:14:41.804761+00:00",
+  "completed": true,
+  "method_gate_passed": false,
+  "status": "blocking_findings_require_current_sha_reaudit_before_native_calls",
+  "scope": {
+    "read_sources": [
+      "evals/development-2026-10-28/run.py",
+      "evals/development-2026-10-28/protocol.json",
+      "evals/production-2026-10-25/runner.py",
+      "evals/production-2026-10-25/resource_gate.py",
+      "evals/runtime-2026-10-27/mxc_proxy_transport.py",
+      "evals/generalization-2026-10-26/observe.py",
+      "evals/production-2026-10-25/export_results.py",
+      "evals/production-2026-10-25/audit_production_trace.py",
+      "evals/generalization-2026-10-26/qualify_beta.py"
+    ],
+    "candidate_body_read": false,
+    "real_task_fixture_solutions_read": false,
+    "parent_results_read": false,
+    "other_experiments_read": false,
+    "network_used": false,
+    "packages_installed": false,
+    "native_model_clients_called": 0,
+    "driver_prepare_run_close_invoked": false,
+    "real_case_preflight_invoked": false,
+    "write_locations": [
+      ".local/v7-method-audit/",
+      "evals/development-2026-10-28/results/method-review.json"
+    ],
+    "execution_method": "AST提取指定函数或单个布尔/日志检查片段；只用stdlib与自造小案例，禁用所有原生启动路径。未导入会触发环境探测或间接模块读取的原模块顶层。"
+  },
+  "source_sha256_reviewed": {
+    "evals/development-2026-10-28/run.py": "FC39E7DCCB1C1F51BF6BC0368985AD4311FD6E680EB6118BD02BF732E22EAD16",
+    "evals/development-2026-10-28/protocol.json": "D2EA4B1975B5CF798564C619ABAF6D4D33B4D04FBD8E640A65264673F556B68B",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5"
+  },
+  "source_sha256_at_report": {
+    "evals/development-2026-10-28/run.py": "0D71B90BC0389249C21B6EF01E4E4F39CCB650BE637487933F81A1D12CE94403",
+    "evals/development-2026-10-28/protocol.json": "D2EA4B1975B5CF798564C619ABAF6D4D33B4D04FBD8E640A65264673F556B68B",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5"
+  },
+  "source_changes_since_review": {
+    "evals/development-2026-10-28/run.py": {
+      "reviewed": "FC39E7DCCB1C1F51BF6BC0368985AD4311FD6E680EB6118BD02BF732E22EAD16",
+      "current": "0D71B90BC0389249C21B6EF01E4E4F39CCB650BE637487933F81A1D12CE94403"
+    }
+  },
+  "initial_sources_preserved_when_hash_matched": ".local/v7-method-audit/initial-source-snapshot",
+  "blocking_findings": [
+    {
+      "id": "B1",
+      "priority": "P1",
+      "blocking": true,
+      "title": "缺失完成轮次 usage 被过滤，仍被声明 usage_complete",
+      "locations": [
+        "evals/production-2026-10-25/runner.py:283-301",
+        "evals/development-2026-10-28/run.py:145-159"
+      ],
+      "minimal_evidence": "合成事件先有 turn.completed usage={input_tokens:10,output_tokens:5,cached_input_tokens:0}，再有不含 usage 的 turn.completed；parse_client 返回 usage_complete=true,total_tokens=15，最后终态仍为 completed。无 usage 的轮次在 runner.py:285 的列表推导中被过滤。",
+      "measured_probe": "partial_completed_turn_usage",
+      "gate_implication": "close 的成功终态谓词不排除该事件序列，并直接使用重解析后同样为 true 的 usage_complete；其完整计量门槛可以接受不完整总量。",
+      "suggested_fix": "在新的开发控制器中核验完整成功轮次结构及其 usage；每个计入轮次均须有合法非负整数 input/output，任何缺失须保持 null 并使门槛失败。不要重写已冻结的历史 runner。"
+    },
+    {
+      "id": "B2",
+      "priority": "P1",
+      "blocking": true,
+      "title": "已保存评分没有绑定最终实现快照或人工复核输入",
+      "locations": [
+        "evals/generalization-2026-10-26/qualify_beta.py:44-61",
+        "evals/development-2026-10-28/run.py:139-160",
+        "evals/development-2026-10-28/run.py:168-194"
+      ],
+      "minimal_evidence": "以自行构造的 VALUE==1 小合成案例运行真实 synthetic_grade，normal/-O 都 exit=0、各1项测试，run_one 生成 accepted=true。之后只将最终 src/value.py 改回 VALUE=0；再次实际评分两模式均 exit=1，verify_record 对旧 record/done/checkpoint 仍通过。",
+      "measured_probe": "post_grade_workspace_change",
+      "gate_implication": "verify_record 只重算 skill/UI 与保存 grade 的一致性，未重算或核对生产源码快照；close 的 patch 和归档哈希在此后才计算。artifact-review 仅核对键及 completed，没有已复核输入哈希，因此不能保证最终保留产物就是已评分/已复核产物。",
+      "suggested_fix": "对最终工作区与实际评分所复制的生产输入建立逐文件哈希/清单绑定，在关闭前逐项验证，并绑定人工复核所读的 patch/工作区清单；含未跟踪文件。仅增加关闭时的当前哈希而不连接评分时快照仍不足。"
+    },
+    {
+      "id": "B3",
+      "priority": "P1",
+      "blocking": true,
+      "title": "测试日志只比数量，FAILED 与保存通过评分可同时被接受",
+      "locations": [
+        "evals/development-2026-10-28/run.py:149-152",
+        "evals/generalization-2026-10-26/qualify_beta.py:50-61"
+      ],
+      "minimal_evidence": "在真实合成通过评分的 normal/-O 两份日志中，仅把 OK 改成 FAILED (failures=1)，保留 Ran 1 test in ... 行。抽取的 close 日志计数核验与完整 verify_record 仍都通过，record.accepted 仍为 true。",
+      "measured_probe": "failed_log_same_test_count",
+      "gate_implication": "关闭阶段新增的 raw_artifact_sha256 只记录当时字节，未证明这些字节与保存 grade 相符；失败日志可以与 accepted=true 一起被保留。该探针说明完整性校验缺口，不表示正常 grader 会自行生成这种不一致。",
+      "suggested_fix": "同时核对原始 unittest 终态、失败/错误/跳过数量与每种模式的 grade，并绑定评分时日志哈希；拒绝缺少或冲突的终态。"
+    },
+    {
+      "id": "B4",
+      "priority": "P2",
+      "blocking": true,
+      "title": "成功线程事件缺少 thread_id 时仍满足身份谓词",
+      "locations": [
+        "evals/development-2026-10-28/run.py:144-148",
+        "evals/development-2026-10-28/run.py:162"
+      ],
+      "minimal_evidence": "合成 thread.started 不含 thread_id，observe 得到 [null]；成功客户端线程数量谓词通过，且将该 null 与9个不同字符串组成10条线程时 len(ids)==len(set(ids)) 仍为 true。",
+      "measured_probe": "missing_thread_id",
+      "gate_implication": "当前门槛可以把一条无法识别原生会话的成功记录计入10个唯一线程。",
+      "suggested_fix": "每个成功位置必须恰有一个非空字符串 thread_id，之后再检查全局唯一性。"
+    }
+  ],
+  "passed_measured_probes": [
+    {
+      "name": "fixed_schedule",
+      "status": "pass",
+      "keys": [
+        "known-new--d14--r1--with-skill",
+        "known-new--d13--r2--with-skill",
+        "known-new--d13--r1--with-skill",
+        "known-new--d14--r0--with-skill",
+        "known-new--d13--r0--with-skill",
+        "known-new--d14--r2--with-skill",
+        "known-prior--d10--r0--with-skill",
+        "known-prior--d09--r0--with-skill",
+        "known-prior--d12--r0--with-skill",
+        "known-prior--d11--r0--with-skill"
+      ],
+      "unique_count": 10
+    },
+    {
+      "name": "real_synthetic_grader_normal_and_optimized",
+      "status": "pass",
+      "base_exit_codes": {
+        "normal": 1,
+        "optimized": 1
+      },
+      "reference_exit_codes": {
+        "normal": 0,
+        "optimized": 0
+      },
+      "tests_per_mode": {
+        "normal": 1,
+        "optimized": 1
+      }
+    },
+    {
+      "name": "no_usage_invalid_usage_stays_null",
+      "status": "pass",
+      "variants": [
+        "missing",
+        "negative",
+        "boolean"
+      ]
+    },
+    {
+      "name": "client_timeout_or_error_usage_not_complete",
+      "status": "pass"
+    },
+    {
+      "name": "completed_checkpoint_grade_only_and_existing_record_reuse",
+      "status": "pass",
+      "native_path_calls": {
+        "prepare_workspace": 0,
+        "launch_cli": 0
+      }
+    },
+    {
+      "name": "matching_record_raw_events_identity_and_skill",
+      "status": "pass"
+    },
+    {
+      "name": "full_body_observer_completed_output_not_arguments",
+      "status": "pass"
+    },
+    {
+      "name": "mock_dispatch_ten_fixed_slots_at_most_three_workers",
+      "status": "pass",
+      "peak_workers": 3,
+      "dispatched_slots": 10,
+      "four_workers_rejected": true,
+      "note": "The worker callback was a local stub; no native client was called."
+    },
+    {
+      "name": "transport_install_scoped_environment_and_command",
+      "status": "pass",
+      "process_environment_unchanged": true,
+      "native_launcher_not_called": true,
+      "mxc_workspace_write_never_approval": true,
+      "note": "getproxies was a synthetic stub; no live OS route or network was queried."
+    },
+    {
+      "name": "invalid_or_credentialed_proxy_rejected",
+      "status": "pass",
+      "variants": 3
+    },
+    {
+      "name": "resource_stop_blocks_new_workspace_preparation",
+      "status": "pass",
+      "before_stop_calls": 1,
+      "after_stop_calls": 0,
+      "note": "STOP and the preparation callback were synthetic; no provider state was changed."
+    },
+    {
+      "name": "existing_failed_record_not_replaced",
+      "status": "pass",
+      "accepted": false,
+      "timeout": true,
+      "new_native_calls": 0
+    },
+    {
+      "name": "missing_slot_or_missing_record_enters_incomplete_branch",
+      "status": "pass",
+      "note": "Only the conditional expression was evaluated; close() was never invoked."
+    }
+  ],
+  "probe_summary": {
+    "total": 17,
+    "passed": 13,
+    "counterexamples": 4,
+    "main_evidence": ".local/v7-method-audit/probe-results.json",
+    "boundary_evidence": ".local/v7-method-audit/boundary-results.json"
+  },
+  "static_checks": [
+    {
+      "area": "固定预算和并发",
+      "result": "PHASES 固定新2题各3次、旧4题各1次；协议与实现逐字段核对；schedule实测10个唯一位置。run_suite的3线程池与拒绝4线程已用本地stub实测。全局并发仅可据单控制器/单ROOT范围解释。"
+    },
+    {
+      "area": "冻结与恢复",
+      "result": "源码/协议/案例hash进入freeze，关闭时校验；started/done/checkpoint/record身份联查。已完成checkpoint的实际双模式补评分与已有失败record不替换已实测；未启动位置/缺record的incomplete分支谓词已实测。未运行真实freeze，也未验证真实文件内容或缓存。"
+    },
+    {
+      "area": "评分模式",
+      "result": "自造案例base两模式失败、reference两模式通过，测试数量相同非零。真实6题、reference与rollback未运行；不能据此声明真实预检通过。"
+    },
+    {
+      "area": "原始证据保留",
+      "result": "静态可见原始日志、final工作区及未跟踪普通文件进入独占创建zip，排除缓存/.git，进行CRC与逐项sha验证；已有zip拒绝覆盖。未运行close或真实归档，未声称真实归档已通过。"
+    },
+    {
+      "area": "元数据和副作用",
+      "result": "候选metadata未读取。runner实际安装硬编码METADATA，而freeze记录候选UI哈希，legacy核对已装UI哈希；若两者不一致会关闭失败，未证明当前候选兼容。代理安装与命令生成仅以合成getproxies实测：不改父进程环境，生成mxc/workspace-write/never命令，拒绝远端/带凭据/带路径代理；未启动客户端，未证明原生客户端的OS副作用边界。"
+    }
+  ],
+  "nonblocking_limits": [
+    "审查针对已知公开开发任务门槛，不推导工业资格、稳定提速、节省token、因果或未见任务泛化。",
+    "emitted trace只能支持已发出工具事件的复核；关键词命中需上下文裁决，不等于已违规，也无法证明未记录的OS访问不存在。",
+    "close在生成zip后失败不能直接重试，因为独占zip已存在；这是恢复可用性限制，未被归类为错误通过。",
+    "源UI文件在close没有与候选源再次比对，但已装UI与freeze哈希仍核验；本审查未读取候选metadata，不能判断实际是否存在差异。",
+    "初次边界探针脚手架因缺少hashlib全局失败，修正仅在.local审查脚本后全部完成；未改任何方法源码，失败尝试未被计为通过。",
+    "反例核验的是实际函数及关闭谓词；按授权未执行完整close，不声称真实运行曾产出通过summary。"
+  ],
+  "next_required_action": "在新的开发控制器中修复B1-B4，然后对当前SHA做独立复核；无阻断后再冻结并开始10次原生开发位置。"
+}

@@ -1,0 +1,116 @@
+{
+  "review_type": "bounded_v7_1_derivative_method_review",
+  "reviewed_at": "2026-10-27T19:52:40.358679+00:00",
+  "completed": true,
+  "review_passed": true,
+  "blocking_findings": [],
+  "development_gate_evaluated": false,
+  "development_gate_passed": null,
+  "source_sha256": {
+    "evals/development-2026-10-28/run.py": "24226240BC342054EA11BE6B520542F6FAB048550FD06239AF81048E6146C137",
+    "evals/development-2026-10-28/protocol.json": "B8D39C8DF68EA882983311C7C5BB0DF7E2BA33F8D058B6252FAEDF8C177D3F06",
+    "evals/development-2026-10-28-v7-1/run.py": "98CA450F4D50C86DE5231CCE7F4B6CCFE2A8004455D3979035564193833F14A5",
+    "evals/development-2026-10-28-v7-1/protocol.json": "7CC7B4E2392BC7F257B7CCA3F3EA17DACAE67D1A5E6123E643208F448BD824DE"
+  },
+  "sources_unchanged_during_review": true,
+  "checks_actually_performed": [
+    {
+      "name": "complete_source_and_protocol_diff_allowlist",
+      "passed": true,
+      "source_adaptations": 16,
+      "changed_protocol_keys": [
+        "artifact_review",
+        "candidate",
+        "gate",
+        "max_native_attempts",
+        "new_known_repeats",
+        "previous_failed_v7_summary_sha256"
+      ]
+    },
+    {
+      "name": "core_checks_and_stable_rollback_identity_ast_unchanged",
+      "passed": true,
+      "compared": [
+        "full per-record close loop",
+        "grading_sources",
+        "verify_mode_log",
+        "run",
+        "immutable",
+        "cases",
+        "rollback control assignment"
+      ]
+    },
+    {
+      "name": "six_fixed_slots_two_reviews_and_gate_denominator",
+      "passed": true,
+      "keys": [
+        "known-new--d13--r0--with-skill",
+        "known-new--d14--r0--with-skill",
+        "known-prior--d09--r0--with-skill",
+        "known-prior--d10--r0--with-skill",
+        "known-prior--d11--r0--with-skill",
+        "known-prior--d12--r0--with-skill"
+      ],
+      "reviewed_keys": [
+        "known-new--d13--r0--with-skill",
+        "known-new--d14--r0--with-skill"
+      ],
+      "rejects": [
+        "five_rows",
+        "seven_rows",
+        "one_failed_slot",
+        "confirmed_P2_finding",
+        "missing_new_case_review"
+      ]
+    },
+    {
+      "name": "synthetic_freeze_replay_stable_despite_different_seconds",
+      "passed": true,
+      "seconds_first": 0.193,
+      "seconds_replay": 0.579,
+      "planned_attempts": 6,
+      "schedule_positions": 6,
+      "freeze_and_frozen_at_written_once": true
+    },
+    {
+      "name": "parent_failed_summary_fixed_hash_bound_at_freeze_and_close",
+      "passed": true,
+      "expected_parent_sha256": "E495CA712DF2A3B1418B987FA1342F19F0487A0C75B7F3A5B26A38C61794DBF3",
+      "real_parent_summary_read": false
+    }
+  ],
+  "scope": {
+    "read_source_files": [
+      "evals/development-2026-10-28/run.py",
+      "evals/development-2026-10-28/protocol.json",
+      "evals/development-2026-10-28-v7-1/run.py",
+      "evals/development-2026-10-28-v7-1/protocol.json"
+    ],
+    "candidate_or_fixture_solutions_read": false,
+    "parent_results_read": false,
+    "native_model_clients_called": 0,
+    "real_prepare_run_close_invoked": false,
+    "real_case_preflight_invoked": false,
+    "network_used": false,
+    "packages_installed": false,
+    "method_sources_modified": false,
+    "write_locations": [
+      ".local/v7-1-method-audit/",
+      "evals/development-2026-10-28-v7-1/results/method-review.json"
+    ]
+  },
+  "isolated_paths_verified": {
+    "root": ".local/production-runtime/dev-v7-1-2026-10-28",
+    "candidate_source": "evals/development-2026-10-28-v7-1/candidates/v7-1-python",
+    "archive": ".local/v7-1-development-evidence.zip",
+    "trace_flags": ".local/v7-1-actual-trace-flags.json",
+    "trace_decisions": ".local/v7-1-trace-decisions.json"
+  },
+  "nonblocking_limits": [
+    "这是另行登记的最多6次已知开发窗口方法复核，不把旧10次替换或重新计入；未读取父summary，不能独立确认其结论或SHA实际匹配，只验证固定SHA绑定机制。",
+    "核心检查通过AST逐项与已审版本比较确认未回退；未重新读取runner等依赖或实际候选/任务。实际冻结仍应检查依赖和输入hash。",
+    "protocol要求的新custom-parser兼容性probe仍需父产物复核实际执行；本审查未读具体解法，也不声称该probe已通过。",
+    "未执行真实预检、原生位置或归档；方法复核通过不等于开发门槛通过，不推导生产资格、工业资格、提速或泛化。"
+  ],
+  "next_required_action": "保持当前SHA完成真实双次prepare一致性及新6位置登记，再按最多3并发执行；关闭时复核2个新题产物及协议要求的兼容性probe。"
+}

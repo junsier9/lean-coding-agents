@@ -1,0 +1,120 @@
+{
+  "evidence_class": "known_revealed_development_only",
+  "planned_native_attempts": 6,
+  "skill_sha256": "B6DABCBC73C16EA12E95EB5F5D3E578848E000897B6164FCA4E86841DB73BEDE",
+  "ui_sha256": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "transport": {
+    "source": "existing_OS_loopback_proxy",
+    "environment": {
+      "HTTP_PROXY": "http://127.0.0.1:18081",
+      "HTTPS_PROXY": "http://127.0.0.1:18081",
+      "http_proxy": "http://127.0.0.1:18081",
+      "https_proxy": "http://127.0.0.1:18081",
+      "ALL_PROXY": "http://127.0.0.1:18081",
+      "all_proxy": "http://127.0.0.1:18081",
+      "NO_PROXY": "localhost,127.0.0.1,::1",
+      "no_proxy": "localhost,127.0.0.1,::1"
+    },
+    "windows_sandbox": "mxc",
+    "permission_mode": "workspace-write",
+    "approval_policy": "never",
+    "TLS_verification_unchanged": true,
+    "saved_config_or_ACL_changes_by_controller": false,
+    "model_provider_or_auth_changed": false
+  },
+  "cli_sha256": "1103E9E09C71FA2CD0AFD6D8F3B9A2D63174FE8EFD7CB5BD09F1CB14EF58A098",
+  "python_sha256": "7A4102B91959BB234507850EA584E1D31D300A6831B171E4AADC59FF592F0234",
+  "source_sha256": {
+    "evals/development-2026-10-28-v7-1/run.py": "98CA450F4D50C86DE5231CCE7F4B6CCFE2A8004455D3979035564193833F14A5",
+    "evals/development-2026-10-28-v7-1/protocol.json": "7CC7B4E2392BC7F257B7CCA3F3EA17DACAE67D1A5E6123E643208F448BD824DE",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/full-validation/run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "evals/full-validation/preflight.py": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/development-2026-10-28/results/summary.json": "E495CA712DF2A3B1418B987FA1342F19F0487A0C75B7F3A5B26A38C61794DBF3",
+    "evals/development-2026-10-28-v7-1/cases/d13.json": "B867C72EB924C8AC107204F5270CA4D47F7C569EE5B381DF5741DB30CCD0FDD2",
+    "evals/development-2026-10-28-v7-1/cases/d14.json": "B46E9288F37521C7D4B2E39513B7B60D643DBC88A9EBEEA9E5F37A5B06232251",
+    "evals/development-2026-10-27/cases/d09.json": "B8BC64CF252D5A0D817B130447557EC00D721854D99A61204C8264D4A2C1BBB1",
+    "evals/development-2026-10-27/cases/d10.json": "1A0EAE0354DA04B0526F84052661FE0DCB292523EAF149E9E1EFD608D3CFBC47",
+    "evals/development-2026-10-27/cases/d11.json": "1CC2EF00AB39F5844EFA1847D357D524F209C200C1497FA4B192CBB91F681830",
+    "evals/development-2026-10-27/cases/d12.json": "023440778432CB0480FE40A2FD6E36091909842E738BE8531DDC33E05774BA00"
+  },
+  "cases": {
+    "d13": "0685B9D1930EEF81B10742961E31A40A6536F66BDD70880C62BE193EFB917413",
+    "d14": "93C52DF4E6B08CC337A252A18CDA0A3CB3F7FE27154D93E08140AFDB6379537A",
+    "d09": "9A9537DAC44F277BDE53559EBC3F3DD0A0011CBDCE59BBEAA577BA4479D03312",
+    "d10": "8052C58F8A8547FCE9FD5FA3C808CE75A9106F0B988E7F2C6F869574C9921BDC",
+    "d11": "1BA1A6491C9F4D606C9E603AF11DD3CD0065504DAD7B3E32CFED7B08DEE8EA1C",
+    "d12": "AA3CD4B9F18E0D116B611B13977CE6BD066D405797765808762621137BF312B9"
+  },
+  "schedule": {
+    "known-new": [
+      {
+        "case_id": "d14",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d13",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      }
+    ],
+    "known-prior": [
+      {
+        "case_id": "d10",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d09",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d12",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d11",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      }
+    ]
+  },
+  "closed_v6_qualification_sha256": "653CC575EB892473A765BB0477A2CC059BE5679F896A488C41964E37C003197B",
+  "rollback_controls": {
+    "d13": {
+      "rollback_rejected": true,
+      "normal_tests": 28,
+      "optimized_tests": 28
+    },
+    "d14": {
+      "rollback_rejected": true,
+      "normal_tests": 43,
+      "optimized_tests": 43
+    }
+  }
+}

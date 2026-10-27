@@ -1,0 +1,171 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 583cc89..b279e62 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -306,6 +306,8 @@ class Context:
+         self._protected_args: list[str] = []
+         #: the collected prefixes of the command's options.
+         self._opt_prefixes: set[str] = set(parent._opt_prefixes) if parent else set()
++        self._shell_complete_option: Option | None = None
++        self._shell_complete_options = True
+ 
+         if obj is None and parent is not None:
+             obj = parent.obj
+@@ -1192,6 +1194,8 @@ class Command:
+ 
+         parser = self.make_parser(ctx)
+         opts, args, param_order = parser.parse_args(args=args)
++        ctx._shell_complete_option = parser._shell_complete_option
++        ctx._shell_complete_options = parser._shell_complete_options
+ 
+         for param in iter_params_for_processing(param_order, self.get_params(ctx)):
+             value, args = param.handle_parse_result(ctx, opts, args)
+diff --git a/src/click/parser.py b/src/click/parser.py
+index a8b7d26..e06d7ab 100644
+--- a/src/click/parser.py
++++ b/src/click/parser.py
+@@ -302,6 +302,8 @@ class _OptionParser:
+         appear on the command line.  If arguments appear multiple times they
+         will be memorized multiple times as well.
+         """
++        self._shell_complete_option: CoreOption | None = None
++        self._shell_complete_options = True
+         state = _ParsingState(args)
+         try:
+             self._process_args_for_options(state)
+@@ -329,12 +331,16 @@ class _OptionParser:
+             # Double dashes always handled explicitly regardless of what
+             # prefixes are valid.
+             if arg == "--":
++                self._shell_complete_option = None
++                self._shell_complete_options = False
+                 return
+             elif arg[:1] in self._opt_prefixes and arglen > 1:
++                self._shell_complete_option = None
+                 self._process_opts(arg, state)
+             elif self.allow_interspersed_args:
+                 state.largs.append(arg)
+             else:
++                self._shell_complete_options = False
+                 state.rargs.insert(0, arg)
+                 return
+ 
+@@ -434,6 +440,10 @@ class _OptionParser:
+         nargs = option.nargs
+ 
+         if len(state.rargs) < nargs:
++            # Record the actual pending option, including partial groups whose
++            # values happen to look like option names. Parsing a subsequent
++            # option or "--" clears this if an optional value was omitted.
++            self._shell_complete_option = option.obj
+             if option.obj._flag_needs_value:
+                 # Option allows omitting the value.
+                 value = _flag_needs_value
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index e5d0b70..00ee8e9 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -13,6 +13,7 @@ from .core import Group
+ from .core import Option
+ from .core import Parameter
+ from .core import ParameterSource
++from .parser import _normalize_opt
+ from .utils import echo
+ 
+ 
+@@ -532,28 +533,6 @@ def _start_of_option(ctx: Context, value: str) -> bool:
+     return c in ctx._opt_prefixes
+ 
+ 
+-def _is_incomplete_option(ctx: Context, args: list[str], param: Parameter) -> bool:
+-    """Determine if the given parameter is an option that needs a value.
+-
+-    :param args: List of complete args before the incomplete value.
+-    :param param: Option object being checked.
+-    """
+-    if not isinstance(param, Option):
+-        return False
+-
+-    if param.is_flag or param.count:
+-        return False
+-
+-    for index, arg in enumerate(reversed(args)):
+-        if index + 1 > param.nargs:
+-            break
+-
+-        if _start_of_option(ctx, arg):
+-            return arg in param.opts
+-
+-    return False
+-
+-
+ def _resolve_context(
+     cli: Command,
+     ctx_args: cabc.MutableMapping[str, t.Any],
+@@ -626,30 +605,46 @@ def _resolve_incomplete(
+     :param args: List of complete args before the incomplete value.
+     :param incomplete: Value being completed. May be empty.
+     """
+-    # Different shells treat an "=" between a long option name and
+-    # value differently. Might keep the value joined, return the "="
+-    # as a separate item, or return the split name and value. Always
+-    # split and discard the "=" to make completion easier.
+-    if incomplete == "=":
+-        incomplete = ""
+-    elif "=" in incomplete and _start_of_option(ctx, incomplete):
+-        name, _, incomplete = incomplete.partition("=")
+-        args.append(name)
++    option = ctx._shell_complete_option
+ 
+-    # The "--" marker tells Click to stop treating values as options
+-    # even if they start with the option character. If it hasn't been
+-    # given and the incomplete arg looks like an option, the current
+-    # command will provide option name completions.
+-    if "--" not in args and _start_of_option(ctx, incomplete):
+-        return ctx.command, incomplete
++    # A required value belongs to the pending option even when it looks
++    # like another option. Optional values still allow starting an option.
++    if option is not None and (
++        not option._flag_needs_value
++        or not ctx._shell_complete_options
++        or not _start_of_option(ctx, incomplete)
++    ):
++        return option, "" if incomplete == "=" else incomplete
+ 
+     params = ctx.command.get_params(ctx)
+ 
+-    # If the last complete arg is an option name with an incomplete
+-    # value, the option will provide value completions.
+-    for param in params:
+-        if _is_incomplete_option(ctx, args, param):
+-            return param, incomplete
++    # Shells may split an "=" from the option name, or keep it joined.
++    # Only interpret attached values while the parser still accepts options.
++    if incomplete == "=":
++        incomplete = ""
++    elif (
++        ctx._shell_complete_options
++        and "=" in incomplete
++        and _start_of_option(ctx, incomplete)
++    ):
++        name, _, incomplete = incomplete.partition("=")
++        name = _normalize_opt(name, ctx)
++
++        for param in params:
++            if (
++                isinstance(param, Option)
++                and not param.is_flag
++                and not param.count
++                and name in (_normalize_opt(opt, ctx) for opt in param.opts)
++            ):
++                if param._flag_needs_value and _start_of_option(ctx, incomplete):
++                    break
++                return param, incomplete
++
++    # The parser distinguishes a real "--" marker from an option value,
++    # and also knows when non-interspersed arguments ended option parsing.
++    if ctx._shell_complete_options and _start_of_option(ctx, incomplete):
++        return ctx.command, incomplete
+ 
+     # It's not an option name or value. The first argument without a
+     # parsed value will provide value completions.

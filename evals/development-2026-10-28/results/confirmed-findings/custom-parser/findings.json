@@ -1,0 +1,21 @@
+[
+  {
+    "id": "v7-d13-r1-F1",
+    "severity": "P2",
+    "key": "known-new--d13--r1--with-skill",
+    "file": "src/click/core.py",
+    "line_start": 1197,
+    "line_end": 1198,
+    "title": "New parser-private completion attributes reject an existing custom make_parser producer",
+    "contract_basis": "Command.make_parser is an existing documented factory; its parser subtype and parse_args tuple interface previously accepted this subclass. Completion bookkeeping must not become mandatory for unrelated normal calls.",
+    "reproduction": "Subclass _OptionParser with parse_args returning ({}, list(args), []); return it from CustomCommand.make_parser; invoke an empty command callback through CliRunner with standalone_mode=False.",
+    "initial_result": "normal/-O exit0, return42",
+    "candidate_result": "normal/-O exit1, AttributeError: AlternateParser object has no attribute _shell_complete_option",
+    "scope": "Introduced normal-call regression, not a requirement to provide new completion behavior for every custom parser. The parser module is deprecated but the factory remains present in the source and official API.",
+    "primary_api_source": "https://click.palletsprojects.com/en/stable/api/#click.Command.make_parser",
+    "probe": "parent-probes/custom-parser/probe.py",
+    "probe_results": "parent-probes/custom-parser/results.json",
+    "original_grade_changed": false,
+    "confidence": "high"
+  }
+]

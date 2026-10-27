@@ -1,0 +1,46 @@
+{
+  "completed_at": "2026-10-27T20:07:13.220603+00:00",
+  "evidence_class": "known_revealed_development_only",
+  "attempts": 6,
+  "contract_accepted": 6,
+  "end_to_end_success": 6,
+  "normal_completions": 6,
+  "full_body_outputs": 6,
+  "complete_usage": 6,
+  "cases": {
+    "d13": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d14": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d09": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d10": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d11": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    },
+    "d12": {
+      "attempts": 1,
+      "end_to_end_success": 1
+    }
+  },
+  "development_gate_passed": true,
+  "confirmed_artifact_findings": [],
+  "freeze_sha256": "5BA11D5CEAF8C17D0747160F34B9DF7BF6E8258F13EEDFAA7879596147EE7053",
+  "archive_sha256": "1600DF0EC7DB33ACE2DBEEA793B50ED7EFF962848513272AFD661CD37EB55299",
+  "beta_quality_gate_passed": false,
+  "production_assistant_qualified": false,
+  "stable_efficiency_benefit_proven": false,
+  "comparative_efficiency_assessed": false,
+  "agensi_submitted": false,
+  "closed_v6_failure_preserved": true
+}

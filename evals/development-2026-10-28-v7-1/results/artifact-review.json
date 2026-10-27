@@ -1,0 +1,75 @@
+{
+  "completed": true,
+  "review_type": "parent_reference_aware_known_development_review",
+  "reviewed_keys": [
+    "known-new--d13--r0--with-skill",
+    "known-new--d14--r0--with-skill"
+  ],
+  "confirmed_findings": [],
+  "reviews": [
+    {
+      "key": "known-new--d13--r0--with-skill",
+      "completed": true,
+      "review_type": "parent_reference_aware_known_development_review",
+      "grade_accepted": true,
+      "notes": "Inspected full production diff and inventory. Only two parser observation reads become optional via getattr defaults plus one explanatory comment. No broad exception catch, parsing/value-consumption modification or new wrapper. Existing parse_args errors remain outside these reads and propagate. The unchanged original compatibility probe independently fails the initial r1 code and passes the produced code in normal/-O, returning42; all28 focused tests also pass.",
+      "confirmed_findings": [],
+      "final_graded_source_sha256": {
+        "LICENSE.txt": "757302FE7C41E7026FA46D3315EA8604ED5295FC95C2256D9B38ADAC43F6FBE5",
+        "TASK.md": "7EE7D206E6A0BBCBE53EE3D9DC2A66B04D624A49DDFDCA71469046367070A6BA",
+        "src/click/core.py": "9FE5F28FBE251A7622F90315A967DB865D0F8FB72C7F04307030FD193E107CD8",
+        "src/click/decorators.py": "9A3C308089B5CDC61FB977EF42E00ECFFC8C2552158D78451339E560A4C98FB9",
+        "src/click/exceptions.py": "AF59CC49E3E50CE0D8B8978ED42910B86D9729AC54F542D9AC8ECA8076253F84",
+        "src/click/formatting.py": "70BE9BFFA51A3301066B53B0B16C95DD1E3AD21748C2D5A2C78660486FFC9412",
+        "src/click/globals.py": "A04AFA8359A321F88433C3689045A9CDE5763EB1938CEB983C7749798FFBB46F",
+        "src/click/parser.py": "4B093E4B834584B2EB956BC8E89CA63BC6C53B6229EF33495177235710B7FED3",
+        "src/click/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+        "src/click/shell_completion.py": "5E1210900970D4D4DC0CB87883DF1845BB399FED128613B36CA721E4B4548233",
+        "src/click/termui.py": "03E26A8C14DD622B611044F1C77F871AF2F8A879E66A41B305237F52BB0DA0D3",
+        "src/click/testing.py": "0FCBA4287154A03E4C6CE69285FDDEECEF4F4493E01ED249EE9E0F6D776C4C85",
+        "src/click/types.py": "CBAC3498D54E8A66305D419F4F76E4862DD84450DB9AB6A3B931C6A89051DF99",
+        "src/click/utils.py": "4D80C8F7C7600AD8FAD11379E7FA9F09BA15EBF20795FA01879D45AEE2767E5B",
+        "src/click/_compat.py": "40A727EBD3741FB9063D7B1FBD07F4D681C9CCD9E9B21DD47FB66DB4678E7853",
+        "src/click/_termui_impl.py": "C12322191894CBEE2FF3D093F903A38A6F854E56F17FFA634841D5446BC5A601",
+        "src/click/_textwrap.py": "9DCC6CA24ECF10CAC4367034F867DA757CECC751D565A7CC56365D10C9C056C2",
+        "src/click/_winconsole.py": "B667A0F68FD2A9C2EB448502F4E8326D93ECB4EE5BB012D104CDC3DFD48D4478",
+        "src/click/__init__.py": "B4C4A1CD061E69FB86C5EF73932A4EE3530D89108BC1BEB3C134FFAAC87D004C"
+      },
+      "git_diff_utf8_lf_sha256": "774FD897AF665CF05D1D5BD1409CA9E24442C41A7EDD1995C8F41A97686B93DB",
+      "limits": "Focused production diff and task/hidden-contract review; no new-task, blind-review or industrial qualification claim"
+    },
+    {
+      "key": "known-new--d14--r0--with-skill",
+      "completed": true,
+      "review_type": "parent_reference_aware_known_development_review",
+      "grade_accepted": true,
+      "notes": "Inspected full production diff and inventory. Enum Choice default-help formatting follows tuple/list shape with the existing normalizer; retrieval, dynamic/default_map, show_default, parse and error/callback paths remain unchanged. No new catches, dependencies or mutation of configured defaults. Focused43-method normal/-O contract passed. Recursive display helper is limited by tested supported shapes; arbitrary object graphs and full upstream/type/platform matrices are not qualified.",
+      "confirmed_findings": [],
+      "final_graded_source_sha256": {
+        "LICENSE.txt": "757302FE7C41E7026FA46D3315EA8604ED5295FC95C2256D9B38ADAC43F6FBE5",
+        "TASK.md": "EEC8A702A8E04A98D85EB504BEA9830B9BEEADA418E39AF4DD6121A8D52B7446",
+        "src/click/core.py": "37A60B7B801AEAF5B91383D6A67187946C64A29A089A78C97D45464561D1A911",
+        "src/click/decorators.py": "9A3C308089B5CDC61FB977EF42E00ECFFC8C2552158D78451339E560A4C98FB9",
+        "src/click/exceptions.py": "BC6C297B5FE586FE56D9FCA9E3826AE72CDAF49E89A590F2A4ED2E29DB754B57",
+        "src/click/formatting.py": "70BE9BFFA51A3301066B53B0B16C95DD1E3AD21748C2D5A2C78660486FFC9412",
+        "src/click/globals.py": "A04AFA8359A321F88433C3689045A9CDE5763EB1938CEB983C7749798FFBB46F",
+        "src/click/parser.py": "1F3C6647175E7D9E09C068F0355188A2800FEBBC22031DC01412FB0DFDAEF7F2",
+        "src/click/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+        "src/click/shell_completion.py": "189BE2FDC1061E518D6C03598218B03EB675CCE21EBC7DDDF26E6D084CB53662",
+        "src/click/termui.py": "03E26A8C14DD622B611044F1C77F871AF2F8A879E66A41B305237F52BB0DA0D3",
+        "src/click/testing.py": "293A98574538F1A0E629E15B2775CB7035D29A5DB3142A8437B7C80F2209BBCB",
+        "src/click/types.py": "CBAC3498D54E8A66305D419F4F76E4862DD84450DB9AB6A3B931C6A89051DF99",
+        "src/click/utils.py": "4D80C8F7C7600AD8FAD11379E7FA9F09BA15EBF20795FA01879D45AEE2767E5B",
+        "src/click/_compat.py": "40A727EBD3741FB9063D7B1FBD07F4D681C9CCD9E9B21DD47FB66DB4678E7853",
+        "src/click/_termui_impl.py": "C12322191894CBEE2FF3D093F903A38A6F854E56F17FFA634841D5446BC5A601",
+        "src/click/_textwrap.py": "9DCC6CA24ECF10CAC4367034F867DA757CECC751D565A7CC56365D10C9C056C2",
+        "src/click/_winconsole.py": "B667A0F68FD2A9C2EB448502F4E8326D93ECB4EE5BB012D104CDC3DFD48D4478",
+        "src/click/__init__.py": "B4C4A1CD061E69FB86C5EF73932A4EE3530D89108BC1BEB3C134FFAAC87D004C"
+      },
+      "git_diff_utf8_lf_sha256": "756FB971F23C4EBE17C222EDC0C57ADFE15D7BF0B2D57B45C713C354E86A3141",
+      "limits": "Focused production diff and task/hidden-contract review; no new-task, blind-review or industrial qualification claim"
+    }
+  ],
+  "posthoc_original_probe_repeated": "custom-parser-probe.json",
+  "limits": "Both original new-case production diffs reviewed, actual graded-source hashes bound and original custom factory probe rerun. Known reference-aware development only; full upstream/type/platform checks and new-task generalization not performed."
+}

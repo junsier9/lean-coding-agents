@@ -1,0 +1,14 @@
+{
+  "status": "prelaunch_freeze_replay_rejected",
+  "native_attempts_started": 0,
+  "cause": "Volatile rollback-grade timings were included in the deterministic freeze. The prepare/run replay detected the difference before any native call. New code freezes only rollback rejection and nonzero normal/optimized counts.",
+  "preserved_original_files_sha256": {
+    "freeze.json": "69A5B4738824C9E7D62AA4A4E6B9C56DE603C83E4AF43F94707D8A91CB1E63BE",
+    "frozen-at.json": "7AE9C8459337AD3FDF5D1A0CD4B0FCC527FDC15C43CBC2A25043824125E77336",
+    "registration.json": "099B5661EB2AD0F5E9398708C810079B929BD517B60E68E1245E35B12C27B653"
+  },
+  "candidate_changed": false,
+  "old_v6_result_changed": false,
+  "replacement_native_calls": 0,
+  "original_controller_error_log_retained_privately": true
+}

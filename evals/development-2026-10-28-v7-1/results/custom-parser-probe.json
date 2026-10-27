@@ -1,0 +1,36 @@
+{
+  "probe_sha256": "042B553A2462FD693A6452F93846415632885CDDA0EC35F0004D9FBB5FE731EC",
+  "same_probe_as_original_finding": true,
+  "observed": {
+    "initial_failed_v7_artifact": {
+      "normal": {
+        "exit_code": 1,
+        "return_value": null,
+        "exception_type": "AttributeError",
+        "exception_message": "'AlternateParser' object has no attribute '_shell_complete_option'"
+      },
+      "optimized": {
+        "exit_code": 1,
+        "return_value": null,
+        "exception_type": "AttributeError",
+        "exception_message": "'AlternateParser' object has no attribute '_shell_complete_option'"
+      }
+    },
+    "v7_1_native_artifact": {
+      "normal": {
+        "exit_code": 0,
+        "return_value": 42,
+        "exception_type": null,
+        "exception_message": null
+      },
+      "optimized": {
+        "exit_code": 0,
+        "return_value": 42,
+        "exception_type": null,
+        "exception_message": null
+      }
+    }
+  },
+  "original_v7_grade_or_verdict_changed": false,
+  "reference_aware_known_development_only": true
+}

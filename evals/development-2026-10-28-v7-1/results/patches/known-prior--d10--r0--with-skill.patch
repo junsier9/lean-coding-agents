@@ -1,0 +1,41 @@
+diff --git a/click/parser.py b/click/parser.py
+index 1ea1f71..42c9c65 100644
+--- a/click/parser.py
++++ b/click/parser.py
+@@ -367,14 +367,15 @@ class _OptionParser:
+ 
+         option = self._long_opt[opt]
+         if option.takes_value:
+-            # At this point it's safe to modify rargs by injecting the
+-            # explicit value, because no exception is raised in this
+-            # branch.  This means that the inserted value will be fully
+-            # consumed.
+-            if explicit_value is not None:
+-                state.rargs.insert(0, explicit_value)
++            if explicit_value is not None and option.nargs == 1:
++                # An attached value is already bound, even if it looks
++                # like another option or is empty.
++                value = explicit_value
++            else:
++                if explicit_value is not None:
++                    state.rargs.insert(0, explicit_value)
+ 
+-            value = self._get_value_from_state(opt, option, state)
++                value = self._get_value_from_state(opt, option, state)
+ 
+         elif explicit_value is not None:
+             raise BadOptionUsage(
+@@ -409,7 +410,12 @@ class _OptionParser:
+                     state.rargs.insert(0, arg[i:])
+                     stop = True
+ 
+-                value = self._get_value_from_state(opt, option, state)
++                if stop and option.nargs == 1:
++                    # Consume the attached value without treating it as
++                    # an independent option.
++                    value = state.rargs.pop(0)
++                else:
++                    value = self._get_value_from_state(opt, option, state)
+ 
+             else:
+                 value = UNSET

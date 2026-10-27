@@ -1,0 +1,40 @@
+{
+  "candidate": "v7-1-python",
+  "evidence_class": "known_revealed_development_only",
+  "new_known_cases": [
+    "d13",
+    "d14"
+  ],
+  "new_known_repeats": 1,
+  "prior_known_cases": [
+    "d09",
+    "d10",
+    "d11",
+    "d12"
+  ],
+  "prior_known_repeats": 1,
+  "max_native_attempts": 6,
+  "max_concurrent_native_clients": 3,
+  "arms": [
+    "with-skill"
+  ],
+  "model": "gpt-6.1-sol",
+  "model_reasoning_effort": "xhigh",
+  "closed_v6_qualification_sha256": "653CC575EB892473A765BB0477A2CC059BE5679F896A488C41964E37C003197B",
+  "usage_definition": "One ephemeral native user turn: exactly one turn.completed with its own nonnegative integer input_tokens, cached_input_tokens and output_tokens, cached_input_tokens<=input_tokens, together with complete saved usage. Never reuse earlier turn usage for a missing final usage.",
+  "evidence_binding": "The final eligible source inventory must equal the actually graded source inventory byte for byte; restored hidden tests must match frozen fixture text under the reused writer; original normal/-O terminal result and failure/error/skip counts must match saved grades; successful threads require nonempty string identities.",
+  "gate": "All6 original fixed slots accepted in normal and -O grading, successful CLI and final turn.completed, actual full frozen rule body output, complete usage, unique threads, unchanged frozen inputs/methods, retained raw evidence and no confirmed emitted-trace scope violation",
+  "execution_policy": "No replacement native calls after failures, no model/provider changes, timeouts and API errors remain failures, missing usage stays null. Actual provider exhaustion stops queued calls without purchases or credential changes. Checkpoint-only recovery may grade an existing completed client without starting another model.",
+  "transport": "Reuse the unchanged existing OS-loopback proxy/MXC helper from the closed v6 batch; no saved settings, authentication, ACL or TLS changes",
+  "controls": "All6 cases must show initial failure and reference pass with nonzero identical test counts in normal and -O before native calls. New d13/d14 also reject direct rollback to the original pre-maintenance implementation.",
+  "artifact_review": "Parent reviews both original new-case patches and reruns the new custom-parser compatibility probe; all tests remain known development, not blinded generalization.",
+  "limits": [
+    "Known failure descriptions and tests informed this candidate and these tasks",
+    "No untouched generalization tasks or baseline arm",
+    "No causal, stable speed, token-saving or production qualification claim",
+    "Claude is untested",
+    "All prior closed failures remain unchanged",
+    "No Agensi submission based on this development batch"
+  ],
+  "previous_failed_v7_summary_sha256": "E495CA712DF2A3B1418B987FA1342F19F0487A0C75B7F3A5B26A38C61794DBF3"
+}

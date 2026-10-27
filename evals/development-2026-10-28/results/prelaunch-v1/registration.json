@@ -1,0 +1,19 @@
+{
+  "registered_at": "2026-10-27T19:19:41.889684+00:00",
+  "evidence_class": "known_revealed_development_only",
+  "candidate": "v7-python",
+  "words_including_frontmatter": 443,
+  "decision_rules": 4,
+  "native_attempts_planned": 10,
+  "native_attempts_started_at_registration": 0,
+  "freeze_sha256": "69A5B4738824C9E7D62AA4A4E6B9C56DE603C83E4AF43F94707D8A91CB1E63BE",
+  "method_fixes_review_sha256": "DFC2AE6FA576A6B6C832C4E30AB2CFF86AEED703B2DC280505A886FB202641D4",
+  "method_sources_match_current": true,
+  "all6_initial_fail_reference_pass_controls": true,
+  "new2_direct_rollback_rejected": true,
+  "original_v6_failure_sha256": "653CC575EB892473A765BB0477A2CC059BE5679F896A488C41964E37C003197B",
+  "skill_sha256": "FC0C16B6C538E1F1580E4448396FA1D386EFE763F133D612C2DEE8DEE4C5C9ED",
+  "private_frozen_method_and_fixture_copies_retained": true,
+  "reference_aware_forward_checks_retained": true,
+  "development_only_not_beta_or_generalization": true
+}

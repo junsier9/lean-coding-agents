@@ -1,0 +1,185 @@
+{
+  "review_type": "independent_outcome_blind_development_method_fixes_review",
+  "reviewed_at": "2026-10-27T19:18:17.816103+00:00",
+  "completed": true,
+  "review_passed": true,
+  "status": "no_reproduced_blocker_remaining_for_this_source_sha_and_bounded_development_scope",
+  "development_gate_evaluated": false,
+  "development_gate_passed": null,
+  "blocking_findings": [],
+  "source_sha256": {
+    "evals/development-2026-10-28/run.py": "9F4FD812B6845C9561EEA6A059B534F1A1B34E91B164FE474EE896D65AFCD886",
+    "evals/development-2026-10-28/protocol.json": "B8D39C8DF68EA882983311C7C5BB0DF7E2BA33F8D058B6252FAEDF8C177D3F06",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5"
+  },
+  "source_hashes_unchanged_during_final_probes_and_report": true,
+  "reviewed_source_snapshot": ".local/v7-method-audit/final-source-snapshot",
+  "scope": {
+    "native_model_clients_called": 0,
+    "driver_prepare_run_close_invoked": false,
+    "real_case_preflight_invoked": false,
+    "candidate_body_read": false,
+    "real_task_fixture_solutions_read": false,
+    "parent_results_read": false,
+    "other_experiment_results_read": false,
+    "network_used": false,
+    "packages_installed": false,
+    "method_sources_modified_by_reviewer": false,
+    "method": "只从已授权方法文件AST提取函数或指定核验谓词；仅执行stdlib与自造合成数据，未执行完整close。"
+  },
+  "fixed_initial_findings": [
+    {
+      "id": "B1",
+      "resolved": true,
+      "evidence": "原先先完整usage后缺失usage的两次completed序列，现在verified_usage_complete=false；单次完整usage仍true，缺字段、负数或bool值均false。",
+      "locations": [
+        "evals/development-2026-10-28/run.py:196-203",
+        "evals/development-2026-10-28/protocol.json:14"
+      ]
+    },
+    {
+      "id": "B2",
+      "resolved": true,
+      "evidence": "真实重用synthetic_grade的normal/-O正例都通过，最终树与实际评分树匹配；之后修改实现、修改合格未跟踪文件或增加新合格文件，源清单比较均不匹配。额外恢复hidden tests字节正例匹配，修改后拒绝。",
+      "locations": [
+        "evals/development-2026-10-28/run.py:44-62",
+        "evals/development-2026-10-28/run.py:181-188"
+      ]
+    },
+    {
+      "id": "B3",
+      "resolved": true,
+      "evidence": "真实normal/-O的OK日志通过；保留相同测试数量后替换FAILED(failures=1)、FAILED(errors=1)、OK(skipped=1)或去掉终态，均拒绝。",
+      "locations": [
+        "evals/development-2026-10-28/run.py:65-79",
+        "evals/development-2026-10-28/run.py:204-206"
+      ]
+    },
+    {
+      "id": "B4",
+      "resolved": true,
+      "evidence": "非空字符串单线程正例通过；null、空串、整数、缺失线程、多个线程均拒绝。",
+      "locations": [
+        "evals/development-2026-10-28/run.py:191-198"
+      ]
+    }
+  ],
+  "additional_measured_usage_boundary": {
+    "resolved": true,
+    "input": {
+      "input_tokens": 10,
+      "cached_input_tokens": 11,
+      "output_tokens": 5
+    },
+    "before_fix_evidence": ".local/v7-method-audit/fixes-probe-results-20261027T191621379033.json",
+    "before_fix": {
+      "parsed_cached_input_tokens": null,
+      "verified_usage_complete": true
+    },
+    "after_fix": {
+      "parsed_cached_input_tokens": null,
+      "verified_usage_complete": false
+    },
+    "location": "evals/development-2026-10-28/run.py:202"
+  },
+  "final_measured_probes": [
+    {
+      "name": "B1_original_missing_final_usage_rejected_normal_complete_usage_accepted",
+      "status": "pass",
+      "negative_variants": [
+        "two_completions_missing_last_usage",
+        "no_usage",
+        "missing_cached",
+        "negative_cached",
+        "bool_output"
+      ]
+    },
+    {
+      "name": "cached_tokens_cannot_exceed_input",
+      "status": "pass",
+      "input_tokens": 10,
+      "raw_cached_input_tokens": 11,
+      "parsed_cached_input_tokens": null,
+      "verified_usage_complete": false
+    },
+    {
+      "name": "B2_post_grade_source_change_rejected_matching_tree_accepted",
+      "status": "pass",
+      "mutations_detected": [
+        "src/value.py",
+        "new-file.txt",
+        "added-source.py"
+      ],
+      "includes_untracked_eligible_file": true,
+      "positive_normal_exit": 0,
+      "positive_optimized_exit": 0
+    },
+    {
+      "name": "restored_hidden_test_matches_writer_bytes_and_mutation_rejected",
+      "status": "pass",
+      "os_linesep": "'\\r\\n'"
+    },
+    {
+      "name": "B3_failed_or_inconsistent_log_rejected_actual_normal_optimized_OK_accepted",
+      "status": "pass",
+      "negative_variants": [
+        "FAILED_failures_1",
+        "FAILED_errors_1",
+        "OK_skipped_1",
+        "missing_terminal"
+      ]
+    },
+    {
+      "name": "B4_missing_or_invalid_thread_id_rejected_nonempty_string_accepted",
+      "status": "pass",
+      "negative_variants": [
+        [
+          null
+        ],
+        [
+          ""
+        ],
+        [
+          123
+        ],
+        [],
+        [
+          "one",
+          "two"
+        ]
+      ]
+    }
+  ],
+  "final_probe_evidence": ".local/v7-method-audit/fixes-probe-results-20261027T191710379107.json",
+  "final_probe_count": 6,
+  "initial_review_preserved": "evals/development-2026-10-28/results/method-review.json",
+  "initial_review_copy": ".local/v7-method-audit/initial-method-review.json",
+  "earlier_passed_probes": {
+    "count": 13,
+    "evidence": [
+      ".local/v7-method-audit/probe-results.json",
+      ".local/v7-method-audit/boundary-results.json"
+    ],
+    "notes": "固定10位置、最多3并发、4并发拒绝、checkpoint仅补评分、失败record不替换、缺位置/记录进入incomplete、基本usage缺失保留null、timeout/error不完整、正文输出不是参数、代理作用域及resource stop。只在先前报告绑定的源码上实测，未冒充真实任务结果。"
+  },
+  "current_static_findings": [
+    "当前PHASES仍为新2题各3次、旧4题各1次，仅with-skill；run仍向run_suite传workers=3，未见替换失败位置的开发控制器分支。",
+    "协议与方法文件进入freeze源hash；原v6资格文件固定SHA进入协议并在prepare校验，关闭时仍校验freeze中的同一SHA。未读取或验证实际v6报告内容。",
+    "端到端成功现在使用verified_usage，而complete_usage汇总也使用该核验字段；原runner及parse_client保持初审SHA，没有修改已冻结旧方法。",
+    "最终源清单、恢复hidden tests、原始日志和raw artifacts hash进入导出；独占证据zip及逐项CRC/hash验证仍保留。真实close和真实归档未执行。"
+  ],
+  "nonblocking_limits": [
+    "这是方法复核通过，不是10次原生开发验证已通过。真实6题预检、rollback、10次原生位置、人工产物复核与证据归档仍需按冻结协议执行。",
+    "旧parse_client计量字段保留原语义；异常多轮输入可能仍有legacy usage_complete=true及部分合计。新门槛与完整性汇总必须读取verified_usage_complete；该异常已被新门槛拒绝。",
+    "人工产物复核仍属具名键与completed的人工断言，未额外声称其是盲审或操作系统级访问证明。候选metadata及真实native客户端副作用未由本审查验证。",
+    "原始事件审查不能证明未记录的OS行为不存在，关键词只触发上下文复核；真实归档完整性和当前系统代理/身份状态需实际执行流程验证。",
+    "不据此声明工业资格、生产助手资格、稳定提速、节省token或未见任务泛化。"
+  ],
+  "next_required_action": "保持本报告SHA不变，执行并核对真实prepare/freeze；随后仅运行预定10个原生位置，最多3并发，不替换失败。"
+}

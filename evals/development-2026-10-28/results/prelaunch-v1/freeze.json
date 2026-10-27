@@ -1,0 +1,267 @@
+{
+  "evidence_class": "known_revealed_development_only",
+  "planned_native_attempts": 10,
+  "skill_sha256": "FC0C16B6C538E1F1580E4448396FA1D386EFE763F133D612C2DEE8DEE4C5C9ED",
+  "ui_sha256": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "transport": {
+    "source": "existing_OS_loopback_proxy",
+    "environment": {
+      "HTTP_PROXY": "http://127.0.0.1:18081",
+      "HTTPS_PROXY": "http://127.0.0.1:18081",
+      "http_proxy": "http://127.0.0.1:18081",
+      "https_proxy": "http://127.0.0.1:18081",
+      "ALL_PROXY": "http://127.0.0.1:18081",
+      "all_proxy": "http://127.0.0.1:18081",
+      "NO_PROXY": "localhost,127.0.0.1,::1",
+      "no_proxy": "localhost,127.0.0.1,::1"
+    },
+    "windows_sandbox": "mxc",
+    "permission_mode": "workspace-write",
+    "approval_policy": "never",
+    "TLS_verification_unchanged": true,
+    "saved_config_or_ACL_changes_by_controller": false,
+    "model_provider_or_auth_changed": false
+  },
+  "cli_sha256": "1103E9E09C71FA2CD0AFD6D8F3B9A2D63174FE8EFD7CB5BD09F1CB14EF58A098",
+  "python_sha256": "7A4102B91959BB234507850EA584E1D31D300A6831B171E4AADC59FF592F0234",
+  "source_sha256": {
+    "evals/development-2026-10-28/run.py": "9F4FD812B6845C9561EEA6A059B534F1A1B34E91B164FE474EE896D65AFCD886",
+    "evals/development-2026-10-28/protocol.json": "B8D39C8DF68EA882983311C7C5BB0DF7E2BA33F8D058B6252FAEDF8C177D3F06",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/full-validation/run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "evals/full-validation/preflight.py": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/development-2026-10-28/cases/d13.json": "0E0EC5DE19E9B4EEB6B5D75C606447E9C0D1505A9ABE2AB8CE13099C5366C74F",
+    "evals/development-2026-10-28/cases/d14.json": "B46E9288F37521C7D4B2E39513B7B60D643DBC88A9EBEEA9E5F37A5B06232251",
+    "evals/development-2026-10-27/cases/d09.json": "B8BC64CF252D5A0D817B130447557EC00D721854D99A61204C8264D4A2C1BBB1",
+    "evals/development-2026-10-27/cases/d10.json": "1A0EAE0354DA04B0526F84052661FE0DCB292523EAF149E9E1EFD608D3CFBC47",
+    "evals/development-2026-10-27/cases/d11.json": "1CC2EF00AB39F5844EFA1847D357D524F209C200C1497FA4B192CBB91F681830",
+    "evals/development-2026-10-27/cases/d12.json": "023440778432CB0480FE40A2FD6E36091909842E738BE8531DDC33E05774BA00"
+  },
+  "cases": {
+    "d13": "57130A1DDDDDA031C0C05E6A4F7CBA660D681196FDD937DE65C015B27BAB2A43",
+    "d14": "93C52DF4E6B08CC337A252A18CDA0A3CB3F7FE27154D93E08140AFDB6379537A",
+    "d09": "9A9537DAC44F277BDE53559EBC3F3DD0A0011CBDCE59BBEAA577BA4479D03312",
+    "d10": "8052C58F8A8547FCE9FD5FA3C808CE75A9106F0B988E7F2C6F869574C9921BDC",
+    "d11": "1BA1A6491C9F4D606C9E603AF11DD3CD0065504DAD7B3E32CFED7B08DEE8EA1C",
+    "d12": "AA3CD4B9F18E0D116B611B13977CE6BD066D405797765808762621137BF312B9"
+  },
+  "schedule": {
+    "known-new": [
+      {
+        "case_id": "d14",
+        "repeat": 1,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d13",
+        "repeat": 2,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d13",
+        "repeat": 1,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d14",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d13",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d14",
+        "repeat": 2,
+        "arms": [
+          "with-skill"
+        ]
+      }
+    ],
+    "known-prior": [
+      {
+        "case_id": "d10",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d09",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d12",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      },
+      {
+        "case_id": "d11",
+        "repeat": 0,
+        "arms": [
+          "with-skill"
+        ]
+      }
+    ]
+  },
+  "closed_v6_qualification_sha256": "653CC575EB892473A765BB0477A2CC059BE5679F896A488C41964E37C003197B",
+  "rollback_controls": {
+    "d13": {
+      "rollback_rejected": true,
+      "grade": {
+        "tests_collected": 54,
+        "tests_ran": 54,
+        "passed": 16,
+        "failed": 38,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.5779999999795109,
+        "exit_code": 1,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 1,
+            "tests_collected": 27,
+            "tests_ran": 27,
+            "passed": 8,
+            "failed": 19,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2970000000204891,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 1,
+            "tests_collected": 27,
+            "tests_ran": 27,
+            "passed": 8,
+            "failed": 19,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2809999999590218,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      }
+    },
+    "d14": {
+      "rollback_rejected": true,
+      "grade": {
+        "tests_collected": 86,
+        "tests_ran": 86,
+        "passed": 2,
+        "failed": 84,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.625,
+        "exit_code": 1,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 1,
+            "tests_collected": 43,
+            "tests_ran": 43,
+            "passed": 1,
+            "failed": 42,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.3279999999795109,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 1,
+            "tests_collected": 43,
+            "tests_ran": 43,
+            "passed": 1,
+            "failed": 42,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2970000000204891,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

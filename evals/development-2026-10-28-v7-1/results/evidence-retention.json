@@ -1,0 +1,14 @@
+{
+  "private_archive": ".local/v7-1-development-evidence.zip",
+  "sha256": "1600DF0EC7DB33ACE2DBEEA793B50ED7EFF962848513272AFD661CD37EB55299",
+  "entries": 678,
+  "bytes": 3526404,
+  "CRC_and_all_entry_hashes_verified": true,
+  "includes_final_workspaces_and_untracked_files": true,
+  "excluded": [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".benchmark-deps"
+  ]
+}

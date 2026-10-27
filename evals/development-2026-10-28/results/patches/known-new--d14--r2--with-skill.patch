@@ -1,0 +1,35 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 745ef5c..da5cf83 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2871,12 +2871,24 @@ class Option(Parameter):
+             if show_default_is_str:
+                 default_string = f"({self.show_default})"
+             elif isinstance(default_value, (list, tuple)):
+-                default_string = ", ".join(
+-                    self.type.normalize_choice(d, ctx)
+-                    if isinstance(self.type, types.Choice) and isinstance(d, enum.Enum)
+-                    else str(d)
+-                    for d in default_value
+-                )
++                if isinstance(self.type, types.Choice):
++                    normalize_choice = self.type.normalize_choice
++
++                    def normalize_default(value: t.Any, nested: bool = False) -> t.Any:
++                        if isinstance(value, enum.Enum):
++                            return normalize_choice(value, ctx)
++                        if nested and isinstance(value, list):
++                            return [normalize_default(item) for item in value]
++                        if nested and isinstance(value, tuple):
++                            return tuple(normalize_default(item) for item in value)
++                        return value
++
++                    default_value = (
++                        normalize_default(d, nested=self.multiple and self.nargs > 1)
++                        for d in default_value
++                    )
++
++                default_string = ", ".join(str(d) for d in default_value)
+             elif inspect.isfunction(default_value):
+                 default_string = _("(dynamic)")
+             elif self.is_bool_flag and self.secondary_opts:

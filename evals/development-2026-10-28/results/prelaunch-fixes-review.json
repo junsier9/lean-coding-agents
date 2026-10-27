@@ -1,0 +1,149 @@
+{
+  "review_type": "independent_narrow_prelaunch_freeze_replay_fix_review",
+  "reviewed_at": "2026-10-27T19:23:52.991210+00:00",
+  "completed": true,
+  "review_passed": true,
+  "blocking_findings": [],
+  "development_gate_evaluated": false,
+  "development_gate_passed": null,
+  "source_sha256": {
+    "evals/development-2026-10-28/run.py": "24226240BC342054EA11BE6B520542F6FAB048550FD06239AF81048E6146C137",
+    "evals/development-2026-10-28/protocol.json": "B8D39C8DF68EA882983311C7C5BB0DF7E2BA33F8D058B6252FAEDF8C177D3F06",
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/runtime-2026-10-27/mxc_proxy_transport.py": "56123BFC13F21824302106881025BA05E4F3921D47820E52B1ABD0BE2AFE386B",
+    "evals/generalization-2026-10-26/observe.py": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/generalization-2026-10-26/qualify_beta.py": "1006399271703AC757CC27EA2671E232B90338AF1E71E485A46669E95530C1C5"
+  },
+  "source_hashes_unchanged_during_final_probes_and_report": true,
+  "change_scope_verified": {
+    "only_changed_file": "evals/development-2026-10-28/run.py",
+    "exact_change": "controls[name]从含volatile seconds的完整grade，改为rollback_rejected及normal/optimized测试数；逐字替换验证除此以外无源码差异。",
+    "other_eight_method_files_match_previous_review": true,
+    "diff": ".local/v7-method-audit/prelaunch-only-source-change.diff"
+  },
+  "replay_probe": {
+    "passed": true,
+    "method": "只提取require/immutable/freeze的AST，在审查目录新建的全合成PROJECT/ROOT/HERE及runner回调下调用；cases/preflight/grader/transport/runtime hash均为合成值，未触及真实运行树或真实预检。",
+    "previous_method_reproduced": "同一模拟方法在两次rollback grade耗时变化后，第二次freeze拒绝Frozen or closed artifact changed。",
+    "current_method_verified": "两次rollback grade耗时不同，新版freeze仍接受相同冻结值；freeze.json和frozen-at.json各只写一次。",
+    "seconds_run1": 0.346,
+    "seconds_run2": 1.0379999999999998,
+    "stable_rollback_controls": {
+      "d13": {
+        "normal_tests": 4,
+        "optimized_tests": 4,
+        "rollback_rejected": true
+      },
+      "d14": {
+        "normal_tests": 5,
+        "optimized_tests": 5,
+        "rollback_rejected": true
+      }
+    },
+    "evidence": ".local/v7-method-audit/prelaunch-replay-results-20261027T192303137148.json"
+  },
+  "previous_five_issues_not_regressed": {
+    "passed": true,
+    "measured_probe_groups": 6,
+    "covered": [
+      "缺失末轮usage拒绝及完整正例",
+      "cached_input_tokens>input_tokens拒绝",
+      "最终源码与实际评分树绑定及变更拒绝",
+      "hidden test恢复字节绑定",
+      "normal/-O日志终态和失败/错误/跳过数绑定",
+      "有效线程身份及缺失/空值拒绝"
+    ],
+    "evidence": ".local/v7-method-audit/fixes-probe-results-20261027T192310991675.json",
+    "probes": [
+      {
+        "name": "B1_original_missing_final_usage_rejected_normal_complete_usage_accepted",
+        "status": "pass",
+        "negative_variants": [
+          "two_completions_missing_last_usage",
+          "no_usage",
+          "missing_cached",
+          "negative_cached",
+          "bool_output"
+        ]
+      },
+      {
+        "name": "cached_tokens_cannot_exceed_input",
+        "status": "pass",
+        "input_tokens": 10,
+        "raw_cached_input_tokens": 11,
+        "parsed_cached_input_tokens": null,
+        "verified_usage_complete": false
+      },
+      {
+        "name": "B2_post_grade_source_change_rejected_matching_tree_accepted",
+        "status": "pass",
+        "mutations_detected": [
+          "src/value.py",
+          "new-file.txt",
+          "added-source.py"
+        ],
+        "includes_untracked_eligible_file": true,
+        "positive_normal_exit": 0,
+        "positive_optimized_exit": 0
+      },
+      {
+        "name": "restored_hidden_test_matches_writer_bytes_and_mutation_rejected",
+        "status": "pass",
+        "os_linesep": "'\\r\\n'"
+      },
+      {
+        "name": "B3_failed_or_inconsistent_log_rejected_actual_normal_optimized_OK_accepted",
+        "status": "pass",
+        "negative_variants": [
+          "FAILED_failures_1",
+          "FAILED_errors_1",
+          "OK_skipped_1",
+          "missing_terminal"
+        ]
+      },
+      {
+        "name": "B4_missing_or_invalid_thread_id_rejected_nonempty_string_accepted",
+        "status": "pass",
+        "negative_variants": [
+          [
+            null
+          ],
+          [
+            ""
+          ],
+          [
+            123
+          ],
+          [],
+          [
+            "one",
+            "two"
+          ]
+        ]
+      }
+    ]
+  },
+  "scope": {
+    "native_model_clients_called": 0,
+    "real_prepare_run_close_invoked": false,
+    "real_case_preflight_invoked": false,
+    "real_candidate_or_fixture_read": false,
+    "parent_results_or_archived_prelaunch_runs_read": false,
+    "network_used": false,
+    "packages_installed": false,
+    "method_sources_modified": false
+  },
+  "preserved_reports": [
+    "evals/development-2026-10-28/results/method-review.json",
+    "evals/development-2026-10-28/results/method-fixes-review.json"
+  ],
+  "nonblocking_limits": [
+    "只审查这次冻结身份稳定性修正和此前已实测问题的回归；未读取真实prepare/error/registration或prelaunch-v1产物，不能独立确认真实调用数、归档内容或实际预检成功。",
+    "模拟已验证时间值不会改变冻结身份，但真实prepare两次的一致性仍需父流程实际确认。",
+    "方法审查通过不等于10次开发验证通过，不支持生产资格、工业资格、提速或泛化结论。"
+  ],
+  "next_required_action": "保持当前源码SHA，真实prepare连续执行两次确认同一freeze，再重新登记固定10个原生位置后按最多3并发运行。"
+}

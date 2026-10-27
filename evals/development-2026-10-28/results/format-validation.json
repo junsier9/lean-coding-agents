@@ -1,0 +1,13 @@
+{
+  "check": "skill-creator quick_validate.py",
+  "result": "passed",
+  "stdout": "Skill is valid!",
+  "validator_sha256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+  "authoring_validator_python": "Python 3.13.0",
+  "native_evaluation_python_changed": false,
+  "initial_authoring_attempt": "Bundled3.12 lacked yaml; used existing system3.13 with yaml, without installing packages",
+  "skill_sha256": "FC0C16B6C538E1F1580E4448396FA1D386EFE763F133D612C2DEE8DEE4C5C9ED",
+  "words_including_frontmatter": 443,
+  "decision_rules": 4,
+  "behavioral_effect_proven_by_format_check": false
+}

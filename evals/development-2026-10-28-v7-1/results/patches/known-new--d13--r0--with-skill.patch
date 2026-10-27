@@ -1,0 +1,16 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index b279e62..451c111 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1194,8 +1194,9 @@ class Command:
+ 
+         parser = self.make_parser(ctx)
+         opts, args, param_order = parser.parse_args(args=args)
+-        ctx._shell_complete_option = parser._shell_complete_option
+-        ctx._shell_complete_options = parser._shell_complete_options
++        # Parser overrides may only implement the original three-value interface.
++        ctx._shell_complete_option = getattr(parser, "_shell_complete_option", None)
++        ctx._shell_complete_options = getattr(parser, "_shell_complete_options", True)
+ 
+         for param in iter_params_for_processing(param_order, self.get_params(ctx)):
+             value, args = param.handle_parse_result(ctx, opts, args)

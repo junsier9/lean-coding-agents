@@ -1,0 +1,5 @@
+{
+  "decisions": [],
+  "confirmed_scope_violations": 0,
+  "limits": "Emitted trace review only, not OS-level access attestation"
+}

@@ -1,0 +1,17 @@
+{
+  "registered_at": "2026-10-27T19:54:26.616434+00:00",
+  "candidate": "v7-1-python",
+  "evidence_class": "known_revealed_development_only",
+  "native_calls_planned": 6,
+  "native_calls_started_at_registration": 0,
+  "candidate_sha256": "B6DABCBC73C16EA12E95EB5F5D3E578848E000897B6164FCA4E86841DB73BEDE",
+  "words_including_frontmatter": 456,
+  "freeze_sha256": "5BA11D5CEAF8C17D0747160F34B9DF7BF6E8258F13EEDFAA7879596147EE7053",
+  "method_review_sha256": "7C0F39A1C7D11D55DEF84EC14F3465670EBC8A1E4DE603BB67EC1C608287553F",
+  "all6_preflights_qualified": true,
+  "two_actual_prepare_replays_same_freeze": true,
+  "old10_window_remains_failed": true,
+  "previous_failed_v7_summary_sha256": "E495CA712DF2A3B1418B987FA1342F19F0487A0C75B7F3A5B26A38C61794DBF3",
+  "native_replacement_calls": 0,
+  "fresh_task_or_efficiency_claim": false
+}
