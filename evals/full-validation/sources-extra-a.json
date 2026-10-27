@@ -1,0 +1,1249 @@
+{
+  "cases": [
+    {
+      "id": "extra-a-mi-1294",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1294",
+      "task": "seekable 的 maxlen=0 模式在反复 peek() 和 bool() 后保留的内存随调用次数增长，即使只查看同一个元素也会持续累积。请让这类观察操作的额外存储保持有界，并保持后续遍历结果与零历史缓存的 elements() 契约。",
+      "fix_sha": "1dd480a08bc2a4c399c84bf21cb1558f8b5fc838",
+      "base_sha": "670b715b307adfe5d2fca08a87ca562cb8bfea2c",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 test_repeated_zero_cache_peek_has_bounded_memory 使用 CPython tracemalloc，重复10000次peek和布尔检查；非CPython或已有追踪时按上游规则跳过。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Bound lookahead storage for zero-cache seekable iterators",
+        "merged_at": "2026-09-25T16:30:08Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/1dd480a08bc2a4c399c84bf21cb1558f8b5fc838",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1294",
+          "https://github.com/more-itertools/more-itertools/commit/1dd480a08bc2a4c399c84bf21cb1558f8b5fc838",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/1dd480a08bc2a4c399c84bf21cb1558f8b5fc838",
+          "https://github.com/more-itertools/more-itertools/blob/1dd480a08bc2a4c399c84bf21cb1558f8b5fc838/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 test_repeated_zero_cache_peek_has_bounded_memory 使用 CPython tracemalloc，重复10000次peek和布尔检查；非CPython或已有追踪时按上游规则跳过。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1285",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1285",
+      "task": "bucket 在查询不存在的键或做失败的成员检查后，会把该键永久加入自身的键集合，导致成员检查与迭代结果互相矛盾。请让查询不凭空产生键，同时保留真实出现过且已被取空的桶以及 validator 的行为。",
+      "fix_sha": "3ea9b009b19db0e01a83d51cee43e9935c0d657f",
+      "base_sha": "b2f3aff7633057d234ec9186c18a53f4df306d08",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增四个 BucketTests 回归：失败成员检查、缺失键查询、有validator的缺失查询及键集合只包含真实数据键。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Issue 1284: don't let a bucket lookup invent a key",
+        "merged_at": "2026-09-17T14:26:17Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/3ea9b009b19db0e01a83d51cee43e9935c0d657f",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 13,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1285",
+          "https://github.com/more-itertools/more-itertools/commit/3ea9b009b19db0e01a83d51cee43e9935c0d657f",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/3ea9b009b19db0e01a83d51cee43e9935c0d657f",
+          "https://github.com/more-itertools/more-itertools/blob/3ea9b009b19db0e01a83d51cee43e9935c0d657f/tests/test_more.py"
+        ],
+        "regression_evidence": "新增四个 BucketTests 回归：失败成员检查、缺失键查询、有validator的缺失查询及键集合只包含真实数据键。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1223",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1223",
+      "task": "chunked 对负块大小泄露 itertools.islice 的内部错误消息，和同类分块工具的公开参数错误契约不一致。请让负 n 报明确的 ValueError（n must be at least 0），同时保留 n=None、n=0 与正常 strict 分块行为。",
+      "fix_sha": "9ddc55c57390707d97d96302eea1992919c8d930",
+      "base_sha": "516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 ChunkedTests.test_negative 直接断言公开错误类型和错误消息。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Raise a clear ValueError for negative n in chunked()",
+        "merged_at": "2026-07-20T14:38:45Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/9ddc55c57390707d97d96302eea1992919c8d930",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 3,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1223",
+          "https://github.com/more-itertools/more-itertools/commit/9ddc55c57390707d97d96302eea1992919c8d930",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/9ddc55c57390707d97d96302eea1992919c8d930",
+          "https://github.com/more-itertools/more-itertools/blob/9ddc55c57390707d97d96302eea1992919c8d930/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 ChunkedTests.test_negative 直接断言公开错误类型和错误消息。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1216",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1216",
+      "task": "numeric_range 声称与内置 range 类似，但表示相同序列的对象可能因未使用的步长而不相等或哈希不同，尤其是只包含一项的范围。请使相等性与实际序列一致，并保证相等对象哈希相同，覆盖空范围、单项范围、数值类型和日期范围。",
+      "fix_sha": "f9cdcb990dbb87a9748e61a9a28c2ad737e60452",
+      "base_sha": "da37f9de442b69fbcaa9f54fb042c2a6999473a6",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。修改 NumericRangeTests.test_eq，新增同起点单项但不同步长案例，并检查相等对象的hash。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Issue 1214: Update __eq__ and __hash__ for numeric_range",
+        "merged_at": "2026-07-17T14:33:42Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/f9cdcb990dbb87a9748e61a9a28c2ad737e60452",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 47,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1216",
+          "https://github.com/more-itertools/more-itertools/commit/f9cdcb990dbb87a9748e61a9a28c2ad737e60452",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/f9cdcb990dbb87a9748e61a9a28c2ad737e60452",
+          "https://github.com/more-itertools/more-itertools/blob/f9cdcb990dbb87a9748e61a9a28c2ad737e60452/tests/test_more.py"
+        ],
+        "regression_evidence": "修改 NumericRangeTests.test_eq，新增同起点单项但不同步长案例，并检查相等对象的hash。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1194",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1194",
+      "task": "tail(-1, seq) 对有长度输入静默返回空结果，而 tail(-1, iter(seq)) 却报 ValueError。请统一非法负长度的行为，并保留零长度、超长请求及普通序列和迭代器输入的结果。",
+      "fix_sha": "586ccc4d5af7263108c0f51386acff27469a28e4",
+      "base_sha": "fe24c338d8c3264a82cdc2bed49fb156cfd11a86",
+      "production_files": [
+        "more_itertools/recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_recipes.py。新增 TailTests.test_sized_negative 和 test_iterator_negative。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Raise for negative tail sizes on sized iterables",
+        "merged_at": "2026-07-01T20:23:57Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/586ccc4d5af7263108c0f51386acff27469a28e4",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 3,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1194",
+          "https://github.com/more-itertools/more-itertools/commit/586ccc4d5af7263108c0f51386acff27469a28e4",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/586ccc4d5af7263108c0f51386acff27469a28e4",
+          "https://github.com/more-itertools/more-itertools/blob/586ccc4d5af7263108c0f51386acff27469a28e4/tests/test_recipes.py"
+        ],
+        "regression_evidence": "新增 TailTests.test_sized_negative 和 test_iterator_negative。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1182",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1182",
+      "task": "iter_index 对序列的负 start/stop 可正常按末尾计数，但把同一输入换成普通迭代器就抛 ValueError。请使两类输入在负边界上返回一致的绝对索引，保留正边界和无匹配时的行为。",
+      "fix_sha": "43decdd76072519fbf1392fb3d066ad26601c147",
+      "base_sha": "c5538f9ff7f3fa92ac0fe378b5c70486494c040b",
+      "production_files": [
+        "more_itertools/recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_recipes.py。新增 IterIndexTests.test_negative_start_and_stop，四种边界组合分别通过list和iter包装验证。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Support negative start/stop in iter_index for general iterables",
+        "merged_at": "2026-06-17T14:12:38Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/43decdd76072519fbf1392fb3d066ad26601c147",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1182",
+          "https://github.com/more-itertools/more-itertools/commit/43decdd76072519fbf1392fb3d066ad26601c147",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/43decdd76072519fbf1392fb3d066ad26601c147",
+          "https://github.com/more-itertools/more-itertools/blob/43decdd76072519fbf1392fb3d066ad26601c147/tests/test_recipes.py"
+        ],
+        "regression_evidence": "新增 IterIndexTests.test_negative_start_and_stop，四种边界组合分别通过list和iter包装验证。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1153",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1153",
+      "task": "对空 numeric_range 使用 reversed() 会抛 IndexError，而空范围的正向遍历可正常结束。请让空范围的反向遍历也产生空结果，并保持非空升降范围的反向行为。",
+      "fix_sha": "1806a75b836b9eff4a7885a96ece6183f5fb6409",
+      "base_sha": "247e15b3a489d5805375c95dfa79486c9bd0eb1b",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 NumericRangeTests.test_empty_reversed，直接检查 list(reversed(numeric_range(0)))。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix empty ranges in numeric_range.__reversed__",
+        "merged_at": "2026-04-13T14:56:14Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/1806a75b836b9eff4a7885a96ece6183f5fb6409",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 10,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1153",
+          "https://github.com/more-itertools/more-itertools/commit/1806a75b836b9eff4a7885a96ece6183f5fb6409",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/1806a75b836b9eff4a7885a96ece6183f5fb6409",
+          "https://github.com/more-itertools/more-itertools/blob/1806a75b836b9eff4a7885a96ece6183f5fb6409/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 NumericRangeTests.test_empty_reversed，直接检查 list(reversed(numeric_range(0)))。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1119",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1119",
+      "task": "nth_permutation 对 r 大于输入长度时抛出不符合索引契约的异常；nth_combination_with_replacement 还错误拒绝本来合法的较大 r。请按各自组合对象的真实数量处理这些边界，保留负 r 的 ValueError，以及无效正负索引的 IndexError。",
+      "fix_sha": "881095e4b2041f9c32bb714cf53d7a193232c4b1",
+      "base_sha": "6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py",
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py tests/test_recipes.py。修改 NthCombinationWithReplacementTests 的普通和非法索引测试，新增 r=7 的合法结果；recipes测试新增大r的排列索引错误断言。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Simplify nth_xxx code and fix invalid exception.",
+        "merged_at": "2026-01-03T15:51:13Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/881095e4b2041f9c32bb714cf53d7a193232c4b1",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 35,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1119",
+          "https://github.com/more-itertools/more-itertools/commit/881095e4b2041f9c32bb714cf53d7a193232c4b1",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/881095e4b2041f9c32bb714cf53d7a193232c4b1",
+          "https://github.com/more-itertools/more-itertools/blob/881095e4b2041f9c32bb714cf53d7a193232c4b1/tests/test_more.py",
+          "https://github.com/more-itertools/more-itertools/blob/881095e4b2041f9c32bb714cf53d7a193232c4b1/tests/test_recipes.py"
+        ],
+        "regression_evidence": "修改 NthCombinationWithReplacementTests 的普通和非法索引测试，新增 r=7 的合法结果；recipes测试新增大r的排列索引错误断言。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1118",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1118",
+      "task": "nth_combination 在 r 大于输入长度、因而根本没有组合时抛 ValueError，和其按索引选择元素的契约及文档等价实现不一致。请使无有效索引的情况抛 IndexError，仍对负 r 抛 ValueError，并保留正常及负索引取值。",
+      "fix_sha": "f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+      "base_sha": "b110a77364ec0ed5bb06194b591f97a54591dbc9",
+      "production_files": [
+        "more_itertools/recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_recipes.py。修改 NthCombinationTests.test_invalid_r，覆盖 nth_combination('abc',5,0) 的IndexError与负r的ValueError。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Simplify nth_combination. Fix incorrect exception.",
+        "merged_at": "2026-01-01T17:41:27Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 14,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1118",
+          "https://github.com/more-itertools/more-itertools/commit/f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+          "https://github.com/more-itertools/more-itertools/blob/f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9/tests/test_recipes.py"
+        ],
+        "regression_evidence": "修改 NthCombinationTests.test_invalid_r，覆盖 nth_combination('abc',5,0) 的IndexError与负r的ValueError。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-1117",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1117",
+      "task": "nth_product、product_index 和 random_product 的 repeat 参数遇到一次性迭代器输入时会耗尽数据，无法得到与同内容序列相同的结果。请恢复这些函数在 repeat>1 时的迭代器支持，保留产品顺序、索引和随机采样的既有契约。",
+      "fix_sha": "6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+      "base_sha": "f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+      "production_files": [
+        "more_itertools/more.py",
+        "more_itertools/recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py",
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py tests/test_recipes.py。修改两个产品索引测试的repeat场景，并在RandomProductTests加入iterator输入的重复采样检查。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix support for iterators using \"repeat\"",
+        "merged_at": "2026-01-01T17:41:56Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/1117",
+          "https://github.com/more-itertools/more-itertools/commit/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+          "https://github.com/more-itertools/more-itertools/blob/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76/tests/test_more.py",
+          "https://github.com/more-itertools/more-itertools/blob/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76/tests/test_recipes.py"
+        ],
+        "regression_evidence": "修改两个产品索引测试的repeat场景，并在RandomProductTests加入iterator输入的重复采样检查。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-944",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/944",
+      "task": "sample 在使用 counts 且 strict=True 时，样本数大于总体计数仍可能返回短样本而不报错。请使这种情况遵守 strict 契约，同时保持加权采样的相同错误检查以及 counts 与 weights 互斥的规则。",
+      "fix_sha": "7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+      "base_sha": "18225d856665bfc3bfdfcdbfa585290f92645daf",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 SampleTests.test_error_cases，包含counted population不足时应抛ValueError的确定性回归。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix bug in sample() with the strict option with counts",
+        "merged_at": "2025-01-11T14:37:27Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/944",
+          "https://github.com/more-itertools/more-itertools/commit/7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+          "https://github.com/more-itertools/more-itertools/blob/7b9889c0b7de2189e7dd77688f7a811ce43337cc/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 SampleTests.test_error_cases，包含counted population不足时应抛ValueError的确定性回归。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-720",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/720",
+      "task": "unique_in_window 实际按先前产出的唯一值去重，而不是按最近输入窗口，导致经过大量重复输入后本该重新出现的值仍被压掉；n=1 也错误删除重复项。请使输出遵守文档中的输入窗口语义，保持 key 与非法窗口参数行为。",
+      "fix_sha": "719a333bccd20ced15a7b4688fb6d47f05d8606d",
+      "base_sha": "c8baa10e66de18662114b71edcfa32f5dfdd2881",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。修改 UniqueInWindowTests.test_basic，新增重复值长段后重现旧值的样例，并将n=1的预期调整为全部输入。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix unique_in_window to match described behavior",
+        "merged_at": "2023-05-21T17:47:12Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/719a333bccd20ced15a7b4688fb6d47f05d8606d",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 21,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/720",
+          "https://github.com/more-itertools/more-itertools/commit/719a333bccd20ced15a7b4688fb6d47f05d8606d",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/719a333bccd20ced15a7b4688fb6d47f05d8606d",
+          "https://github.com/more-itertools/more-itertools/blob/719a333bccd20ced15a7b4688fb6d47f05d8606d/tests/test_more.py"
+        ],
+        "regression_evidence": "修改 UniqueInWindowTests.test_basic，新增重复值长段后重现旧值的样例，并将n=1的预期调整为全部输入。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-714",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/714",
+      "task": "partial_product 的边界返回形状不一致：单输入时直接返回元素而非单元素元组，空输入组合会异常或缺少应有的空元组结果。请使零个输入、含空输入及单输入的结果遵守产品接口的元组契约，保留多输入逐次变更一个分量的行为。",
+      "fix_sha": "146113bb4bbe93df0e86000c4de820748d8bd139",
+      "base_sha": "3ac895f9e065f993a35d05a072eabfa28a819cfd",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。修改 PartialProductTests，明确零输入、空iterable、单iterable和两输入的结果。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Issue #713: Fix `partial_product` (also simplify and clean up)",
+        "merged_at": "2023-05-18T13:50:51Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/146113bb4bbe93df0e86000c4de820748d8bd139",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 28,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/714",
+          "https://github.com/more-itertools/more-itertools/commit/146113bb4bbe93df0e86000c4de820748d8bd139",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/146113bb4bbe93df0e86000c4de820748d8bd139",
+          "https://github.com/more-itertools/more-itertools/blob/146113bb4bbe93df0e86000c4de820748d8bd139/tests/test_more.py"
+        ],
+        "regression_evidence": "修改 PartialProductTests，明确零输入、空iterable、单iterable和两输入的结果。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-708",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/708",
+      "task": "iterate 的用户函数通过 StopIteration 表示结束时，外层生成器会转成 RuntimeError，无法自然完成有限迭代。请支持函数正常结束迭代，同时保持初始值产出、普通无限迭代和外部向生成器抛入异常的既有语义。",
+      "fix_sha": "cd0a3a87d231033db06a3c222fe893025e398a86",
+      "base_sha": "7c1b6482a00cb9c1f76061c12be192ed5043e5ea",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 IterateTests.test_func_controls_iteration_stop，并包含普通序列及外部throw控制测试。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Issue #707: fix ``iterate()`` to enable ``func`` to raise StopIteration + 3 unittests",
+        "merged_at": "2023-04-21T14:43:49Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/cd0a3a87d231033db06a3c222fe893025e398a86",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 5,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/708",
+          "https://github.com/more-itertools/more-itertools/commit/cd0a3a87d231033db06a3c222fe893025e398a86",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/cd0a3a87d231033db06a3c222fe893025e398a86",
+          "https://github.com/more-itertools/more-itertools/blob/cd0a3a87d231033db06a3c222fe893025e398a86/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 IterateTests.test_func_controls_iteration_stop，并包含普通序列及外部throw控制测试。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-659",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/659",
+      "task": "split_after 在 maxsplit=1 且分隔匹配恰好位于输入末尾时，多返回一个空分组，例如单项 [1] 被分成 [[1],[]]。请去掉这种末尾空分组，保留非空剩余部分及其他 maxsplit 的行为。",
+      "fix_sha": "fc1f9acf1b7e11bbc64b54f8385f2e87ecd87452",
+      "base_sha": "6793bd3e4ed15318746ed2511733f12a9932eb64",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。修改 SplitAfterTest.test_max_split，加入([1], lambda x:x==1, 1)只得到[[1]]的回归。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix issue 658 for split_after",
+        "merged_at": "2022-11-24T12:38:54Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/fc1f9acf1b7e11bbc64b54f8385f2e87ecd87452",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/659",
+          "https://github.com/more-itertools/more-itertools/commit/fc1f9acf1b7e11bbc64b54f8385f2e87ecd87452",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/fc1f9acf1b7e11bbc64b54f8385f2e87ecd87452",
+          "https://github.com/more-itertools/more-itertools/blob/fc1f9acf1b7e11bbc64b54f8385f2e87ecd87452/tests/test_more.py"
+        ],
+        "regression_evidence": "修改 SplitAfterTest.test_max_split，加入([1], lambda x:x==1, 1)只得到[[1]]的回归。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-650",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/650",
+      "task": "把 before_and_after 返回的 remainder 连续再次传入 before_and_after，处理较长的分段事件流时会触发 RecursionError。请使这种嵌套使用可处理大量分段，同时保留分界元素和两个迭代器的消费顺序契约。",
+      "fix_sha": "7e910e00b5d227527699861040b12f50d3c70fae",
+      "base_sha": "d63ed69ad4299d594513d38b1adb018059fb776d",
+      "production_files": [
+        "more_itertools/recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_recipes.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_recipes.py。新增 BeforeAndAfterTests.test_nested_remainder，以2000段SUM/MULTIPLY事件覆盖重入remainder。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Allow passing before_and_after remainders into before_and_after again",
+        "merged_at": "2022-10-15T02:21:30Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/7e910e00b5d227527699861040b12f50d3c70fae",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 9,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/650",
+          "https://github.com/more-itertools/more-itertools/commit/7e910e00b5d227527699861040b12f50d3c70fae",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/7e910e00b5d227527699861040b12f50d3c70fae",
+          "https://github.com/more-itertools/more-itertools/blob/7e910e00b5d227527699861040b12f50d3c70fae/tests/test_recipes.py"
+        ],
+        "regression_evidence": "新增 BeforeAndAfterTests.test_nested_remainder，以2000段SUM/MULTIPLY事件覆盖重入remainder。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-917",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/917",
+      "task": "is_sorted 在 strict 模式下会要求输入对象提供 <= 等额外比较，而这些对象只实现 __lt__ 时仍可正常用于 sorted。请使升降、strict 和 key 组合遵守与排序相容的比较契约，并保持重复值的严格性判断。",
+      "fix_sha": "e733192454b73bbea8645e4dcbee95b13eba714c",
+      "base_sha": "b2b3bf6ddc5cb652201545ba191d07400c4e89cf",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 BarelySortable 测试类型，并让 IsSortedTests.test_basic 的参数矩阵通过只实现__lt__的对象执行。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Issue 916: lt only for is_sorted",
+        "merged_at": "2024-10-11T14:28:53Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/e733192454b73bbea8645e4dcbee95b13eba714c",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 17,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/917",
+          "https://github.com/more-itertools/more-itertools/commit/e733192454b73bbea8645e4dcbee95b13eba714c",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/e733192454b73bbea8645e4dcbee95b13eba714c",
+          "https://github.com/more-itertools/more-itertools/blob/e733192454b73bbea8645e4dcbee95b13eba714c/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 BarelySortable 测试类型，并让 IsSortedTests.test_basic 的参数矩阵通过只实现__lt__的对象执行。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-509",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/509",
+      "task": "split_before 对空集合返回包含一个空分组的结果，与其无数据可分割的契约不符。请使默认参数下的空输入得到空迭代结果，并保留普通分隔与 maxsplit 场景的行为。",
+      "fix_sha": "42e1dac4208516ccd55a16fe554e1714b6b42079",
+      "base_sha": "c7e73ffbf9c7e15969f9ed301d0431770061ab90",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 SplitBeforeTest.test_empty_collection。此案例是默认路径的历史缺陷，与原池中maxsplit=0的后续缺陷不同。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix split_before for an empty collections.",
+        "merged_at": "2021-03-12T01:51:20Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/42e1dac4208516ccd55a16fe554e1714b6b42079",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 3,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/509",
+          "https://github.com/more-itertools/more-itertools/commit/42e1dac4208516ccd55a16fe554e1714b6b42079",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/42e1dac4208516ccd55a16fe554e1714b6b42079",
+          "https://github.com/more-itertools/more-itertools/blob/42e1dac4208516ccd55a16fe554e1714b6b42079/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 SplitBeforeTest.test_empty_collection。此案例是默认路径的历史缺陷，与原池中maxsplit=0的后续缺陷不同。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-mi-412",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/412",
+      "task": "spy 返回的预览列表和重建迭代器共享同一个列表：调用方修改预览列表的元素，会改变随后从迭代器读出的原始数据。请使修改预览列表不影响重新读取的源序列，保留取样数量和一次性输入行为。",
+      "fix_sha": "a5a14f61d8331fb6d67c00eace8e22d5c6226ddf",
+      "base_sha": "c0465331cbc0d882cd7dce5c0bd19aaf46dfb968",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_more.py。新增 SpyTests.test_immutable，修改head[0]后检查new_iterable仍产出原始字符。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix spy to make returned iterable immutable",
+        "merged_at": "2020-03-30T00:56:55Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/a5a14f61d8331fb6d67c00eace8e22d5c6226ddf",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/412",
+          "https://github.com/more-itertools/more-itertools/commit/a5a14f61d8331fb6d67c00eace8e22d5c6226ddf",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/a5a14f61d8331fb6d67c00eace8e22d5c6226ddf",
+          "https://github.com/more-itertools/more-itertools/blob/a5a14f61d8331fb6d67c00eace8e22d5c6226ddf/tests/test_more.py"
+        ],
+        "regression_evidence": "新增 SpyTests.test_immutable，修改head[0]后检查new_iterable仍产出原始字符。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-513",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/513",
+      "task": "SpooledBytesIO/SpooledStringIO 的成功 write 返回 None，二进制流与 io.BufferedWriter 配合 flush 还会失败；多字节 buffer 的滚动阈值也计算不正确。文本流向后相对 seek 后读到错误位置，非法负目标还可能移动游标。请恢复标准I/O兼容的写入计数、二进制buffer支持及按字符定位，覆盖内存和已滚动流。",
+      "fix_sha": "4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d",
+      "base_sha": "961dcff3f42e73b245aef65e377fe82763b257bb",
+      "production_files": [
+        "boltons/ioutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_ioutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_ioutils.py。新增写入计数、BufferedWriter集成、多字节memoryview滚动、向后字符定位和非法负目标保持位置的回归。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix spooled stream write compatibility and backwards text seeks",
+        "merged_at": "2026-09-23T23:55:31Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 37,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/513",
+          "https://github.com/mahmoud/boltons/commit/4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d",
+          "https://api.github.com/repos/mahmoud/boltons/commits/4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d",
+          "https://github.com/mahmoud/boltons/blob/4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d/tests/test_ioutils.py"
+        ],
+        "regression_evidence": "新增写入计数、BufferedWriter集成、多字节memoryview滚动、向后字符定位和非法负目标保持位置的回归。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-475",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/475",
+      "task": "iter_splitlines 会把普通日期文本中的空格加28或29误当换行，却漏掉真正的Unicode行/段分隔符；indent 也继承了这种文本损坏。请正确处理这些分隔符及首尾空行，保持普通数字文本和混合换行的内容。",
+      "fix_sha": "45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+      "base_sha": "1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+      "production_files": [
+        "boltons/strutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_strutils.py。新增两个Unicode分隔符参数案例、普通数字保真及indent混合换行回归。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix Unicode line separators in iter_splitlines",
+        "merged_at": "2026-09-07T10:06:02Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/475",
+          "https://github.com/mahmoud/boltons/commit/45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+          "https://api.github.com/repos/mahmoud/boltons/commits/45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+          "https://github.com/mahmoud/boltons/blob/45a251181fba4c5a4ecc05e838da1c394e1ed0e4/tests/test_strutils.py"
+        ],
+        "regression_evidence": "新增两个Unicode分隔符参数案例、普通数字保真及indent混合换行回归。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-464",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/464",
+      "task": "JSONLIterator 在二进制文件上使用 rel_seek 时抛 TypeError，同一内容以文本模式打开却可正常定位。请使二进制与文本JSONL的相对定位返回一致的记录，保留按完整行边界读取和EOF行为。",
+      "fix_sha": "805c803ca71da28f09cb7ec521f7ea14d1a4048b",
+      "base_sha": "5150802911edbf8ade1e7d1bfb346fed52c88d05",
+      "production_files": [
+        "boltons/jsonutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_jsonutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_jsonutils.py。新增 test_jsonl_relative_seek_binary_matches_text，比较同一文件的rb与文本模式。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Support relative seeking in binary JSONL streams",
+        "merged_at": "2026-09-07T09:49:27Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/805c803ca71da28f09cb7ec521f7ea14d1a4048b",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/464",
+          "https://github.com/mahmoud/boltons/commit/805c803ca71da28f09cb7ec521f7ea14d1a4048b",
+          "https://api.github.com/repos/mahmoud/boltons/commits/805c803ca71da28f09cb7ec521f7ea14d1a4048b",
+          "https://github.com/mahmoud/boltons/blob/805c803ca71da28f09cb7ec521f7ea14d1a4048b/tests/test_jsonutils.py"
+        ],
+        "regression_evidence": "新增 test_jsonl_relative_seek_binary_matches_text，比较同一文件的rb与文本模式。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-472",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/472",
+      "task": "BarrelList 删除跨多个内部段的切片时，会抛 IndexError 或删除错误的元素；删除到末尾以及stop超过长度也有问题。请使这些删除结果与list切片删除一致，正确维护长度和两端剩余内容。",
+      "fix_sha": "574393a4c349d5b81ee328a9e450c34dd0614635",
+      "base_sha": "56161fec0ac7a1e5ba0577cc33c20bbdbb331728",
+      "production_files": [
+        "boltons/listutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_listutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_listutils.py。新增 test_barrellist_delete_across_multiple_barrels 与 test_barrel_list_delete_to_end。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Keep the stop barrel valid during cross-barrel deletion",
+        "merged_at": "2026-09-07T09:33:08Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/574393a4c349d5b81ee328a9e450c34dd0614635",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 11,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/472",
+          "https://github.com/mahmoud/boltons/commit/574393a4c349d5b81ee328a9e450c34dd0614635",
+          "https://api.github.com/repos/mahmoud/boltons/commits/574393a4c349d5b81ee328a9e450c34dd0614635",
+          "https://github.com/mahmoud/boltons/blob/574393a4c349d5b81ee328a9e450c34dd0614635/tests/test_listutils.py"
+        ],
+        "regression_evidence": "新增 test_barrellist_delete_across_multiple_barrels 与 test_barrel_list_delete_to_end。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-468",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/468",
+      "task": "空 Bits 的二进制序列化错误地产生一位零，转字节时又会因奇数长度的十六进制表示报错，空的十六进制/字节输入不能正常往返。请保持零位宽表示，并使空构造、空切片和各转换路径一致，保留非法输入的错误契约。",
+      "fix_sha": "efff866a3b66fdafc817894390742e1d8bc025e5",
+      "base_sha": "5eb6cc045560abf320712f262346ae95fb66d448",
+      "production_files": [
+        "boltons/mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_mathutils.py。新增 test_empty_bits_conversions 和 test_empty_bits_rejects_non_hex_inputs。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Preserve empty Bits across binary and byte conversions",
+        "merged_at": "2026-09-07T09:00:25Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/efff866a3b66fdafc817894390742e1d8bc025e5",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/468",
+          "https://github.com/mahmoud/boltons/commit/efff866a3b66fdafc817894390742e1d8bc025e5",
+          "https://api.github.com/repos/mahmoud/boltons/commits/efff866a3b66fdafc817894390742e1d8bc025e5",
+          "https://github.com/mahmoud/boltons/blob/efff866a3b66fdafc817894390742e1d8bc025e5/tests/test_mathutils.py"
+        ],
+        "regression_evidence": "新增 test_empty_bits_conversions 和 test_empty_bits_rejects_non_hex_inputs。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-467",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/467",
+      "task": "Stats 对常量数据，或重复值占多数而带少量离群值的数据，自动生成直方图时会因四分位间距为零而抛 ZeroDivisionError。请让这些合法数据仍能得到覆盖数据的直方图计数和可显示文本，并保留普通自动分箱行为。",
+      "fix_sha": "1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+      "base_sha": "805c803ca71da28f09cb7ec521f7ea14d1a4048b",
+      "production_files": [
+        "boltons/statsutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_statsutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_statsutils.py。新增 test_histogram_zero_interquartile_range，覆盖[5]*10及[0]*10+[100]。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Handle zero interquartile range in automatic histograms",
+        "merged_at": "2026-09-07T09:50:05Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/467",
+          "https://github.com/mahmoud/boltons/commit/1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+          "https://api.github.com/repos/mahmoud/boltons/commits/1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+          "https://github.com/mahmoud/boltons/blob/1cdc0e9d36f3eb32608f3b34885717697643e9b8/tests/test_statsutils.py"
+        ],
+        "regression_evidence": "新增 test_histogram_zero_interquartile_range，覆盖[5]*10及[0]*10+[100]。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-462",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/462",
+      "task": "namedtuple 和 namedlist 遇到空类型名或空字段名会抛 IndexError，而非公开参数校验应提供的 ValueError。请修复这两个工厂的空名称处理，保持非法字符拒绝及正常名称的构造行为。",
+      "fix_sha": "970051b66474ac37383c5d990c169c794e20eb88",
+      "base_sha": "9decba3e5736f61180eec274420ced0e572e30e6",
+      "production_files": [
+        "boltons/namedutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_namedutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_namedutils.py。新增四组参数化测试，两个工厂分别覆盖空字段、空类型、非法字符和合法名称。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Reject empty type and field names in namedutils",
+        "merged_at": "2026-09-07T08:42:27Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/970051b66474ac37383c5d990c169c794e20eb88",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 16,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/462",
+          "https://github.com/mahmoud/boltons/commit/970051b66474ac37383c5d990c169c794e20eb88",
+          "https://api.github.com/repos/mahmoud/boltons/commits/970051b66474ac37383c5d990c169c794e20eb88",
+          "https://github.com/mahmoud/boltons/blob/970051b66474ac37383c5d990c169c794e20eb88/tests/test_namedutils.py"
+        ],
+        "regression_evidence": "新增四组参数化测试，两个工厂分别覆盖空字段、空类型、非法字符和合法名称。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-450",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/450",
+      "task": "Bits 的负整数索引无论实际位值如何都可能返回 False，过小的负索引也没有抛 IndexError。请使合法负索引与对应正索引一致，并对越界的正负索引报错，保留切片和正常整数索引行为。",
+      "fix_sha": "5eb6cc045560abf320712f262346ae95fb66d448",
+      "base_sha": "19bd337cad0760945dfe0245434d8253156ee390",
+      "production_files": [
+        "boltons/mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_mathutils.py。在 test_bits 中加入负索引真/假位值及超界负索引断言。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix Bits.__getitem__ returning False for every negative index",
+        "merged_at": "2026-09-07T09:00:02Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/5eb6cc045560abf320712f262346ae95fb66d448",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/450",
+          "https://github.com/mahmoud/boltons/commit/5eb6cc045560abf320712f262346ae95fb66d448",
+          "https://api.github.com/repos/mahmoud/boltons/commits/5eb6cc045560abf320712f262346ae95fb66d448",
+          "https://github.com/mahmoud/boltons/blob/5eb6cc045560abf320712f262346ae95fb66d448/tests/test_mathutils.py"
+        ],
+        "regression_evidence": "在 test_bits 中加入负索引真/假位值及超界负索引断言。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-445",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/445",
+      "task": "funcutils.wraps 生成的包装器把目标只能按关键字接收的参数当作位置参数传入，导致 TypeError；无默认值和带varargs的签名也受影响。请使这些合法签名组合正确调用目标，并保留反向包装和无法检查签名的可调用对象的兼容行为。",
+      "fix_sha": "b5c495bec206741ec25cd82ecc869e0b59bb0d10",
+      "base_sha": "78e8638e695d78ccc2dc641ef87e38fa51185840",
+      "production_files": [
+        "boltons/funcutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_funcutils_fb_py3.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_funcutils_fb_py3.py。新增target-kwonly普通、无默认值、varargs和uninspectable-target四个回归测试。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "funcutils: forward target-keyword-only args as keywords in wraps invocations",
+        "merged_at": "2026-08-07T21:10:06Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/b5c495bec206741ec25cd82ecc869e0b59bb0d10",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 28,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/445",
+          "https://github.com/mahmoud/boltons/commit/b5c495bec206741ec25cd82ecc869e0b59bb0d10",
+          "https://api.github.com/repos/mahmoud/boltons/commits/b5c495bec206741ec25cd82ecc869e0b59bb0d10",
+          "https://github.com/mahmoud/boltons/blob/b5c495bec206741ec25cd82ecc869e0b59bb0d10/tests/test_funcutils_fb_py3.py"
+        ],
+        "regression_evidence": "新增target-kwonly普通、无默认值、varargs和uninspectable-target四个回归测试。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-437",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/437",
+      "task": "Bits(4,2) 等超过指定位宽容量的值被错误接受，生成的二进制字符串长度与对象长度不一致。请拒绝这种精确溢出边界，保留最大可表示值和省略位宽时的正常构造。",
+      "fix_sha": "c1c25da365cf14878cf5317147e7a09b5d124df5",
+      "base_sha": "e66cade323f5c11cebb4bd0f099e634b245adccd",
+      "production_files": [
+        "boltons/mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_mathutils.py。新增 test_bits_len_bound，断言Bits(3,2)有效，Bits(4,2)及Bits(1,0)抛ValueError。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix off-by-one in Bits length check",
+        "merged_at": "2026-08-06T20:35:48Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/c1c25da365cf14878cf5317147e7a09b5d124df5",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/437",
+          "https://github.com/mahmoud/boltons/commit/c1c25da365cf14878cf5317147e7a09b5d124df5",
+          "https://api.github.com/repos/mahmoud/boltons/commits/c1c25da365cf14878cf5317147e7a09b5d124df5",
+          "https://github.com/mahmoud/boltons/blob/c1c25da365cf14878cf5317147e7a09b5d124df5/tests/test_mathutils.py"
+        ],
+        "regression_evidence": "新增 test_bits_len_bound，断言Bits(3,2)有效，Bits(4,2)及Bits(1,0)抛ValueError。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-407",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/407",
+      "task": "BarrelList 在内部拆成多个段之后，用远小于 -len 的负索引 insert 会抛 IndexError，而内置list会把元素插到开头。请使多段列表遵守相同的边界截断行为，保持元素顺序与长度。",
+      "fix_sha": "25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+      "base_sha": "4aa77cddb5d06def130df6f09aefab4018fa487c",
+      "production_files": [
+        "boltons/listutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_listutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_listutils.py。新增 test_barrel_list_insert_before_start_matches_list，先平衡10万项列表再用极小负索引插入。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Match list insert before start in BarrelList",
+        "merged_at": "2026-06-19T04:22:17Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/407",
+          "https://github.com/mahmoud/boltons/commit/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+          "https://api.github.com/repos/mahmoud/boltons/commits/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+          "https://github.com/mahmoud/boltons/blob/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2/tests/test_listutils.py"
+        ],
+        "regression_evidence": "新增 test_barrel_list_insert_before_start_matches_list，先平衡10万项列表再用极小负索引插入。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-349",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/349",
+      "task": "LRI/LRU 缓存覆盖已有键后，cache[key] 可能显示新值，但 dict(cache) 和 values() 仍暴露旧值。请使这些映射视图与直接查找一致，保持正常替换、容量与淘汰行为。",
+      "fix_sha": "4815fc8dd1768da5f2d903846d2ab994aa57b0cf",
+      "base_sha": "46599bc0d498dd8adc3aea833ce1445feed349dd",
+      "production_files": [
+        "boltons/cacheutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cacheutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_cacheutils.py。新增参数化 test_lru_dict_replacement，对LRU与LRI分别检查初始插入和已有键覆盖后的全部视图。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Test and fix for #348",
+        "merged_at": "2023-10-30T04:31:17Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/4815fc8dd1768da5f2d903846d2ab994aa57b0cf",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 3,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/349",
+          "https://github.com/mahmoud/boltons/commit/4815fc8dd1768da5f2d903846d2ab994aa57b0cf",
+          "https://api.github.com/repos/mahmoud/boltons/commits/4815fc8dd1768da5f2d903846d2ab994aa57b0cf",
+          "https://github.com/mahmoud/boltons/blob/4815fc8dd1768da5f2d903846d2ab994aa57b0cf/tests/test_cacheutils.py"
+        ],
+        "regression_evidence": "新增参数化 test_lru_dict_replacement，对LRU与LRI分别检查初始插入和已有键覆盖后的全部视图。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-338",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/338",
+      "task": "Python 3 下 OrderedMultiDict 的pickle往返不能正确恢复内部状态，空对象和同键多值对象均可能失败。请让反序列化保留全部内容与值顺序，并保持正常构造与清空行为。",
+      "fix_sha": "0341ab3d79e6430c0e6a4149df9c92679988a534",
+      "base_sha": "475462811ea4f9dea23c8af4cc2b6ead2dc03845",
+      "production_files": [
+        "boltons/dictutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_dictutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_dictutils.py。新增 test_omd_pickle，覆盖空实例和b键含两个值的非空实例。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Make OMD picklable under py3, fixes #337",
+        "merged_at": "2023-04-21T01:29:34Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/0341ab3d79e6430c0e6a4149df9c92679988a534",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 16,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/338",
+          "https://github.com/mahmoud/boltons/commit/0341ab3d79e6430c0e6a4149df9c92679988a534",
+          "https://api.github.com/repos/mahmoud/boltons/commits/0341ab3d79e6430c0e6a4149df9c92679988a534",
+          "https://github.com/mahmoud/boltons/blob/0341ab3d79e6430c0e6a4149df9c92679988a534/tests/test_dictutils.py"
+        ],
+        "regression_evidence": "新增 test_omd_pickle，覆盖空实例和b键含两个值的非空实例。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-332",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/332",
+      "task": "ParsedException.from_string 遇到Python新式 traceback 中源码行下的 ^/~ 列定位标记时会提前停止解析，丢失后续帧或异常信息。请正确解析这类回溯，保留源码、帧顺序和异常类型/消息，输出文本可省略列标记。",
+      "fix_sha": "475462811ea4f9dea23c8af4cc2b6ead2dc03845",
+      "base_sha": "f892a2b46e7fd31c639723d1d9bf4d9ad63752d6",
+      "production_files": [
+        "boltons/tbutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_tbutils_parsed_exc.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_tbutils_parsed_exc.py。新增 test_parsed_exc_with_anchor，覆盖两个frame和两种列标记形式。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Update tbutils.py to parse tracebacks with anchor lines",
+        "merged_at": "2023-04-02T19:11:27Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/475462811ea4f9dea23c8af4cc2b6ead2dc03845",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 5,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/332",
+          "https://github.com/mahmoud/boltons/commit/475462811ea4f9dea23c8af4cc2b6ead2dc03845",
+          "https://api.github.com/repos/mahmoud/boltons/commits/475462811ea4f9dea23c8af4cc2b6ead2dc03845",
+          "https://github.com/mahmoud/boltons/blob/475462811ea4f9dea23c8af4cc2b6ead2dc03845/tests/test_tbutils_parsed_exc.py"
+        ],
+        "regression_evidence": "新增 test_parsed_exc_with_anchor，覆盖两个frame和两种列标记形式。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-298",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/298",
+      "task": "连续调用 URL.navigate(...).navigate(...) 会因路径段容器类型不一致而抛 TypeError，手动在中间重新构造URL却正常。请使链式导航与逐次重新构造的语义一致，覆盖相对路径、绝对路径、尾斜杠与空目的地址。",
+      "fix_sha": "395f690f4a24331c4554e2169ac18a15955a4eab",
+      "base_sha": "270e974975984f662f998c8f6eb0ebebd964de82",
+      "production_files": [
+        "boltons/urlutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_urlutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_urlutils.py。新增参数化 test_chained_navigate，六组路径序列断言完整URL结果。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Chaining `boltons.urlutils.URL.navigate()` results in `TypeError`",
+        "merged_at": "2022-01-15T23:08:41Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/395f690f4a24331c4554e2169ac18a15955a4eab",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 3,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/298",
+          "https://github.com/mahmoud/boltons/commit/395f690f4a24331c4554e2169ac18a15955a4eab",
+          "https://api.github.com/repos/mahmoud/boltons/commits/395f690f4a24331c4554e2169ac18a15955a4eab",
+          "https://github.com/mahmoud/boltons/blob/395f690f4a24331c4554e2169ac18a15955a4eab/tests/test_urlutils.py"
+        ],
+        "regression_evidence": "新增参数化 test_chained_navigate，六组路径序列断言完整URL结果。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-178",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/178",
+      "task": "daterange(start,None) 本应用于无终点日期流，却在首次迭代时因内部终止判断函数的参数数量不匹配抛 TypeError。请使该无界模式可正常逐日迭代，保留有限终点及步长的既有行为。",
+      "fix_sha": "139d5dcd3255eddb822aa2d876ce3120c34d81c7",
+      "base_sha": "d931428f0ad6b316e4e1978f18b080f0a0c340c0",
+      "production_files": [
+        "boltons/timeutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_timeutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_timeutils.py。新增 test_daterange_infinite，用next检查前10日；测试本身有界。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix bug in implementation of `timeutils.daterange`",
+        "merged_at": "2018-10-11T07:47:01Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/139d5dcd3255eddb822aa2d876ce3120c34d81c7",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/178",
+          "https://github.com/mahmoud/boltons/commit/139d5dcd3255eddb822aa2d876ce3120c34d81c7",
+          "https://api.github.com/repos/mahmoud/boltons/commits/139d5dcd3255eddb822aa2d876ce3120c34d81c7",
+          "https://github.com/mahmoud/boltons/blob/139d5dcd3255eddb822aa2d876ce3120c34d81c7/tests/test_timeutils.py"
+        ],
+        "regression_evidence": "新增 test_daterange_infinite，用next检查前10日；测试本身有界。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-144",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/144",
+      "task": "SpooledBytesIO 和 SpooledStringIO 的按行迭代只返回第一行，随后EOF行为也不符合正常文件迭代；Python 3 的 next 支持不完整。请让两类流遍历全部行并在末尾正常结束，保留现有read/seek和上下文管理行为。",
+      "fix_sha": "55a2791b77a991bd130af9f1a2298019b318bd4a",
+      "base_sha": "115cded54814ee5ff0b32d9bf976fd554b0a74dd",
+      "production_files": [
+        "boltons/ioutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_ioutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_ioutils.py。将两类流的 test_iter 改为遍历a换行b并断言两行；这是历史Python兼容快照，应按项目当时声明版本核查运行环境。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix line-by-line file iteration in ioutils modules",
+        "merged_at": "2017-11-10T05:08:19Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/55a2791b77a991bd130af9f1a2298019b318bd4a",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 16,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/144",
+          "https://github.com/mahmoud/boltons/commit/55a2791b77a991bd130af9f1a2298019b318bd4a",
+          "https://api.github.com/repos/mahmoud/boltons/commits/55a2791b77a991bd130af9f1a2298019b318bd4a",
+          "https://github.com/mahmoud/boltons/blob/55a2791b77a991bd130af9f1a2298019b318bd4a/tests/test_ioutils.py"
+        ],
+        "regression_evidence": "将两类流的 test_iter 改为遍历a换行b并断言两行；这是历史Python兼容快照，应按项目当时声明版本核查运行环境。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-114",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/114",
+      "task": "Callpoint.to_dict 的结果含延迟源码行对象，直接 json.dumps 会抛 TypeError，无法作为普通可序列化诊断数据使用。请使字典结果可JSON序列化，同时保留源码行内容和其他已有诊断字段。",
+      "fix_sha": "f749174abed72b0982b15f29c3819480e0b8fa7c",
+      "base_sha": "14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365",
+      "production_files": [
+        "boltons/tbutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_tbutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_tbutils.py。在tests/test_tbutils.py的callpoint测试中新增json.dumps检查，明确把TypeError转成断言失败。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Make Callpoint.to_dict result JSON serializable",
+        "merged_at": "2017-01-22T05:33:50Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/f749174abed72b0982b15f29c3819480e0b8fa7c",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/114",
+          "https://github.com/mahmoud/boltons/commit/f749174abed72b0982b15f29c3819480e0b8fa7c",
+          "https://api.github.com/repos/mahmoud/boltons/commits/f749174abed72b0982b15f29c3819480e0b8fa7c",
+          "https://github.com/mahmoud/boltons/blob/f749174abed72b0982b15f29c3819480e0b8fa7c/tests/test_tbutils.py"
+        ],
+        "regression_evidence": "在tests/test_tbutils.py的callpoint测试中新增json.dumps检查，明确把TypeError转成断言失败。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-128",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/128",
+      "task": "clamp 省略一个或两个边界时会把 None 用作比较对象，Python 3 下抛 TypeError；只给下界或上界也无法可靠限制数值。请使省略边界表示该方向不受限，保持双边限制、无穷数、大整数和NaN的正常行为。",
+      "fix_sha": "620af22dbc6f17d988dbcea677273de41d4ed5af",
+      "base_sha": "8ec56cd1bff2f38dbef3ded50b24c42f8a22036b",
+      "production_files": [
+        "boltons/mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_mathutils.py。新增 test_clamp_examples 与 test_clamp_transparent，覆盖仅上界、仅下界、无边界和特殊数值。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "fix the default arguments of mathutils.clamp",
+        "merged_at": "2017-06-18T19:05:54Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/620af22dbc6f17d988dbcea677273de41d4ed5af",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/128",
+          "https://github.com/mahmoud/boltons/commit/620af22dbc6f17d988dbcea677273de41d4ed5af",
+          "https://api.github.com/repos/mahmoud/boltons/commits/620af22dbc6f17d988dbcea677273de41d4ed5af",
+          "https://github.com/mahmoud/boltons/blob/620af22dbc6f17d988dbcea677273de41d4ed5af/tests/test_mathutils.py"
+        ],
+        "regression_evidence": "新增 test_clamp_examples 与 test_clamp_transparent，覆盖仅上界、仅下界、无边界和特殊数值。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-247",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/247",
+      "task": "NetstringSocket.read_ns 接受每次读取的 timeout/maxsize 参数，但实际使用对象默认值，导致调用方覆盖超时无效或合法消息被错误拒绝。请使单次调用参数得到遵守，同时保留缺省配置与协议错误检测。",
+      "fix_sha": "fee5adb0f99f91c077c769d8efd269ef44203848",
+      "base_sha": "81e44a2319ce0bef0de44f1059762b97879cb35d",
+      "production_files": [
+        "boltons/socketutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_socketutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_socketutils.py。新增 test_socketutils_netstring_timeout，使用本机临时端口的上游服务端/客户端回归。测试包含线程和10/20毫秒边界，应保留超时及线程清理记录。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix NetstringSocket to correctly use arguments to .read_ns() method.",
+        "merged_at": "2020-03-28T20:50:16Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/fee5adb0f99f91c077c769d8efd269ef44203848",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 19,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/247",
+          "https://github.com/mahmoud/boltons/commit/fee5adb0f99f91c077c769d8efd269ef44203848",
+          "https://api.github.com/repos/mahmoud/boltons/commits/fee5adb0f99f91c077c769d8efd269ef44203848",
+          "https://github.com/mahmoud/boltons/blob/fee5adb0f99f91c077c769d8efd269ef44203848/tests/test_socketutils.py"
+        ],
+        "regression_evidence": "新增 test_socketutils_netstring_timeout，使用本机临时端口的上游服务端/客户端回归。测试包含线程和10/20毫秒边界，应保留超时及线程清理记录。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    },
+    {
+      "id": "extra-a-boltons-451",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/451",
+      "task": "GUIDerator 接受长度20，但非法长度的 ValueError 消息声称20不在允许范围内，与公开边界契约相矛盾。请使错误消息准确反映20到36均包含的范围，保持合法长度输出及非法长度拒绝。",
+      "fix_sha": "f5f5cd867ee98f15def2b6a19bfba203de29b961",
+      "base_sha": "970051b66474ac37383c5d990c169c794e20eb88",
+      "production_files": [
+        "boltons/iterutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_iterutils.py"
+      ],
+      "verification_hint": "先仅将fix相对base的回归测试改动移入独立base-test副本，核对修改节点在base失败、fix通过且确有测试被收集；再运行完整保护文件：python -m pytest -q tests/test_iterutils.py。新增 test_guiderator_size_bounds，同时检查长度20有效和19/37的错误消息。 本次只核对公开来源和源码差异，未运行任何测试或模型。",
+      "source_notes": {
+        "pr_title": "fix: correct GUIDerator size-bounds error message (20 is inclusive)",
+        "merged_at": "2026-09-07T08:42:59Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/f5f5cd867ee98f15def2b6a19bfba203de29b961",
+        "sha_basis": "GitHub原始PR的merged为true；fix_sha取其merge_commit_sha；base_sha取该commit对象的第一父SHA。生产行数为该提交相对第一父的实际Python生产文件additions+deletions。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/451",
+          "https://github.com/mahmoud/boltons/commit/f5f5cd867ee98f15def2b6a19bfba203de29b961",
+          "https://api.github.com/repos/mahmoud/boltons/commits/f5f5cd867ee98f15def2b6a19bfba203de29b961",
+          "https://github.com/mahmoud/boltons/blob/f5f5cd867ee98f15def2b6a19bfba203de29b961/tests/test_iterutils.py"
+        ],
+        "regression_evidence": "新增 test_guiderator_size_bounds，同时检查长度20有效和19/37的错误消息。",
+        "verification_status": "来源核实；运行前资格验证未执行。独立收集，未读取真实实验结果。",
+        "source_collection_scope": "仅公开GitHub PR/commit证据；与原sources-a.json和sources-b.json按PR URL及fix_sha排重。"
+      }
+    }
+  ]
+}

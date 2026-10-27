@@ -1,0 +1,132 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index feab627..3086f00 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -4,6 +4,8 @@ Version 2.0.0
+ Unreleased
+ 
+ -   Drop support for Python 2 and 3.5.
++-   Reject signatures with timestamps in the future when validating
++    with ``max_age``.
+ -   ``datetime`` values are timezone-aware with ``timezone.utc``. Code
+     using ``TimestampSigner.unsign(return_timestamp=True)`` or
+     ``BadTimeSignature.date_signed`` may need to change. :issue:`150`
+diff --git a/src/itsdangerous/timed.py b/src/itsdangerous/timed.py
+index 2ae0261..8fe332c 100644
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -52,6 +52,9 @@ class TimestampSigner(Signer):
+         timestamp of the signature will be returned as an aware
+         :class:`datetime.datetime` object in UTC.
+ 
++        If ``max_age`` is given, the signature's age must be between zero
++        and ``max_age`` seconds.
++
+         .. versionchanged:: 2.0
+             The timestamp is returned as a timezone-aware ``datetime``
+             in UTC rather than a naive ``datetime`` assumed to be UTC.
+@@ -93,7 +96,7 @@ class TimestampSigner(Signer):
+         if timestamp is None:
+             raise BadTimeSignature("Malformed timestamp", payload=value)
+ 
+-        # Check timestamp is not older than max_age
++        # Check timestamp is not older than max_age or from the future.
+         if max_age is not None:
+             age = self.get_timestamp() - timestamp
+ 
+@@ -104,6 +107,13 @@ class TimestampSigner(Signer):
+                     date_signed=self.timestamp_to_datetime(timestamp),
+                 )
+ 
++            if age < 0:
++                raise SignatureExpired(
++                    f"Signature age {age} < 0 seconds",
++                    payload=value,
++                    date_signed=self.timestamp_to_datetime(timestamp),
++                )
++
+         if return_timestamp:
+             return value, self.timestamp_to_datetime(timestamp)
+ 
+@@ -129,10 +139,10 @@ class TimedSerializer(Serializer):
+     def loads(self, s, max_age=None, return_timestamp=False, salt=None):
+         """Reverse of :meth:`dumps`, raises :exc:`.BadSignature` if the
+         signature validation fails. If a ``max_age`` is provided it will
+-        ensure the signature is not older than that time in seconds. In
+-        case the signature is outdated, :exc:`.SignatureExpired` is
+-        raised. All arguments are forwarded to the signer's
+-        :meth:`~TimestampSigner.unsign` method.
++        ensure the signature's age is between zero and that time in
++        seconds. If the age is outside that range,
++        :exc:`.SignatureExpired` is raised. All arguments are forwarded
++        to the signer's :meth:`~TimestampSigner.unsign` method.
+         """
+         s = want_bytes(s)
+         last_exception = None
+diff --git a/tests/test_itsdangerous/test_timed.py b/tests/test_itsdangerous/test_timed.py
+index 68a8c74..fca2bf5 100644
+--- a/tests/test_itsdangerous/test_timed.py
++++ b/tests/test_itsdangerous/test_timed.py
+@@ -33,15 +33,35 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+ 
+     def test_max_age(self, signer, ts, freeze):
+         signed = signer.sign("value")
++        assert signer.unsign(signed, max_age=0) == b"value"
+         freeze.tick()
+         assert signer.unsign(signed, max_age=10) == b"value"
+-        freeze.tick(timedelta(seconds=10))
++        freeze.tick(timedelta(seconds=9))
++        assert signer.unsign(signed, max_age=10) == b"value"
++        freeze.tick()
+ 
+         with pytest.raises(SignatureExpired) as exc_info:
+             signer.unsign(signed, max_age=10)
+ 
+         assert exc_info.value.date_signed == ts
+ 
++    @pytest.mark.parametrize("max_age", (0, 10))
++    @pytest.mark.parametrize("return_timestamp", (False, True))
++    def test_future_timestamp(self, signer, ts, freeze, max_age, return_timestamp):
++        signed = signer.sign("value")
++        freeze.tick(timedelta(seconds=-1))
++
++        with pytest.raises(SignatureExpired) as exc_info:
++            signer.unsign(signed, max_age=max_age, return_timestamp=return_timestamp)
++
++        assert str(exc_info.value) == "Signature age -1 < 0 seconds"
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed == ts
++        assert not signer.validate(signed, max_age=max_age)
++        assert signer.unsign(signed) == b"value"
++        assert signer.unsign(signed, return_timestamp=True) == (b"value", ts)
++        assert signer.validate(signed)
++
+     def test_return_timestamp(self, signer, ts):
+         signed = signer.sign("value")
+         assert signer.unsign(signed, return_timestamp=True) == (b"value", ts)
+@@ -70,17 +90,23 @@ class TestTimedSerializer(FreezeMixin, TestSerializer):
+     def serializer_factory(self):
+         return partial(TimedSerializer, secret_key="secret_key")
+ 
+-    def test_max_age(self, serializer, value, ts, freeze):
++    @pytest.mark.parametrize("age", (11, -1))
++    def test_max_age(self, serializer, value, ts, freeze, age):
+         signed = serializer.dumps(value)
++        assert serializer.loads(signed, max_age=0) == value
+         freeze.tick()
+         assert serializer.loads(signed, max_age=10) == value
+-        freeze.tick(timedelta(seconds=10))
++        freeze.tick(timedelta(seconds=9))
++        assert serializer.loads(signed, max_age=10) == value
++        freeze.move_to(ts + timedelta(seconds=age))
+ 
+         with pytest.raises(SignatureExpired) as exc_info:
+             serializer.loads(signed, max_age=10)
+ 
+         assert exc_info.value.date_signed == ts
+         assert serializer.load_payload(exc_info.value.payload) == value
++        assert serializer.loads_unsafe(signed, max_age=10) == (False, value)
++        assert serializer.loads(signed, return_timestamp=True) == (value, ts)
+ 
+     def test_return_payload(self, serializer, value, ts):
+         signed = serializer.dumps(value)

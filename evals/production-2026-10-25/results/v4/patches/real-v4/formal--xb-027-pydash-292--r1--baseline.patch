@@ -1,0 +1,66 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 8208426..75b1318 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -895,10 +895,11 @@ def number_format(
+     else:
+         int_part = num_parts[0]
+         dec_part = (num_parts + [""])[1]
++        sign = "-" if int_part.startswith("-") else ""
++        int_part = int_part[len(sign) :]
+ 
+-        # Reverse the integer part, chop it into groups of 3, join on `order_separator`, and then
+-        # un-reverse the string.
+-        int_part = order_separator.join(chop(int_part[::-1], 3))[::-1]
++        # Group digits from the right, keeping the sign and separator text intact.
++        int_part = sign + order_separator.join(chop_right(int_part, 3))
+ 
+         text = decimal_separator.join(pyd.compact([int_part, dec_part]))
+ 
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 0fe8985..b365177 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal
+ import re
+ from urllib.parse import parse_qsl, urlsplit
+ 
+@@ -435,11 +436,37 @@ def test_lower_first(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        ((0,), "0"),
++        ((999,), "999"),
++        ((1000,), "1,000"),
+         ((1234,), "1,234"),
+         ((1234567890,), "1,234,567,890"),
+         ((1234, 2), "1,234.00"),
+         ((1234, 1), "1,234.0"),
+         ((1234, 2, ",", "."), "1.234,00"),
++        ((-1,), "-1"),
++        ((-12,), "-12"),
++        ((-100,), "-100"),
++        ((-999,), "-999"),
++        ((-1000,), "-1,000"),
++        ((-12345,), "-12,345"),
++        ((-123456,), "-123,456"),
++        ((-999999,), "-999,999"),
++        ((-1000000,), "-1,000,000"),
++        ((-1234567890,), "-1,234,567,890"),
++        ((-999.125, 3), "-999.125"),
++        ((-999.999, 2), "-1,000.00"),
++        ((-999999.999, 2), "-1,000,000.00"),
++        ((-0.0625, 4), "-0.0625"),
++        ((-0.01,), "-0"),
++        ((-0.0, 2), "-0.00"),
++        ((Decimal("-999999999999999999.125"), 3), "-999,999,999,999,999,999.125"),
++        ((-999, 2, ",", "."), "-999,00"),
++        ((-999999.125, 3, ",", "."), "-999.999,125"),
++        ((-1234567.125, 3, "<dec>", "<sep>"), "-1<sep>234<sep>567<dec>125"),
++        ((1234567.125, 3, "<dec>", "<sep>"), "1<sep>234<sep>567<dec>125"),
++        ((-999999, 2, ",", ""), "-999999,00"),
++        ((-999999.125, 3, "", "_"), "-999_999125"),
+         (("1234",), ""),
+     ],
+ )

@@ -1,0 +1,59 @@
+diff --git a/boltons/timeutils.py b/boltons/timeutils.py
+index 1ec31dd..949f474 100644
+--- a/boltons/timeutils.py
++++ b/boltons/timeutils.py
+@@ -382,6 +382,10 @@ def daterange(start, stop, step=1, inclusive=False):
+ 
+     if stop is None:
+         finished = lambda now, stop: False
++    elif start == stop:
++        if inclusive:
++            yield start
++        return
+     elif start < stop:
+         finished = operator.gt if inclusive else operator.ge
+     else:
+diff --git a/tests/test_timeutils.py b/tests/test_timeutils.py
+index 631435e..8a8b39b 100644
+--- a/tests/test_timeutils.py
++++ b/tests/test_timeutils.py
+@@ -1,5 +1,8 @@
+ 
+ from datetime import timedelta, date
++
++import pytest
++
+ from boltons.timeutils import total_seconds, daterange
+ 
+ 
+@@ -62,6 +65,30 @@ def test_daterange_years_step():
+     assert dates == expected
+ 
+ 
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('step', [1, -1, 0,
++                                 timedelta(days=1), timedelta(days=-1),
++                                 (1, 0, 0), (-1, 0, 0),
++                                 (0, 1, 0), (0, -1, 0)])
++@pytest.mark.parametrize('day', [date(2017, 1, 1), date.min, date.max])
++def test_daterange_equal_endpoints(day, step, inclusive):
++    dates = daterange(day, day, step=step, inclusive=inclusive)
++    if inclusive:
++        assert next(dates) == day
++    with pytest.raises(StopIteration):
++        next(dates)
++
++
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('step', [1, -1])
++def test_daterange_days(step, inclusive):
++    start = date(2017, 1, 4)
++    stop = start + timedelta(days=3 * step)
++    expected = [start + timedelta(days=i * step)
++                for i in range(4 if inclusive else 3)]
++    assert list(daterange(start, stop, step=step, inclusive=inclusive)) == expected
++
++
+ def test_daterange_infinite():
+     today = date.today()
+     infinite_dates = daterange(today, None)

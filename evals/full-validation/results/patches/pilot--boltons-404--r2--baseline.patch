@@ -1,0 +1,133 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index f913f29..d4dd1db 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -358,7 +358,8 @@ class OrderedMultiDict(dict):
+         elif hasattr(other, 'keys'):
+             for selfk in self:
+                 try:
+-                    other[selfk] == self[selfk]
++                    if other[selfk] != self[selfk]:
++                        return False
+                 except KeyError:
+                     return False
+             return True
+diff --git a/boltons/urlutils.py b/boltons/urlutils.py
+index 45d3e73..712e5a1 100644
+--- a/boltons/urlutils.py
++++ b/boltons/urlutils.py
+@@ -1264,7 +1264,8 @@ class OrderedMultiDict(dict):
+         elif hasattr(other, 'keys'):
+             for selfk in self:
+                 try:
+-                    other[selfk] == self[selfk]
++                    if other[selfk] != self[selfk]:
++                        return False
+                 except KeyError:
+                     return False
+             return True
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index d4f6a67..a3bcc11 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -1,4 +1,6 @@
+ import sys
++from collections import UserDict
++
+ import pytest
+ 
+ from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
+@@ -61,6 +63,41 @@ def test_eq():
+     assert omd != omd3
+ 
+ 
++@pytest.mark.parametrize('mapping_type', [dict, UserDict])
++@pytest.mark.parametrize('items, other, equal', [
++    ([], {}, True),
++    ([('a', 1)], {'a': 1}, True),
++    ([('a', 1)], {'a': 2}, False),
++    ([('a', 1)], {'b': 1}, False),
++    ([('a', 1)], {}, False),
++    ([('a', [1, 2])], {'a': [1, 2]}, True),
++    ([('a', None)], {'a': 0}, False),
++    ([('a', 1), ('b', 2), ('a', 3)], {'b': 2, 'a': 3}, True),
++    ([('a', 1), ('b', 2), ('a', 3)], {'a': 1, 'b': 2}, False),
++    ([('a', 1), ('b', 2), ('a', 3)], {'a': 3, 'b': 4}, False),
++])
++def test_eq_mapping(mapping_type, items, other, equal):
++    omd = OMD(items)
++    mapping = mapping_type(other)
++    assert (omd == mapping) is equal
++    assert (mapping == omd) is equal
++    assert (omd != mapping) is not equal
++    assert (mapping != omd) is not equal
++
++
++@pytest.mark.parametrize('items, equal', [
++    ([('a', 1), ('b', 2), ('a', 3)], True),
++    ([('a', 9), ('b', 2), ('a', 3)], False),
++    ([('b', 2), ('a', 1), ('a', 3)], False),
++    ([('a', 3), ('b', 2)], False),
++])
++def test_eq_multivalue(items, equal):
++    omd = OMD([('a', 1), ('b', 2), ('a', 3)])
++    other = OMD(items)
++    assert (omd == other) is equal
++    assert (omd != other) is not equal
++
++
+ def test_copy():
+     for itemset in _ITEMSETS:
+         omd = OMD(itemset)
+diff --git a/tests/test_urlutils.py b/tests/test_urlutils.py
+index d25701e..ee7955c 100644
+--- a/tests/test_urlutils.py
++++ b/tests/test_urlutils.py
+@@ -1,3 +1,5 @@
++from collections import UserDict
++
+ import pytest
+ 
+ from boltons import urlutils
+@@ -95,6 +97,41 @@ def test_query_params(test_url):
+     assert test_url.endswith(qp_text)
+ 
+ 
++@pytest.mark.parametrize('mapping_type', [dict, UserDict])
++@pytest.mark.parametrize('query, other, equal', [
++    ('', {}, True),
++    ('a=1', {'a': '1'}, True),
++    ('a=1', {'a': '2'}, False),
++    ('a=1', {'b': '1'}, False),
++    ('a=1', {}, False),
++    ('a', {'a': None}, True),
++    ('a', {'a': ''}, False),
++    ('a=1&b=2&a=3', {'b': '2', 'a': '3'}, True),
++    ('a=1&b=2&a=3', {'a': '1', 'b': '2'}, False),
++    ('a=1&b=2&a=3', {'a': '3', 'b': '4'}, False),
++])
++def test_query_param_dict_eq_mapping(mapping_type, query, other, equal):
++    qp = urlutils.QueryParamDict.from_text(query)
++    mapping = mapping_type(other)
++    assert (qp == mapping) is equal
++    assert (mapping == qp) is equal
++    assert (qp != mapping) is not equal
++    assert (mapping != qp) is not equal
++
++
++@pytest.mark.parametrize('query, equal', [
++    ('a=1&b=2&a=3', True),
++    ('a=9&b=2&a=3', False),
++    ('b=2&a=1&a=3', False),
++    ('a=3&b=2', False),
++])
++def test_query_param_dict_eq_multivalue(query, equal):
++    qp = urlutils.QueryParamDict.from_text('a=1&b=2&a=3')
++    other = urlutils.QueryParamDict.from_text(query)
++    assert (qp == other) is equal
++    assert (qp != other) is not equal
++
++
+ def test_iri_query():
+     url = URL('http://minerals.mountain.ore/?rock=\N{SHAMROCK}')
+     assert url.query_params['rock'] == '\N{SHAMROCK}'

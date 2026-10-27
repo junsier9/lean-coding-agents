@@ -1,0 +1,105 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index d6dbb2a..3ce95c8 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,4 +1,3 @@
+-from collections.abc import Hashable
+ from datetime import datetime, timedelta
+ import time
+ import threading
+@@ -220,10 +219,12 @@ def once_per(*argnames):
+         def wrapper(*args, **kwargs):
+             with lock:
+                 values = tuple(get_arg(name, args, kwargs) for name in argnames)
+-                if isinstance(values, Hashable):
+-                    done, add = done_set, done_set.add
+-                else:
++                try:
++                    hash(values)
++                except TypeError:
+                     done, add = done_list, done_list.append
++                else:
++                    done, add = done_set, done_set.add
+ 
+                 if values not in done:
+                     add(values)
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 2dfeb7b..aa22967 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -241,6 +241,75 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++@pytest.mark.parametrize('first,equal,other', [
++    ([1], [1], [2]),
++    ({'a': 1, 'b': 2}, {'b': 2, 'a': 1}, {'a': 2, 'b': 2}),
++    ({1, 2}, {2, 1}, {2, 3}),
++    (([1],), ([1],), ([2],)),
++    (({'a': [{1, 2}]},), ({'a': [{2, 1}]},), ({'a': [{2, 3}]},)),
++])
++def test_once_per_unhashable(deco, first, equal, other):
++    calls = []
++
++    @deco
++    def call(n, x=None):
++        calls.append(n)
++        return len(calls)
++
++    assert call(first) == 1
++    assert call(n=equal) is None
++    assert call(other) == 2
++    assert call(n=other) is None
++    assert call(equal) is None
++    assert calls == [first, other]
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++def test_once_per_unhashable_default(deco):
++    calls = []
++
++    @deco
++    def call(n=[1]):
++        calls.append(n)
++        return len(calls)
++
++    assert call() == 1
++    assert call([1]) is None
++    assert call(n=[1]) is None
++    assert calls == [[1]]
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++@pytest.mark.parametrize('value', [1, [1]])
++def test_once_per_target_error(deco, value):
++    calls = []
++
++    @deco
++    def call(n):
++        calls.append(n)
++        raise TypeError('target failed')
++
++    with pytest.raises(TypeError, match='target failed'):
++        call(value)
++    assert call(value) is None
++    assert calls == [value]
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++def test_once_per_hash_error(deco):
++    class BadHash:
++        def __hash__(self):
++            raise MyError('hash failed')
++
++    @deco
++    def call(n):
++        pytest.fail('target should not be called')
++
++    with pytest.raises(MyError, match='hash failed'):
++        call(BadHash())
++
++
+ def test_wrap_with():
+     calls = []
+ 

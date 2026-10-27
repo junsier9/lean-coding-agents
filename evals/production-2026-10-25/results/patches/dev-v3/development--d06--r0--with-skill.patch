@@ -1,0 +1,36 @@
+diff --git a/app.py b/app.py
+index be79f62..899f297 100644
+--- a/app.py
++++ b/app.py
+@@ -4,15 +4,19 @@ from database import UnknownAccount, InsufficientFunds, validate_transfer
+ def transfer(factory, src, dst, amount):
+     validate_transfer(src, dst, amount)
+     connection = factory()
+-    row = connection.execute("SELECT cents FROM accounts WHERE id = ?", (src,)).fetchone()
+-    if row is None:
+-        raise UnknownAccount(src)
+-    if row[0] < amount:
+-        raise InsufficientFunds(src)
+-    connection.execute("UPDATE accounts SET cents = cents - ? WHERE id = ?", (amount, src))
+-    connection.commit()
+-    result = connection.execute("UPDATE accounts SET cents = cents + ? WHERE id = ?", (amount, dst))
+-    if result.rowcount != 1:
+-        raise UnknownAccount(dst)
+-    connection.commit()
+-    connection.close()
++    try:
++        with connection:
++            connection.execute("BEGIN")
++            row = connection.execute("SELECT cents FROM accounts WHERE id = ?", (src,)).fetchone()
++            if row is None:
++                raise UnknownAccount(src)
++            if connection.execute("SELECT 1 FROM accounts WHERE id = ?", (dst,)).fetchone() is None:
++                raise UnknownAccount(dst)
++            if row[0] < amount:
++                raise InsufficientFunds(src)
++            connection.execute("UPDATE accounts SET cents = cents - ? WHERE id = ?", (amount, src))
++            result = connection.execute("UPDATE accounts SET cents = cents + ? WHERE id = ?", (amount, dst))
++            if result.rowcount != 1:
++                raise UnknownAccount(dst)
++    finally:
++        connection.close()

@@ -1,0 +1,68 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 37c4569..32e876d 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -213,7 +213,7 @@ def singularize(word):
+ 
+     """
+     orig_word, word = word, word.strip().lower()
+-    if not word or word in _IRR_S2P:
++    if not word or word in _IRR_S2P or word.endswith('ss'):
+         return orig_word
+ 
+     irr_singular = _IRR_P2S.get(word)
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index b46081e..4aa5232 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,50 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize(('plural', 'singular'), [
++    ('glasses', 'glass'),
++    ('bosses', 'boss'),
++    ('addresses', 'address'),
++    ('classes', 'class'),
++    ('businesses', 'business'),
++    ('successes', 'success'),
++])
++@pytest.mark.parametrize('case', [str.lower, str.title, str.upper])
++def test_singularize_double_s(plural, singular, case):
++    singular = case(singular)
++    result = strutils.singularize(case(plural))
++    assert result == singular
++    assert strutils.singularize(result) == singular
++
++
++@pytest.mark.parametrize('word', ['gLaSs', 'BoSs', 'AddreSS', ' glass ', '\tBOSS\n', 'ss'])
++def test_singularize_preserves_double_s_input(word):
++    assert strutils.singularize(word) == word
++
++
++@pytest.mark.parametrize(('word', 'singular'), [
++    ('', ''),
++    ('cat', 'cat'),
++    ('cats', 'cat'),
++    ('chances', 'chance'),
++    ('Activities', 'Activity'),
++    ('toys', 'toy'),
++    ('FEET', 'FOOT'),
++    ('children', 'child'),
++    ('sheep', 'sheep'),
++    ('analysis', 'analysis'),
++    ('analyses', 'analysis'),
++    ('series', 'series'),
++])
++def test_singularize_existing_forms(word, singular):
++    assert strutils.singularize(word) == singular
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

@@ -1,0 +1,27 @@
+{
+  "repaired_at": "2026-10-24T19:58:58.640664+00:00",
+  "old_directory_unchanged": true,
+  "old_manifest_sha256": "32372B611FE2B5309257336EFF66B25364774B220274B8301E6F7B89B48C1B8A",
+  "new_manifest_sha256": "7FEEF291F22A0ABFA65E8B098157687BB6F4CFFF8247C951AD11120220EAC65A",
+  "changed_case_files": [
+    "h11.json"
+  ],
+  "old_case_sha256": "3D7FCC911BA118658DD95E1A1725B86A295136148FC31875B9EE807B11FFAD83",
+  "new_case_sha256": "896C116E07E32F4F3658675B84D285F20EBAA750874C2D1B6D525989E5268D53",
+  "only_changed_field": "h11.hidden_tests.test_contract.py:test_authorizer_every_request",
+  "reason": "The contract requires authorization on every request before reading data, but specifies no upper bound on safe extra authorization calls.",
+  "runtime_behavior_enforced": [
+    "authorization on every request, including hits",
+    "authorization completes before observed cache/repository reads"
+  ],
+  "safe_extra_authorization_accepted": true,
+  "cache_hit_bypass_rejected": true,
+  "read_before_authorization_rejected": true,
+  "other_authentication_and_tenant_isolation_checks_unchanged": true,
+  "task_files_reference_files_unchanged": true,
+  "normal_and_optimized_reference_passed": true,
+  "normal_and_optimized_initial_still_fail": true,
+  "no_candidate_or_model_results_read": true,
+  "model_calls": 0,
+  "network_calls": 0
+}

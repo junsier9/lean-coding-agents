@@ -1,0 +1,147 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 9cf05a9..e1078f2 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3270,8 +3270,12 @@ class Option(Parameter):
+ 
+     def get_error_hint(self, ctx: Context | None) -> str:
+         result = super().get_error_hint(ctx)
+-        if self.show_envvar and self.envvar is not None:
+-            result += f" (env var: '{self.envvar}')"
++        if self.show_envvar and self.envvar:
++            envvars = self.envvar
++            if isinstance(envvars, str):
++                envvars = (envvars,)
++            envvar_hint = ", ".join(f"'{envvar}'" for envvar in envvars)
++            result += f" (env var: {envvar_hint})"
+         return result
+ 
+     def _parse_decls(
+@@ -3439,7 +3443,7 @@ class Option(Parameter):
+         if self.show_envvar:
+             envvar = self.envvar
+ 
+-            if envvar is None:
++            if not envvar:
+                 if (
+                     self.allow_from_autoenv
+                     and ctx.auto_envvar_prefix is not None
+@@ -3447,7 +3451,7 @@ class Option(Parameter):
+                 ):
+                     envvar = f"{ctx.auto_envvar_prefix}_{self.name.upper()}"
+ 
+-            if envvar is not None:
++            if envvar:
+                 if isinstance(envvar, str):
+                     extra["envvars"] = (envvar,)
+                 else:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 0656a0b..093106f 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -838,20 +838,31 @@ def test_nargs_envvar(runner):
+     assert result.output == "x|1\ny|2\n"
+ 
+ 
+-def test_show_envvar(runner):
++@pytest.mark.parametrize(
++    ("envvar", "expected"),
++    [
++        ("ARG1", "ARG1"),
++        (["ARG1"], "ARG1"),
++        (("ARG1",), "ARG1"),
++        (["ARG1", "ARG2"], "ARG1, ARG2"),
++        (("ARG1", "ARG2"), "ARG1, ARG2"),
++    ],
++)
++def test_show_envvar(runner, envvar, expected):
+     @click.command()
+-    @click.option("--arg1", envvar="ARG1", show_envvar=True)
++    @click.option("--arg1", envvar=envvar, show_envvar=True)
+     def cmd(arg):
+         pass
+ 
+     result = runner.invoke(cmd, ["--help"])
+     assert not result.exception
+-    assert "ARG1" in result.output
++    assert f"[env var: {expected}]" in result.output
+ 
+ 
+-def test_show_envvar_auto_prefix(runner):
++@pytest.mark.parametrize("envvar", [None, "", [], ()])
++def test_show_envvar_auto_prefix(runner, envvar):
+     @click.command()
+-    @click.option("--arg1", show_envvar=True)
++    @click.option("--arg1", envvar=envvar, show_envvar=True)
+     def cmd(arg):
+         pass
+ 
+@@ -860,6 +871,26 @@ def test_show_envvar_auto_prefix(runner):
+     assert "TEST_ARG1" in result.output
+ 
+ 
++@pytest.mark.parametrize("envvar", [None, "", [], ()])
++@pytest.mark.parametrize(
++    ("auto_envvar_prefix", "allow_from_autoenv"), [(None, True), ("TEST", False)]
++)
++def test_show_envvar_empty(runner, envvar, auto_envvar_prefix, allow_from_autoenv):
++    option = click.Option(
++        ["--arg1"],
++        envvar=envvar,
++        show_envvar=True,
++        allow_from_autoenv=allow_from_autoenv,
++    )
++    cmd = click.Command("cmd", params=[option])
++    ctx = click.Context(cmd, auto_envvar_prefix=auto_envvar_prefix)
++    assert option.get_help_extra(ctx) == {}
++
++    result = runner.invoke(cmd, ["--help"], auto_envvar_prefix=auto_envvar_prefix)
++    assert not result.exception
++    assert "env var:" not in result.output
++
++
+ def test_show_envvar_auto_prefix_dash_in_command(runner):
+     @click.group()
+     def cli():
+@@ -1018,6 +1049,41 @@ def test_missing_envvar(runner):
+     assert "Error: Missing option '--foo'." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("envvar", "expected"),
++    [
++        (None, ""),
++        ("", ""),
++        ([], ""),
++        ((), ""),
++        ("bar", " (env var: 'bar')"),
++        (["bar"], " (env var: 'bar')"),
++        (("bar",), " (env var: 'bar')"),
++        (["bar", "baz"], " (env var: 'bar', 'baz')"),
++        (("bar", "baz"), " (env var: 'bar', 'baz')"),
++    ],
++)
++@pytest.mark.parametrize("show_envvar", [False, True])
++@pytest.mark.parametrize("args", [[], ["--foo", "invalid"]])
++def test_envvar_error_hint(runner, envvar, expected, show_envvar, args):
++    option = click.Option(
++        ["--foo"], envvar=envvar, show_envvar=show_envvar, required=True, type=int
++    )
++    hint = "'--foo'" + (expected if show_envvar else "")
++    assert option.get_error_hint(None) == hint
++
++    cli = click.Command("cli", params=[option])
++    result = runner.invoke(cli, args, env={"bar": None, "baz": None})
++    assert result.exit_code == 2
++    if args:
++        assert (
++            f"Error: Invalid value for {hint}: 'invalid' is not a valid integer."
++            in result.output
++        )
++    else:
++        assert f"Error: Missing option {hint}." in result.output
++
++
+ def test_case_insensitive_choice(runner):
+     @click.command()
+     @click.option("--foo", type=click.Choice(["Orange", "Apple"], case_sensitive=False))

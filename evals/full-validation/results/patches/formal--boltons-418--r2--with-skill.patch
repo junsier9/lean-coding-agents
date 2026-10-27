@@ -1,0 +1,68 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 37c4569..ff2c56a 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -208,6 +208,8 @@ def singularize(word):
+     'Activity'
+     >>> singularize('Glasses')
+     'Glass'
++    >>> singularize('Glass')
++    'Glass'
+     >>> singularize('FEET')
+     'FOOT'
+ 
+@@ -219,7 +221,7 @@ def singularize(word):
+     irr_singular = _IRR_P2S.get(word)
+     if irr_singular:
+         singular = irr_singular
+-    elif not word.endswith('s'):
++    elif not word.endswith('s') or word.endswith('ss'):
+         return orig_word
+     elif len(word) == 2:
+         singular = word[:-1]  # or just return word?
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index b46081e..d693763 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,41 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize('word', [
++    'glass', 'boss', 'address', 'class', 'grass', 'business', 'ss',
++    'Glass', 'BOSS', 'Address', 'gLaSs', 'aDdReSs', ' glass ',
++])
++def test_singularize_double_s(word):
++    assert strutils.singularize(word) == word
++
++
++@pytest.mark.parametrize('plural, singular', [
++    ('glasses', 'glass'), ('Glasses', 'Glass'), ('GLASSES', 'GLASS'),
++    ('bosses', 'boss'), ('addresses', 'address'), ('classes', 'class'),
++    ('businesses', 'business'),
++])
++def test_singularize_double_s_plural(plural, singular):
++    result = strutils.singularize(plural)
++    assert result == singular
++    assert strutils.singularize(result) == singular
++    assert strutils.pluralize(singular) == plural
++
++
++@pytest.mark.parametrize('word, singular', [
++    ('', ''), ('  ', '  '), ('cat', 'cat'), ('cats', 'cat'),
++    ('chances', 'chance'), ('Activities', 'Activity'), ('keys', 'key'),
++    ('FEET', 'FOOT'), ('children', 'child'), ('sheep', 'sheep'),
++    ('analysis', 'analysis'), ('analyses', 'analysis'),
++])
++def test_singularize(word, singular):
++    assert strutils.singularize(word) == singular
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

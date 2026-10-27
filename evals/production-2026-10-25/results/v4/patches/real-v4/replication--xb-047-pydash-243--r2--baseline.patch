@@ -1,0 +1,118 @@
+diff --git a/src/pydash/predicates.py b/src/pydash/predicates.py
+index b13a7a4..8ec137e 100644
+--- a/src/pydash/predicates.py
++++ b/src/pydash/predicates.py
+@@ -349,14 +349,15 @@ def lte_cmp(other: T) -> t.Callable[["SupportsDunderLE[T]"], bool]:
+ 
+ def in_range(value: t.Any, start: t.Any = 0, end: t.Any = None) -> bool:
+     """
+-    Checks if `value` is between `start` and up to but not including `end`. If `end` is not
+-    specified it defaults to `start` with `start` becoming ``0``.
++    Checks if `value` is within the range, including the lower bound but excluding the upper bound.
++    If `end` is not specified it defaults to `start` with `start` becoming ``0``. If `start` is greater
++    than `end`, the bounds are swapped.
+ 
+     Args:
+ 
+         value: Number to check.
+-        start: Start of range inclusive. Defaults to ``0``.
+-        end: End of range exclusive. Defaults to `start`.
++        start: One boundary of the range. Defaults to ``0``.
++        end: Other boundary of the range. Defaults to `start`.
+ 
+     Returns:
+         Whether `value` is in range.
+@@ -375,6 +376,14 @@ def in_range(value: t.Any, start: t.Any = 0, end: t.Any = None) -> bool:
+         True
+         >>> in_range(3.5, 2.5)
+         False
++        >>> in_range(3, 4, 2)
++        True
++        >>> in_range(-4, -2, -4)
++        True
++        >>> in_range(-2, -2, -4)
++        False
++        >>> in_range(-1, -2)
++        True
+ 
+     .. versionadded:: 3.1.0
+     """
+@@ -390,6 +399,9 @@ def in_range(value: t.Any, start: t.Any = 0, end: t.Any = None) -> bool:
+     elif not is_number(end):
+         end = 0
+ 
++    if start > end:
++        start, end = end, start
++
+     return start <= value < end
+ 
+ 
+@@ -398,8 +410,8 @@ def in_range_cmp(start: t.Any = 0, end: t.Any = None) -> t.Callable[[t.Any], boo
+     Curried version of :func:`in_range`.
+ 
+     Args:
+-        start: Start of range inclusive. Defaults to ``0``.
+-        end: End of range exclusive. Defaults to `start`.
++        start: One boundary of the range. Defaults to ``0``.
++        end: Other boundary of the range. Defaults to `start`.
+ 
+     Returns:
+         A predicate checking whether passed :attr:`value` is in range.
+@@ -418,6 +430,10 @@ def in_range_cmp(start: t.Any = 0, end: t.Any = None) -> t.Callable[[t.Any], boo
+         True
+         >>> in_range_cmp(2.5)(3.5)
+         False
++        >>> in_range_cmp(4, 2)(3)
++        True
++        >>> in_range_cmp(-2)(-1)
++        True
+ 
+     .. versionadded:: 7.1.0
+     """
+diff --git a/tests/test_predicates.py b/tests/test_predicates.py
+index e7f101e..582b12a 100644
+--- a/tests/test_predicates.py
++++ b/tests/test_predicates.py
+@@ -91,9 +91,42 @@ def test_lte(case, expected):
+         ((2, 2), False),
+         ((1.2, 2), True),
+         ((5.2, 4), False),
++        ((2, 2, 4), True),
++        ((4, 2, 4), False),
++        ((1, 4, 2), False),
++        ((2, 4, 2), True),
++        ((3, 4, 2), True),
++        ((4, 4, 2), False),
++        ((5, 4, 2), False),
++        ((-4, -4, -2), True),
++        ((-3, -4, -2), True),
++        ((-2, -4, -2), False),
++        ((-5, -2, -4), False),
++        ((-4, -2, -4), True),
++        ((-3, -2, -4), True),
++        ((-2, -2, -4), False),
++        ((-1, -2, -4), False),
++        ((-3, -2), False),
++        ((-2, -2), True),
++        ((-1, -2), True),
++        ((0, -2), False),
++        ((1, -2), False),
++        ((-2, 2, -2), True),
++        ((0, 2, -2), True),
++        ((2, 2, -2), False),
++        ((1.5, 3.5, 1.5), True),
++        ((2.5, 3.5, 1.5), True),
++        ((3.5, 3.5, 1.5), False),
++        ((-2.5, -1.5, -3.5), True),
++        ((2, 2, 2), False),
++        ((-2, -2, -2), False),
++        ((0, 0), False),
++        ((0,), False),
+         (("", 5), False),
+         ((2, ""), False),
+         ((-1, -2, ""), True),
++        ((1, 2, ""), True),
++        ((-1, "", -2), True),
+     ],
+ )
+ def test_in_range(case, expected):

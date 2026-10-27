@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-10-24T17:54:55.871428+00:00",
+  "unittest_discover": {
+    "tests_ran": 36,
+    "passed": 36,
+    "elapsed_seconds": 8.457,
+    "interpreter": "Python 3.12.14",
+    "log_sha256": "C11204022D2732EF4167CDF8345722F3EE065DF0422A36DAE8AC4C04EE0D961D"
+  },
+  "skill_quick_validate": {
+    "result": "Skill is valid!",
+    "interpreter": "Python 3.13 with existing PyYAML 6.0.2",
+    "bundled_interpreter_initially_lacked_yaml": true,
+    "installed_packages": false
+  },
+  "file_sha256": {
+    "test_analysis.py": "B2DC515B86C477C9114BEA713F27F3C9C0D0FBB6A7225279B5153EEEA70A3C2D",
+    "test_run_experiment.py": "1DC936EAF452F9F7AE84418AF31635BEF67ED0779C10DA9CF874F93442F5D621",
+    "test_preflight.py": "68BDDC46C1081DACBEAEBB415EC0673EB92E1E73375626E25B855CF70AB8F76B",
+    "test_bound_analysis.py": "0A04951D49133139FA904707F1F973D300D7BB48C9D3C8AD086597D1F5D98117",
+    "test_native_loading_smoke.py": "D35986F9D233DB232A4FEEBB982F2AE23D90969BE209FEAE6DD5A035BDE7506C",
+    "analyze.py": "308FC2E8076BA93C74353BDF8156AE86C7E3767C2616BF301F43EE086CD337C3",
+    "bound_analysis.py": "6129C7C9B44685B4656F0E86A3550690DC385C7A8C812691A7AF117A55118304",
+    "preflight.py": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+    "run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "native_loading_smoke.py": "E69CA71BC8E7BF2A9769BC426282AAFFA44ACE4D38EC477810B3FDDEB9D34540"
+  },
+  "not_solver_outcomes": true
+}

@@ -1,0 +1,101 @@
+diff --git a/cachetools/keys.py b/cachetools/keys.py
+index adb9dad..82b56db 100644
+--- a/cachetools/keys.py
++++ b/cachetools/keys.py
+@@ -21,8 +21,13 @@ class _HashedTuple(tuple):
+     def __radd__(self, other, add=tuple.__add__):
+         return _HashedTuple(add(other, self))
+ 
++    def __getstate__(self):
++        # Cached hash values may differ between interpreters.
++        return {}
+ 
+-_kwmark = (object(),)
++
++# A class reference retains its identity when pickled.
++_kwmark = (_HashedTuple,)
+ 
+ 
+ def hashkey(*args, **kwargs):
+diff --git a/tests/test_keys.py b/tests/test_keys.py
+index 2b9ced6..7de395a 100644
+--- a/tests/test_keys.py
++++ b/tests/test_keys.py
+@@ -1,5 +1,11 @@
++import base64
++import os
++import pickle
++import subprocess
++import sys
+ import unittest
+ 
++import cachetools
+ import cachetools.keys
+ 
+ 
+@@ -43,3 +49,65 @@ class CacheKeysTest(unittest.TestCase):
+         self.assertIsInstance(key(1, 2, 3) + key(4, 5, 6), type(key()))
+         self.assertIsInstance(key(1, 2, 3) + (4, 5, 6), type(key()))
+         self.assertIsInstance((1, 2, 3) + key(4, 5, 6), type(key()))
++
++    def test_pickle(self):
++        cases = (
++            ((), {}),
++            ((1, 'value'), {}),
++            ((), {'x': 0, 'y': 'value'}),
++            ((1, 'value'), {'y': 0, 'x': 'keyword'}),
++        )
++        for key in (cachetools.keys.hashkey, cachetools.keys.typedkey):
++            for args, kwargs in cases:
++                for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
++                    for hashed in (False, True):
++                        original = key(*args, **kwargs)
++                        if hashed:
++                            hash(original)
++                        restored = pickle.loads(
++                            pickle.dumps(original, protocol))
++                        self.assertIs(type(restored), type(original))
++                        self.assertEqual(restored, original)
++                        self.assertEqual(hash(restored), hash(original))
++                        self.assertEqual(hash(restored), hash(tuple(restored)))
++                        self.assertEqual({restored: 'value'}[original], 'value')
++
++    def test_pickle_unhashable(self):
++        for key in (cachetools.keys.hashkey, cachetools.keys.typedkey):
++            for original in (key([]), key(value=[])):
++                for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
++                    restored = pickle.loads(pickle.dumps(original, protocol))
++                    with self.assertRaises(TypeError):
++                        hash(restored)
++
++    def test_pickle_cache_in_another_interpreter(self):
++        cache = cachetools.Cache(maxsize=4)
++        for key in (cachetools.keys.hashkey, cachetools.keys.typedkey):
++            cache[key('argument')] = 'positional'
++            cache[key('argument', option='value')] = 'keyword'
++        payload = base64.b64encode(pickle.dumps(cache)).decode('ascii')
++        script = '''
++import base64
++import pickle
++import sys
++import unittest
++
++import cachetools
++from cachetools.keys import hashkey, typedkey
++
++cache = pickle.loads(base64.b64decode(sys.argv[1]))
++test = unittest.TestCase()
++
++def fail(*args, **kwargs):
++    raise AssertionError('cache miss after unpickling')
++
++for key in (hashkey, typedkey):
++    wrapper = cachetools.cached(cache, key=key)(fail)
++    test.assertEqual(wrapper('argument'), 'positional')
++    test.assertEqual(wrapper('argument', option='value'), 'keyword')
++'''
++        for seed in ('1', '2'):
++            env = dict(os.environ, PYTHONHASHSEED=seed)
++            returncode = subprocess.call([sys.executable, '-c', script, payload],
++                                         env=env)
++            self.assertEqual(returncode, 0)

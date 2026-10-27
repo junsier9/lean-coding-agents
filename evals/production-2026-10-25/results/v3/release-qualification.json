@@ -1,0 +1,38 @@
+{
+  "evaluated_at": "2026-10-25T01:24:05.413669+00:00",
+  "candidate": "v3-python-v2",
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "production_assistant_qualified": false,
+  "native_runs": 343,
+  "real_runs": 240,
+  "gates": {
+    "critical_contracts": true,
+    "final_native_routing": true,
+    "real_quality": false,
+    "same_endpoint_positive": true,
+    "prespecified_blinded_review": true,
+    "two_file_install_and_rollback": true,
+    "evidence_integrity": true
+  },
+  "same_endpoint_credible_positive": {
+    "token": true,
+    "time": false
+  },
+  "stable_at_least10percent_benefit": {
+    "token": false,
+    "time": false
+  },
+  "blocking_reason": "Observed skill acceptance90.0% and88.3% is below the pre-frozen95% release requirement. Formal token bound also misses the at-least10% criterion.",
+  "source_report_sha256": {
+    "formal-v3-analysis.json": "E17DDEEDE6C7D1FF7BB7BC704F34113F383973C1411A2BB143DBE0A57C6DBD30",
+    "replication-v3-analysis.json": "8F79AB6E33AE4C5C8BBA3FF82CF144255592F288AD5A55BFC1A019770944DB9D",
+    "blind-review-summary.json": "BCBA1E5A6452613BB7DD3E1D2CB5B3FA34466F979C3706D45028D85DB04C4020",
+    "evidence-integrity.json": "B911D5F37311D2EFBDD2B1A0DFBFA1A42095657D42C14EACB23D30089A9A58DB",
+    "evidence-retention.json": "0E8C88ACD9C87CA505556C176219A2E73BBBE8BE815B77B812A2F3F0AB4F7D78",
+    "routing-v3-python-v2.json": "822B1D81613E7D91FF3BB228AAF35DC4233538FCB4558FFF8F99DD8C37D84D3C",
+    "safety-v3-summary.json": "84120B047FE33F3E10306F71C6547BF7FFBE15DE0107054B88A0A0D8124742CF",
+    "release-requirements.json": "76BA888F7E756FEF188BE5EAD488CC8E065B5D5B0F04962E5E58A2AA53365797"
+  },
+  "canonical_skill_promoted": false,
+  "external_publication": false
+}

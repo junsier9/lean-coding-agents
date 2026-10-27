@@ -1,0 +1,81 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index df7a81e..f5a0a32 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -492,8 +492,7 @@ def duplicates(
+     .. versionadded:: 3.0.0
+     """
+     if iteratee is not None:
+-        cbk = pyd.iteratee(iteratee)
+-        computed = [cbk(item) for item in array]
++        computed = pyd.map_(array, iteratee)
+     else:
+         computed = array  # type: ignore
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index f2f0761..e1c7bb3 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -149,6 +149,62 @@ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++def test_duplicates_passes_value_and_index():
++    records = [{"id": index} for index in range(6)]
++    seen = []
++
++    def iteratee(value, index):
++        assert value is records[index]
++        seen.append(index)
++        return index % 2
++
++    result = _.duplicates(records, iteratee)
++
++    assert seen == list(range(len(records)))
++    assert result == records[2:]
++    assert all(value is records[index] for index, value in enumerate(result, 2))
++
++
++@parametrize("collection_type", [list, tuple])
++def test_duplicates_passes_original_collection(collection_type):
++    records = collection_type(
++        {"group": group, "id": index} for index, group in enumerate(["a", "b", "b", "a", "b"])
++    )
++    seen = []
++
++    def iteratee(value, index, collection):
++        assert collection is records
++        assert value is collection[index]
++        seen.append(index)
++        return value["group"]
++
++    result = _.duplicates(records, iteratee)
++
++    assert seen == list(range(len(records)))
++    assert result == list(records[2:])
++    assert all(value is records[index] for index, value in enumerate(result, 2))
++
++
++def test_duplicates_accepts_builtin_iteratee():
++    assert _.duplicates(["A", "b", "C", "a", "B", "c"], str.lower) == ["a", "B", "c"]
++
++
++@parametrize("error_type", [TypeError, ValueError])
++def test_duplicates_propagates_iteratee_error(error_type):
++    error = error_type("iteratee failed")
++    seen = []
++
++    def iteratee(value, index, collection):
++        seen.append(index)
++        raise error
++
++    with pytest.raises(error_type) as exc_info:
++        _.duplicates([1, 2, 3], iteratee)
++
++    assert exc_info.value is error
++    assert seen == [0]
++
++
+ def test_duplicates_applies_falsey_iteratee_shorthands():
+     records = [{"": "same", "id": "first"}, {"": "same", "id": "second"}]
+     original = [record.copy() for record in records]

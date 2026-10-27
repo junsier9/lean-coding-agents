@@ -1,0 +1,97 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 3ed5ab3..ac15e08 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -392,13 +392,13 @@ class IndexedSet(MutableSet):
+     def iter_slice(self, start, stop, step=None):
+         "iterate over a slice of the set"
+         iterable = self
+-        if start is not None:
+-            start = self._get_real_index(start)
+-        if stop is not None:
+-            stop = self._get_real_index(stop)
+-        if step is not None and step < 0:
++        step = 1 if step is None else operator.index(step)
++        if step < 0:
+             step = -step
+             iterable = reversed(self)
++        start, stop, step = slice(start, stop, step).indices(len(self))
++        # islice rejects oversized steps, which can select at most one item.
++        step = min(step, max(1, stop - start))
+         return islice(iterable, start, stop, step)
+ 
+     # list operations
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b095ea7..7706611 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -21,6 +21,63 @@ def test_indexed_set_basic():
+     assert x[2:4:-1] == IndexedSet([8, 7])
+ 
+ 
++def test_indexed_set_slice_after_pop():
++    x = IndexedSet(range(10))
++    x.pop(2)
++
++    assert list(x[1:4]) == [1, 3, 4]
++    assert list(x[-3:]) == [7, 8, 9]
++
++
++@mark.parametrize('method', ['pop', 'remove'])
++@mark.parametrize('size, removed', [
++    (0, ()),
++    (10, ()),
++    (10, (2,)),
++    (32, (0, 1, 2)),
++    (32, (2, 17, 25)),
++    (10, (0, 1)),
++    (10, tuple(range(10))),
++])
++def test_indexed_set_slice_windows(method, size, removed):
++    x = IndexedSet(range(size))
++    for item in removed:
++        if method == 'pop':
++            x.pop(x.index(item))
++        else:
++            x.remove(item)
++    contents = list(x)
++    fresh = IndexedSet(contents)
++    bounds = (None, -100, -3, -1, 0, 1, 2, 4, 100)
++    for start in bounds:
++        for stop in bounds:
++            for step in (None, 1, 2, 100, 10**100, -1, -2, -100, -10**100):
++                window = slice(start, stop, step)
++                if step is not None and step < 0:
++                    # Negative steps select a window of the reversed set.
++                    expected = contents[::-1][start:stop:-step]
++                else:
++                    expected = contents[window]
++                assert list(x[window]) == expected, window
++                assert x[window] == fresh[window], window
++                assert list(x.iter_slice(start, stop, step)) == expected, window
++
++
++@mark.parametrize('window, error', [
++    (slice(None, None, 0), ValueError),
++    (slice(1.5, None), TypeError),
++    (slice(None, '3'), TypeError),
++    (slice(None, None, 1.5), TypeError),
++])
++def test_indexed_set_invalid_slice(window, error):
++    x = IndexedSet(range(10))
++    x.pop(2)
++    with raises(error):
++        x[window]
++    with raises(error):
++        x.iter_slice(window.start, window.stop, window.step)
++
++
+ def test_indexed_set_rsub():
+     "From #252"
+     assert (set('abc') - IndexedSet('bcd')) == {'a'}

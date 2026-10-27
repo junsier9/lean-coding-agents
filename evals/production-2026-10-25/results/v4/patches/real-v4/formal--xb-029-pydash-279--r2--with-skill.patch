@@ -1,0 +1,98 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 3ebcb1b..5ef8898 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -491,7 +491,7 @@ def duplicates(
+ 
+     .. versionadded:: 3.0.0
+     """
+-    if iteratee:
++    if iteratee is not None:
+         cbk = pyd.iteratee(iteratee)
+         computed = [cbk(item) for item in array]
+     else:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b42dad5..a46f464 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -143,12 +143,80 @@ def test_drop_right_while(case, expected):
+     [
+         (([1, 2, 3, 2, 1, 5, 6, 5, 5, 5],), [2, 1, 5]),
+         ((["A", "b", "C", "a", "B", "c"], lambda letter: letter.lower()), ["a", "B", "c"]),
++        (([1, 2, 3, 2, 1], None), [2, 1]),
++        (([1, 2, 3],), []),
++        (([],), []),
+     ],
+ )
+ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++@parametrize(
++    "array,iteratee,expected_indices",
++    [
++        (
++            [
++                {"": 1, "id": 0},
++                {"": 2, "id": 1},
++                {"": 1, "id": 2},
++                {"": 2, "id": 3},
++                {"": 1, "id": 2},
++            ],
++            "",
++            [2, 3],
++        ),
++        ([[1, "a"], [2, "b"], [1, "c"], [2, "d"], [1, "c"]], 0, [2, 3]),
++        ([{"id": 1}, {"id": 2}, {"id": 3}, {"id": 2}], {}, [1, 2]),
++        ([{"id": 1}, {"id": 2}, {"id": 3}, {"id": 2}], (), [1, 2]),
++        ([{"id": 1}, {"id": 2}, {"id": 3}, {"id": 2}], [], [3]),
++    ],
++)
++def test_duplicates_falsey_iteratee(array, iteratee, expected_indices):
++    for result in (
++        _.duplicates(array, iteratee),
++        _.duplicates(array=array, iteratee=iteratee),
++        _.chain(array).duplicates(iteratee).value(),
++    ):
++        assert len(result) == len(expected_indices)
++        assert all(item is array[index] for item, index in zip(result, expected_indices))
++
++
++@parametrize("truth_value", [False, True, None])
++def test_duplicates_callable_without_truth_testing(truth_value):
++    calls = []
++
++    class Key:
++        def __bool__(self):
++            if truth_value is None:
++                raise AssertionError("iteratee truth value must not be tested")
++            return truth_value
++
++        def __call__(self, item):
++            calls.append(item)
++            return item[0]
++
++    array = [[1, "a"], [2, "b"], [1, "c"], [2, "d"], [1, "c"]]
++    result = _.duplicates(array, Key())
++
++    assert calls == array
++    assert len(result) == 2
++    assert result[0] is array[2]
++    assert result[1] is array[3]
++
++
++def test_duplicates_iteratee_error_propagates():
++    error = ValueError("iteratee failed")
++
++    def fail(item):
++        raise error
++
++    with pytest.raises(ValueError) as exc_info:
++        _.duplicates([1, 1], fail)
++
++    assert exc_info.value is error
++
++
+ @parametrize(
+     "case,expected",
+     [

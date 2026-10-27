@@ -1,0 +1,85 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index b430da7..fcfcf08 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2552,7 +2552,7 @@ def xor_by(array, *lists, **kwargs):
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor(
++    return xor_by(
+         uniq(
+             difference_by(
+                 array + lists[0],
+@@ -2561,6 +2561,7 @@ def xor_by(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        iteratee=iteratee,
+     )
+ 
+ 
+@@ -2617,6 +2618,7 @@ def xor_with(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        comparator=comp,
+     )
+ 
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index 73dd87d..c511fc4 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -945,11 +945,51 @@ def test_xor_by(case, expected):
+     assert _.xor_by(*case) == expected
+ 
+ 
++@parametrize(
++    "case,expected",
++    [
++        (([1, 2, 3], [5, 4], [6]), []),
++        (([1, 2], [3], [4], [5]), [3]),
++        (([1, 2], [], [4], []), [2]),
++        (([1], [4], [7]), [7]),
++    ],
++)
++def test_xor_by_multiple_arrays(case, expected):
++    def iteratee(value):
++        return value % 3
++
++    assert _.xor_by(*case, iteratee) == expected
++    assert _.xor_by(*case, iteratee=iteratee) == expected
++
++
++def test_xor_by_multiple_arrays_with_property_path():
++    arrays = ([{"x": 1}], [{"x": 2}], [{"x": 1, "y": 1}])
++    assert _.xor_by(*arrays, "x") == [{"x": 2}]
++    assert _.xor_by(*arrays, iteratee="x") == [{"x": 2}]
++
++
+ @parametrize("case,expected", [(([1, 2, 3], [5, 4], lambda a, b: a <= b), [5, 4])])
+ def test_xor_with(case, expected):
+     assert _.xor_with(*case) == expected
+ 
+ 
++@parametrize(
++    "case,expected",
++    [
++        (([1, 2, 3], [5, 4], [6]), []),
++        (([1, 2], [3], [4], [5]), [3]),
++        (([1, 2], [], [4], []), [2]),
++        (([1], [4], [7]), [7]),
++    ],
++)
++def test_xor_with_multiple_arrays(case, expected):
++    def comparator(value, other):
++        return value % 3 == other % 3
++
++    assert _.xor_with(*case, comparator) == expected
++    assert _.xor_with(*case, comparator=comparator) == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

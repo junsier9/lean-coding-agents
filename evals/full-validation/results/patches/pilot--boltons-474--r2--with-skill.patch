@@ -1,0 +1,72 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 37b4440..4e88810 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -358,13 +358,7 @@ class IndexedSet(MutableSet):
+     # in-place set operations
+     def update(self, *others):
+         "update(*others) -> add values from one or more iterables"
+-        if not others:
+-            return  # raise?
+-        elif len(others) == 1:
+-            other = others[0]
+-        else:
+-            other = chain(others)
+-        for o in other:
++        for o in chain.from_iterable(others):
+             self.add(o)
+ 
+     def intersection_update(self, *others):
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b78fd6c..e7b37c9 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -28,6 +28,42 @@ def test_indexed_set_rsub():
+     assert (frozenset('abc') - IndexedSet('bcd')) == frozenset(['a'])
+ 
+ 
++@mark.parametrize('iterable_type', [list, tuple, iter])
++def test_indexed_set_update_multiple_iterables(iterable_type):
++    thing = IndexedSet([3, 1])
++    result = thing.update(iterable_type([1, 4, 4, 2]),
++                          iterable_type([4, 5, 2, 6]))
++
++    assert result is None
++    assert list(thing) == [3, 1, 4, 2, 5, 6]
++
++
++@mark.parametrize('initial', [[], [1]])
++def test_indexed_set_update_empty(initial):
++    thing = IndexedSet(initial)
++
++    assert thing.update() is None
++    assert thing.update([], (), iter(())) is None
++    assert list(thing) == initial
++
++
++def test_indexed_set_update_tuple_elements():
++    pair = (1, 2)
++    nested = ((3, 4), (5, 6))
++    thing = IndexedSet()
++
++    assert thing.update([pair]) is None
++    thing.update([pair], (nested, pair), iter([pair, (7, 8)]))
++
++    assert list(thing) == [pair, nested, (7, 8)]
++
++
++@mark.parametrize('invalid', [None, [[]]])
++def test_indexed_set_update_invalid_input(invalid):
++    with raises(TypeError):
++        IndexedSet().update((), invalid)
++
++
+ def test_indexed_set_mutate():
+     thou = IndexedSet(range(1000))
+     assert (thou.pop(), thou.pop()) == (999, 998)

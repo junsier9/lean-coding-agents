@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-25T01:44:05.185631+00:00",
+  "iteration": 3,
+  "evidence_class": "development_regression_only",
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "native_runs": 6,
+  "accepted": 6,
+  "body_reads": 6,
+  "failed_keys": [],
+  "development_gate_pass": true,
+  "not_an_efficiency_or_fresh_holdout_claim": true
+}

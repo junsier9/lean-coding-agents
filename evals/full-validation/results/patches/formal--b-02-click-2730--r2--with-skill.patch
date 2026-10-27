@@ -1,0 +1,74 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 8a09daf..138cc26 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Show the effective default from ``default_map`` in help for boolean
++    options with paired names.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index 367beb2..bf33f3b 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2481,6 +2481,10 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.1.8
++        The help for boolean flags with paired names reflects defaults
++        from :attr:`Context.default_map`.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2800,7 +2804,7 @@ class Option(Parameter):
+                 # For boolean flags that have distinct True/False opts,
+                 # use the opt without prefix instead of the value.
+                 default_string = split_opt(
+-                    (self.opts if self.default else self.secondary_opts)[0]
++                    (self.opts if default_value else self.secondary_opts)[0]
+                 )[1]
+             elif self.is_bool_flag and not self.secondary_opts and not default_value:
+                 default_string = ""
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 5ab05ed..fe52f19 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -13,6 +15,26 @@ def test_basic_defaults(runner):
+     assert "FOO:[42.0]" in result.output
+ 
+ 
++@pytest.mark.parametrize("default", [False, True])
++@pytest.mark.parametrize(
++    ("mapped_default", "expect"), [(False, "no-cache"), (True, "cache")]
++)
++def test_boolean_flag_default_map_help(runner, default, mapped_default, expect):
++    @click.command()
++    @click.option("--cache/--no-cache", default=default, show_default=True)
++    def cli(cache):
++        click.echo(cache)
++
++    default_map = {"cache": mapped_default}
++    result = runner.invoke(cli, [], default_map=default_map)
++    assert result.exit_code == 0
++    assert result.output == f"{mapped_default}\n"
++
++    result = runner.invoke(cli, ["--help"], default_map=default_map)
++    assert result.exit_code == 0
++    assert f"[default: {expect}]" in result.output
++
++
+ def test_multiple_defaults(runner):
+     @click.command()
+     @click.option("--foo", default=[23, 42], type=click.FLOAT, multiple=True)

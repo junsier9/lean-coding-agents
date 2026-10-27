@@ -1,0 +1,195 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..d18a985 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2608,6 +2608,8 @@ class Parameter(ABC):
+ 
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
++            # Make the incoming source available to type conversion and callbacks.
++            ctx.set_parameter_source(self.name, source)
+ 
+             # Display a deprecation warning if necessary.
+             if (
+@@ -2658,10 +2660,12 @@ class Parameter(ABC):
+             if self.expose_value:
+                 ctx.params[self.name] = value
+                 ctx._param_default_explicit[self.name] = self._default_explicit
+-        elif existing_source is None:
+-            # Nothing has claimed the slot yet. Record at least our source so downstream
+-            # lookups don't return ``None``.
+-            ctx.set_parameter_source(self.name, source)
++        else:
++            # Restore the winning value's source after temporarily exposing ours.
++            # If no source was recorded yet, keep the incoming source.
++            ctx.set_parameter_source(
++                self.name, existing_source if existing_source is not None else source
++            )
+ 
+         return value, args
+ 
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 49f0ac6..fdd614a 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -3,6 +3,7 @@ import pytest
+ import click
+ from click import UNPROCESSED
+ from click._utils import UNSET
++from click.core import ParameterSource
+ 
+ 
+ @pytest.mark.parametrize(
+@@ -265,6 +266,70 @@ def test_default_map_source(runner, args, default_map, expected_value, expected_
+     assert f"source={expected_source}" in result.output
+ 
+ 
++@pytest.mark.parametrize("param_cls", [click.Option, click.Argument])
++@pytest.mark.parametrize("is_eager", [False, True])
++@pytest.mark.parametrize("expose_value", [False, True])
++@pytest.mark.parametrize(
++    ("invoke_kwargs", "expected_value", "expected_source"),
++    [
++        ({}, 1, ParameterSource.DEFAULT),
++        ({"default_map": {"value": "2"}}, 2, ParameterSource.DEFAULT_MAP),
++        (
++            {"env": {"TEST_PARAMETER_SOURCE": "3"}},
++            3,
++            ParameterSource.ENVIRONMENT,
++        ),
++        ({"args": ["4"]}, 4, ParameterSource.COMMANDLINE),
++    ],
++)
++def test_parameter_source_during_processing(
++    runner,
++    param_cls,
++    is_eager,
++    expose_value,
++    invoke_kwargs,
++    expected_value,
++    expected_source,
++):
++    observed = []
++
++    class SourceType(click.types.IntParamType):
++        def convert(self, value, param, ctx):
++            observed.append(("type", ctx.get_parameter_source(param.name)))
++            return super().convert(value, param, ctx)
++
++    def callback(ctx, param, value):
++        observed.append(("callback", ctx.get_parameter_source(param.name)))
++        return value
++
++    @click.pass_context
++    def cli(ctx, **kwargs):
++        return kwargs, ctx.get_parameter_source("value")
++
++    param = param_cls(
++        ["--value" if param_cls is click.Option else "value"],
++        default="1",
++        envvar="TEST_PARAMETER_SOURCE",
++        type=SourceType(),
++        callback=callback,
++        is_eager=is_eager,
++        expose_value=expose_value,
++    )
++    invoke_kwargs = invoke_kwargs.copy()
++    if param_cls is click.Option and "args" in invoke_kwargs:
++        invoke_kwargs["args"] = ["--value", *invoke_kwargs["args"]]
++
++    result = runner.invoke(
++        click.Command("cli", params=[param], callback=cli),
++        standalone_mode=False,
++        **invoke_kwargs,
++    )
++    assert result.exception is None
++    assert observed == [("type", expected_source), ("callback", expected_source)]
++    expected_params = {"value": expected_value} if expose_value else {}
++    assert result.return_value == (expected_params, expected_source)
++
++
+ def test_lookup_default_override_respected(runner):
+     """A subclass override of ``lookup_default()`` should be called by Click
+     internals, not bypassed by a private method.
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 25e649d..f1aebc0 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -2870,6 +2870,77 @@ def test_bool_flag_group_competition_with_envvar(
+     assert result.output == repr(expected)
+ 
+ 
++@pytest.mark.parametrize(
++    ("option_kwargs", "expected_values", "expected_sources", "winner"),
++    [
++        (
++            [{"envvar": "FIRST"}, {"default": "fallback"}],
++            ["first", "fallback"],
++            ["ENVIRONMENT", "DEFAULT"],
++            0,
++        ),
++        (
++            [{"default": "fallback"}, {"envvar": "FIRST"}],
++            ["fallback", "first"],
++            ["DEFAULT", "ENVIRONMENT"],
++            1,
++        ),
++        (
++            [{"envvar": "FIRST"}, {"default": "fallback"}, {"envvar": "LAST"}],
++            ["first", "fallback", "last"],
++            ["ENVIRONMENT", "DEFAULT", "ENVIRONMENT"],
++            2,
++        ),
++        (
++            [{"is_flag": True, "default": True}, {"is_flag": True}],
++            [True, False],
++            ["DEFAULT", "DEFAULT"],
++            0,
++        ),
++        (
++            [{"default": "first"}, {"default": ""}],
++            ["first", ""],
++            ["DEFAULT", "DEFAULT"],
++            1,
++        ),
++        (
++            [{"default": "first"}, {"default": None}],
++            ["first", None],
++            ["DEFAULT", "DEFAULT"],
++            1,
++        ),
++    ],
++)
++def test_shared_parameter_source_during_processing(
++    runner, option_kwargs, expected_values, expected_sources, winner
++):
++    observed = []
++    final_state = []
++
++    def callback(ctx, param, value):
++        observed.append((value, ctx.get_parameter_source(param.name).name))
++        return value
++
++    def inspect_winner(ctx, param, value):
++        final_state.append(
++            (ctx.params["value"], ctx.get_parameter_source("value").name)
++        )
++
++    params = [
++        click.Option([f"--option-{i}", "value"], callback=callback, **kwargs)
++        for i, kwargs in enumerate(option_kwargs)
++    ]
++    params.append(
++        click.Option(["--inspect"], expose_value=False, callback=inspect_winner)
++    )
++    cli = click.Command("cli", params=params)
++    result = runner.invoke(cli, env={"FIRST": "first", "LAST": "last"})
++
++    assert result.exception is None
++    assert observed == list(zip(expected_values, expected_sources, strict=True))
++    assert final_state == [(expected_values[winner], expected_sources[winner])]
++
++
+ @pytest.mark.parametrize(
+     ("default_map", "args", "expected"),
+     [

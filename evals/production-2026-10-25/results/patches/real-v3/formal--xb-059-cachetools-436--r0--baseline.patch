@@ -1,0 +1,122 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..bbc3971 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -82,13 +82,16 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++            # Defer binding until called with an instance, reusing its wrapper
++            # so that both calling forms share cache statistics and pending keys.
++            def wrapper(obj, *args, **kwargs):
++                return self.__get__(obj, objtype)(*args, **kwargs)
++
++            return functools.update_wrapper(wrapper, self.__wrapped__)  # type: ignore
++
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..443687b 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -93,6 +93,90 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+         cached.cache.clear()
+         self.assertEqual(cached.get(1), 2)
+ 
++    def test_decorator_unbound(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                first = Cached(self.cache(2))
++                second = Unhashable(self.cache(2), count=10)
++                unbound = getattr(Cached, name)
++
++                # Class access must bind and retain the same per-instance wrapper.
++                self.assertEqual(unbound(first, 0), 0)
++                bound = getattr(first, name)
++                self.assertEqual(bound(0), 0)
++                self.assertEqual(unbound(first, value=1), 1)
++                self.assertEqual(bound(value=1), 1)
++                self.assertIs(getattr(first, name), bound)
++                self.assertEqual(unbound.__name__, name)
++                self.assertIs(unbound.__wrapped__, bound.__wrapped__)
++
++                # A saved class callable must also work for another instance.
++                other = getattr(second, name)
++                self.assertEqual(other(0), 10)
++                self.assertEqual(unbound(second, 0), 10)
++                self.assertEqual(getattr(Unhashable, name)(second, 0), 10)
++                self.assertEqual(first.count, 2)
++                self.assertEqual(second.count, 11)
++                self.assertEqual(len(first.cache), 2)
++                self.assertEqual(len(second.cache), 1)
++
++                maxsize = first.cache.maxsize if isinstance(first.cache, Cache) else None
++                if name.endswith("info"):
++                    self.assertEqual(bound.cache_info(), (2, 2, maxsize, 2))
++                    self.assertEqual(other.cache_info(), (2, 1, maxsize, 1))
++
++                bound.cache_clear()
++                self.assertEqual(len(first.cache), 0)
++                self.assertEqual(len(second.cache), 1)
++                if name.endswith("info"):
++                    self.assertEqual(bound.cache_info(), (0, 0, maxsize, 0))
++                    self.assertEqual(other.cache_info(), (2, 1, maxsize, 1))
++
++                self.assertEqual(unbound(first, 0), 2)
++                self.assertEqual(bound(0), 2)
++                if name.endswith("info"):
++                    self.assertEqual(bound.cache_info(), (1, 1, maxsize, 1))
++
++    def test_decorator_unbound_shared_cache(self):
++        for name in (
++            "get_info",
++            "get_lock_info",
++            "get_cond_info",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                cache = self.cache(2)
++                first = Cached(cache)
++                second = Cached(cache, count=10)
++                unbound = getattr(Cached, name)
++                maxsize = cache.maxsize if isinstance(cache, Cache) else None
++
++                self.assertEqual(unbound(first, 0), 0)
++                bound = getattr(first, name)
++                other = getattr(second, name)
++                self.assertEqual(bound.cache_info(), (0, 1, maxsize, 1))
++                self.assertEqual(other.cache_info(), (0, 0, maxsize, 1))
++                self.assertEqual(unbound(second, 0), 0)
++                self.assertEqual(bound(0), 0)
++                self.assertEqual(bound.cache_info(), (1, 1, maxsize, 1))
++                self.assertEqual(other.cache_info(), (1, 0, maxsize, 1))
++                self.assertEqual(second.count, 10)
++
++                other.cache_clear()
++                self.assertEqual(len(cache), 0)
++                self.assertEqual(bound.cache_info(), (1, 1, maxsize, 0))
++                self.assertEqual(other.cache_info(), (0, 0, maxsize, 0))
++
+     def test_decorator_typed(self):
+         cached = Cached(self.cache(3))
+ 

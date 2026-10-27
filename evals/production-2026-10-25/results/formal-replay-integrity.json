@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-10-24T23:06:02.763689+00:00",
+  "phase": "formal",
+  "rows": 120,
+  "whole_analysis_object_equal": true,
+  "analysis_sha256": "E17DDEEDE6C7D1FF7BB7BC704F34113F383973C1411A2BB143DBE0A57C6DBD30",
+  "recomputed_file_sha256": "E17DDEEDE6C7D1FF7BB7BC704F34113F383973C1411A2BB143DBE0A57C6DBD30",
+  "raw_file_sha256_equal": true,
+  "formal_input_projection_fields": [
+    "key",
+    "phase",
+    "case_id",
+    "repeat",
+    "arm",
+    "repo",
+    "accepted",
+    "completed",
+    "usage_complete",
+    "total_tokens",
+    "wall_seconds",
+    "skill_sha256",
+    "case_sha256",
+    "skill_body_read_observed"
+  ],
+  "formal_input_projection_sha256": "F18F359A8764B267DAC7DE46C8BFA5BBFDC5790080EA570A7D5991F6EED88D62",
+  "projection_encoding": "UTF8 JSON, sort_keys=true, separators=comma/colon, journal row order, formal rows only",
+  "replay_helper_sha256": "F640B143BC824CD2962C38D0BCFAC588CD6FCD7668D5BCB0574DAFA6112A9BBA",
+  "unknown_development_or_routing_rows_rejected": true,
+  "treatment_body_reads": 60,
+  "baseline_body_reads": 0,
+  "frozen_assessment_algorithm_changed": false
+}

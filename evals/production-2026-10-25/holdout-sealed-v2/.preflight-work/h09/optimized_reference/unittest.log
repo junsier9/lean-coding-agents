@@ -1,0 +1,15 @@
+test_acquire_failure_no_handler (test_contract.Contract.test_acquire_failure_no_handler) ... ok
+test_cancelled_error_propagates (test_contract.Contract.test_cancelled_error_propagates) ... ok
+test_existing_lease_preserved (test_contract.Contract.test_existing_lease_preserved) ... ok
+test_expected_rejection (test_contract.Contract.test_expected_rejection) ... ok
+test_invalid_job (test_contract.Contract.test_invalid_job) ... ok
+test_metrics_not_reset (test_contract.Contract.test_metrics_not_reset) ... ok
+test_reacquire_after_failure (test_contract.Contract.test_reacquire_after_failure) ... ok
+test_real_task_cancellation (test_contract.Contract.test_real_task_cancellation) ... ok
+test_success (test_contract.Contract.test_success) ... ok
+test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.042s
+
+OK

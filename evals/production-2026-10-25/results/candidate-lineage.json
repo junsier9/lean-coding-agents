@@ -1,0 +1,10 @@
+{
+  "development_candidate": "v3",
+  "development_skill_sha256": "3492543F0B453DB741674AEC1564532D10B0F3F0DF71FFBA87E9E054BDA9CE92",
+  "confirmation_candidate": "v3-python",
+  "confirmation_skill_sha256": "4A844452FCAA11DDD45697047B64F6BF286743D8EFD9D9EEC034EB5EBE5319BF",
+  "instruction_body_unchanged": true,
+  "reason": "User-selected production scope is Codex+Python; discovery description now explicitly scopes Python edits",
+  "confirmation_or_holdout_model_calls_before_metadata_change": 0,
+  "development_decision_body_remains_the_same": true
+}

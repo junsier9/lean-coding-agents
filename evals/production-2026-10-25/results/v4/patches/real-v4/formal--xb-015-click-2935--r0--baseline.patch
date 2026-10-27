@@ -1,0 +1,121 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 6cdc25c..6e77c2e 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.2.1
+ 
+ -   Fix flag value handling for flag options with a provided type. :issue:`2894`
+     :issue:`2897` :pr:`2930`
++-   Fix shell completion resolving the current command and options in nested
++    groups and chained commands.
+ 
+ Version 8.2.0
+ -------------
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index cdb5822..37a15db 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -567,7 +567,7 @@ def _resolve_context(
+                     with cmd.make_context(
+                         name, args, parent=ctx, resilient_parsing=True
+                     ) as sub_ctx:
+-                        args = ctx._protected_args + ctx.args
++                        args = sub_ctx._protected_args + sub_ctx.args
+                         ctx = sub_ctx
+                 else:
+                     sub_ctx = ctx
+@@ -586,7 +586,7 @@ def _resolve_context(
+                             allow_interspersed_args=False,
+                             resilient_parsing=True,
+                         ) as sub_sub_ctx:
+-                            args = sub_ctx.args
++                            args = sub_sub_ctx.args
+                             sub_ctx = sub_sub_ctx
+ 
+                     ctx = sub_ctx
+diff --git a/tests/test_shell_completion.py b/tests/test_shell_completion.py
+index 3511f07..ff83dd6 100644
+--- a/tests/test_shell_completion.py
++++ b/tests/test_shell_completion.py
+@@ -50,6 +50,52 @@ def test_group_command_same_option():
+     assert _get_words(cli, ["-a", "a", "x", "-a", "a"], "-") == ["--help"]
+ 
+ 
++@pytest.mark.parametrize("chain", [False, True])
++@pytest.mark.parametrize(
++    ("args", "incomplete", "expect"),
++    [
++        (["nested"], "", ["deep"]),
++        (["nested"], "--", ["--nested", "--help"]),
++        (["nested", "deep"], "", ["leaf"]),
++        (["nested", "deep"], "l", ["leaf"]),
++        (["nested", "deep"], "--", ["--deep", "--help"]),
++        (["nested", "deep", "leaf"], "--", ["--mode", "--help"]),
++        (["nested", "deep", "leaf", "--mode"], "", ["alpha", "beta"]),
++        (["nested", "deep", "leaf", "--mode"], "a", ["alpha"]),
++        (["nested", "deep", "leaf", "--mode", "alpha"], "--", ["--help"]),
++        (["nested", "--nested", "deep", "--deep"], "", ["leaf"]),
++        (["nested", "deep", "unknown"], "--", ["--deep", "--help"]),
++    ],
++)
++def test_nested_group(chain, args, incomplete, expect):
++    cli = Group(
++        "cli",
++        params=[Option(["--root"], is_flag=True)],
++        commands=[
++            Group(
++                "nested",
++                params=[Option(["--nested"], is_flag=True)],
++                commands=[
++                    Group(
++                        "deep",
++                        chain=chain,
++                        params=[Option(["--deep"], is_flag=True)],
++                        commands=[
++                            Command(
++                                "leaf",
++                                params=[
++                                    Option(["--mode"], type=Choice(["alpha", "beta"]))
++                                ],
++                            )
++                        ],
++                    )
++                ],
++            )
++        ],
++    )
++    assert _get_words(cli, args, incomplete) == expect
++
++
+ def test_chained():
+     cli = Group(
+         "cli",
+@@ -69,6 +115,28 @@ def test_chained():
+     assert _get_words(cli, ["get"], "s") == ["set", "start"]
+ 
+ 
++@pytest.mark.parametrize(
++    ("args", "incomplete", "expect"),
++    [
++        (["set", "start"], "--", ["--start", "--help"]),
++        (["start", "set"], "--", ["--mode", "--help"]),
++        (["start", "set", "--mode"], "", ["alpha", "beta"]),
++        (["set", "--mode", "alpha", "start"], "--", ["--start", "--help"]),
++        (["set", "start", "--start"], "--", ["--help"]),
++    ],
++)
++def test_chained_command_options(args, incomplete, expect):
++    cli = Group(
++        "cli",
++        chain=True,
++        commands=[
++            Command("set", params=[Option(["--mode"], type=Choice(["alpha", "beta"]))]),
++            Command("start", params=[Option(["--start"], is_flag=True)]),
++        ],
++    )
++    assert _get_words(cli, args, incomplete) == expect
++
++
+ def test_help_option():
+     cli = Group("cli", commands=[Command("with"), Command("no", add_help_option=False)])
+     assert _get_words(cli, ["with"], "--") == ["--help"]

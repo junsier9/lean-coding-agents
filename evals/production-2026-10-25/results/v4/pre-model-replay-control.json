@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-10-25T00:25:03.014974+00:00",
+  "v4_native_model_calls": 0,
+  "purpose": "Use the existing phase-scope replay wrapper in the v4 controller so a grading-checkpoint resume does not change formal input audit counts",
+  "actual_probe": "Formal result from mixed first-study native journal equals its original complete JSON",
+  "source_rows_in_probe": 204,
+  "formal_rows_in_probe": 120,
+  "frozen_statistical_algorithm_changed": false,
+  "source_sha256": {
+    "controller_v4.py": "F26996344FAAEC7386D924DB73289F93B50B8E8AC49CA84F1F816C476083201E",
+    "replay_analysis.py": "F640B143BC824CD2962C38D0BCFAC588CD6FCD7668D5BCB0574DAFA6112A9BBA",
+    "assess.py": "123DAB93DF04CABE231FE1DB87E3EE856CFBA87FF42AC10A265B9D8A2B835B6A"
+  }
+}

@@ -1,0 +1,83 @@
+diff --git a/click/core.py b/click/core.py
+index a8962be..1a4f932 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1330,10 +1330,10 @@ class Parameter(object):
+ 
+     def consume_value(self, ctx, opts):
+         value = opts.get(self.name)
+-        if value is None:
+-            value = ctx.lookup_default(self.name)
+         if value is None:
+             value = self.value_from_envvar(ctx)
++        if value is None:
++            value = ctx.lookup_default(self.name)
+         return value
+ 
+     def type_cast_value(self, ctx, value):
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index e900c43..df2eb44 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ import re
+ import click
++import pytest
+ 
+ 
+ def test_other_command_invoke(runner):
+@@ -66,22 +67,48 @@ def test_auto_shorthelp(runner):
+         result.output) is not None
+ 
+ 
+-def test_default_maps(runner):
++@pytest.mark.parametrize('envvar', ['TEST_NAME', None])
++@pytest.mark.parametrize('args, env_value, expected', [
++    ([], None, 'changed'),
++    ([], 'environment', 'environment'),
++    ([], '', ''),
++    (['--name', 'commandline'], 'environment', 'commandline'),
++    (['--name', ''], 'environment', ''),
++])
++def test_default_maps(runner, envvar, args, env_value, expected):
+     @click.group()
+     def cli():
+         pass
+ 
+     @cli.command()
+-    @click.option('--name', default='normal')
++    @click.option('--name', default='normal', envvar=envvar)
+     def foo(name):
+         click.echo(name)
+ 
+-    result = runner.invoke(cli, ['foo'], default_map={
++    env = {'TEST_NAME': None, 'TEST_FOO_NAME': None}
++    env[envvar or 'TEST_FOO_NAME'] = env_value
++    result = runner.invoke(cli, ['foo'] + args, default_map={
+         'foo': {'name': 'changed'}
+-    })
++    }, auto_envvar_prefix='TEST', env=env)
+ 
+     assert not result.exception
+-    assert result.output == 'changed\n'
++    assert result.output == expected + '\n'
++
++
++@pytest.mark.parametrize('env_value, exit_code, expected', [
++    (None, 0, '42\n'),
++    ('23', 0, '23\n'),
++    ('invalid', 2, 'Error: Invalid value for "--count"'),
++])
++def test_command_default_map(runner, env_value, exit_code, expected):
++    @click.command(context_settings={'default_map': {'count': '42'}})
++    @click.option('--count', type=int, default=1, envvar='TEST_COUNT')
++    def cli(count):
++        click.echo(count)
++
++    result = runner.invoke(cli, env={'TEST_COUNT': env_value})
++    assert result.exit_code == exit_code
++    assert expected in result.output
+ 
+ 
+ def test_group_with_args(runner):

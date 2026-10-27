@@ -1,0 +1,90 @@
+diff --git a/docs/calc.rst b/docs/calc.rst
+index 3bc1a69..b08161a 100644
+--- a/docs/calc.rst
++++ b/docs/calc.rst
+@@ -75,6 +75,8 @@ Calculation
+         api_call.invalidate(query)  # Forget cache for query
+         api_call.invalidate_all()   # Forget everything
+ 
++    Invalidating a key that is not cached is safe, including repeated calls.
++
+     Custom ``key_func`` could be used same way as in :func:`@memoize<memoize>`::
+ 
+         # Do not use token in cache key
+diff --git a/funcy/calc.py b/funcy/calc.py
+index 2c98382..54af297 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -123,7 +123,7 @@ def cache(timeout, key_func=None):
+             return result
+ 
+         def invalidate(*args, **kwargs):
+-            cache.pop(key_func(*args, **kwargs))
++            cache.pop(key_func(*args, **kwargs), None)
+         wrapper.invalidate = invalidate
+ 
+         def invalidate_all():
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index fa1b1fe..1167881 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -127,6 +127,59 @@ def test_cache():
+     assert calls == [0, 1, 0]
+ 
+ 
++@pytest.mark.parametrize('args, kwargs', [
++    ((1, 2), {}),
++    ((1,), {'y': 2}),
++    ((), {'x': 1, 'y': 2}),
++])
++@pytest.mark.parametrize('key_func', [None, lambda x, y: x + y])
++def test_cache_invalidate_idempotent(args, kwargs, key_func):
++    calls = []
++
++    @cache(timeout=60, key_func=key_func)
++    def add(x, y):
++        calls.append((x, y))
++        return x + y
++
++    assert add.invalidate(*args, **kwargs) is None
++    assert add.invalidate(*args, **kwargs) is None
++    assert calls == []
++
++    assert add(3, 4) == 7
++    assert add(*args, **kwargs) == 3
++    assert add(*args, **kwargs) == 3
++    assert calls == [(3, 4), (1, 2)]
++
++    assert add.invalidate(*args, **kwargs) is None
++    assert add.invalidate(*args, **kwargs) is None
++    assert calls == [(3, 4), (1, 2)]
++    assert add(3, 4) == 7
++    assert add(*args, **kwargs) == 3
++    assert add(*args, **kwargs) == 3
++    assert calls == [(3, 4), (1, 2), (1, 2)]
++
++
++def test_cache_invalidate_all():
++    calls = []
++
++    @cache(timeout=60)
++    def inc(x):
++        calls.append(x)
++        return x + 1
++
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert inc.invalidate_all() is None
++    assert inc.invalidate_all() is None
++    assert inc.invalidate(0) is None
++    assert calls == [0, 1]
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert calls == [0, 1, 0, 1]
++
++
+ def test_cache_mixed_args():
+     @cache(timeout=60)
+     def add(x, y):

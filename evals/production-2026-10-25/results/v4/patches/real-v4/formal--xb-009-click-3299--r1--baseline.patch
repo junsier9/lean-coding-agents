@@ -1,0 +1,45 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index f0a624b..6dc44f3 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3110,7 +3110,7 @@ class Option(Parameter):
+                 )[1]
+             elif self.is_bool_flag and not self.secondary_opts and not default_value:
+                 default_string = ""
+-            elif default_value == "":
++            elif isinstance(default_value, str) and default_value == "":
+                 default_string = '""'
+             else:
+                 default_string = str(default_value)
+diff --git a/tests/test_options.py b/tests/test_options.py
+index e335f3c..2dad191 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -1267,6 +1267,27 @@ def test_show_default_with_empty_string(runner):
+     assert '[default: ""]' in message
+ 
+ 
++def test_show_default_with_string_comparison_unsupported(runner):
++    class Value:
++        def __eq__(self, other):
++            if isinstance(other, str):
++                raise ValueError("Cannot compare Value to str")
++
++            return NotImplemented
++
++        def __str__(self):
++            return "special value"
++
++    @click.command()
++    @click.option("--value", default=Value(), show_default=True)
++    def cli(value):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert "[default: special value]" in result.output
++
++
+ def test_do_not_show_no_default(runner):
+     """When show_default is True and no default is set do not show None."""
+     opt = click.Option(["--limit"], show_default=True)

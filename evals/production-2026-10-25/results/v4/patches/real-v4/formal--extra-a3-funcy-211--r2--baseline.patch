@@ -1,0 +1,145 @@
+diff --git a/funcy/decorators.py b/funcy/decorators.py
+index 94e33d8..aa008fa 100644
+--- a/funcy/decorators.py
++++ b/funcy/decorators.py
+@@ -114,6 +114,11 @@ def arggetter(func, _cache={}):
+         return _cache[func]
+ 
+     original = getattr(func, '__original__', None) or unwrap(func)
++    # Preserve the receiver before unwrapping a bound method to its function.
++    bound = unwrap(func, stop=inspect.ismethod)
++    if not inspect.ismethod(bound):
++        bound = original
++    bound_self = bound.__self__ if inspect.ismethod(bound) else None
+     code = original.__code__
+ 
+     # Instrospect pos and kw names
+@@ -143,6 +148,9 @@ def arggetter(func, _cache={}):
+         defaults.update(original.__kwdefaults__)
+ 
+     def get_arg(name, args, kwargs):
++        # The code's argument names include the receiver, but the call's args do not.
++        if bound_self is not None:
++            args = (bound_self,) + args
+         if name not in allnames:
+             raise TypeError("%s() doesn't have argument named %s" % (func.__name__, name))
+ 
+diff --git a/tests/py38_decorators.py b/tests/py38_decorators.py
+index 87bd06c..e21d15f 100644
+--- a/tests/py38_decorators.py
++++ b/tests/py38_decorators.py
+@@ -40,3 +40,22 @@ def test_decorator_access_args():
+     assert return_x(lambda **x: None)(a=1, x=3) == {'a': 1, 'x': 3}  # Not just 3
+     assert return_x(lambda a, **x: None)(a=1, b=2) == {'b': 2}
+     assert return_x(lambda a, /, **x: None)(a=1, b=2) == {'a': 1, 'b': 2}
++
++
++@pytest.mark.parametrize('method_name', ['method', 'class_method'])
++def test_decorator_access_bound_method_posonly(method_name):
++    @decorator
++    def inspect_args(call):
++        return (call.x, call.y, call.items, call.flag, call.options), call()
++
++    class A(object):
++        def method(receiver, x=10, /, y=20, *items, flag=30, **options):
++            return x, y, items, flag, options
++
++        class_method = classmethod(method)
++
++    wrapped = inspect_args(getattr(A(), method_name))
++    expected = (10, 20, (), 30, {'x': 99, 'receiver': 'extra'})
++    assert wrapped(x=99, receiver='extra') == (expected, expected)
++    expected = (1, 2, (3, 4), 5, {'x': 99, 'extra': 6})
++    assert wrapped(1, 2, 3, 4, flag=5, x=99, extra=6) == (expected, expected)
+diff --git a/tests/test_decorators.py b/tests/test_decorators.py
+index 661563f..2dccb78 100644
+--- a/tests/test_decorators.py
++++ b/tests/test_decorators.py
+@@ -1,3 +1,4 @@
++import functools
+ import sys
+ import pytest
+ from funcy.decorators import *
+@@ -68,7 +69,8 @@ def test_decorator_access_args():
+ 
+ if sys.version_info >= (3, 8):
+     pytest.register_assert_rewrite("tests.py38_decorators")
+-    from .py38_decorators import test_decorator_access_args  # noqa
++    from .py38_decorators import (  # noqa
++        test_decorator_access_args, test_decorator_access_bound_method_posonly)
+ 
+ 
+ def test_double_decorator_defaults():
+@@ -110,6 +112,72 @@ def test_decorator_with_method():
+     assert inc(A.ten_static)() == 11
+ 
+ 
++@pytest.mark.parametrize('method_name', [
++    'method', 'class_method', 'wrapped_method', 'wrapped_class_method',
++    'decorated_method', 'decorated_class_method',
++])
++@pytest.mark.parametrize('rewrapped', [False, True])
++def test_decorator_access_bound_method_args(method_name, rewrapped):
++    @decorator
++    def inspect_args(call):
++        return (call.x, call.y, call.items, call.flag, call.options), call()
++
++    @decorator
++    def noop(call):
++        return call()
++
++    def passthrough(func):
++        @functools.wraps(func)
++        def wrapper(*args, **kwargs):
++            return func(*args, **kwargs)
++        return wrapper
++
++    class A(object):
++        def method(receiver, x, y=20, *items, flag=30, **options):
++            return x, y, items, flag, options
++
++        class_method = classmethod(method)
++        wrapped_method = passthrough(method)
++        wrapped_class_method = classmethod(passthrough(method))
++        decorated_method = noop(method)
++        decorated_class_method = classmethod(noop(method))
++
++    method = getattr(A(), method_name)
++    if rewrapped:
++        method = noop(noop(method))
++    wrapped = inspect_args(method)
++
++    expected = (10, 20, (), 30, {})
++    assert wrapped(10) == (expected, expected)
++    expected = (11, 22, (), 33, {'extra': 44})
++    assert wrapped(x=11, y=22, flag=33, extra=44) == (expected, expected)
++    expected = (1, 2, (3, 4), 5, {'extra': 6})
++    assert wrapped(1, 2, 3, 4, flag=5, extra=6) == (expected, expected)
++    with pytest.raises(AttributeError, match="missing required argument: 'x'"):
++        wrapped()
++
++
++@pytest.mark.parametrize('method_name', ['method', 'class_method'])
++def test_decorator_access_bound_variadic_method_args(method_name):
++    @decorator
++    def inspect_args(call):
++        return (call.args, call.flag, call.kwargs), call()
++
++    class A(object):
++        def method(*args, flag=10, **kwargs):
++            return args, flag, kwargs
++
++        class_method = classmethod(method)
++
++    instance = A()
++    receiver = A if method_name == 'class_method' else instance
++    wrapped = inspect_args(getattr(instance, method_name))
++    expected = ((receiver,), 10, {})
++    assert wrapped() == (expected, expected)
++    expected = ((receiver, 1, 2), 3, {'extra': 4})
++    assert wrapped(1, 2, flag=3, extra=4) == (expected, expected)
++
++
+ def test_decorator_with_method_descriptor():
+     @decorator
+     def exclaim(call):

@@ -1,0 +1,126 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index b295f1c..8eb89a0 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -682,6 +682,7 @@ def fix_print_exception():
+ _frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)'
+                        r', in (?P<funcname>.+)$')
+ _se_frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)')
++_underline_re = re.compile(r'^[ \t]+[~^][~^ \t]*$')
+ 
+ 
+ # TODO: ParsedException generator over large bodies of text
+@@ -728,7 +729,7 @@ class ParsedException(object):
+         as returned by the traceback module.
+ 
+         ``ParsedException.from_string(text).to_string()`` should yield
+-        ``text``.
++        ``text`` without column position markers.
+         """
+         lines = [u'Traceback (most recent call last):']
+ 
+@@ -810,6 +811,10 @@ class ParsedException(object):
+                 else:
+                     frame_dict['source_line'] = next_line_stripped
+                     line_no += 1
++                    # Python 3.11+ may underline the expression below the source.
++                    if (line_no + 1 < len(tb_lines) and
++                            _underline_re.match(tb_lines[line_no + 1])):
++                        line_no += 1
+             else:
+                 break
+             line_no += 1
+diff --git a/tests/test_tbutils_parsed_exc.py b/tests/test_tbutils_parsed_exc.py
+index b28727e..d213456 100644
+--- a/tests/test_tbutils_parsed_exc.py
++++ b/tests/test_tbutils_parsed_exc.py
+@@ -1,4 +1,6 @@
+ 
++import pytest
++
+ from boltons.tbutils import ParsedException
+ 
+ 
+@@ -21,6 +23,82 @@ NameError: name 'plarp' is not defined"""
+     assert parsed_tb.to_string() == _tb_str
+ 
+ 
++@pytest.mark.parametrize('marker', [
++    '    ^',
++    '    ^^^^^',
++    '    ~~~~~',
++    '    ~~~~^^~~~',
++    '    ~~ ^^ ~~',
++    '\t~~^^~~\t',
++])
++@pytest.mark.parametrize('marked_frames', [(0,), (2,), (0, 2)])
++def test_parsed_exc_column_markers(marker, marked_frames):
++    template = u"""\
++Traceback (most recent call last):
++  File "example.py", line 10, in <module>
++    result = calculate()
++{first_marker}  File "<generated>", line 2, in calculate
++  File "example.py", line 5, in divide
++    return numerator / denominator
++{last_marker}ZeroDivisionError: division by zero"""
++    frames = [
++        {'filepath': 'example.py', 'lineno': '10', 'funcname': '<module>',
++         'source_line': 'result = calculate()'},
++        {'filepath': '<generated>', 'lineno': '2', 'funcname': 'calculate',
++         'source_line': ''},
++        {'filepath': 'example.py', 'lineno': '5', 'funcname': 'divide',
++         'source_line': 'return numerator / denominator'},
++    ]
++    _tb_str = template.format(first_marker=marker + '\n' if 0 in marked_frames else '',
++                              last_marker=marker + '\n' if 2 in marked_frames else '')
++
++    parsed_tb = ParsedException.from_string(_tb_str)
++
++    assert parsed_tb.exc_type == 'ZeroDivisionError'
++    assert parsed_tb.exc_msg == 'division by zero'
++    assert parsed_tb.frames == frames
++    assert parsed_tb.source_file == 'example.py'
++    assert parsed_tb.to_string() == template.format(first_marker='', last_marker='')
++
++
++def test_parsed_exc_column_markers_preserve_source_and_message():
++    _tb_str = u"""\
++Traceback (most recent call last):
++  File "example.py", line 2, in <module>
++    result = flags ^ ~mask
++             ~~~~~~^~~~~~
++TypeError: unsupported operands: ^ and ~
++    ^~~~
++additional detail"""
++
++    parsed_tb = ParsedException.from_string(_tb_str.encode('utf-8'))
++
++    assert parsed_tb.exc_type == 'TypeError'
++    assert parsed_tb.exc_msg == ('unsupported operands: ^ and ~\n'
++                                 '    ^~~~\nadditional detail')
++    assert parsed_tb.frames == [{'source_line': u'result = flags ^ ~mask',
++                                 'filepath': u'example.py',
++                                 'lineno': u'2',
++                                 'funcname': u'<module>'}]
++    assert parsed_tb.to_string() == _tb_str.replace('             ~~~~~~^~~~~~\n', '')
++
++
++def test_parsed_exc_syntax_error_column_marker():
++    _tb_str = u"""\
++  File "example.py", line 1
++    if True print('hello')
++            ^^^^^
++SyntaxError: invalid syntax"""
++
++    parsed_tb = ParsedException.from_string(_tb_str)
++
++    assert parsed_tb.exc_type == 'SyntaxError'
++    assert parsed_tb.exc_msg == 'invalid syntax'
++    assert parsed_tb.frames == [{'source_line': u"if True print('hello')",
++                                 'filepath': u'example.py',
++                                 'lineno': u'1'}]
++
++
+ def test_parsed_exc_nosrcline():
+     """just making sure that everything can be parsed even if there is
+     a line without source and also if the exception has no message"""

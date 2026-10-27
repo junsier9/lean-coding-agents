@@ -1,0 +1,93 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index aba1bbe..2f283ef 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Show empty string defaults as ``""`` in help text when
++    ``show_default=True``.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index f205c79..e99af76 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2481,6 +2481,9 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.1.8
++        An empty string default is shown as ``""``.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2804,6 +2807,8 @@ class Option(Parameter):
+                 )[1]
+             elif self.is_bool_flag and not self.secondary_opts and not default_value:
+                 default_string = ""
++            elif isinstance(default_value, str) and default_value == "":
++                default_string = '""'
+             else:
+                 default_string = str(default_value)
+ 
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 91249b2..658c89b 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -225,16 +225,17 @@ def test_multiple_default_help(runner):
+     assert "1, 2" in result.output
+ 
+ 
+-def test_show_default_default_map(runner):
++@pytest.mark.parametrize(("default", "expect"), [("b", "b"), ("", '""')])
++def test_show_default_default_map(runner, default, expect):
+     @click.command()
+     @click.option("--arg", default="a", show_default=True)
+     def cmd(arg):
+         click.echo(arg)
+ 
+-    result = runner.invoke(cmd, ["--help"], default_map={"arg": "b"})
++    result = runner.invoke(cmd, ["--help"], default_map={"arg": default})
+ 
+     assert not result.exception
+-    assert "[default: b]" in result.output
++    assert f"[default: {expect}]" in result.output
+ 
+ 
+ def test_multiple_default_type():
+@@ -786,6 +787,31 @@ def test_show_default_string(runner):
+     assert "[default: (unlimited)]" in message
+ 
+ 
++@pytest.mark.parametrize(
++    ("show_default", "ctx_show_default", "expect"),
++    [
++        (True, None, '[default: ""]'),
++        (None, True, '[default: ""]'),
++        (True, False, '[default: ""]'),
++        (False, True, ""),
++        (None, None, ""),
++        ("empty", None, "[default: (empty)]"),
++    ],
++)
++def test_show_default_empty_string(runner, show_default, ctx_show_default, expect):
++    @click.command(context_settings={"show_default": ctx_show_default})
++    @click.option("--value", default="", show_default=show_default)
++    def cli(value):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    option_help = next(
++        line.strip() for line in result.output.splitlines() if "--value" in line
++    )
++    assert option_help == f"--value TEXT  {expect}".rstrip()
++
++
+ def test_do_not_show_no_default(runner):
+     """When show_default is True and no default is set do not show None."""
+     opt = click.Option(["--limit"], show_default=True)

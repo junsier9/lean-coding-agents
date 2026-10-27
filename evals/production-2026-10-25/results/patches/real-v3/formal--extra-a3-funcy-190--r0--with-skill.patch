@@ -1,0 +1,131 @@
+diff --git a/funcy/calc.py b/funcy/calc.py
+index d55b6b0..6b17e88 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -112,7 +112,7 @@ def _make_lookuper(silent):
+         Creates a single argument function looking up result in a memory.
+ 
+         Decorated function is called once on first lookup and should return all available
+-        arg-value pairs.
++        arg-value pairs. Failed initialization is retried on the next lookup.
+ 
+         Resulting function will raise LookupError when using @make_lookuper
+         or simply return None when using @silent_lookuper.
+@@ -128,12 +128,12 @@ def _make_lookuper(silent):
+                 f.__name__ = '%s(%s)' % (func.__name__, ', '.join(map(str, args)))
+                 return make_lookuper(f)
+         else:
+-            memory = {}
++            memory = None
+ 
+             def wrapper(arg):
+-                if not memory:
+-                    memory[object()] = None # prevent continuos memory refilling
+-                    memory.update(func())
++                nonlocal memory
++                if memory is None:
++                    memory = dict(func())
+ 
+                 if silent:
+                     return memory.get(arg)
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index a9c4614..b5d8457 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -179,6 +179,96 @@ def test_silnent_lookuper_nested():
+     assert function_table(cos)(-1) is None
+ 
+ 
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++def test_lookuper_retries_failed_builder(deco):
++    calls = []
++    error = RuntimeError('Failed to build table')
++
++    @deco
++    def table():
++        calls.append(None)
++        if len(calls) < 3:
++            raise error
++        return {'ready': 42}
++
++    assert calls == []
++    for _ in range(2):
++        with pytest.raises(RuntimeError) as exc:
++            table('ready')
++        assert exc.value is error
++
++    assert table('ready') == 42
++    assert table('ready') == 42
++    assert len(calls) == 3
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++def test_lookuper_discards_failed_generator(deco):
++    calls = []
++
++    @deco
++    def table():
++        calls.append(None)
++        if len(calls) == 1:
++            yield 'partial', -1
++            raise RuntimeError('Failed while building table')
++        yield 'ready', 42
++
++    with pytest.raises(RuntimeError, match='Failed while building table'):
++        table('partial')
++    assert table('ready') == 42
++    if deco is silent_lookuper:
++        assert table('partial') is None
++    else:
++        with pytest.raises(LookupError, match=r'Failed to look up table\(partial\)'):
++            table('partial')
++    assert len(calls) == 2
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('factory', [dict, iter])
++def test_lookuper_caches_empty_table(deco, factory):
++    calls = []
++
++    @deco
++    def table():
++        calls.append(None)
++        return factory(())
++
++    assert calls == []
++    for key in ('missing', 'other', 'missing'):
++        if deco is silent_lookuper:
++            assert table(key) is None
++        else:
++            with pytest.raises(LookupError):
++                table(key)
++    assert len(calls) == 1
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++def test_lookuper_nested_retries_independently(deco):
++    calls = []
++
++    @deco
++    def table(group):
++        calls.append(group)
++        if calls == ['first']:
++            yield 'partial', -1
++            raise RuntimeError('Failed while building table')
++        yield 'ready', group
++
++    first = table('first')
++    assert first is table('first')
++    assert calls == []
++    with pytest.raises(RuntimeError, match='Failed while building table'):
++        first('ready')
++    assert table('second')('ready') == 'second'
++    assert table('first')('ready') == 'first'
++    assert table('second')('ready') == 'second'
++    assert first('ready') == 'first'
++    assert calls == ['first', 'second', 'first']
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_cache(typ):

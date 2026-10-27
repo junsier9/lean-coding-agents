@@ -1,0 +1,74 @@
+{
+  "kind": "SQLite test-double fidelity repair only",
+  "old_directory": "dev-cases",
+  "new_directory": "dev-cases-v2",
+  "old_manifest_sha256": "BADC2B941EC773B782C914E911F7099A57AEFEFAA2F3A20727F821CCD2F9480D",
+  "new_manifest_sha256": "038592C3CF8277378959AC7887EA55D2B7B03861EDFF27D7DD212A0D57D0CC1C",
+  "old_d06_sha256": "5CC66CF4B60393FE58EDCCDBABC8B0325A2B7933D7365AD1060788131F90B773",
+  "new_d06_sha256": "E6B8D84A5F6D6570FE19123A13E895C5522B529B783326B743773D9626436A1A",
+  "old_hidden_tests_sha256": "5FF7233CA985CCA8EBD819B0A620E4D5526D9DD97547A727A114EF40716F3806",
+  "new_hidden_tests_sha256": "455931E865ADF97D4ACAF09163990F17FCD999BF54F6D11460097A1F2C937F2C",
+  "only_changed_case": "d06",
+  "only_changed_field": "hidden_tests.test_contract.py",
+  "only_added_methods": [
+    "Tracked.__enter__",
+    "Tracked.__exit__"
+  ],
+  "all_other_d06_fields_equal": true,
+  "all_other_case_files_byte_identical": true,
+  "outside_added_context_methods_hidden_test_text_identical": true,
+  "original_contract_ast_sha256": "6AACEB525115B861DF15DB79C89CD67A3F7B62BA4005A756341FE6346A2E9AD9",
+  "original_12_test_methods_preserved": [
+    "test_success",
+    "test_missing_destination_rolls_back",
+    "test_missing_source_closes",
+    "test_insufficient_funds",
+    "test_credit_sql_failure_is_atomic",
+    "test_commit_failure_rolls_back",
+    "test_interrupt_rolls_back_and_propagates",
+    "test_invalid_amount_before_open",
+    "test_invalid_account_before_open",
+    "test_sql_looking_id_is_data",
+    "test_factory_failure_propagates",
+    "test_full_balance_transfer"
+  ],
+  "semantics": [
+    "__enter__ delegates the real open-connection check, returns the wrapper, and does not start a transaction.",
+    "__exit__ acts only when the wrapped SQLite connection has an active transaction.",
+    "Normal exit commits through the existing commit method, preserving fail_commit injection.",
+    "Commit failure rolls back through the existing rollback method and re-raises the original failure.",
+    "An exceptional BaseException exit rolls back and returns False to propagate the exception.",
+    "Context exit never calls close; the application remains responsible for releasing the connection."
+  ],
+  "old_frozen_directory_unmodified": true,
+  "model_outputs_read_or_modified": false,
+  "model_calls": 0,
+  "original_scores_modified": false,
+  "preflight": {
+    "cases": 8,
+    "reference_tests_total": 95,
+    "base_all_rejected": true,
+    "reference_all_passed": true,
+    "optimized_reference_tests_total": 95,
+    "optimized_base_all_rejected": true,
+    "optimized_reference_all_passed": true
+  },
+  "fidelity_probe": "fidelity_probe.py; real SQLite versus the repaired class extracted from the hidden test AST",
+  "fidelity_results": {
+    "normal": {
+      "file": "fidelity.json",
+      "sha256": "3A320408F8C41E04AF0EE8F7532E033B65629C0C42F1140AF483D61CECE88E9A",
+      "tests_ran": 12,
+      "passed": true,
+      "optimize": 0
+    },
+    "optimized": {
+      "file": "fidelity-optimized.json",
+      "sha256": "541A3E8E885F347CF4B6C59298DD969B004197E57A840BFD881DB8676D95ADAE",
+      "tests_ran": 12,
+      "passed": true,
+      "optimize": 1
+    }
+  },
+  "fidelity_probe_sha256": "FFD6178D54B357828E3DDD7AB98EF3036B9499BFC98225D901C412E8F1CA6A4E"
+}

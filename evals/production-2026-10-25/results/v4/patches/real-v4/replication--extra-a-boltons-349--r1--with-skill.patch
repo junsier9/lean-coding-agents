@@ -1,0 +1,70 @@
+diff --git a/boltons/cacheutils.py b/boltons/cacheutils.py
+index 27a19cb..169294a 100644
+--- a/boltons/cacheutils.py
++++ b/boltons/cacheutils.py
+@@ -235,9 +235,9 @@ class LRI(dict):
+                 else:
+                     evicted = self._set_key_and_evict_last_in_ll(key, value)
+                     super(LRI, self).__delitem__(evicted)
+-                super(LRI, self).__setitem__(key, value)
+             else:
+                 link[VALUE] = value
++            super(LRI, self).__setitem__(key, value)
+ 
+     def __getitem__(self, key):
+         with self._lock:
+diff --git a/tests/test_cacheutils.py b/tests/test_cacheutils.py
+index 91ebcf9..557b9ed 100644
+--- a/tests/test_cacheutils.py
++++ b/tests/test_cacheutils.py
+@@ -25,6 +25,50 @@ def test_lru_add():
+     assert 0 not in cache
+ 
+ 
++@pytest.mark.parametrize('cache_type', [LRI, LRU])
++@pytest.mark.parametrize('max_size', [1, 2])
++def test_cache_overwrite_mapping_views(cache_type, max_size):
++    cache = cache_type(max_size=max_size, values={'key': 'old'})
++    values = cache.values()
++    items = cache.items()
++
++    for value in ('new', 'newest'):
++        cache['key'] = value
++        assert cache['key'] == value
++        assert dict(cache) == {'key': value}
++        assert list(values) == [value]
++        assert list(items) == [('key', value)]
++        assert len(cache) == 1
++
++    assert cache.pop('key') == 'newest'
++    assert not cache
++
++
++@pytest.mark.parametrize('cache_type', [LRI, LRU])
++def test_cache_overwrite_eviction(cache_type):
++    cache = cache_type(max_size=2, values=[('a', 1), ('b', 2)])
++    cache['a'] = 3
++    assert dict(cache) == {'a': 3, 'b': 2}
++
++    cache['c'] = 4
++    assert dict(cache) == {'a': 3, 'c': 4}
++    assert len(cache) == cache.max_size
++    assert 'b' not in cache
++
++
++@pytest.mark.parametrize('cache_type', [LRI, LRU])
++def test_cache_update_mapping_views(cache_type):
++    cache = cache_type(max_size=1, values={'key': 'old'})
++    cache.update({'key': 'mapping'})
++    assert dict(cache) == {'key': 'mapping'}
++    cache.update([('key', 'pair'), ('key', 'last pair')])
++    assert dict(cache) == {'key': 'last pair'}
++    cache.update({}, key='keyword')
++    assert cache['key'] == 'keyword'
++    assert list(cache.values()) == ['keyword']
++    assert dict(cache) == {'key': 'keyword'}
++
++
+ def test_lri():
+     cache_size = 10
+     bc = LRI(cache_size, on_miss=lambda k: k.upper())

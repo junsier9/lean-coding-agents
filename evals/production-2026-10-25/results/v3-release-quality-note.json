@@ -1,0 +1,20 @@
+{
+  "documented_at": "2026-10-24T22:15:00.517738+00:00",
+  "candidate_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "completed_formal_records": 78,
+  "observed_treatment_failed_keys": [
+    "formal--xb-051-pluggy-731--r2--with-skill",
+    "formal--xb-059-cachetools-436--r1--with-skill",
+    "formal--xb-051-pluggy-731--r0--with-skill",
+    "formal--xb-059-cachetools-436--r0--with-skill",
+    "formal--xb-059-cachetools-436--r2--with-skill"
+  ],
+  "planned_treatment_runs": 60,
+  "minimum_acceptance_rate": 0.95,
+  "maximum_possible_formal_treatment_acceptance": 0.9166666666666666,
+  "production_release_absolute_quality_gate_already_unattainable": true,
+  "no_interim_efficiency_metric_used": true,
+  "all_original_formal_and_replication_runs_will_still_complete": true,
+  "no_task_grade_or_threshold_changed": true,
+  "next_revision": "v4-python-draft; development and fresh second confirmation pending; no native model calls yet"
+}

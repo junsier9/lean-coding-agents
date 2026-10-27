@@ -1,0 +1,125 @@
+--- t01/before/app.py
++++ t01/after/app.py
+@@ -18,15 +18,4 @@
+ 
+ 
+ def total_positive(rows):
+-    readings = read_values(rows)
+-    total = 0
+-    for reading in readings:
+-        if reading is None:
+-            continue
+-        if not isinstance(reading, Reading):
+-            continue
+-        if not isinstance(reading.value, int):
+-            continue
+-        if reading.value > 0:
+-            total += reading.value
+-    return total
++    return sum(reading.value for reading in read_values(rows) if reading.value > 0)
+--- t02/before/app.py
++++ t02/after/app.py
+@@ -6,6 +6,6 @@
+     if type(quantity) is not int or quantity < 1:
+         raise ValueError("positive integer quantity required")
+     sku = payload.get("sku")
+-    if type(sku) is not str or not sku.strip():
++    if type(sku) is not str or not (sku := sku.strip()):
+         raise ValueError("sku required")
+-    return sku.strip(), quantity
++    return sku, quantity
+--- t03/before/app.py
++++ t03/after/app.py
+@@ -1,5 +1,2 @@
+ def count_accounts(db):
+-    try:
+-        return db.count_accounts()
+-    except Exception:
+-        return 0
++    return db.count_accounts()
+--- t04/before/app.py
++++ t04/after/app.py
+@@ -5,7 +5,6 @@
+     """None means invalid JSON; I/O errors belong to the caller."""
+     text = read_text()
+     try:
+-        result = json.loads(text)
++        return json.loads(text)
+     except json.JSONDecodeError:
+         return None
+-    return result
+--- t05/before/app.py
++++ t05/after/app.py
+@@ -3,4 +3,4 @@
+ 
+ 
+ def transform(values):
+-    return double_values(values.copy())
++    return double_values(values)
+--- t06/before/app.py
++++ t06/after/app.py
+@@ -3,6 +3,4 @@
+ 
+ 
+ def sorted_preview(values):
+-    preview = reduce_values(values.copy())
+-    preview.sort()
+-    return preview
++    return sorted(reduce_values(values))
+--- t07/before/app.py
++++ t07/after/app.py
+@@ -1,2 +1,2 @@
+ def search(client, query):
+-    return client.get("/v1/search", params={"q": query, "limit": 20})
++    return client.get("/v2/search", params={"query": query, "limit": 20})
+--- t08/before/app.py
++++ t08/after/app.py
+@@ -1,2 +1,7 @@
+ def send_request(transport, request_id, payload):
+-    return transport.send(request_id=request_id, payload=payload)
++    for attempt in range(3):
++        try:
++            return transport.send(request_id=request_id, payload=payload)
++        except TimeoutError:
++            if attempt == 2:
++                raise
+--- t09/before/app.py
++++ t09/after/app.py
+@@ -2,7 +2,7 @@
+     """Return a running total for every integer sample."""
+     result = []
+     total = 0
+-    for index in range(len(samples) - 1):
++    for index in range(len(samples)):
+         total += samples[index]
+         result.append(total)
+     return result
+--- t10/before/app.py
++++ t10/after/app.py
+@@ -1,7 +1,6 @@
+ def read_prefix(open_stream, path, size):
+     stream = open_stream(path)
+     try:
+-        data = stream.read(size)
+-        return data
++        return stream.read(size)
+     finally:
+         stream.close()
+--- t11/before/app.py
++++ t11/after/app.py
+@@ -6,6 +6,4 @@
+ 
+ 
+ def build_request(text):
+-    message = _build_text(text)
+-    request = {"role": "user", "content": message}
+-    return request
++    return {"role": "user", "content": _build_text(text)}
+--- t12/before/app.py
++++ t12/after/app.py
+@@ -1,4 +1,4 @@
+-LOGIN_LABEL = "Log in"
++LOGIN_LABEL = "Sign in"
+ 
+ 
+ def login_label():

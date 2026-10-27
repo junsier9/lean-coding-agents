@@ -1,0 +1,9 @@
+{
+  "completed_at": "2026-10-25T02:13:01.030840+00:00",
+  "native_runs": 36,
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "accepted": 36,
+  "body_reads": 36,
+  "critical_gate_pass": true,
+  "evidence_class": "Known critical regression contracts, not a fresh independent holdout"
+}

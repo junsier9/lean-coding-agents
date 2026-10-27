@@ -1,0 +1,118 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index 76c6815..24175c0 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -733,22 +733,18 @@ def before_and_after(predicate, it):
+     Note that the first iterator must be fully consumed before the second
+     iterator can generate valid results.
+     """
+-    it = iter(it)
+-    transition = []
++    # tee flattens nested calls, avoiding a chain of remainder generators.
++    trues, remainder = tee(it)
+ 
+     def true_iterator():
+-        for elem in it:
++        for elem in trues:
+             if predicate(elem):
++                next(remainder)
+                 yield elem
+             else:
+-                transition.append(elem)
+                 return
+ 
+-    def remainder_iterator():
+-        yield from transition
+-        yield from it
+-
+-    return true_iterator(), remainder_iterator()
++    return true_iterator(), remainder
+ 
+ 
+ def triplewise(iterable):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 6c3d977..dc3ad0d 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -783,6 +783,81 @@ class BeforeAndAfterTests(TestCase):
+         self.assertEqual(list(before), [1, True])
+         self.assertEqual(list(after), [0, False])
+ 
++    def test_many_segments(self):
++        after = iter(range(5000))
++        for expected in range(5000):
++            before, after = mi.before_and_after(
++                lambda value: value == expected, after
++            )
++            self.assertEqual(list(before), [expected])
++        self.assertEqual(list(after), [])
++
++    def test_many_empty_segments(self):
++        after = iter([0, 1])
++        for _ in range(5000):
++            before, after = mi.before_and_after(bool, after)
++            self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [0, 1])
++
++    def test_lazy_consumption(self):
++        consumed = []
++        tested = []
++
++        def source():
++            for value in range(5):
++                consumed.append(value)
++                yield value
++
++        def predicate(value):
++            tested.append(value)
++            return value < 2
++
++        before, after = mi.before_and_after(predicate, source())
++        self.assertEqual(consumed, [])
++        self.assertEqual(tested, [])
++        self.assertEqual(next(before), 0)
++        self.assertEqual(consumed, [0])
++        self.assertEqual(tested, [0])
++        self.assertEqual(list(before), [1])
++        self.assertEqual(consumed, [0, 1, 2])
++        self.assertEqual(tested, [0, 1, 2])
++        self.assertEqual(list(after), [2, 3, 4])
++        self.assertEqual(consumed, [0, 1, 2, 3, 4])
++        self.assertEqual(tested, [0, 1, 2])
++
++    def test_predicate_error(self):
++        def predicate(value):
++            if value == 2:
++                raise ValueError('predicate failed')
++            return True
++
++        before, _ = mi.before_and_after(predicate, [1, 2, 3])
++        self.assertEqual(next(before), 1)
++        with self.assertRaisesRegex(ValueError, 'predicate failed'):
++            next(before)
++        self.assertEqual(list(before), [])
++
++    def test_source_error(self):
++        def source():
++            yield 1
++            raise ValueError('source failed')
++
++        before, _ = mi.before_and_after(bool, source())
++        self.assertEqual(next(before), 1)
++        with self.assertRaisesRegex(ValueError, 'source failed'):
++            next(before)
++
++    def test_remainder_source_error(self):
++        def source():
++            yield 0
++            raise ValueError('source failed')
++
++        before, after = mi.before_and_after(bool, source())
++        self.assertEqual(list(before), [])
++        self.assertEqual(next(after), 0)
++        with self.assertRaisesRegex(ValueError, 'source failed'):
++            next(after)
++
+ 
+ class TriplewiseTests(TestCase):
+     def test_basic(self):

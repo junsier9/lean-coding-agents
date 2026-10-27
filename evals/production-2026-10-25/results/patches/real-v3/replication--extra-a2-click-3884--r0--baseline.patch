@@ -1,0 +1,155 @@
+diff --git a/CHANGES.md b/CHANGES.md
+index 7f1b485..4b3c250 100644
+--- a/CHANGES.md
++++ b/CHANGES.md
+@@ -2,6 +2,9 @@
+ 
+ Unreleased
+ 
++- Treat empty `envvar` strings and sequences as unconfigured when `show_envvar` is
++  enabled, including falling back to the automatic prefix in help. List candidate
++  environment variables individually in error messages.
+ - Fix `copy.deepcopy()` and `pickle` on a `Parameter`, `Option` or `Command`. {pr}`3805`
+ - A `KeyboardInterrupt` arriving while `Command.main()` reports an abort or an error,
+   or while it exits, no longer escapes as an unhandled traceback. The command still
+diff --git a/src/click/core.py b/src/click/core.py
+index 9cf05a9..ec4d8fc 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3270,8 +3270,12 @@ class Option(Parameter):
+ 
+     def get_error_hint(self, ctx: Context | None) -> str:
+         result = super().get_error_hint(ctx)
+-        if self.show_envvar and self.envvar is not None:
+-            result += f" (env var: '{self.envvar}')"
++        if self.show_envvar and self.envvar:
++            envvars = self.envvar
++            if isinstance(envvars, str):
++                envvars = (envvars,)
++            envvar_hint = ", ".join(f"'{var}'" for var in envvars)
++            result += f" (env var: {envvar_hint})"
+         return result
+ 
+     def _parse_decls(
+@@ -3439,7 +3443,7 @@ class Option(Parameter):
+         if self.show_envvar:
+             envvar = self.envvar
+ 
+-            if envvar is None:
++            if not envvar:
+                 if (
+                     self.allow_from_autoenv
+                     and ctx.auto_envvar_prefix is not None
+@@ -3447,7 +3451,7 @@ class Option(Parameter):
+                 ):
+                     envvar = f"{ctx.auto_envvar_prefix}_{self.name.upper()}"
+ 
+-            if envvar is not None:
++            if envvar:
+                 if isinstance(envvar, str):
+                     extra["envvars"] = (envvar,)
+                 else:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 0656a0b..5c975b9 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -849,6 +849,59 @@ def test_show_envvar(runner):
+     assert "ARG1" in result.output
+ 
+ 
++@pytest.mark.parametrize("show_envvar", [False, True])
++@pytest.mark.parametrize(
++    ("envvar", "help_envvars", "error_envvars"),
++    [
++        (None, "", ""),
++        ("", "", ""),
++        ([], "", ""),
++        ((), "", ""),
++        ("ARG1", "ARG1", "'ARG1'"),
++        (["ARG1"], "ARG1", "'ARG1'"),
++        (("ARG1",), "ARG1", "'ARG1'"),
++        (["ARG1", "ARG2"], "ARG1, ARG2", "'ARG1', 'ARG2'"),
++        (("ARG1", "ARG2"), "ARG1, ARG2", "'ARG1', 'ARG2'"),
++    ],
++)
++def test_show_envvar_configuration(
++    runner, monkeypatch, show_envvar, envvar, help_envvars, error_envvars
++):
++    monkeypatch.delenv("ARG1", raising=False)
++    monkeypatch.delenv("ARG2", raising=False)
++
++    @click.command()
++    @click.option(
++        "--arg1", type=int, required=True, envvar=envvar, show_envvar=show_envvar
++    )
++    def cmd(arg1):
++        pass
++
++    result = runner.invoke(cmd, ["--help"])
++    assert result.exit_code == 0
++    if show_envvar and help_envvars:
++        assert f"[env var: {help_envvars}; required]" in result.output
++    else:
++        assert "env var:" not in result.output
++        assert "[required]" in result.output
++
++    hint = "'--arg1'"
++    if show_envvar and error_envvars:
++        hint += f" (env var: {error_envvars})"
++    assert cmd.params[0].get_error_hint(None) == hint
++
++    result = runner.invoke(cmd)
++    assert result.exit_code == 2
++    assert f"Error: Missing option {hint}." in result.output
++
++    result = runner.invoke(cmd, ["--arg1=bad"])
++    assert result.exit_code == 2
++    assert (
++        f"Error: Invalid value for {hint}: 'bad' is not a valid integer."
++        in result.output
++    )
++
++
+ def test_show_envvar_auto_prefix(runner):
+     @click.command()
+     @click.option("--arg1", show_envvar=True)
+@@ -860,6 +913,39 @@ def test_show_envvar_auto_prefix(runner):
+     assert "TEST_ARG1" in result.output
+ 
+ 
++@pytest.mark.parametrize("envvar", [None, "", [], ()])
++@pytest.mark.parametrize("allow_from_autoenv", [False, True])
++@pytest.mark.parametrize("show_envvar", [False, True])
++def test_show_envvar_empty_auto_prefix(runner, envvar, allow_from_autoenv, show_envvar):
++    @click.command()
++    @click.option(
++        "--arg1",
++        type=int,
++        required=True,
++        envvar=envvar,
++        allow_from_autoenv=allow_from_autoenv,
++        show_envvar=show_envvar,
++    )
++    def cmd(arg1):
++        click.echo(arg1)
++
++    result = runner.invoke(cmd, ["--help"], auto_envvar_prefix="TEST")
++    assert result.exit_code == 0
++    if show_envvar and allow_from_autoenv:
++        assert "[env var: TEST_ARG1; required]" in result.output
++    else:
++        assert "env var:" not in result.output
++        assert "[required]" in result.output
++
++    result = runner.invoke(cmd, env={"TEST_ARG1": "42"}, auto_envvar_prefix="TEST")
++    if allow_from_autoenv:
++        assert result.exit_code == 0
++        assert result.output == "42\n"
++    else:
++        assert result.exit_code == 2
++        assert "Error: Missing option '--arg1'." in result.output
++
++
+ def test_show_envvar_auto_prefix_dash_in_command(runner):
+     @click.group()
+     def cli():

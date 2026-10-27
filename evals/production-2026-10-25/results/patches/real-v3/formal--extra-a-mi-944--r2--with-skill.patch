@@ -1,0 +1,93 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 265ee07..8f92470 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3726,8 +3726,6 @@ def _sample_counted(population, k, counts, strict):
+         reservoir = []
+         for _ in range(k):
+             reservoir.append(feed(0))
+-        if strict and len(reservoir) < k:
+-            raise ValueError('Sample larger than population')
+ 
+         W = 1.0
+         while True:
+@@ -3736,6 +3734,9 @@ def _sample_counted(population, k, counts, strict):
+             element = feed(skip)
+             reservoir[randrange(k)] = element
+ 
++    if strict and len(reservoir) < k:
++        raise ValueError('Sample larger than population')
++
+     shuffle(reservoir)
+     return reservoir
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b611b85..8df49ef 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4253,9 +4253,63 @@ class SampleTests(TestCase):
+         self.assertEqual(actual, expected)
+ 
+     def test_counts_all(self):
+-        actual = Counter(mi.sample('uwxyz', 35, counts=(1, 0, 4, 10, 20)))
+         expected = Counter({'u': 1, 'x': 4, 'y': 10, 'z': 20})
+-        self.assertEqual(actual, expected)
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                actual = Counter(
++                    mi.sample(
++                        'uwxyz', 35, counts=(1, 0, 4, 10, 20), strict=strict
++                    )
++                )
++                self.assertEqual(actual, expected)
++
++    def test_counts_strict(self):
++        for iterable, counts, expected in [
++            ('', (), ''),
++            ('ab', (0, 0), ''),
++            ('ab', (0, 2), 'bb'),
++            ('ab', (2, 0), 'aa'),
++            ('abc', (2, 0, 3), 'aaccc'),
++        ]:
++            with self.subTest(iterable=iterable, counts=counts):
++                k = len(expected) + 1
++                self.assertCountEqual(
++                    mi.sample(
++                        iter(iterable), k, counts=iter(counts), strict=False
++                    ),
++                    expected,
++                )
++                with self.assertRaisesRegex(
++                    ValueError, 'Sample larger than population'
++                ):
++                    mi.sample(
++                        iter(iterable), k, counts=iter(counts), strict=True
++                    )
++
++    def test_weights_strict(self):
++        for iterable, weights in [
++            ('', ()),
++            ('ab', (1, 2)),
++            ('ab', (1, 2, 3)),
++            ('abc', (1, 2)),
++        ]:
++            with self.subTest(iterable=iterable, weights=weights):
++                with self.assertRaisesRegex(
++                    ValueError, 'Sample larger than population'
++                ):
++                    mi.sample(
++                        iter(iterable), 4, weights=iter(weights), strict=True
++                    )
++
++    def test_weights_and_counts(self):
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                with self.assertRaisesRegex(
++                    TypeError, 'weights and counts are mutally exclusive'
++                ):
++                    mi.sample(
++                        'ab', 1, weights=(1, 2), counts=(1, 2), strict=strict
++                    )
+ 
+     def test_sampling_entire_iterable(self):
+         """If k=len(iterable), the sample contains the original elements."""

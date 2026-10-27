@@ -1,0 +1,81 @@
+{
+  "checked_at": "2026-10-25T05:40:29.445387+00:00",
+  "pair": "05",
+  "source": "import sys,json\nsys.path.insert(0,sys.argv[1])\nimport click\nfrom click.testing import CliRunner\n@click.command()\n@click.option(\"-o\",\"--opt\",is_flag=False,flag_value=\"flag\",default=\"default\",type=str)\n@click.option(\"--other\",is_flag=True)\ndef cli(opt,other):return opt,other\nvalues=[]\nfor args in [[\"--opt=--other\"],[\"-o--other\"]]:\n r=CliRunner().invoke(cli,args,standalone_mode=False)\n values.append({\"args\":args,\"return_value\":r.return_value,\"exception_type\":type(r.exception).__name__ if r.exception else None})\nprint(json.dumps(values))\n",
+  "source_sha256": "8A052F48D5CD660969A09E905D5442740B78BDA76465A0906C913F9B613B09E8",
+  "actual_results": {
+    "base": [
+      {
+        "args": [
+          "--opt=--other"
+        ],
+        "return_value": [
+          "--other",
+          false
+        ],
+        "exception_type": null
+      },
+      {
+        "args": [
+          "-o--other"
+        ],
+        "return_value": [
+          "--other",
+          false
+        ],
+        "exception_type": null
+      }
+    ],
+    "A": [
+      {
+        "args": [
+          "--opt=--other"
+        ],
+        "return_value": [
+          "flag",
+          true
+        ],
+        "exception_type": null
+      },
+      {
+        "args": [
+          "-o--other"
+        ],
+        "return_value": [
+          "flag",
+          true
+        ],
+        "exception_type": null
+      }
+    ],
+    "B": [
+      {
+        "args": [
+          "--opt=--other"
+        ],
+        "return_value": [
+          "flag",
+          true
+        ],
+        "exception_type": null
+      },
+      {
+        "args": [
+          "-o--other"
+        ],
+        "return_value": [
+          "flag",
+          true
+        ],
+        "exception_type": null
+      }
+    ]
+  },
+  "source_files_checked": 54,
+  "all_checked_source_bytes_unchanged": true,
+  "model_calls": 0,
+  "network_calls": 0,
+  "labels_costs_skill_hidden_fix_not_read": true,
+  "finding": "Both A/B reclassify an explicitly attached string option value as another option, changing callback arguments. The base accepts it as the explicit value.",
+  "limits": "Two corroborating cases, not independent native performance observations."
+}

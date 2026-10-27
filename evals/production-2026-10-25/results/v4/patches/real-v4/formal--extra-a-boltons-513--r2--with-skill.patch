@@ -1,0 +1,302 @@
+diff --git a/boltons/ioutils.py b/boltons/ioutils.py
+index bfcaf3f..1bd013b 100644
+--- a/boltons/ioutils.py
++++ b/boltons/ioutils.py
+@@ -280,16 +280,15 @@ class SpooledIOBase(IOBase):
+ 
+ class SpooledBytesIO(SpooledIOBase):
+     """
+-    SpooledBytesIO is a spooled file-like-object that only accepts bytes. On
+-    Python 2.x this means the 'str' type; on Python 3.x this means the 'bytes'
+-    type. Bytes are written in and retrieved exactly as given, but it will
+-    raise TypeErrors if something other than bytes are written.
++    SpooledBytesIO is a spooled file-like-object that accepts bytes-like
++    objects. Bytes are written in and retrieved exactly as given. write()
++    returns the number of bytes written, and read() returns bytes.
+ 
+     Example::
+ 
+         >>> from boltons import ioutils
+         >>> with ioutils.SpooledBytesIO() as f:
+-        ...     f.write(b"Happy IO")
++        ...     _ = f.write(b"Happy IO")
+         ...     _ = f.seek(0)
+         ...     isinstance(f.getvalue(), bytes)
+         True
+@@ -301,14 +300,10 @@ class SpooledBytesIO(SpooledIOBase):
+ 
+     def write(self, s):
+         self._checkClosed()
+-        if not isinstance(s, bytes):
+-            raise TypeError("bytes expected, got {}".format(
+-                type(s).__name__
+-            ))
+-
+-        if self.tell() + len(s) >= self._max_size:
+-            self.rollover()
+-        self.buffer.write(s)
++        with memoryview(s) as view:
++            if self.tell() + view.nbytes >= self._max_size:
++                self.rollover()
++            return self.buffer.write(view)
+ 
+     def seek(self, pos, mode=0):
+         self._checkClosed()
+@@ -376,7 +371,7 @@ class SpooledStringIO(SpooledIOBase):
+ 
+         >>> from boltons import ioutils
+         >>> with ioutils.SpooledStringIO() as f:
+-        ...     f.write(u"\u2014 Hey, an emdash!")
++        ...     _ = f.write(u"\u2014 Hey, an emdash!")
+         ...     _ = f.seek(0)
+         ...     isinstance(f.read(), str)
+         True
+@@ -399,10 +394,12 @@ class SpooledStringIO(SpooledIOBase):
+                 type(s).__name__
+             ))
+         current_pos = self.tell()
+-        if self.buffer.tell() + len(s.encode('utf-8')) >= self._max_size:
++        encoded = s.encode('utf-8')
++        if self.buffer.tell() + len(encoded) >= self._max_size:
+             self.rollover()
+-        self.buffer.write(s.encode('utf-8'))
++        self.buffer.write(encoded)
+         self._tell = current_pos + len(s)
++        return len(s)
+ 
+     def _traverse_codepoints(self, current_position, n):
+         """Traverse from current position to the right n codepoints"""
+@@ -433,25 +430,25 @@ class SpooledStringIO(SpooledIOBase):
+     def seek(self, pos, mode=0):
+         """Traverse from offset to the specified codepoint"""
+         self._checkClosed()
+-        # Seek to position from the start of the file
++        current_pos = self.tell()
+         if mode == os.SEEK_SET:
+-            self.buffer.seek(0)
+-            self._traverse_codepoints(0, pos)
+-            self._tell = pos
+-        # Seek to new position relative to current position
++            dest_position = pos
+         elif mode == os.SEEK_CUR:
+-            start_pos = self.tell()
+-            self._traverse_codepoints(self.tell(), pos)
+-            self._tell = start_pos + pos
++            dest_position = current_pos + pos
+         elif mode == os.SEEK_END:
+-            self.buffer.seek(0)
+-            dest_position = self.len - pos
+-            self._traverse_codepoints(0, dest_position)
+-            self._tell = dest_position
++            dest_position = self.len + pos
+         else:
+             raise ValueError(
+                 f"Invalid whence ({mode}, should be 0, 1, or 2)"
+             )
++        if dest_position < 0:
++            raise ValueError(f"Negative seek position {dest_position}")
++
++        if mode != os.SEEK_CUR or dest_position < current_pos:
++            self.buffer.seek(0)
++            current_pos = self._tell = 0
++        self._traverse_codepoints(current_pos, dest_position - current_pos)
++        self._tell = dest_position
+         return self.tell()
+ 
+     def readline(self, length=None):
+@@ -496,15 +493,15 @@ class SpooledStringIO(SpooledIOBase):
+     @property
+     def len(self):
+         """Determine the number of codepoints in the file"""
+-        pos = self.buffer.tell()
+-        self.buffer.seek(0)
++        pos = self.tell()
++        self.seek(0)
+         total = 0
+         while True:
+             ret = self.read(READ_CHUNK_SIZE)
+             if not ret:
+                 break
+             total += len(ret)
+-        self.buffer.seek(pos)
++        self.seek(pos)
+         return total
+ 
+ 
+diff --git a/tests/test_ioutils.py b/tests/test_ioutils.py
+index a61df00..65ef3bd 100644
+--- a/tests/test_ioutils.py
++++ b/tests/test_ioutils.py
+@@ -1,9 +1,12 @@
+ import io
+ import os
+ import codecs
++import array
+ import random
+ import string
+ 
++import pytest
++
+ from tempfile import mkdtemp
+ from unittest import TestCase
+ from zipfile import ZipFile, ZIP_DEFLATED
+@@ -449,6 +452,159 @@ class TestSpooledStringIO(TestCase, BaseTestMixin, AssertionsMixin):
+         self.assertEqual(self.spooled_flo.getvalue(), expected)
+ 
+ 
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('stream_type, data', [
++    (ioutils.SpooledBytesIO, b'binary data'),
++    (ioutils.SpooledStringIO, 'a\u00e9\u4e2d\U0001f642z'),
++])
++def test_spooled_write_count(stream_type, data, rolled):
++    with stream_type() as stream:
++        if rolled:
++            stream.rollover()
++        assert stream.write(data) == len(data)
++        assert stream.write(data[:0]) == 0
++        assert stream.tell() == len(data)
++        stream.seek(0)
++        assert stream_type.write(self=stream, s=data) == len(data)
++        assert stream.getvalue() == data
++        stream.close()
++        with pytest.raises(ValueError):
++            stream.write(data)
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('make_data', [
++    lambda: bytearray(b'buffer data'),
++    lambda: memoryview(b'buffer data'),
++    lambda: array.array('I', [1, 2, 3]),
++    lambda: memoryview(array.array('I', [1, 2, 3])),
++    lambda: memoryview(b'abcdef').cast('B', shape=[2, 3]),
++])
++def test_spooled_bytes_write_buffer(make_data, rolled):
++    data = make_data()
++    expected = memoryview(data).tobytes()
++    with ioutils.SpooledBytesIO() as stream:
++        if rolled:
++            stream.rollover()
++        assert stream.write(data) == len(expected)
++        assert stream.tell() == len(expected)
++        assert stream.getvalue() == expected
++
++
++@pytest.mark.parametrize('extra_capacity', [0, 1])
++@pytest.mark.parametrize('use_view', [False, True])
++def test_spooled_bytes_buffer_rollover_size(extra_capacity, use_view):
++    data = array.array('I', [1, 2, 3])
++    if use_view:
++        data = memoryview(data)
++    expected = b'xy' + memoryview(data).tobytes()
++    with ioutils.SpooledBytesIO(max_size=len(expected) + extra_capacity) as stream:
++        stream.write(b'xy')
++        assert not stream._rolled
++        assert stream.write(data) == len(expected) - 2
++        assert stream._rolled == (extra_capacity == 0)
++        assert stream.getvalue() == expected
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('max_size', [8, 1000])
++def test_spooled_bytes_buffered_writer(rolled, max_size):
++    data = b'buffered bytes'
++    with ioutils.SpooledBytesIO(max_size=max_size) as stream:
++        if rolled:
++            stream.rollover()
++        with io.BufferedWriter(stream, buffer_size=32) as writer:
++            assert writer.write(data) == len(data)
++            assert stream.getvalue() == b''
++            writer.flush()
++            assert stream.getvalue() == data
++            assert stream._rolled == (rolled or max_size <= len(data))
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('stream_type, data, invalid', [
++    (ioutils.SpooledBytesIO, b'abc', 'text'),
++    (ioutils.SpooledBytesIO, b'abc', [1, 2, 3]),
++    (ioutils.SpooledBytesIO, b'abc', memoryview(b'abcd')[::2]),
++    (ioutils.SpooledStringIO, 'abc', b'bytes'),
++])
++def test_spooled_write_invalid_data(stream_type, data, invalid, rolled):
++    with stream_type() as stream:
++        stream.write(data)
++        if rolled:
++            stream.rollover()
++        stream.seek(1)
++        with pytest.raises((TypeError, BufferError)):
++            stream.write(invalid)
++        assert stream.tell() == 1
++        assert stream.getvalue() == data
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('text', [
++    'a\u00e9\u4e2d\U0001f642z',
++    'a\u00e9\u4e2d\U0001f642z' * ioutils.READ_CHUNK_SIZE,
++], ids=['short', 'chunked'])
++def test_spooled_string_seek_backwards(text, rolled):
++    with ioutils.SpooledStringIO() as stream:
++        stream.write(text)
++        if rolled:
++            stream.rollover()
++        start = len(text) // 2
++        stream.seek(0)
++        assert stream.read(start) == text[:start]
++        assert stream.seek(-start + 1, os.SEEK_CUR) == 1
++        assert stream.read(2) == text[1:3]
++        assert stream.tell() == 3
++        assert stream.read() == text[3:]
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('mode, offset', [
++    (os.SEEK_SET, -1),
++    (os.SEEK_CUR, -4),
++    (os.SEEK_END, -8),
++])
++def test_spooled_string_negative_seek_preserves_position(rolled, mode, offset):
++    text = '\u00e9ab\u4e2dxyz'
++    with ioutils.SpooledStringIO() as stream:
++        stream.write(text)
++        if rolled:
++            stream.rollover()
++        stream.seek(0)
++        assert stream.read(3) == text[:3]
++        with pytest.raises(ValueError):
++            stream.seek(offset, mode)
++        assert stream.tell() == 3
++        assert stream.read() == text[3:]
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('offset', [-3, -1, 0, 2])
++def test_spooled_string_seek_end_offsets(rolled, offset):
++    text = 'a\u00e9\u4e2d\U0001f642z'
++    with ioutils.SpooledStringIO() as stream:
++        stream.write(text)
++        if rolled:
++            stream.rollover()
++        assert stream.seek(offset, os.SEEK_END) == len(text) + offset
++        assert stream.read() == text[len(text) + offset:]
++
++
++@pytest.mark.parametrize('rolled', [False, True])
++def test_spooled_string_len_preserves_position(rolled):
++    text = '\u00e9ab\u4e2dxyz'
++    with ioutils.SpooledStringIO() as stream:
++        stream.write(text)
++        if rolled:
++            stream.rollover()
++        stream.seek(0)
++        assert stream.read(3) == text[:3]
++        assert len(stream) == len(text)
++        assert stream.tell() == 3
++        assert stream.read() == text[3:]
++
++
+ class TestMultiFileReader(TestCase):
+     def test_read_seek_bytes(self):
+         r = ioutils.MultiFileReader(io.BytesIO(b'narf'), io.BytesIO(b'troz'))

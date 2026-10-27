@@ -1,0 +1,138 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 668cda6..6fcffb8 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -208,9 +208,13 @@ class Bits:
+         return [c == '1' for c in self.as_bin()]
+ 
+     def as_bin(self):
++        if self.len == 0:
++            return ''
+         return f'{{0:0{self.len}b}}'.format(self.val)
+ 
+     def as_hex(self):
++        if self.len == 0:
++            return ''
+         # make template to pad out to number of bytes necessary to represent bits
+         tmpl = f'%0{2 * (self.len // 8 + ((self.len % 8) != 0))}X'
+         ret = tmpl % self.val
+@@ -234,6 +238,8 @@ class Bits:
+     def from_hex(cls, hex):
+         if isinstance(hex, bytes):
+             hex = hex.decode('ascii')
++        if hex == '':
++            return cls(0, 0)
+         if not hex.startswith('0x'):
+             hex = '0x' + hex
+         return cls(hex)
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 01fcaf2..c870022 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -127,3 +127,100 @@ def test_bits_len_bound():
+         Bits(4, 2)
+     with raises(ValueError):
+         Bits(1, 0)
++
++
++@mark.parametrize('constructor, args', [
++    (Bits, ('',)),
++    (Bits, (b'',)),
++    (Bits, ([],)),
++    (Bits, (0, 0)),
++    (Bits.from_bin, ('',)),
++    (Bits.from_bin, (b'',)),
++    (Bits.from_list, ([],)),
++    (Bits.from_int, (0, 0)),
++    (Bits.from_hex, ('',)),
++    (Bits.from_hex, (b'',)),
++    (Bits.from_bytes, (b'',)),
++    (Bits.from_bytes, (bytearray(),)),
++    (Bits.from_bytes, (memoryview(b''),)),
++])
++def test_bits_empty_conversions(constructor, args):
++    empty = constructor(*args)
++    assert empty == Bits(0, 0)
++    assert len(empty) == 0
++    assert empty.as_int() == 0
++    assert empty.as_bin() == ''
++    assert empty.as_list() == []
++    assert empty.as_hex() == ''
++    assert empty.as_bytes() == b''
++    assert repr(empty) == "Bits('')"
++    assert empty[:] == empty[::-1] == empty
++    assert Bits.from_bin(empty.as_bin()) == empty
++    assert Bits.from_list(empty.as_list()) == empty
++    assert Bits.from_int(empty.as_int(), len(empty)) == empty
++    assert Bits.from_hex(empty.as_hex()) == empty
++    assert Bits.from_bytes(empty.as_bytes()) == empty
++    for index in (0, -1):
++        with raises(IndexError):
++            empty[index]
++    with raises(ValueError):
++        empty[::0]
++
++
++@mark.parametrize('binary', ['', '0', '1010'])
++@mark.parametrize('key', [slice(0, 0), slice(1, 1), slice(100, None),
++                         slice(None, 0), slice(1, 0), slice(0, 0, -1)])
++def test_bits_empty_slices(binary, key):
++    empty = Bits(binary)[key]
++    assert empty == Bits(0, 0)
++    assert empty.as_bin() == ''
++    assert empty.as_bytes() == b''
++
++
++@mark.parametrize('binary, hex_, bytes_', [
++    ('', '', b''),
++    ('0', '00', b'\x00'),
++    ('1', '01', b'\x01'),
++    ('0000', '00', b'\x00'),
++    ('0000100', '04', b'\x04'),
++    ('00000000', '00', b'\x00'),
++    ('10101010', 'AA', b'\xaa'),
++    ('100000000', '0100', b'\x01\x00'),
++    ('0000000000000000', '0000', b'\x00\x00'),
++    ('0001001000110100', '1234', b'\x12\x34'),
++])
++def test_bits_serialization(binary, hex_, bytes_):
++    bits = Bits(binary)
++    assert bits.as_bin() == binary
++    assert bits.as_hex() == hex_
++    assert bits.as_bytes() == bytes_
++    assert Bits.from_bin(binary) == bits
++    padded = Bits(binary.zfill(len(bytes_) * 8))
++    assert Bits.from_hex(hex_) == padded
++    assert Bits.from_hex(hex_.encode('ascii')) == padded
++    assert Bits.from_bytes(bytes_) == padded
++
++
++def test_bits_default_zero():
++    assert Bits() == Bits(0) == Bits.from_int(0) == Bits('0')
++    assert Bits() != Bits(0, 0)
++
++
++@mark.parametrize('constructor, args, error', [
++    (Bits, (-1,), ValueError),
++    (Bits, (1, 0), ValueError),
++    (Bits, (4, 2), ValueError),
++    (Bits, ('2',), ValueError),
++    (Bits, ('0x',), ValueError),
++    (Bits, (None,), TypeError),
++    (Bits, (b'\xff',), UnicodeDecodeError),
++    (Bits.from_bin, ('102',), ValueError),
++    (Bits.from_hex, ('0x',), ValueError),
++    (Bits.from_hex, ('GG',), ValueError),
++    (Bits.from_hex, (b'\xff',), UnicodeDecodeError),
++    (Bits.from_bytes, ('',), TypeError),
++    (Bits.from_bytes, (None,), TypeError),
++])
++def test_bits_invalid_inputs(constructor, args, error):
++    with raises(error):
++        constructor(*args)

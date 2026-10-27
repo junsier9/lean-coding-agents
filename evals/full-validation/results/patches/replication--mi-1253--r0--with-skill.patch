@@ -1,0 +1,91 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index eec094f..9af3065 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1618,7 +1618,9 @@ def split_before(iterable, pred, maxsplit=-1):
+         [[0, 1, 2], [3, 4, 5], [6, 7, 8, 9]]
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     buf = []
+@@ -1654,7 +1656,9 @@ def split_after(iterable, pred, maxsplit=-1):
+ 
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     buf = []
+@@ -1694,7 +1698,9 @@ def split_when(iterable, pred, maxsplit=-1):
+ 
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     it = iter(iterable)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index dc7bf7b..e72e68d 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1471,6 +1471,31 @@ class SlicedTests(TestCase):
+         self.assertEqual(actual, expected)
+ 
+ 
++class SplitTests(TestCase):
++    def test_empty_iterables(self):
++        for split in (mi.split_before, mi.split_after, mi.split_when):
++            for iterable in ('', [], (), range(0), iter(()), (x for x in ())):
++                for maxsplit in (-2, -1, 0, 1, 2):
++                    with self.subTest(
++                        split=split, iterable=iterable, maxsplit=maxsplit
++                    ):
++                        pred = mock.Mock()
++                        self.assertEqual(
++                            list(split(iterable, pred, maxsplit=maxsplit)), []
++                        )
++                        pred.assert_not_called()
++
++    def test_maxsplit_zero(self):
++        for split in (mi.split_before, mi.split_after, mi.split_when):
++            for items in ([0], [None], list('a,b,c')):
++                with self.subTest(split=split, items=items):
++                    pred = mock.Mock()
++                    self.assertEqual(
++                        list(split(iter(items), pred, maxsplit=0)), [items]
++                    )
++                    pred.assert_not_called()
++
++
+ class SplitAtTests(TestCase):
+     def test_basic(self):
+         for iterable, separator in [
+@@ -1490,12 +1515,14 @@ class SplitAtTests(TestCase):
+                 self.assertEqual(actual, expected)
+ 
+     def test_maxsplit(self):
+-        iterable = 'a,bb,ccc,dddd'
+         separator = ','
+         pred = lambda x: x == separator
+ 
+-        for maxsplit in range(-1, 4):
+-            with self.subTest(maxsplit=maxsplit):
++        for iterable, maxsplit in product(
++            ('a,bb,ccc,dddd', '', ',', ',a,bb', 'a,bb,', 'a,,bb'),
++            range(-1, 4),
++        ):
++            with self.subTest(iterable=iterable, maxsplit=maxsplit):
+                 it = iter(iterable)
+                 result = mi.split_at(it, pred, maxsplit=maxsplit)
+                 actual = [''.join(x) for x in result]

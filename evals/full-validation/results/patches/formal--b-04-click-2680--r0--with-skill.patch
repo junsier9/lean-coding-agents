@@ -1,0 +1,142 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index cb4136a..2f4af17 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,9 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Close resources registered with ``Context.call_on_close`` and
++    ``Context.with_resource`` before exiting with ``Context.exit``, including
++    during eager option callbacks.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/src/click/core.py b/src/click/core.py
+index f17a8a8..c76a356 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -699,7 +699,14 @@ class Context:
+         raise Abort()
+ 
+     def exit(self, code: int = 0) -> t.NoReturn:
+-        """Exits the application with a given exit code."""
++        """Exits the application with a given exit code.
++
++        .. versionchanged:: 8.2
++            Callbacks and context managers registered with
++            :meth:`call_on_close` and :meth:`with_resource` are closed before
++            exiting.
++        """
++        self.close()
+         raise Exit(code)
+ 
+     def get_usage(self) -> str:
+diff --git a/tests/test_context.py b/tests/test_context.py
+index df8b497..bca27de 100644
+--- a/tests/test_context.py
++++ b/tests/test_context.py
+@@ -320,6 +320,103 @@ def test_exit_not_standalone():
+     assert cli.main([], "test_exit_not_standalone", standalone_mode=False) == 0
+ 
+ 
++@pytest.mark.parametrize("standalone_mode", [True, False])
++@pytest.mark.parametrize(
++    ("option", "exit_code"),
++    [("--exit", 0), ("--exit", 7), ("--help", 0), ("--version", 0)],
++)
++def test_exit_closes_resources(runner, standalone_mode, option, exit_code):
++    state = []
++    closed = []
++
++    def register(ctx, param, value):
++        assert not state
++        state.append("active")
++
++        @ctx.call_on_close
++        def close():
++            assert click.get_current_context() is ctx
++            state.clear()
++            closed.append("callback")
++
++        @contextmanager
++        def resource():
++            yield
++            assert click.get_current_context() is ctx
++            closed.append("resource")
++
++        ctx.with_resource(resource())
++
++    def exit_callback(ctx, param, value):
++        ctx.exit(exit_code)
++
++    @click.command()
++    @click.option(
++        "--register", is_flag=True, is_eager=True, expose_value=False, callback=register
++    )
++    @click.option(
++        "--exit", is_flag=True, is_eager=True, expose_value=False, callback=exit_callback
++    )
++    @click.version_option("1.0")
++    def cli():
++        pytest.fail("The command must not run after an early exit.")
++
++    assert click.get_current_context(silent=True) is None
++
++    with click.Context(click.Command("parent")) as parent:
++        parent.call_on_close(lambda: closed.append("parent"))
++
++        for invocation in range(1, 3):
++            result = runner.invoke(
++                cli,
++                ["--register", option],
++                standalone_mode=standalone_mode,
++                parent=parent,
++            )
++            assert result.exit_code == (exit_code if standalone_mode else 0)
++
++            if standalone_mode:
++                assert result.return_value is None
++            else:
++                assert result.exception is None
++                assert result.return_value == exit_code
++
++            assert not state
++            assert closed == ["resource", "callback"] * invocation
++            assert click.get_current_context() is parent
++
++    assert closed == ["resource", "callback"] * 2 + ["parent"]
++    assert click.get_current_context(silent=True) is None
++
++
++def test_early_exit_cleanup_error(runner):
++    closed = []
++
++    def register(ctx, param, value):
++        ctx.call_on_close(lambda: closed.append("callback"))
++
++        @ctx.call_on_close
++        def fail():
++            assert click.get_current_context() is ctx
++            raise RuntimeError("cleanup failed")
++
++    @click.command()
++    @click.option(
++        "--register", is_flag=True, is_eager=True, expose_value=False, callback=register
++    )
++    def cli():
++        pytest.fail("The command must not run after an early exit.")
++
++    with click.Context(click.Command("parent")) as parent:
++        with pytest.raises(RuntimeError, match="cleanup failed"):
++            runner.invoke(cli, ["--register", "--help"], catch_exceptions=False)
++
++        assert closed == ["callback"]
++        assert click.get_current_context() is parent
++
++    assert click.get_current_context(silent=True) is None
++
++
+ @pytest.mark.parametrize(
+     ("option_args", "invoke_args", "expect"),
+     [

@@ -1,0 +1,92 @@
+test_availability_translation_and_cause (test_contract.Contract.test_availability_translation_and_cause) ... FAIL
+test_cancellation_propagates (test_contract.Contract.test_cancellation_propagates) ... ok
+test_invalid_ids_before_storage (test_contract.Contract.test_invalid_ids_before_storage) ... ok
+test_malformed_record (test_contract.Contract.test_malformed_record) ... 
+  test_malformed_record (test_contract.Contract.test_malformed_record) (record={}) ... FAIL
+  test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': ' ', 'age': 1}) ... FAIL
+  test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': 'A', 'age': True}) ... FAIL
+  test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': 'A', 'age': -1}) ... FAIL
+test_missing_subclass (test_contract.Contract.test_missing_subclass) ... ok
+test_none_record_is_corruption (test_contract.Contract.test_none_record_is_corruption) ... FAIL
+test_normal (test_contract.Contract.test_normal) ... ok
+test_normalization_bug_propagates (test_contract.Contract.test_normalization_bug_propagates) ... FAIL
+test_optional_missing (test_contract.Contract.test_optional_missing) ... ok
+test_success_does_not_mutate_record (test_contract.Contract.test_success_does_not_mutate_record) ... ok
+test_unexpected_store_error (test_contract.Contract.test_unexpected_store_error) ... FAIL
+
+======================================================================
+FAIL: test_availability_translation_and_cause (test_contract.Contract.test_availability_translation_and_cause)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 34, in test_availability_translation_and_cause
+    with self.assertRaises(ServiceUnavailable) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ServiceUnavailable not raised
+
+======================================================================
+FAIL: test_malformed_record (test_contract.Contract.test_malformed_record) (record={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 58, in test_malformed_record
+    with self.subTest(record=record), self.assertRaises(CorruptRecord):
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CorruptRecord not raised
+
+======================================================================
+FAIL: test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': ' ', 'age': 1})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 58, in test_malformed_record
+    with self.subTest(record=record), self.assertRaises(CorruptRecord):
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CorruptRecord not raised
+
+======================================================================
+FAIL: test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': 'A', 'age': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 58, in test_malformed_record
+    with self.subTest(record=record), self.assertRaises(CorruptRecord):
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CorruptRecord not raised
+
+======================================================================
+FAIL: test_malformed_record (test_contract.Contract.test_malformed_record) (record={'name': 'A', 'age': -1})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 58, in test_malformed_record
+    with self.subTest(record=record), self.assertRaises(CorruptRecord):
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CorruptRecord not raised
+
+======================================================================
+FAIL: test_none_record_is_corruption (test_contract.Contract.test_none_record_is_corruption)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 53, in test_none_record_is_corruption
+    with self.assertRaises(CorruptRecord):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CorruptRecord not raised
+
+======================================================================
+FAIL: test_normalization_bug_propagates (test_contract.Contract.test_normalization_bug_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 65, in test_normalization_bug_propagates
+    with self.assertRaises(RuntimeError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+======================================================================
+FAIL: test_unexpected_store_error (test_contract.Contract.test_unexpected_store_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oiz7k4x1\test_contract.py", line 41, in test_unexpected_store_error
+    with self.assertRaises(RuntimeError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.002s
+
+FAILED (failures=8)

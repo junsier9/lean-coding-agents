@@ -1,0 +1,2181 @@
+[
+  {
+    "id": "extra-a-boltons-437",
+    "repo": "mahmoud/boltons",
+    "task": "Bits(4,2) 等超过指定位宽容量的值被错误接受，生成的二进制字符串长度与对象长度不一致。请拒绝这种精确溢出边界，保留最大可表示值和省略位宽时的正常构造。",
+    "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/437",
+    "base_sha": "e66cade323f5c11cebb4bd0f099e634b245adccd",
+    "fix_sha": "c1c25da365cf14878cf5317147e7a09b5d124df5",
+    "production_files": [
+      "boltons/mathutils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_mathutils.py"
+    ],
+    "guard_paths": [
+      "tests/test_mathutils.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "23d689cf1d468c6af6442869eb7483402aaea8b3cabdbfb2d7aa9df3a293aa04",
+      "setup.cfg": "4024bbca7672ce6a9cebfee0e4cd4017582ca0787dc1f603e859cd9c861147ac",
+      "tests/.coveragerc": "efe15fd9a92177c465290b3f0511e20e7a55151e6c720bec09bd2be161811288",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "91934bf3791e19404372fe5a9aeb4470c2f0bc3afb592eb2df2f6ffca1df1a2a",
+      "tests/jsonl_test_data.txt": "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      "tests/newlines_test_data.txt": "ec5ff35d69ce2c804c09975171cedfa5fc6fcb70d324f5d7b20f4dece4591861",
+      "tests/test_cacheutils.py": "11a940de1b4a23d883b2efaacf1ade3b522f1b8ada5ca308de970fa02cc2ebb0",
+      "tests/test_debugutils_trace.py": "b4235e0cfbc84ae1dd0a423590a8901b6eaa46d41e8e1e342c2693887fa4ce55",
+      "tests/test_dictutils.py": "2d912261b6a61feb4f4c757ceec582b738dbe34305f1f7b7b8ed6c1e9501e174",
+      "tests/test_ecoutils.py": "d934e044d4be16e1e673bf540997806e43fb83a5bb6439004c1c19a530f3f542",
+      "tests/test_fileutils.py": "7eafa18f331092063a3a404b5fbf178a3f132ff12406271c8f29fbb2a4571975",
+      "tests/test_formatutils.py": "7dcee16a8e23f6a78311af4f7d91c5621a5988f00b92133cde258e5714441c7e",
+      "tests/test_funcutils.py": "d1ff81590f22afe49ef2752a16cc59a59eaa880e44aed182c9d8a5bf1035df4c",
+      "tests/test_funcutils_fb.py": "f2ef41088d5cbdd676cb33dfd005a45468230460a313045c26644f016d00b099",
+      "tests/test_funcutils_fb_py3.py": "7c6061db8414e122fd6065a8471f5e7b34aa782ae33ec1bfc7686d2e7ffd204b",
+      "tests/test_gcutils.py": "af77f6b9954a8eab25359846fa7feb3af5089b1afced1dd21c02f58e4e213df9",
+      "tests/test_ioutils.py": "b6248a0d49a8610915acb1907d3c5f5e0540d281f23a51f7f9ccb8802c0491db",
+      "tests/test_iterutils.py": "6c83252c6bbb40a2873c01bfdc928d88091650fe77a90d3774df5e4c64a7aea9",
+      "tests/test_jsonutils.py": "f8e6acb01441cd23056fad01613d6165092d5db90dcc0b32bf6e6edc537eef7a",
+      "tests/test_listutils.py": "64c368b1668a7b63d805b5813f9ff0f2892f0f0880fa8926bf9c58cb518743ee",
+      "tests/test_mathutils.py": "fbf22ea607aee4d54be679457f166ef243e0a1a13bfde1f4c52bf6fcec05e77f",
+      "tests/test_namedutils.py": "77195d808abd5595b871c3a461f658ed66fc643f6ecfbd303c7e583185b6168f",
+      "tests/test_pathutils.py": "b86c0dc75f767c2a7525716ac4a47ae010c000f5575865e24f05ba96e10a5b7d",
+      "tests/test_queueutils.py": "e7140dcde4a96340ce29cfba5c26ee0a3a0e380b145d4e8b848a1970b374062c",
+      "tests/test_setutils.py": "aa32facb1cea98281fb2b6fec4915b12aa102b832b4ccbbe4d349c76c29b945b",
+      "tests/test_socketutils.py": "edfead38b00d1133b7cb33cd72cb411a3cfeb384137a206cd7db7e5d142b9cd5",
+      "tests/test_statsutils.py": "94ab55d70ce3f9e63243fc1e8a099317a17113b96a92d8de11f1ef8f41f83520",
+      "tests/test_statsutils_histogram.py": "9d91f83fe983c91823ffb61595bb6e91785ddbf36bb5385b99f62a75ae4c263a",
+      "tests/test_strutils.py": "e9ae5102d71c34dca7f15460d6eb93a2543697e92bc5f48631285c97196a9494",
+      "tests/test_tableutils.py": "e0567acf08e42ac9882762c172bb049f3b911831d3cd131b9c7ddd45925ae4a8",
+      "tests/test_tbutils.py": "c1a9d5ef6303d55f51484517d7fa6b820adbd38e0777d474ccf5114b3feb5d3a",
+      "tests/test_tbutils_parsed_exc.py": "77f79a73c04b0d605ca2f50174a2ee432c301c69eeba6f8a70f43da0a0a43626",
+      "tests/test_timeutils.py": "1657b7da8184839667f50c1f260ad348398af9ce06e49b001778ffd200048c91",
+      "tests/test_typeutils.py": "e8b3f2187ff3dffc3151f33667e9baba6e33b72f134c0383968db649e0a19661",
+      "tests/test_urlutils.py": "58780eba5f2d88bb74152869aefab68a45fcf73fa9d3e9d492d4e0e47caf9c5d",
+      "tox.ini": "70e31d3c3aee330493ffed40d540a55fc46a5db61dcb610e3359b05eda4f7e6c"
+    },
+    "fixed_guard_tests": 12,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/e66cade323f5c11cebb4bd0f099e634b245adccd",
+        "sha256": "62223dd940a4d72ab35f4f9c04778158a4cafda4b49187ebcc5fdba68b96bd61",
+        "files": 112
+      },
+      "fix": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/c1c25da365cf14878cf5317147e7a09b5d124df5",
+        "sha256": "dd143b573b84efb04810d9b6347f0b829422f0b86031813bc5ff5bb0feae6f37",
+        "files": 112
+      }
+    }
+  },
+  {
+    "id": "extra-a-boltons-475",
+    "repo": "mahmoud/boltons",
+    "task": "iter_splitlines 会把普通日期文本中的空格加28或29误当换行，却漏掉真正的Unicode行/段分隔符；indent 也继承了这种文本损坏。请正确处理这些分隔符及首尾空行，保持普通数字文本和混合换行的内容。",
+    "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/475",
+    "base_sha": "1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+    "fix_sha": "45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+    "production_files": [
+      "boltons/strutils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_strutils.py"
+    ],
+    "guard_paths": [
+      "tests/test_strutils.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "23d689cf1d468c6af6442869eb7483402aaea8b3cabdbfb2d7aa9df3a293aa04",
+      "setup.cfg": "4024bbca7672ce6a9cebfee0e4cd4017582ca0787dc1f603e859cd9c861147ac",
+      "tests/.coveragerc": "efe15fd9a92177c465290b3f0511e20e7a55151e6c720bec09bd2be161811288",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "91934bf3791e19404372fe5a9aeb4470c2f0bc3afb592eb2df2f6ffca1df1a2a",
+      "tests/jsonl_test_data.txt": "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      "tests/newlines_test_data.txt": "ec5ff35d69ce2c804c09975171cedfa5fc6fcb70d324f5d7b20f4dece4591861",
+      "tests/test_cacheutils.py": "11a940de1b4a23d883b2efaacf1ade3b522f1b8ada5ca308de970fa02cc2ebb0",
+      "tests/test_debugutils_trace.py": "b4235e0cfbc84ae1dd0a423590a8901b6eaa46d41e8e1e342c2693887fa4ce55",
+      "tests/test_dictutils.py": "25fc6f2a8cdb0dbe33047f44f315d6f4a8a18e90dfe246efc66c282d9901993b",
+      "tests/test_ecoutils.py": "6be5be5abda19fdb8af07d98454659c2619f0e4afdfe4fe8606e61157b286ff7",
+      "tests/test_fileutils.py": "7eafa18f331092063a3a404b5fbf178a3f132ff12406271c8f29fbb2a4571975",
+      "tests/test_formatutils.py": "7dcee16a8e23f6a78311af4f7d91c5621a5988f00b92133cde258e5714441c7e",
+      "tests/test_funcutils.py": "d1ff81590f22afe49ef2752a16cc59a59eaa880e44aed182c9d8a5bf1035df4c",
+      "tests/test_funcutils_fb.py": "f2ef41088d5cbdd676cb33dfd005a45468230460a313045c26644f016d00b099",
+      "tests/test_funcutils_fb_py3.py": "3c9ba54104aa3804170aae3ac03f684641f48e29072714edf9600ce4e522a005",
+      "tests/test_gcutils.py": "af77f6b9954a8eab25359846fa7feb3af5089b1afced1dd21c02f58e4e213df9",
+      "tests/test_ioutils.py": "b6248a0d49a8610915acb1907d3c5f5e0540d281f23a51f7f9ccb8802c0491db",
+      "tests/test_iterutils.py": "53e87f22a9d57f742a295af65f69fd4c374bf40f917a6cd807e4c2f26a833263",
+      "tests/test_jsonutils.py": "20439046d46475e18e132a0937268884704efb5f24cbf289445b64040d7187ef",
+      "tests/test_listutils.py": "0ea3c4bc202e5b2d486b6ffd0eb1275661516b0c3a6be8d48e1256991d67c8f9",
+      "tests/test_mathutils.py": "4ebade6be193eec32db47e6f329816e335bf7d462acbe4874b4b811699a9df32",
+      "tests/test_namedutils.py": "bfbe635be39c1cdc0b58a23a80ea990967559eb3dfebceb719c02c4be0f62bec",
+      "tests/test_pathutils.py": "b86c0dc75f767c2a7525716ac4a47ae010c000f5575865e24f05ba96e10a5b7d",
+      "tests/test_queueutils.py": "e7140dcde4a96340ce29cfba5c26ee0a3a0e380b145d4e8b848a1970b374062c",
+      "tests/test_setutils.py": "645ec71bf7f955c4b9ed478e55b3aacd509dd35e0d78b33cb31ce30f26281613",
+      "tests/test_socketutils.py": "edfead38b00d1133b7cb33cd72cb411a3cfeb384137a206cd7db7e5d142b9cd5",
+      "tests/test_statsutils.py": "eeebaeaae51050a17e7a523b6894e905aaeead7f820f7c52dbe6a8f771cca105",
+      "tests/test_statsutils_histogram.py": "9d91f83fe983c91823ffb61595bb6e91785ddbf36bb5385b99f62a75ae4c263a",
+      "tests/test_strutils.py": "573eddf6ae1d3e9c1b659ae3c2fda619fe5feaa1ff1611d39298c54ff3ca74ef",
+      "tests/test_tableutils.py": "7b33dc0aad2fdc9d95703646e900ca421f011014aa177f117cde86b85de75394",
+      "tests/test_tbutils.py": "c1a9d5ef6303d55f51484517d7fa6b820adbd38e0777d474ccf5114b3feb5d3a",
+      "tests/test_tbutils_parsed_exc.py": "77f79a73c04b0d605ca2f50174a2ee432c301c69eeba6f8a70f43da0a0a43626",
+      "tests/test_timeutils.py": "1234f5343aeab73889559a6100c677a6d55f786155b6c01eaf0bc71a3144dedb",
+      "tests/test_typeutils.py": "e8b3f2187ff3dffc3151f33667e9baba6e33b72f134c0383968db649e0a19661",
+      "tests/test_urlutils.py": "369c4c90ed0801b5cdcc90832dcff55bf7a917f0eae4f442c988a86e97906aaa",
+      "tox.ini": "70e31d3c3aee330493ffed40d540a55fc46a5db61dcb610e3359b05eda4f7e6c"
+    },
+    "fixed_guard_tests": 27,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+        "sha256": "b6977cfdc8d4521964d0d5e796643323e498decef2531bc6e2959cf83f5a99a0",
+        "files": 112
+      },
+      "fix": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+        "sha256": "f285c9c75feb1b35465acc60c7d8547ea80283db7f6fd64ca222b3f0b6eb5247",
+        "files": 112
+      }
+    }
+  },
+  {
+    "id": "extra-a-mi-1223",
+    "repo": "more-itertools/more-itertools",
+    "task": "chunked 对负块大小泄露 itertools.islice 的内部错误消息，和同类分块工具的公开参数错误契约不一致。请让负 n 报明确的 ValueError（n must be at least 0），同时保留 n=None、n=0 与正常 strict 分块行为。",
+    "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1223",
+    "base_sha": "516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f",
+    "fix_sha": "9ddc55c57390707d97d96302eea1992919c8d930",
+    "production_files": [
+      "more_itertools/more.py"
+    ],
+    "regression_test_files": [
+      "tests/test_more.py"
+    ],
+    "guard_paths": [
+      "tests/test_more.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_more.py": "9f6f983edc05270656495964cab5031305a418008877f38e5ea7b9ca76a6b138",
+      "tests/test_recipes.py": "e1b6a338e49226af81ab265a13b731f4019142eb3ec4e75e8a0bdf3c51dd9e84",
+      "tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2"
+    },
+    "fixed_guard_tests": 589,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f",
+        "sha256": "6d88b818cad5caffe4f2472dfecd361787cb8f327d34c38e2bc5e742ac31c000",
+        "files": 39
+      },
+      "fix": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/9ddc55c57390707d97d96302eea1992919c8d930",
+        "sha256": "9169e6e94ad9a6099c2471f40fa08ec1b2165d3477e11184bf74f60947be4b74",
+        "files": 39
+      }
+    }
+  },
+  {
+    "id": "extra-a-mi-944",
+    "repo": "more-itertools/more-itertools",
+    "task": "sample 在使用 counts 且 strict=True 时，样本数大于总体计数仍可能返回短样本而不报错。请使这种情况遵守 strict 契约，同时保持加权采样的相同错误检查以及 counts 与 weights 互斥的规则。",
+    "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/944",
+    "base_sha": "18225d856665bfc3bfdfcdbfa585290f92645daf",
+    "fix_sha": "7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+    "production_files": [
+      "more_itertools/more.py"
+    ],
+    "regression_test_files": [
+      "tests/test_more.py"
+    ],
+    "guard_paths": [
+      "tests/test_more.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "74197e577189b7d63307a7a4fc7f71d67f3a0ef85c410561539a2d01e911baea",
+      "setup.cfg": "dce0ea6ac71db5597f5e917ccfe3165755ec3f6b25232b5f2e1b2defff1cc930",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_more.py": "fcad276607359aee04377fe60859de522effee4a1852c92c3e1799b1529828f7",
+      "tests/test_recipes.py": "e5711448cba3a81702a2bbc9b94134732afca825deea363e59d10819fbad169c",
+      "tox.ini": "6a16f19a423373fbac1481f0273cf862ffd0c58f9280bd877be1fe8228ad5306"
+    },
+    "fixed_guard_tests": 535,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/18225d856665bfc3bfdfcdbfa585290f92645daf",
+        "sha256": "611ce69b85020671da68dc1420de2b4106ee4e9b9521f0e2062d6c36d0fbeca6",
+        "files": 37
+      },
+      "fix": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+        "sha256": "67e1822c618f20e460ede22b18e0267e0d8770878e01384ad7e2f7cb1956cbad",
+        "files": 37
+      }
+    }
+  },
+  {
+    "id": "extra-a2-click-3805",
+    "repo": "pallets/click",
+    "task": "Sentinel 成员以及持有默认 UNSET 的Option，在复制或pickle往返时可能失败，某些Python版本还无法deepcopy参数对象。请保留哨兵的单例身份，使参数对象的复制和序列化保持有效默认值及名称。",
+    "issue_or_pr_url": "https://github.com/pallets/click/pull/3805",
+    "base_sha": "3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+    "fix_sha": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+    "production_files": [
+      "src/click/_utils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_utils/test_sentinel.py"
+    ],
+    "guard_paths": [
+      "tests/test_utils/test_sentinel.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "6cca567eef4004426c3a42a94de7ef6b971992f1d7292faea3a17dd322d92717",
+      "tests/conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "tests/test_arguments.py": "f3d859a511ab161f2bdb8f404e3e8c2eec7626d7ebb9e7dbf1a0366cc4a60559",
+      "tests/test_basic.py": "af3e91d16bebb42750737f297da9825dce6ecc516db9295b3b0c6d6d62a1337d",
+      "tests/test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "tests/test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "tests/test_commands.py": "5b1abf5578e03627b3171e7486c377cd5953ebab2f82d9eacf8f44c305278d3e",
+      "tests/test_compat.py": "6f697f0112a67a62d2d6daf038f9a4934210bd583881fba773ed83fdbdb10c19",
+      "tests/test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "tests/test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "tests/test_defaults.py": "8e424ea80ac72ec614855b7b51e8af149fb8275e0e3d4de2f81f428dd0e71b88",
+      "tests/test_deprecations.py": "1b384f420f17b274e9552386da4e2b94643349b79219f84fa0b0fe5c0d842a0a",
+      "tests/test_formatting.py": "ebca0fe3b8cc26e4c8f52a785e44abc0a3604906d6dedc2f158e4e85db4e94e0",
+      "tests/test_imports.py": "77357638cb04fda1e89abd7c4d3caf54194982270938fed8ca9029965ed5477b",
+      "tests/test_info_dict.py": "00decaa4770e915f954fc4513ae9909ea0af6293566c9495ac3f197e34e7251e",
+      "tests/test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "tests/test_options.py": "6b9d80e2449e6a9cdd3186eee305c6249464fe31298336566cbef2ff4e962e1e",
+      "tests/test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "tests/test_shell_completion.py": "d45f0b1b42850463a3a07273989518d477f8b19c4ca0d8ef74dc29c309276bd8",
+      "tests/test_stream_lifecycle.py": "a2471fbd9c222213380aef823a537521c8dcc8224709814708149217fc932524",
+      "tests/test_termui.py": "d082866744a75b4732536cfa991260754c56b237d7a7bdc7d18fcbe04786057c",
+      "tests/test_testing.py": "4af5187e3f6eb22e2d4cd3f9edffe5d162103043e4e0d33a5734e74edebaba1c",
+      "tests/test_types.py": "c3c9e627576aceea5f22b75e2aabd1167d26c6aed224a4a220e93d76ebbfa863",
+      "tests/test_utils/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_utils/test_KeepOpenFile.py": "cf78133881a317725a200ea7175fc6ea2e10553114f4647c7c00d0ef44e257db",
+      "tests/test_utils/test_LazyFile.py": "d279f5f2c835167c0af587ac0399f7248e6a4887152701f6463278f46bca5f96",
+      "tests/test_utils/test__detect_program_name.py": "a1576feac3cb21c61871b22d25d3a14d9c4aebb84558347aa5d195b965053f46",
+      "tests/test_utils/test__expand_args.py": "053964b08e615adbbd22eb0d9f380a71d3ea3124ac8e284635790f459df9ee94",
+      "tests/test_utils/test_confirm.py": "0b4cad2a99a48421342f65c313e0d21a00ecbe14401c559c8f381e9e4ae99c2b",
+      "tests/test_utils/test_echo.py": "90a4554e7f377da24a88a8c748849eb23ba7e2de9d96f15ad617200475fb6453",
+      "tests/test_utils/test_echo_via_pager.py": "13b80d29d87f210d7ce235c54c178c90c8ed25ece419dc18d508e4e68d69dedf",
+      "tests/test_utils/test_format_filename.py": "d961c6fa256ab170dc6939b059ab63ad91ac8ae545459130780b2b15fbd1498f",
+      "tests/test_utils/test_make_default_short_help.py": "98d79c0e96752d593c76862a23f7ed6e250c3d368fb668e70266f23c542a1785",
+      "tests/test_utils/test_open_file.py": "d42a97682952291cd20d73a1f54f8b5500f63675b643c7db82e8bc4265f3de5d",
+      "tests/test_utils/test_prompt.py": "e62105b28ab4537ee2f3f9873f30a4994f4f799ee8f7a4177201f046bab6e716",
+      "tests/test_utils/test_sentinel.py": "7d37d0d6341d70972ad09d4178a3fd92f28de40e0ccd573230daaed2b6f31599",
+      "tests/test_utils/test_style.py": "cc3d9a7cf24bbc28f54405ced99380f1af677745683778d3cdb91767c5e4cee9",
+      "tests/typing/typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "tests/typing/typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "tests/typing/typing_edit.py": "eccff854a4dae04ea28eb7a01d70873a478cc6c6bffd9a5ff5fa30df92854a85",
+      "tests/typing/typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "tests/typing/typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "tests/typing/typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "tests/typing/typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "tests/typing/typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "tests/typing/typing_prompt.py": "25775f3fe85092da5c7c298f82564fcb6970769af332a139d883b9047f3bd0fc",
+      "tests/typing/typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "tests/typing/typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "fixed_guard_tests": 10,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+        "sha256": "da5ef15ba6c1381c84dadf1611674c85abc35b18e30f87135d2cbd60e813d07f",
+        "files": 166
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+        "sha256": "98dd4cfd9080c5d5d021cd93e15dcf9a4a37a1f5b6474d787513715f45a234a0",
+        "files": 166
+      }
+    }
+  },
+  {
+    "id": "extra-a3-funcy-178",
+    "repo": "Suor/funcy",
+    "task": "once_per 和 once_per_args 遇到list、dict、set或含不可哈希值的tuple时，尚未调用目标函数就抛TypeError。请支持这些原本应走等值比较的参数，保持相同值只调用一次的契约。",
+    "issue_or_pr_url": "https://github.com/Suor/funcy/pull/178",
+    "base_sha": "19e9617383cd48dfbc4074dab11df9157ece98b0",
+    "fix_sha": "c72bfae84581458ac17fa3da3d9b92a8962ba682",
+    "production_files": [
+      "funcy/flow.py"
+    ],
+    "regression_test_files": [
+      "tests/test_flow.py"
+    ],
+    "guard_paths": [
+      "tests/test_flow.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "setup.cfg": "9dd20a5ada090b01dd22055f32bdaa56315d3a14b0fd168dbe12013fa09fe5b1",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "tests/py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "tests/test_calc.py": "5f015a320ae23037cc7ed52990d294ec07889175e59880f873d57ae7bb0207a3",
+      "tests/test_colls.py": "0d95a217554d3bd3493efe3cbc8e35c1ca675528e52e1ad1951e5f502a1ccf2a",
+      "tests/test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "tests/test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "tests/test_flow.py": "2640e1a685a9b675fecdd38fab41f3ec03e67281ed536cfdad44a25102479f22",
+      "tests/test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "tests/test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "tests/test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "tests/test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "tests/test_objects.py": "827acdf28b963ce2faa0a960f54ae07ab31a3372364b5bb269873b194002037c",
+      "tests/test_seqs.py": "3a39e0eb0fb926c356b986bba199698d50a1aee6b5cb776f9be88cbc343851bc",
+      "tests/test_strings.py": "db57d498f298b5e2c636223f04742ae4c5139f274e4ea4ef2e7e6d893de0a085",
+      "tests/test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "tests/test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "tox.ini": "c49b92a6ede77cf17d1f62c65b3ff43b827207b82e5d010126f29ff65e8997ea"
+    },
+    "fixed_guard_tests": 28,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/19e9617383cd48dfbc4074dab11df9157ece98b0",
+        "sha256": "0adc944274d440cb215a7f00fd2d26a7258ef298e1d7451546ad223f4f1459d1",
+        "files": 68
+      },
+      "fix": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/c72bfae84581458ac17fa3da3d9b92a8962ba682",
+        "sha256": "0dedf3897f922beff83f7b04eb7ba004decf5c9010cfe5339ba86d52e03aa0ac",
+        "files": 68
+      }
+    }
+  },
+  {
+    "id": "extra-a3-funcy-190",
+    "repo": "Suor/funcy",
+    "task": "make_lookuper/silent_lookuper 的初始化构建器第一次失败后，后续调用不再重试；生成器中途失败还会残留部分键值。请在失败后保持可重试且没有残留数据，仍让成功的空查找表只初始化一次。",
+    "issue_or_pr_url": "https://github.com/Suor/funcy/pull/190",
+    "base_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+    "fix_sha": "91098f4ea6eb54ffabfdac886baefa5260866091",
+    "production_files": [
+      "funcy/calc.py"
+    ],
+    "regression_test_files": [
+      "tests/test_calc.py"
+    ],
+    "guard_paths": [
+      "tests/test_calc.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "tests/py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "tests/test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "tests/test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "tests/test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "tests/test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "tests/test_flow.py": "aefe40a0ea2c19420d8c56a5c5bc7b8006f9d8707f0e3566e18d01cc20636b57",
+      "tests/test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "tests/test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "tests/test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "tests/test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "tests/test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "tests/test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "tests/test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "tests/test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "tests/test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167"
+    },
+    "fixed_guard_tests": 28,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/0eab928c371264cb85fb022bf13b4e9d86037f5f",
+        "sha256": "7f839d5caeeffff0b4c51b616811fdc26d4e15448c11b9a2d7d28a15663c54c0",
+        "files": 68
+      },
+      "fix": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/91098f4ea6eb54ffabfdac886baefa5260866091",
+        "sha256": "5c694d036ed1af2f1024d1ebf123b44677540e4faa589dbe8847d2ce702b65b6",
+        "files": 68
+      }
+    }
+  },
+  {
+    "id": "extra-a3-funcy-93",
+    "repo": "Suor/funcy",
+    "task": "cache.invalidate 对不存在或已经失效的键抛KeyError，重复调用不是幂等操作。请让重复失效安全完成，仍能使已缓存的键在下次访问时重新计算，并保留全部清理行为。",
+    "issue_or_pr_url": "https://github.com/Suor/funcy/pull/93",
+    "base_sha": "c33f69dc7cf811f524a791a477775228ce7025cc",
+    "fix_sha": "d79eaec8976402ccdee03b56283d123397f4fa61",
+    "production_files": [
+      "funcy/calc.py"
+    ],
+    "regression_test_files": [
+      "tests/test_calc.py"
+    ],
+    "guard_paths": [
+      "tests/test_calc.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "setup.cfg": "9dd20a5ada090b01dd22055f32bdaa56315d3a14b0fd168dbe12013fa09fe5b1",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_calc.py": "675cfe3534d69bb08c48037999e5b32bd021b8bf2e0fcf0945d49c192cf183ca",
+      "tests/test_colls.py": "31cfe4175862cd168191e79e1a61892b8ac7806b00e3345328a9ce46f17c0886",
+      "tests/test_debug.py": "905e785c926707dcbe411621dad4cc6c0f2e36fdd195b389d377f76b34e5619d",
+      "tests/test_decorators.py": "535a651d420161ae24ab35b837ead688e7875745877c133c96ed4e134ab86057",
+      "tests/test_flow.py": "a461e4282b02b46b68b32b3367dd726765ac3e45a9115259b7a454dd1100362c",
+      "tests/test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "tests/test_funcolls.py": "ca5ab72618d1814ebd0a2b5f22f22275c9f96882f70501a5f5b0aab0e24db32b",
+      "tests/test_funcs.py": "a54f6e4193ee6e1b5e82fb37d12c04757d8d86b234d6b8e7fec8814cff2ae3a3",
+      "tests/test_interface.py": "43d96be90c939778fbbc9c4943f8c33e69b50c4011dd9f513b6bdb8cbbbb834c",
+      "tests/test_objects.py": "4bfab0c560dab370eb4858ed8d17c3e54acfa2e317e37a72419651a8370b4978",
+      "tests/test_seqs.py": "392cfff9efbd49a717eab66dc4e4eb2ac67284429ac2b9d3d0a48e9e86f8a3fc",
+      "tests/test_strings.py": "db57d498f298b5e2c636223f04742ae4c5139f274e4ea4ef2e7e6d893de0a085",
+      "tests/test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "tests/test_types.py": "309bfc302b3607749bcc8eb9573a4c059ab81a653ab2eafff7ea2fb60f53b913",
+      "tox.ini": "e438d095ea12b08017b4a04752010a58a5be6f5baf4293d3b09e22c79b27e9f0"
+    },
+    "fixed_guard_tests": 12,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/c33f69dc7cf811f524a791a477775228ce7025cc",
+        "sha256": "c32e331e33ccb395e9d8cb9595090ca2755bba6bdf41f77e963883e83df78d2d",
+        "files": 67
+      },
+      "fix": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/d79eaec8976402ccdee03b56283d123397f4fa61",
+        "sha256": "14701348e282f3a7daf5d50927d0706a93f026dab06c63c57aee9e1bfdd18714",
+        "files": 67
+      }
+    }
+  },
+  {
+    "id": "extra-a3-toolz-603",
+    "repo": "pytoolz/toolz",
+    "task": "partition_all 对提供了错误 __len__ 的 iterable 会静默产出错误尾块，而不是暴露长度与实际内容不一致。请检测这种无效输入并给出 LookupError，同时保持正确长度序列及无长度迭代器的正常分块行为。",
+    "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/603",
+    "base_sha": "1fb2b9f1b69ab664a264944f4eafc290acce127d",
+    "fix_sha": "5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+    "production_files": [
+      "toolz/itertoolz.py"
+    ],
+    "regression_test_files": [
+      "toolz/tests/test_itertoolz.py"
+    ],
+    "guard_paths": [
+      "toolz/tests/test_itertoolz.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "7be1e48b2a912a667d3417b1fd13fed26254f04a5f4949630cc9a12628fe820c",
+      "toolz/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "toolz/tests/test_compatibility.py": "4f09a972a8917a0060a00c2bcf9f77c3bdd4b4c871c754a9dcc63a2c9e699826",
+      "toolz/tests/test_curried.py": "2c5d8f91b686565378274739f13ede913b96365874afb791a55da85b3b9fe233",
+      "toolz/tests/test_curried_doctests.py": "f69fd1c0329e1bff045d4a2a285009fb3ca9e0a1e9db0de52c5c4e0795d7ab0c",
+      "toolz/tests/test_dicttoolz.py": "840bb05ef6e9fff47818d8d4b9846eddafa9b356052d22c81ec820d2fc7f0d84",
+      "toolz/tests/test_functoolz.py": "24dd33ca06709bc48f7b6e8f68aba32d66c6600c110a5275fb55b5177a9431e9",
+      "toolz/tests/test_inspect_args.py": "0f524a2e128272cef54993c4dfef3a3d24a2af19cfa0cf9a60eab7157cb75b95",
+      "toolz/tests/test_itertoolz.py": "12bce5c50eb4e0b18bd9476d4cf4d62b69e9fcaf4e63c9bf03a594b8f48b299d",
+      "toolz/tests/test_package.py": "3e628960b505cea360fcd4af37e5a7ead208680312359f352f852876507a4825",
+      "toolz/tests/test_recipes.py": "859fe7b8600e21a7c9ac9c279e3f7e2599da46af6cac85f23d0cb305d352d454",
+      "toolz/tests/test_serialization.py": "87057e30e173bef2d5c1979d5020db9b1e3bf7dacb41f0b2173993631a007471",
+      "toolz/tests/test_signatures.py": "5fc2bfad74b5397236db2b1c8f7cd4856c5659354823909fd912725df87fd870",
+      "toolz/tests/test_tlz.py": "2d2e480aa89e44b9230143fe0b94e37557a577a4bd38b5d3606807f397d8916c",
+      "toolz/tests/test_utils.py": "d8b2214bff715de004d7fa2737cebc81978037c1378d35eda67605d16f8bd8e1",
+      "tox.ini": "75d9ffbe0a29a2c987310e5aa2d86b7b2da9d8ef5456878b21454fddfd02ff26"
+    },
+    "fixed_guard_tests": 50,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytoolz/toolz/tar.gz/1fb2b9f1b69ab664a264944f4eafc290acce127d",
+        "sha256": "d3a91defdd8ac79f5184c1804ef00a115070f9ae8da649f87e515800cf42e72b",
+        "files": 80
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytoolz/toolz/tar.gz/5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+        "sha256": "8080d47e50e6619004b5482ab6dc0d12a4b69bd96fbbfbdf76f9ffd14c090067",
+        "files": 80
+      }
+    }
+  },
+  {
+    "id": "extra-a3-toolz-635",
+    "repo": "pytoolz/toolz",
+    "task": "interpose 在空输入上直接抛 StopIteration，不能像其他迭代工具一样返回空迭代结果。请使空输入正常结束，保留非空输入在相邻元素之间插入分隔值的行为。",
+    "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/635",
+    "base_sha": "55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+    "fix_sha": "d2eba0374a452c2b18fe188b04527e22bda3548c",
+    "production_files": [
+      "toolz/itertoolz.py"
+    ],
+    "regression_test_files": [
+      "toolz/tests/test_itertoolz.py"
+    ],
+    "guard_paths": [
+      "toolz/tests/test_itertoolz.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "e855bb1ce35a1bd7f720a873fd6724cbc8baa01424b4b243b5818d586487a2bd",
+      "toolz/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "toolz/tests/test_compatibility.py": "4f09a972a8917a0060a00c2bcf9f77c3bdd4b4c871c754a9dcc63a2c9e699826",
+      "toolz/tests/test_curried.py": "2c5d8f91b686565378274739f13ede913b96365874afb791a55da85b3b9fe233",
+      "toolz/tests/test_curried_doctests.py": "f69fd1c0329e1bff045d4a2a285009fb3ca9e0a1e9db0de52c5c4e0795d7ab0c",
+      "toolz/tests/test_dicttoolz.py": "a102f4482bbaa3898d128aa8807fc25b72e13fd372fbbe69d173cc07a8b54d55",
+      "toolz/tests/test_functoolz.py": "ac5fb1111159649bea348775379011ca66604f291b8b55b77211903076f98a8b",
+      "toolz/tests/test_inspect_args.py": "0f524a2e128272cef54993c4dfef3a3d24a2af19cfa0cf9a60eab7157cb75b95",
+      "toolz/tests/test_itertoolz.py": "08f9e2a205946918e053da0815a86abdca76863b6212a0a7e033c6174130e0b6",
+      "toolz/tests/test_package.py": "3e628960b505cea360fcd4af37e5a7ead208680312359f352f852876507a4825",
+      "toolz/tests/test_recipes.py": "859fe7b8600e21a7c9ac9c279e3f7e2599da46af6cac85f23d0cb305d352d454",
+      "toolz/tests/test_serialization.py": "87057e30e173bef2d5c1979d5020db9b1e3bf7dacb41f0b2173993631a007471",
+      "toolz/tests/test_signatures.py": "5fc2bfad74b5397236db2b1c8f7cd4856c5659354823909fd912725df87fd870",
+      "toolz/tests/test_tlz.py": "2d2e480aa89e44b9230143fe0b94e37557a577a4bd38b5d3606807f397d8916c",
+      "toolz/tests/test_utils.py": "d8b2214bff715de004d7fa2737cebc81978037c1378d35eda67605d16f8bd8e1",
+      "tox.ini": "4ee3d80dcf16a1e993c7bb7ef2adf34353ef81e903c70cdd0327fedafc5842a6"
+    },
+    "fixed_guard_tests": 51,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytoolz/toolz/tar.gz/55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+        "sha256": "37e93d0260d8e42e856f8caff62717ffdaa769b283473382dc123866bd8d54b5",
+        "files": 81
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytoolz/toolz/tar.gz/d2eba0374a452c2b18fe188b04527e22bda3548c",
+        "sha256": "a5bc3a75f5a97eb6d866c9089f625e666c051ef7132fbb8337f8e0b17e7c86d8",
+        "files": 81
+      }
+    }
+  },
+  {
+    "id": "mi-1200",
+    "repo": "more-itertools/more-itertools",
+    "task": "sliced('ABCDEFG', -1) 静默产生截断前缀，strict=True 则给出指向整除性的误导错误。请让负分块大小明确失败，并保留零大小及正大小、strict 分支的原有正常结果。",
+    "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1200",
+    "base_sha": "8ff2d60e1462a6857f5a9b153d7be474f82da8b5",
+    "fix_sha": "c2859de7ae7b791b77c33462a58f81f9a4d9d5d6",
+    "production_files": [
+      "more_itertools/more.py"
+    ],
+    "regression_test_files": [
+      "tests/test_more.py"
+    ],
+    "guard_paths": [
+      "tests/test_more.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_more.py": "93b52a0827e7149f45927868867b1eb3a9c5d9fd5cdae372327066a4d37b91ae",
+      "tests/test_recipes.py": "e1b6a338e49226af81ab265a13b731f4019142eb3ec4e75e8a0bdf3c51dd9e84",
+      "tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2"
+    },
+    "fixed_guard_tests": 587,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/8ff2d60e1462a6857f5a9b153d7be474f82da8b5",
+        "sha256": "eb4ba180a6d60cbd99f9bcb8abcb0cd8a1d2c422014946797366b9865b52558e",
+        "files": 39
+      },
+      "fix": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/c2859de7ae7b791b77c33462a58f81f9a4d9d5d6",
+        "sha256": "1be470a3e8cab666af0aafa222214f313f6d376524fe39ae73a7ec159fbb2b08",
+        "files": 39
+      }
+    }
+  },
+  {
+    "id": "xb-013-click-3079",
+    "repo": "pallets/click",
+    "task": "多个标志共享同一个参数名，且只有其中一个设置默认值时，省略标志得到的默认值受装饰器顺序影响。请让共享参数采用声明的有效默认值，并保留显式标志覆盖。",
+    "issue_or_pr_url": "https://github.com/pallets/click/pull/3079",
+    "base_sha": "2ed395b0b5ac4d56553ff715335f456f812cdc78",
+    "fix_sha": "27aaed3fe5bcd6adedd6e91de234914af9859cf1",
+    "production_files": [
+      "src/click/core.py"
+    ],
+    "regression_test_files": [
+      "tests/test_defaults.py"
+    ],
+    "guard_paths": [
+      "tests/test_defaults.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "fde1affaef04ee7f9ea5fd781fe1fc9aa159b60efde1f38ffe2d9d48466b5bef",
+      "tests/conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "tests/test_arguments.py": "1f06392902c7d95c6671ee04bc70a1e144d1fd75120f48576c5e011a48bd2029",
+      "tests/test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "tests/test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "tests/test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "tests/test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "tests/test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "tests/test_context.py": "638a866a436b649279cb20882785a46f76f73a6faa3aa05d978b8d49cf716848",
+      "tests/test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "tests/test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "tests/test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "tests/test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "tests/test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "tests/test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "tests/test_options.py": "40f7c5e49c626f0377fc5de956d2d2d66eccb6e436595fc9fb8dc7b21c4acc4c",
+      "tests/test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "tests/test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "tests/test_termui.py": "f7e68f67a09f2baeb13efd2d08ac2b494dbcea5374d248e69a287985ee2c078f",
+      "tests/test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "tests/test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "tests/test_utils.py": "9221bbfc185bd2bc2f5ba93eb8759371088adf97433e200465213a309ad7b8de",
+      "tests/typing/typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "tests/typing/typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "tests/typing/typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "tests/typing/typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "tests/typing/typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "tests/typing/typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "tests/typing/typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "tests/typing/typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "tests/typing/typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "fixed_guard_tests": 6,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/2ed395b0b5ac4d56553ff715335f456f812cdc78",
+        "sha256": "25652bfb716fc278d8ab64102f0182e823d61a5e0d2c8cc8c2f0bb2e81065e7a",
+        "files": 142
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/27aaed3fe5bcd6adedd6e91de234914af9859cf1",
+        "sha256": "48e2738f41f59c961f4183318bf2551bbe67eec7f8a216a53f8c253ecab86709",
+        "files": 142
+      }
+    }
+  },
+  {
+    "id": "xb-034-pydash-263",
+    "repo": "dgilland/pydash",
+    "task": "truncate 的长度限制短于省略标记时，结果保留大段正文并远超限制。请正确处理很小或非正长度，以及不同 separator 形式。",
+    "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/263",
+    "base_sha": "938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+    "fix_sha": "2dfcc0130d28ce8da795bdef8e90fc66ff98b179",
+    "production_files": [
+      "src/pydash/strings.py"
+    ],
+    "regression_test_files": [
+      "tests/test_strings.py"
+    ],
+    "guard_paths": [
+      "tests/test_strings.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "tests/helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "tests/pytest_mypy_testing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/pytest_mypy_testing/test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "tests/pytest_mypy_testing/test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "tests/pytest_mypy_testing/test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "tests/pytest_mypy_testing/test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "tests/pytest_mypy_testing/test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "tests/pytest_mypy_testing/test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "tests/pytest_mypy_testing/test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "tests/pytest_mypy_testing/test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "tests/pytest_mypy_testing/test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "tests/test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "tests/test_arrays.py": "59ca0103f34f85f0a639b670112e780b5bf2dd128ae9481bfc381c9c6d0c3018",
+      "tests/test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "tests/test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "tests/test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "tests/test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "tests/test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "tests/test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "tests/test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "tests/test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e"
+    },
+    "fixed_guard_tests": 585,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+        "sha256": "aef5979ec0ff78a043a259a130c4675b8fe0128b612add0d6bc5f995054ffd8e",
+        "files": 76
+      },
+      "fix": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/2dfcc0130d28ce8da795bdef8e90fc66ff98b179",
+        "sha256": "d663492873fc37fe495ccc45792c66e05275ad6d341f0bfeca7ff6b345aefed6",
+        "files": 76
+      }
+    }
+  },
+  {
+    "id": "xb-041-pydash-253",
+    "repo": "dgilland/pydash",
+    "task": "pull_at 遇到超出列表范围的下标或重复移除同一下标时抛出 IndexError。请让这些边界输入安全完成，并保持列表的预期内容。",
+    "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/253",
+    "base_sha": "e3e12e4909f7627c17939c1a4496114c5d8669ae",
+    "fix_sha": "39e0464597527c3009bab4f3c7369457ccfdb276",
+    "production_files": [
+      "src/pydash/arrays.py"
+    ],
+    "regression_test_files": [
+      "tests/test_arrays.py"
+    ],
+    "guard_paths": [
+      "tests/test_arrays.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "tests/helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "tests/pytest_mypy_testing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/pytest_mypy_testing/test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "tests/pytest_mypy_testing/test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "tests/pytest_mypy_testing/test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "tests/pytest_mypy_testing/test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "tests/pytest_mypy_testing/test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "tests/pytest_mypy_testing/test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "tests/pytest_mypy_testing/test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "tests/pytest_mypy_testing/test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "tests/pytest_mypy_testing/test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "tests/test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "tests/test_arrays.py": "41e2b121d668f728cd79594d76e6d1af9aa73b9d7b6ca32d3fa3128f49609e2a",
+      "tests/test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "tests/test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "tests/test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "tests/test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "tests/test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "tests/test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "tests/test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "tests/test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e"
+    },
+    "fixed_guard_tests": 255,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/e3e12e4909f7627c17939c1a4496114c5d8669ae",
+        "sha256": "c2f01cee623759627983dd2a46679ae8c6382ec13b3f72da03ea3bd97c6fdd5f",
+        "files": 76
+      },
+      "fix": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/39e0464597527c3009bab4f3c7369457ccfdb276",
+        "sha256": "ef5c0578c823d7ccf0d764487ec2f82b5399de07956e9ba7395de88d19cc8c61",
+        "files": 76
+      }
+    }
+  },
+  {
+    "id": "xb-051-pluggy-731",
+    "repo": "pytest-dev/pluggy",
+    "task": "PluginManager.register(None) 静默产生类似封禁名称的内部状态，使 is_registered 与 get_plugins 的结果矛盾。请拒绝这种无效插件并保持注册表正常。",
+    "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/731",
+    "base_sha": "87e45202858dbb725c2ea7d6472a11c1a2624518",
+    "fix_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+    "production_files": [
+      "src/pluggy/_manager.py"
+    ],
+    "regression_test_files": [
+      "testing/test_pluginmanager.py"
+    ],
+    "guard_paths": [
+      "testing/test_pluginmanager.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "edc0b72534145e21dc647aa4c0bb63d2da8ccff05b6b88087b16dad99aa2f9d6",
+      "testing/benchmark.py": "9ab7596d77504eccf075ed526dc949b35d0f7a71debf0e34fb11367cc67b5d38",
+      "testing/conftest.py": "5ef97949398e572ec5dcc0f22e14fd485c23e3a8d7db1efa8a83bcf9c869a859",
+      "testing/test_details.py": "af3d110802d6007c752a11e6e0ec70523e14726e992d0e5568133e4740a5ce01",
+      "testing/test_helpers.py": "414810b7e72a9d0dbe32ca6239d72bf8b065cfeb4b1b9c7e7eb3247d2cab68b3",
+      "testing/test_hookcaller.py": "8d5eab213d8236b72179c2d3b035481ff66c894a530f05c1860e9d6850e7910c",
+      "testing/test_invocations.py": "5425af345f7f210b011e46f44e6fe58c2f82131895c1fdbf8eb2461945e48f16",
+      "testing/test_multicall.py": "0a17d5dc27ccd00baf2963584c1e06b453cf9151332d294773262953711e84d2",
+      "testing/test_pluginmanager.py": "0763ec7c41df50860007cdabc46f5ffe16981fae08e02cef5a0ea8c7cc6ca3e3",
+      "testing/test_result.py": "4be53ed8a87b816f122a18d6ae1a1d07fccc3844cb3094d1f469a97e746b427a",
+      "testing/test_tracer.py": "2a79200bf46f9bf6a455f4939ea630be1b9b2e2e4f6499eba067c02d0e8ac192",
+      "testing/test_warnings.py": "1e83918457071b807ccfa7ed183901b56f5d9649e771aa82128031cc86f82fcb",
+      "tox.ini": "d67acdaf8a8e905ac91b01a774747e5f8896b16bee736b69f3cb625c117cfe3f"
+    },
+    "fixed_guard_tests": 67,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/87e45202858dbb725c2ea7d6472a11c1a2624518",
+        "sha256": "4f676ef16f3062a28c8610b717e6db2e3e5a1aa3db81dd76167ccaaa3b5a3fef",
+        "files": 84
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/080b7d31074f773540c9e66f9d4c00a47159a35f",
+        "sha256": "b357d5f655d3e5983e3549e38f5b5095bc11c0d9fc6c28e00ff9b6e49b41b009",
+        "files": 85
+      }
+    }
+  },
+  {
+    "id": "xb-053-pluggy-646",
+    "repo": "pytest-dev/pluggy",
+    "task": "插件通过 specname 为同一 hook 注册多个实现后，get_hookcallers 返回重复调用器，注销相关实现的行为也依赖这些重复项。请修复公开查询与注销的一致性。",
+    "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/646",
+    "base_sha": "6e1d0f13a259776bbf137f90bd7ab8b4474f68e7",
+    "fix_sha": "20d8143f127a4d7526dbbea441857b4b80ec8bdd",
+    "production_files": [
+      "src/pluggy/_hooks.py",
+      "src/pluggy/_manager.py"
+    ],
+    "regression_test_files": [
+      "testing/test_pluginmanager.py"
+    ],
+    "guard_paths": [
+      "testing/test_pluginmanager.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "ae9cf8bdbdd0cd59e93ed1bdfd2297aa526af66873a4ce0243677c5aa769162b",
+      "testing/benchmark.py": "ad8195d77022623fb8ed7b9b9a578fe6d92bfc9c2c4866d279ef21c37c10ede6",
+      "testing/conftest.py": "5ef97949398e572ec5dcc0f22e14fd485c23e3a8d7db1efa8a83bcf9c869a859",
+      "testing/test_details.py": "5e403b941cb9ae005f4300b0ccaade1b9deefc10003435606f4c8e838dbf7121",
+      "testing/test_helpers.py": "f0b93da6fe9d3cf8f574dc06c4769fe1dcf9684e96c1b96c14665e2c36283a28",
+      "testing/test_hookcaller.py": "68bcf83ea93d7b0610e689a04e4bda182440ffbae0751d7bc3eecedbb73b9c6d",
+      "testing/test_invocations.py": "9edc373fe32534b2ed0a49114594b2cd18315dfaa887166b3ce7e7a66fa93082",
+      "testing/test_multicall.py": "425c8cdf7fa7629a50abcdbd681e32cfc2ae3cb9e8cc796e91fec9a36c1e6f03",
+      "testing/test_pluginmanager.py": "16ea97fd1f324a77f08f2fd8b1781d5a8b522778420f09f6191518656e5138fe",
+      "testing/test_result.py": "6699113439e9477954ecb107929db305361ead8cec63a16d5b12b909bdf79c21",
+      "testing/test_tracer.py": "04ba67d89fd5c2b66f4d6ca4f796ffdd275c9033d77ab0135d0e6a0870b87c91",
+      "testing/test_warnings.py": "371d3166bd355fe44ad25b73c1e5066b6711a1a796f31aea518495204cd3881e",
+      "tox.ini": "44809b903400ef4281d986806e0d3e797c261c805328f89a87d594f0bfade732"
+    },
+    "fixed_guard_tests": 43,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/6e1d0f13a259776bbf137f90bd7ab8b4474f68e7",
+        "sha256": "6f51c7b069f11aa26e996d1f0a87b95ba3685e147d946121096f44d65251ce69",
+        "files": 68
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/20d8143f127a4d7526dbbea441857b4b80ec8bdd",
+        "sha256": "8b956391712f3ee0682c1c88d59540cb2004c0b580043ca57fd5d62ca7bb78b2",
+        "files": 69
+      }
+    }
+  },
+  {
+    "id": "xb-059-cachetools-436",
+    "repo": "tkem/cachetools",
+    "task": "cachedmethod 装饰的实例方法通过类并显式传入实例调用时，触发缓存工厂的 AttributeError，而实例调用正常。请恢复普通实例方法应支持的两种调用形式，并保持每个实例的缓存与统计独立。",
+    "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/436",
+    "base_sha": "0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6",
+    "fix_sha": "c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974",
+    "production_files": [
+      "src/cachetools/_cachedmethod.py"
+    ],
+    "regression_test_files": [
+      "tests/test_cachedmethod.py"
+    ],
+    "guard_paths": [
+      "tests/test_cachedmethod.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "bb02a66397173399a9bcab7de0b1f0a34f7d6df83e357f94b52bd45b08f22cea",
+      "tests/__init__.py": "72d99005a5d409aa14990b42b54646b726a4f3ca7a091a6f4831ff7701293eb8",
+      "tests/test_cache.py": "dbdf81b02f344a0e62a5dcf2364be7e135e2511e765e93b43864aeb7aa3b115c",
+      "tests/test_cached.py": "27097d0df26efd2e6f72d03e5a8c9cdd7c4b5545ecee38aa439a78538c72fb0a",
+      "tests/test_cachedmethod.py": "6aa279f273afcb7690af1bc18711263efb298783e688e5bb1f9db299aacd6b8d",
+      "tests/test_classmethod.py": "465e882cf15481277cef959eb5d4ec0072d61c342079cac05684da55fe543851",
+      "tests/test_fifo.py": "c6134627b4d9daab20e67b27fe2ff8d7e225116ae46d6a0e79b2c9b620d25941",
+      "tests/test_func.py": "668e212d3a49b5442578e1a77579bacd20bbd466a8ea4a18ac04969fa4e75827",
+      "tests/test_keys.py": "c6e39d6e781cb737159b43d725c4a0f00ce6f2885376fb6efd01c5d59e196064",
+      "tests/test_lfu.py": "11981704035d965ae733140734efb7cd30615ef492cfeeb464f63992db59b404",
+      "tests/test_lru.py": "dbfd53eb372f24571f70d739faeb6c4963f79c80ef18228f44b38b1112bf1a6c",
+      "tests/test_rr.py": "995ee7555ebe96c8b4f988c23a8923de980b5f0c42ca073906988e28dd773ec2",
+      "tests/test_threading.py": "83a6e611d8d77fa19faf47bdecce6c67270ef47682b77c9fbb417e78aa40ab96",
+      "tests/test_tlru.py": "461fd80337d3e4a7fba830b30765cce19666611f797568f18740e4f6eea98199",
+      "tests/test_ttl.py": "dad8f3e725176a39a487d23bd4a25930db05380ce0b452f73485506dbe5284d1",
+      "tox.ini": "ca2be656d1b20d7731eb8bcd303df16893878ee2bdd95ef93e77a3c595411a52"
+    },
+    "fixed_guard_tests": 49,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6",
+        "sha256": "ba80cd02eecc493d1f8a44f6c623b26c3d8bb159bd324590c7ca76e66954cda4",
+        "files": 43
+      },
+      "fix": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974",
+        "sha256": "09f98240926d23c855857d11f026ec4c441d341e125173010f302dbdaea304f1",
+        "files": 43
+      }
+    }
+  },
+  {
+    "id": "xb-060-cachetools-424",
+    "repo": "tkem/cachetools",
+    "task": "空 RRCache 使用自定义 choice 函数时，popitem 泄漏 ValueError 或 StopIteration，与默认 choice 下的空缓存错误不一致。请使空缓存行为遵守统一映射接口。",
+    "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/424",
+    "base_sha": "5877d83c7ab53639f1cfb8664173219e5e5cfbf1",
+    "fix_sha": "cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993",
+    "production_files": [
+      "src/cachetools/__init__.py"
+    ],
+    "regression_test_files": [
+      "tests/test_rr.py"
+    ],
+    "guard_paths": [
+      "tests/test_rr.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "9642c60bc954eb6460435c54e931f9af23230be6e620231f9362c4f398a4ac3c",
+      "tests/__init__.py": "72d99005a5d409aa14990b42b54646b726a4f3ca7a091a6f4831ff7701293eb8",
+      "tests/test_cache.py": "dbdf81b02f344a0e62a5dcf2364be7e135e2511e765e93b43864aeb7aa3b115c",
+      "tests/test_cached.py": "177cbc397bcde732b4918d04c072f6066e99b4c6a6bddc49a334c31b98590b17",
+      "tests/test_cachedmethod.py": "50999ab41083ff92b3324bcd92bd977cf45a93c381fac9a6b3c7a2c8a8da21b0",
+      "tests/test_fifo.py": "c6134627b4d9daab20e67b27fe2ff8d7e225116ae46d6a0e79b2c9b620d25941",
+      "tests/test_func.py": "668e212d3a49b5442578e1a77579bacd20bbd466a8ea4a18ac04969fa4e75827",
+      "tests/test_keys.py": "c6e39d6e781cb737159b43d725c4a0f00ce6f2885376fb6efd01c5d59e196064",
+      "tests/test_lfu.py": "11981704035d965ae733140734efb7cd30615ef492cfeeb464f63992db59b404",
+      "tests/test_lru.py": "dbfd53eb372f24571f70d739faeb6c4963f79c80ef18228f44b38b1112bf1a6c",
+      "tests/test_rr.py": "995ee7555ebe96c8b4f988c23a8923de980b5f0c42ca073906988e28dd773ec2",
+      "tests/test_threading.py": "fd6bfb6b3d0b4c650a1786381ab4c33d04ff348cd5d1e91d8014239df111c165",
+      "tests/test_tlru.py": "461fd80337d3e4a7fba830b30765cce19666611f797568f18740e4f6eea98199",
+      "tests/test_ttl.py": "dad8f3e725176a39a487d23bd4a25930db05380ce0b452f73485506dbe5284d1",
+      "tox.ini": "ca2be656d1b20d7731eb8bcd303df16893878ee2bdd95ef93e77a3c595411a52"
+    },
+    "fixed_guard_tests": 29,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/5877d83c7ab53639f1cfb8664173219e5e5cfbf1",
+        "sha256": "3c23572463c671575703ddcb3ff15644ba4c6c60fb20c1c088eee6e275916c69",
+        "files": 43
+      },
+      "fix": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993",
+        "sha256": "fdd927f92aa65c280b3bb40afbd67fdfe151a5f63d3e90a116bdfe9c81d13363",
+        "files": 43
+      }
+    }
+  },
+  {
+    "id": "xb-068-w3lib-272",
+    "repo": "scrapy/w3lib",
+    "task": "canonicalize_url 处理同时含 IPv6 主机、查询和 fragment 的 URL 时，片段分隔符未被正确识别，导致 keep_fragments 参数失效。请修复保留或去除片段的行为。",
+    "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/272",
+    "base_sha": "012208453dfcc26ba0f7adc96f5b4981b9fd3687",
+    "fix_sha": "5fd294ccf210389a89243870e989aaf6d15d3212",
+    "production_files": [
+      "w3lib/_url.py"
+    ],
+    "regression_test_files": [
+      "tests/test_url.py"
+    ],
+    "guard_paths": [
+      "tests/test_url.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "pyproject.toml": "aff063892bc60465878f14935fa21582aa8a8daab0d50eed53977878854f4412",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/benchmarks/__init__.py": "7273b221845665d08abe8a5c9adac9793c2bf87cc5910ab075f0424b41041204",
+      "tests/benchmarks/test_benchmark_encoding.py": "5e2d3bce58345d2133a3fa97c55ac2b2d372bbe4190381fbc0fe705362cd45c7",
+      "tests/benchmarks/test_benchmark_html.py": "675311ab489a16926597943aca7983ecd07ada0db253663f77d53fb8f2301c72",
+      "tests/benchmarks/test_benchmark_http.py": "4e99d19e558e81be9e4fa3f7e28fdc7d331aa80ea8cbc8849a06af9017a499a6",
+      "tests/benchmarks/test_benchmark_url.py": "04b18db3c5e0474801d0644911531bb427e97d821e7005f1b9ca635a046032d3",
+      "tests/test_encoding.py": "89b22d4176d408ce75638de134af57546ffa63e2a42857f61964f36b4dc96238",
+      "tests/test_html.py": "09492305d5342a19330bbd2ebce92d5cbef9585152e6d4d713c4f71bf0f70592",
+      "tests/test_http.py": "f6bc9b851f50a813bcd40e8f587694bb3e8f2afc9d258dda46d97f8294be78dc",
+      "tests/test_url.py": "b6a2a74419e747a9d91f09adbbc37d9efdf69e42d0dcb0143a051d97bfcec751",
+      "tests/test_util.py": "b6d0a1c6741249369e694f09b883b8e1d068d90231a5a63fb07e0ad9a767fd31",
+      "tox.ini": "b594a4dd5a581a9c67b69d2b5280ac331e08e26c989854cc2a2bd359c18b8418"
+    },
+    "fixed_guard_tests": 259,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/012208453dfcc26ba0f7adc96f5b4981b9fd3687",
+        "sha256": "dd76f50354f867cb26426c507bc6a23e5894387037b46e569cf3b453ad3a5ed4",
+        "files": 44
+      },
+      "fix": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/5fd294ccf210389a89243870e989aaf6d15d3212",
+        "sha256": "581b06c9c25116e00a7ced7e60969c04a02523dc6317630c196f754fcf465136",
+        "files": 44
+      }
+    }
+  },
+  {
+    "id": "xb-069-w3lib-85",
+    "repo": "scrapy/w3lib",
+    "task": "headers_raw_to_dict 读取同名重复 HTTP 头时仅保留最后一个值，丢失其它头值。请完整保留这些值及其顺序，并保持原有字节接口。",
+    "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/85",
+    "base_sha": "f46b4c4140dfd0081d34327d91f496f7a221bed7",
+    "fix_sha": "e2b7feb17edefea23d0b1591ddf669697984fe4b",
+    "production_files": [
+      "w3lib/http.py"
+    ],
+    "regression_test_files": [
+      "tests/test_http.py"
+    ],
+    "guard_paths": [
+      "tests/test_http.py"
+    ],
+    "phase": "formal",
+    "overlay_sha256": {
+      "conftest.py": "5edea8dbcf1f7da97433edcd3ab9134a548e0f23171f3f2c2c198b4bfc8b10a4",
+      "pytest.ini": "0ee3ea38bd58b073f362cb301e4c0e4e8d5c12542dfdc7d0ff50ec9f0317dec7",
+      "setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "tests/test_encoding.py": "acd2f88a9347c52c26fb24e2f942777b7e3a313024f1973cb45accb500ef48b5",
+      "tests/test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "tests/test_html.py": "e09b5b705b0eb30575dca5a95674cd9e42b6bff69bb905cd42d9623dc0a08120",
+      "tests/test_http.py": "590f73d692f7aaf474e2d80130a78b66b0e2026cbb58f479ccf6e86e287b24c1",
+      "tests/test_url.py": "dad99afa555151a84223400f430652b44763a456d0ad8ed1c50415c33965899f",
+      "tox.ini": "f30efd609af5dace551b246a5d4729f6e4e6dae2e0e20b0caebd3a38481824a5"
+    },
+    "fixed_guard_tests": 6,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/f46b4c4140dfd0081d34327d91f496f7a221bed7",
+        "sha256": "cf0038e273562ed0838327753372428745c13450fae650bd74ca227511e53ab1",
+        "files": 33
+      },
+      "fix": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/e2b7feb17edefea23d0b1591ddf669697984fe4b",
+        "sha256": "f4f17fc7edfb78dd967abdb11c0a8736515135c39b2d0ba13cceb00ba8a1086c",
+        "files": 33
+      }
+    }
+  },
+  {
+    "id": "extra-a-boltons-114",
+    "repo": "mahmoud/boltons",
+    "task": "Callpoint.to_dict 的结果含延迟源码行对象，直接 json.dumps 会抛 TypeError，无法作为普通可序列化诊断数据使用。请使字典结果可JSON序列化，同时保留源码行内容和其他已有诊断字段。",
+    "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/114",
+    "base_sha": "14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365",
+    "fix_sha": "f749174abed72b0982b15f29c3819480e0b8fa7c",
+    "production_files": [
+      "boltons/tbutils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_tbutils.py"
+    ],
+    "guard_paths": [
+      "tests/test_tbutils.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "setup.cfg": "13fb77272894ca43a3edcf58f4eb59d606a8c3a42331b8a56fde94ec606a4159",
+      "tests/.coveragerc": "4e3f5b625ed0311f611c27817ebd45af803ff925d7af60402aba705a66f2ddff",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "1f9985e5a87c03c41d14a01392bdb0a094d08f3735ddf6fb844cf08b19d26997",
+      "tests/jsonl_test_data.txt": "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      "tests/newlines_test_data.txt": "9c9db83f9e68cb4f09915b27567e12445d4bd9e861b258a65053adeeadab502e",
+      "tests/test_cacheutils.py": "2581ee1ade8413736b952bcff179977477fb6ddd16b7a2af59ab111eea2bd142",
+      "tests/test_debugutils_trace.py": "5e2b4b906dd5fb1654c28377fb4dfff30f112a364d148ba883af4c2b32667666",
+      "tests/test_dictutils.py": "b297ec957c85be99913bbaacf449ea60f82837b4427e4e4da32e6305ee9e0551",
+      "tests/test_ecoutils.py": "7c1e546c36e99f05cb6cbc7136a148ea368f0e80dac97bf40af4298b7e43c9f2",
+      "tests/test_fileutils.py": "2fa7460bc73fe6b0e5581fe353c9c2c2f9b241f8f703e6b6b2521c268b630508",
+      "tests/test_formatutils.py": "607153a3a4ca0e2e56a7b417c27d26d8bf278a29da4aac09f6844aea42798b09",
+      "tests/test_funcutils.py": "df81a5b9061ebf52421d13fa1feb214d9d406d37c8a92d8817a0c96f8e1bac1b",
+      "tests/test_funcutils_fb.py": "1e220cf7363e43461c0e77edcee81d34c0686dcb249d1623d18122d52d532bc7",
+      "tests/test_funcutils_fb_py3.py": "5b3ff7cfca293577936a115cbe6f304a4585bfbe787c76e92f3e184b5f8a1781",
+      "tests/test_gcutils.py": "d176d17efeb482ce5bacc511bd07ee97ee6a33e88c8fe1de0c14d2a273c2fa28",
+      "tests/test_ioutils.py": "1d74e9a54879020615b5180c8e18f3f62501546775761103df6f883fdb8da39f",
+      "tests/test_iterutils.py": "75c828f0b8f47bdb76a25f767be9a0c9ce1174e677aac1ea122cccd3574833f6",
+      "tests/test_jsonutils.py": "a537b266725016f66da86dbb4810bf673cd0fbdcda2601268e954848e856f911",
+      "tests/test_listutils.py": "27c3d36839c0a48908a8f1596095c86ab71c593c2c73795a5058346fba3dd552",
+      "tests/test_mathutils.py": "1a533b5c998a2e2b2392941bc57e33219bb823a89f42c48a069e64852153176d",
+      "tests/test_namedutils.py": "9772f8f3312f87f8d4a7057095fc4643a7b376e7a4f96dd49b62c6c480cb5997",
+      "tests/test_queueutils.py": "2a905540e9d1977d015dcf3da18e8993675b941c4aad19f13c75d33651cef133",
+      "tests/test_setutils.py": "e873de952accd0d9e2ffc5c2d5364fa0178ecbec76eee05bb9c4506f0352bd48",
+      "tests/test_socketutils.py": "b9ce4770cce977ec3edb4c07df65c826313b9530609af4951ef82342769a0b18",
+      "tests/test_statsutils.py": "2e5810c537e57495c1e418eacd62818f0a57cbb0967dc13acfcc185c1a6c3e1a",
+      "tests/test_statsutils_histogram.py": "a2d63ecc6e8f95a2298254ef2e2bf670affd2666f4b1604d7f75e7aaea3e8703",
+      "tests/test_strutils.py": "c136b7e7b78b7d988b4363243805139d4ef01b0ec8d2e9ffeff42767b3503b1a",
+      "tests/test_tableutils.py": "9aa760c6b65d7694ee265110b31e2467060ce1d9e91fea2c89ba0f5b9ab41010",
+      "tests/test_tbutils.py": "b551944f0b93b2b08079515eedca5ab25b44c47728033c4b598bc9dd40c8e7d3",
+      "tests/test_tbutils_parsed_exc.py": "7238628cf706dfb428f237ef35d2f7d406632a770fb24c33418f8b60c7d65015",
+      "tests/test_timeutils.py": "4b36ad46c6542894a31735d515608aa3cde1ddbbd00ae9d28cc21692508bbde0",
+      "tox.ini": "2a4447d3977abc422bd6e666cfaf5b0985641f6576a58e909ea65cc0a7e0d38c"
+    },
+    "fixed_guard_tests": 2,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365",
+        "sha256": "2f9913a7f3af8de7e8e43323aace5ed786b502ebc984ac7d1b0b75c1ee9100a4",
+        "files": 104
+      },
+      "fix": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/f749174abed72b0982b15f29c3819480e0b8fa7c",
+        "sha256": "b82d14577d84b51247a500f4f3eb8b751e6f765d6b3cb940107d2200a58626ca",
+        "files": 104
+      }
+    }
+  },
+  {
+    "id": "extra-a-boltons-407",
+    "repo": "mahmoud/boltons",
+    "task": "BarrelList 在内部拆成多个段之后，用远小于 -len 的负索引 insert 会抛 IndexError，而内置list会把元素插到开头。请使多段列表遵守相同的边界截断行为，保持元素顺序与长度。",
+    "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/407",
+    "base_sha": "4aa77cddb5d06def130df6f09aefab4018fa487c",
+    "fix_sha": "25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+    "production_files": [
+      "boltons/listutils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_listutils.py"
+    ],
+    "guard_paths": [
+      "tests/test_listutils.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "23d689cf1d468c6af6442869eb7483402aaea8b3cabdbfb2d7aa9df3a293aa04",
+      "setup.cfg": "4024bbca7672ce6a9cebfee0e4cd4017582ca0787dc1f603e859cd9c861147ac",
+      "tests/.coveragerc": "efe15fd9a92177c465290b3f0511e20e7a55151e6c720bec09bd2be161811288",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "91934bf3791e19404372fe5a9aeb4470c2f0bc3afb592eb2df2f6ffca1df1a2a",
+      "tests/jsonl_test_data.txt": "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      "tests/newlines_test_data.txt": "ec5ff35d69ce2c804c09975171cedfa5fc6fcb70d324f5d7b20f4dece4591861",
+      "tests/test_cacheutils.py": "11a940de1b4a23d883b2efaacf1ade3b522f1b8ada5ca308de970fa02cc2ebb0",
+      "tests/test_debugutils_trace.py": "b4235e0cfbc84ae1dd0a423590a8901b6eaa46d41e8e1e342c2693887fa4ce55",
+      "tests/test_dictutils.py": "1a3ab2130180a70ba7ecdff2584498bfd1d2133a00a8c38977217d9e53b35192",
+      "tests/test_ecoutils.py": "d934e044d4be16e1e673bf540997806e43fb83a5bb6439004c1c19a530f3f542",
+      "tests/test_fileutils.py": "0aa455d13e8271e2fb95b76954d8d00c97aebfed08c5c1324ca46d4d28cbe892",
+      "tests/test_formatutils.py": "7dcee16a8e23f6a78311af4f7d91c5621a5988f00b92133cde258e5714441c7e",
+      "tests/test_funcutils.py": "d1ff81590f22afe49ef2752a16cc59a59eaa880e44aed182c9d8a5bf1035df4c",
+      "tests/test_funcutils_fb.py": "2f25f13c9b12e0b7ae80fcfa8c370ca15f47e162afefe3c8800df07692af59dc",
+      "tests/test_funcutils_fb_py3.py": "3279a85658d8b40b1e0ea534e1d7f056f79b6a169240d16276c07d10b1e73c74",
+      "tests/test_gcutils.py": "af77f6b9954a8eab25359846fa7feb3af5089b1afced1dd21c02f58e4e213df9",
+      "tests/test_ioutils.py": "b6248a0d49a8610915acb1907d3c5f5e0540d281f23a51f7f9ccb8802c0491db",
+      "tests/test_iterutils.py": "80fb5dbf42da8ffcbf829c694d46d9fc8a7abd4ea8ca2b14342b573c619a00d2",
+      "tests/test_jsonutils.py": "f8e6acb01441cd23056fad01613d6165092d5db90dcc0b32bf6e6edc537eef7a",
+      "tests/test_listutils.py": "ab56014826be44debbd8ea4da2963c30667f4eed738d06ba138c9ea959a5d0ba",
+      "tests/test_mathutils.py": "665225fa67ebee0138250d45023ccc0ed434fc85675b9213024f849f8997665c",
+      "tests/test_namedutils.py": "77195d808abd5595b871c3a461f658ed66fc643f6ecfbd303c7e583185b6168f",
+      "tests/test_queueutils.py": "e7140dcde4a96340ce29cfba5c26ee0a3a0e380b145d4e8b848a1970b374062c",
+      "tests/test_setutils.py": "fcc144f552fd19e91949d8b0b5bc0d46e6e74971f22081a0b6e317bee077abfe",
+      "tests/test_socketutils.py": "edfead38b00d1133b7cb33cd72cb411a3cfeb384137a206cd7db7e5d142b9cd5",
+      "tests/test_statsutils.py": "94ab55d70ce3f9e63243fc1e8a099317a17113b96a92d8de11f1ef8f41f83520",
+      "tests/test_statsutils_histogram.py": "9d91f83fe983c91823ffb61595bb6e91785ddbf36bb5385b99f62a75ae4c263a",
+      "tests/test_strutils.py": "699483e9e16e1929b88fc6eb6a925cc802435434f00d79c87a13f1857147739e",
+      "tests/test_tableutils.py": "e0567acf08e42ac9882762c172bb049f3b911831d3cd131b9c7ddd45925ae4a8",
+      "tests/test_tbutils.py": "c1a9d5ef6303d55f51484517d7fa6b820adbd38e0777d474ccf5114b3feb5d3a",
+      "tests/test_tbutils_parsed_exc.py": "67b00c3c8310165dd415c5a393ebe6b3e48c9ea2054d5532b2e78fe38de04813",
+      "tests/test_timeutils.py": "1657b7da8184839667f50c1f260ad348398af9ce06e49b001778ffd200048c91",
+      "tests/test_typeutils.py": "e8b3f2187ff3dffc3151f33667e9baba6e33b72f134c0383968db649e0a19661",
+      "tests/test_urlutils.py": "58780eba5f2d88bb74152869aefab68a45fcf73fa9d3e9d492d4e0e47caf9c5d",
+      "tox.ini": "70e31d3c3aee330493ffed40d540a55fc46a5db61dcb610e3359b05eda4f7e6c"
+    },
+    "fixed_guard_tests": 4,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/4aa77cddb5d06def130df6f09aefab4018fa487c",
+        "sha256": "04187ad0efdeaff92a0f49aa4c596de157b3604d41a22b2166f3bb4ef2bb9394",
+        "files": 111
+      },
+      "fix": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+        "sha256": "be8a20267b68f049d5677690f8288864203066fc8e6d63a7d7d672fdfd95467e",
+        "files": 111
+      }
+    }
+  },
+  {
+    "id": "extra-a-boltons-468",
+    "repo": "mahmoud/boltons",
+    "task": "空 Bits 的二进制序列化错误地产生一位零，转字节时又会因奇数长度的十六进制表示报错，空的十六进制/字节输入不能正常往返。请保持零位宽表示，并使空构造、空切片和各转换路径一致，保留非法输入的错误契约。",
+    "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/468",
+    "base_sha": "5eb6cc045560abf320712f262346ae95fb66d448",
+    "fix_sha": "efff866a3b66fdafc817894390742e1d8bc025e5",
+    "production_files": [
+      "boltons/mathutils.py"
+    ],
+    "regression_test_files": [
+      "tests/test_mathutils.py"
+    ],
+    "guard_paths": [
+      "tests/test_mathutils.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "23d689cf1d468c6af6442869eb7483402aaea8b3cabdbfb2d7aa9df3a293aa04",
+      "setup.cfg": "4024bbca7672ce6a9cebfee0e4cd4017582ca0787dc1f603e859cd9c861147ac",
+      "tests/.coveragerc": "efe15fd9a92177c465290b3f0511e20e7a55151e6c720bec09bd2be161811288",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "91934bf3791e19404372fe5a9aeb4470c2f0bc3afb592eb2df2f6ffca1df1a2a",
+      "tests/jsonl_test_data.txt": "ddefe7742bdcc1eb0e372bd0649eedd51254d0ffa7ba71cbd23a37e509c5dd90",
+      "tests/newlines_test_data.txt": "ec5ff35d69ce2c804c09975171cedfa5fc6fcb70d324f5d7b20f4dece4591861",
+      "tests/test_cacheutils.py": "11a940de1b4a23d883b2efaacf1ade3b522f1b8ada5ca308de970fa02cc2ebb0",
+      "tests/test_debugutils_trace.py": "b4235e0cfbc84ae1dd0a423590a8901b6eaa46d41e8e1e342c2693887fa4ce55",
+      "tests/test_dictutils.py": "25fc6f2a8cdb0dbe33047f44f315d6f4a8a18e90dfe246efc66c282d9901993b",
+      "tests/test_ecoutils.py": "6be5be5abda19fdb8af07d98454659c2619f0e4afdfe4fe8606e61157b286ff7",
+      "tests/test_fileutils.py": "7eafa18f331092063a3a404b5fbf178a3f132ff12406271c8f29fbb2a4571975",
+      "tests/test_formatutils.py": "7dcee16a8e23f6a78311af4f7d91c5621a5988f00b92133cde258e5714441c7e",
+      "tests/test_funcutils.py": "d1ff81590f22afe49ef2752a16cc59a59eaa880e44aed182c9d8a5bf1035df4c",
+      "tests/test_funcutils_fb.py": "f2ef41088d5cbdd676cb33dfd005a45468230460a313045c26644f016d00b099",
+      "tests/test_funcutils_fb_py3.py": "3c9ba54104aa3804170aae3ac03f684641f48e29072714edf9600ce4e522a005",
+      "tests/test_gcutils.py": "af77f6b9954a8eab25359846fa7feb3af5089b1afced1dd21c02f58e4e213df9",
+      "tests/test_ioutils.py": "b6248a0d49a8610915acb1907d3c5f5e0540d281f23a51f7f9ccb8802c0491db",
+      "tests/test_iterutils.py": "53e87f22a9d57f742a295af65f69fd4c374bf40f917a6cd807e4c2f26a833263",
+      "tests/test_jsonutils.py": "5aec85863e3237d4f1e34ed7d42d38091160ceec0c8ab69f3af0c2dcd806e447",
+      "tests/test_listutils.py": "64c368b1668a7b63d805b5813f9ff0f2892f0f0880fa8926bf9c58cb518743ee",
+      "tests/test_mathutils.py": "4ebade6be193eec32db47e6f329816e335bf7d462acbe4874b4b811699a9df32",
+      "tests/test_namedutils.py": "bfbe635be39c1cdc0b58a23a80ea990967559eb3dfebceb719c02c4be0f62bec",
+      "tests/test_pathutils.py": "b86c0dc75f767c2a7525716ac4a47ae010c000f5575865e24f05ba96e10a5b7d",
+      "tests/test_queueutils.py": "e7140dcde4a96340ce29cfba5c26ee0a3a0e380b145d4e8b848a1970b374062c",
+      "tests/test_setutils.py": "136807a8a3b961836d15a05d4439b9181ea2cba3dd6c2e6499f9af0e171da1fa",
+      "tests/test_socketutils.py": "edfead38b00d1133b7cb33cd72cb411a3cfeb384137a206cd7db7e5d142b9cd5",
+      "tests/test_statsutils.py": "b7fdc1c7a5536f58c9a828aa199d4f56cc77e3d7541ccb6f87c0f90782a79b7f",
+      "tests/test_statsutils_histogram.py": "9d91f83fe983c91823ffb61595bb6e91785ddbf36bb5385b99f62a75ae4c263a",
+      "tests/test_strutils.py": "751244c8b604f8dda320f58ac328a749bcd8dfa80a64426d371a71b74defc43f",
+      "tests/test_tableutils.py": "7b33dc0aad2fdc9d95703646e900ca421f011014aa177f117cde86b85de75394",
+      "tests/test_tbutils.py": "c1a9d5ef6303d55f51484517d7fa6b820adbd38e0777d474ccf5114b3feb5d3a",
+      "tests/test_tbutils_parsed_exc.py": "77f79a73c04b0d605ca2f50174a2ee432c301c69eeba6f8a70f43da0a0a43626",
+      "tests/test_timeutils.py": "1234f5343aeab73889559a6100c677a6d55f786155b6c01eaf0bc71a3144dedb",
+      "tests/test_typeutils.py": "e8b3f2187ff3dffc3151f33667e9baba6e33b72f134c0383968db649e0a19661",
+      "tests/test_urlutils.py": "369c4c90ed0801b5cdcc90832dcff55bf7a917f0eae4f442c988a86e97906aaa",
+      "tox.ini": "70e31d3c3aee330493ffed40d540a55fc46a5db61dcb610e3359b05eda4f7e6c"
+    },
+    "fixed_guard_tests": 14,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/5eb6cc045560abf320712f262346ae95fb66d448",
+        "sha256": "b78da6bee1259b81a43c2e0076b001eaa7485d34c6c2beb9f2035a245448cd2e",
+        "files": 112
+      },
+      "fix": {
+        "url": "https://codeload.github.com/mahmoud/boltons/tar.gz/efff866a3b66fdafc817894390742e1d8bc025e5",
+        "sha256": "61642c6bdea5d50ea8e7501e7e9c37e70c1fcd81dd111f7f2422bd0b81af9c74",
+        "files": 112
+      }
+    }
+  },
+  {
+    "id": "extra-a-mi-1153",
+    "repo": "more-itertools/more-itertools",
+    "task": "对空 numeric_range 使用 reversed() 会抛 IndexError，而空范围的正向遍历可正常结束。请让空范围的反向遍历也产生空结果，并保持非空升降范围的反向行为。",
+    "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1153",
+    "base_sha": "247e15b3a489d5805375c95dfa79486c9bd0eb1b",
+    "fix_sha": "1806a75b836b9eff4a7885a96ece6183f5fb6409",
+    "production_files": [
+      "more_itertools/more.py"
+    ],
+    "regression_test_files": [
+      "tests/test_more.py"
+    ],
+    "guard_paths": [
+      "tests/test_more.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "setup.cfg": "5bfc5a4c1fb9808e8cd5dd0a94b13f1940e8e66030ad08dd2f9a060796b75233",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_more.py": "05b32af369bd258e41a4e7f08ddfedc8e7b5b745542dc8728f4c1d0bca911cb4",
+      "tests/test_recipes.py": "281bcd10cfa90dec29e89fd0ca26310592ae9523a56cde0c5fc1d70363cf1c6a",
+      "tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2"
+    },
+    "fixed_guard_tests": 576,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/247e15b3a489d5805375c95dfa79486c9bd0eb1b",
+        "sha256": "a02e6fedbef8c9f27155249609fe73324b7581bd5f1ffb03d5678a7c9f0e225e",
+        "files": 39
+      },
+      "fix": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/1806a75b836b9eff4a7885a96ece6183f5fb6409",
+        "sha256": "e388cd37e89362167a435f074554e2e5cf20cd67382130c4a13be91b1bdffb9e",
+        "files": 39
+      }
+    }
+  },
+  {
+    "id": "extra-a-mi-650",
+    "repo": "more-itertools/more-itertools",
+    "task": "把 before_and_after 返回的 remainder 连续再次传入 before_and_after，处理较长的分段事件流时会触发 RecursionError。请使这种嵌套使用可处理大量分段，同时保留分界元素和两个迭代器的消费顺序契约。",
+    "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/650",
+    "base_sha": "d63ed69ad4299d594513d38b1adb018059fb776d",
+    "fix_sha": "7e910e00b5d227527699861040b12f50d3c70fae",
+    "production_files": [
+      "more_itertools/recipes.py"
+    ],
+    "regression_test_files": [
+      "tests/test_recipes.py"
+    ],
+    "guard_paths": [
+      "tests/test_recipes.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "3a9118bba3f04a511313103fe1ea9647b43a7437da9e4586fff5ad441b0020c9",
+      "setup.cfg": "2b0a5454d8c43e1addd2113c2b54da0a63a2482717e6f3268955af01d38f7ea7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_more.py": "62238a683c44c7512c6705d56a4910e047d7363ce2b2b8ec0b6b5ba1fdb944f6",
+      "tests/test_recipes.py": "6caafca62fca09e82ce5607072559f744915defb92c49c4a53ad52bc083bd97f",
+      "tox.ini": "cc765ad913e4c52662f462981e60e23627e52abb53028f50b143b312eb1f5715"
+    },
+    "fixed_guard_tests": 104,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/d63ed69ad4299d594513d38b1adb018059fb776d",
+        "sha256": "0727f3220c95f56eb9cd622e621ff595924ea3d41e15893cd62f62911ce30961",
+        "files": 33
+      },
+      "fix": {
+        "url": "https://codeload.github.com/more-itertools/more-itertools/tar.gz/7e910e00b5d227527699861040b12f50d3c70fae",
+        "sha256": "1afd4d1b31f452eed2782019b9d151da1951b4460069e164a7e45fbb9f6ee544",
+        "files": 33
+      }
+    }
+  },
+  {
+    "id": "extra-a2-click-3484",
+    "repo": "pallets/click",
+    "task": "参数类型转换和eager回调中调用get_parameter_source()会得到None，即使参数值来源已经确定；这会让依赖默认值来源的回调错误覆盖环境配置。请让来源在这些阶段可查询，同时保持多个共享存储名的选项竞争后胜出值及其来源一致。",
+    "issue_or_pr_url": "https://github.com/pallets/click/pull/3484",
+    "base_sha": "4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+    "fix_sha": "d42f15b71757de791a5781fb179fd972da9169f5",
+    "production_files": [
+      "src/click/core.py"
+    ],
+    "regression_test_files": [
+      "tests/test_defaults.py",
+      "tests/test_options.py"
+    ],
+    "guard_paths": [
+      "tests/test_defaults.py",
+      "tests/test_options.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "f9a2bc31f584a32f88b9d9bcaf7c34bf8ab714eaf124b01b714b0394ca0f327b",
+      "tests/conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "tests/test_arguments.py": "c77a76317c59889c6dc35a3cbe203fa1b1867cbc6d25bae06310a376b039051b",
+      "tests/test_basic.py": "516bc1e39389b91c506403cabc2026b7fac56991276933b3e9e3db0fa8d953df",
+      "tests/test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "tests/test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "tests/test_commands.py": "084d7582a05b79cdfb450d6ea9d7edefaa620f783467c41fa77a104c2470a7a6",
+      "tests/test_compat.py": "21094a69acdb62f93b36f190af904b6326f6f5d197c42719f5eb6f533b0e6c33",
+      "tests/test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "tests/test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "tests/test_defaults.py": "8e424ea80ac72ec614855b7b51e8af149fb8275e0e3d4de2f81f428dd0e71b88",
+      "tests/test_formatting.py": "8c77e1c8d772b461ce24e63b228880eb261e9b425c2bf5f54c22b169f29ecd37",
+      "tests/test_imports.py": "77357638cb04fda1e89abd7c4d3caf54194982270938fed8ca9029965ed5477b",
+      "tests/test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "tests/test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "tests/test_options.py": "5e781c32ef63ae19c8f5bd2ec6539aa3719848c6540fda64d68fb39a6c610964",
+      "tests/test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "tests/test_shell_completion.py": "782b81ccd7f64ad7798c4e09e27cf579e4feb71d5bc73f1af8bec6ad46c942e0",
+      "tests/test_stream_lifecycle.py": "d10933159e183efec61a364e9186fd1a22448c13783d351a710221082eb6d45f",
+      "tests/test_termui.py": "54abc2e7e3c409688cfd601ddb1bf8592854c81cbc54d7d3223b5fdd0a2612d7",
+      "tests/test_testing.py": "1306669932ff96fbe880afb016f44c47e3251964bdc7326455188ca65c896fad",
+      "tests/test_types.py": "f64e15d2a65b0621ba6be87236eff4c1ffd6fe616c299bc40cbf5bc58f5e94cf",
+      "tests/test_utils.py": "21d3c63f67d58298433e8523669a3291849fc0894e43647343becdda6556226e",
+      "tests/typing/typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "tests/typing/typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "tests/typing/typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "tests/typing/typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "tests/typing/typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "tests/typing/typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "tests/typing/typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "tests/typing/typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "tests/typing/typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "fixed_guard_tests": 683,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+        "sha256": "6dc79913cb1926159d6fdf547dd62df977bebfc991e73598ee4d5774d70b0e84",
+        "files": 149
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/d42f15b71757de791a5781fb179fd972da9169f5",
+        "sha256": "4ac3d5ad8558995b198518b7386e271ecf84e1d84994ee4af80ae159432030fb",
+        "files": 149
+      }
+    }
+  },
+  {
+    "id": "extra-a2-click-3678",
+    "repo": "pallets/click",
+    "task": "用户参数的内部名称为help或与自定义帮助选项名称相同时，会与自动帮助选项冲突而破坏解析或丢失值。请让这些正常参数与自动帮助共存，保留显式用户--help覆盖默认帮助的行为，并使确实冲突的参数名称得到诊断。",
+    "issue_or_pr_url": "https://github.com/pallets/click/pull/3678",
+    "base_sha": "8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+    "fix_sha": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+    "production_files": [
+      "src/click/core.py"
+    ],
+    "regression_test_files": [
+      "tests/test_basic.py",
+      "tests/test_info_dict.py",
+      "tests/test_options.py"
+    ],
+    "guard_paths": [
+      "tests/test_basic.py",
+      "tests/test_info_dict.py",
+      "tests/test_options.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "87bf078e2c9357d8121391441d97737332190d2fcbd608853f7b70347a94bd1e",
+      "tests/conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "tests/test_arguments.py": "a6cc7a1d1b86c491d8fe32d242dc34ecefb3759075c765f15d2b913291c1d48d",
+      "tests/test_basic.py": "263d7c13d013245aa275da813a4dcb1a1cf2625f6ad8e062dd99df4001f7f15a",
+      "tests/test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "tests/test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "tests/test_commands.py": "d2dbd833a91f34a143dd9785d4856fa162ca1aa5917ef8bf7321c34476dba301",
+      "tests/test_compat.py": "6f697f0112a67a62d2d6daf038f9a4934210bd583881fba773ed83fdbdb10c19",
+      "tests/test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "tests/test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "tests/test_defaults.py": "8e424ea80ac72ec614855b7b51e8af149fb8275e0e3d4de2f81f428dd0e71b88",
+      "tests/test_formatting.py": "ebca0fe3b8cc26e4c8f52a785e44abc0a3604906d6dedc2f158e4e85db4e94e0",
+      "tests/test_imports.py": "77357638cb04fda1e89abd7c4d3caf54194982270938fed8ca9029965ed5477b",
+      "tests/test_info_dict.py": "00decaa4770e915f954fc4513ae9909ea0af6293566c9495ac3f197e34e7251e",
+      "tests/test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "tests/test_options.py": "6b9d80e2449e6a9cdd3186eee305c6249464fe31298336566cbef2ff4e962e1e",
+      "tests/test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "tests/test_shell_completion.py": "8f92bcfda53c5e84c79410eea9259781908e646f7e1d9bcaf4681366ac55937e",
+      "tests/test_stream_lifecycle.py": "a2471fbd9c222213380aef823a537521c8dcc8224709814708149217fc932524",
+      "tests/test_termui.py": "006defc04ee5a2c9168316959192d8ae6a8b4669b224ec55efc98e7aa6714398",
+      "tests/test_testing.py": "df868694b17834ed8cd43d49f59ecd72289a8bb290f6713e31eed0978e242fac",
+      "tests/test_types.py": "a1f53f466a15dfaf8b506b1390b06f2b5b14f26e74a90c741cfaca83a4abb3e4",
+      "tests/test_utils/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_utils/test_KeepOpenFile.py": "83a9b20b7a869ba3b6b9412128cc15013bc0c5a77386c270032e12d435f60f24",
+      "tests/test_utils/test_LazyFile.py": "b3b706eaade2cca850d4c4a27345361a0c074a2d52a4fdca61793867d5696cd0",
+      "tests/test_utils/test__detect_program_name.py": "a1576feac3cb21c61871b22d25d3a14d9c4aebb84558347aa5d195b965053f46",
+      "tests/test_utils/test__expand_args.py": "053964b08e615adbbd22eb0d9f380a71d3ea3124ac8e284635790f459df9ee94",
+      "tests/test_utils/test_confirm.py": "0b4cad2a99a48421342f65c313e0d21a00ecbe14401c559c8f381e9e4ae99c2b",
+      "tests/test_utils/test_echo.py": "90a4554e7f377da24a88a8c748849eb23ba7e2de9d96f15ad617200475fb6453",
+      "tests/test_utils/test_echo_via_pager.py": "3bc3f5992e5cd60f5195b438a542b856e6b167a44b9a1b13844a7da446ede63a",
+      "tests/test_utils/test_format_filename.py": "d961c6fa256ab170dc6939b059ab63ad91ac8ae545459130780b2b15fbd1498f",
+      "tests/test_utils/test_make_default_short_help.py": "5bffe7915fc49a2b4c6ca40b72bd930053f6b0b2daf553ca5adff5f596019d85",
+      "tests/test_utils/test_open_file.py": "a1f9f813e20007f52aa98ea2116c38d6c1acda4cef7109f69686b1f06e368d25",
+      "tests/test_utils/test_prompt.py": "f7ce2ddde3faaafa425a901ae23e63349ff8825ef642d42453661dfe7784e077",
+      "tests/test_utils/test_sentinel.py": "72f56290175eb0b5f8fa839fe6441c50703cdde9f56adc3793378b370c1dab1c",
+      "tests/test_utils/test_style.py": "cc3d9a7cf24bbc28f54405ced99380f1af677745683778d3cdb91767c5e4cee9",
+      "tests/typing/typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "tests/typing/typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "tests/typing/typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "tests/typing/typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "tests/typing/typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "tests/typing/typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "tests/typing/typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "tests/typing/typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "tests/typing/typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "fixed_guard_tests": 776,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+        "sha256": "de6384139b16a758da3ae6a2fb4bf3170689a45d500344c5d6af93c9e2678eed",
+        "files": 163
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+        "sha256": "bc2f89f9b4687d51ca6ff592f6de34a9f8f97c49b4637c84eabd6a8df16ed1d2",
+        "files": 163
+      }
+    }
+  },
+  {
+    "id": "extra-a2-click-3884",
+    "repo": "pallets/click",
+    "task": "show_envvar 对空字符串或空序列仍在帮助和错误提示里显示空的环境变量信息，多个候选变量则显示成被整体加引号的Python列表。请让空配置与未配置一致，并逐项清楚列出多个变量，保留自动环境变量前缀的行为。",
+    "issue_or_pr_url": "https://github.com/pallets/click/pull/3884",
+    "base_sha": "bb695aaecdef95832d167fc1d508921745aa824e",
+    "fix_sha": "8c73ff134480f436faa0d041bd19aaf949aac22c",
+    "production_files": [
+      "src/click/core.py"
+    ],
+    "regression_test_files": [
+      "tests/test_options.py"
+    ],
+    "guard_paths": [
+      "tests/test_options.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "86932ab467acfe7ae53d560cf48109f0a3568ee6f381ba17f20824812ade60ea",
+      "tests/conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "tests/test_abort_interrupt.py": "cc2f7bfcaa372391dc0d34d8436b0b32c389fc9dcffe68054c99ed17fd199be9",
+      "tests/test_arguments.py": "3724b419da2c30f078bf01a07f6f70a4860a92151f44f3968324f3f04bad32da",
+      "tests/test_basic.py": "05316a9035ed30c84287606df9378736c0d592282da50f8cbef7045ee5769e9f",
+      "tests/test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "tests/test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "tests/test_commands.py": "5b1abf5578e03627b3171e7486c377cd5953ebab2f82d9eacf8f44c305278d3e",
+      "tests/test_compat.py": "6f697f0112a67a62d2d6daf038f9a4934210bd583881fba773ed83fdbdb10c19",
+      "tests/test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "tests/test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "tests/test_defaults.py": "f209f9433ad8f1c8733bcbd7600c1dc0cbd336b5e39cd348c5fb38c1a3847962",
+      "tests/test_deprecations.py": "1b384f420f17b274e9552386da4e2b94643349b79219f84fa0b0fe5c0d842a0a",
+      "tests/test_exceptions/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_exceptions/test_FileError.py": "e7f41a4a972295091744c34d6a8696bf5418d328b9577f0ccc6aee73d4bb1864",
+      "tests/test_formatting.py": "ebca0fe3b8cc26e4c8f52a785e44abc0a3604906d6dedc2f158e4e85db4e94e0",
+      "tests/test_imports.py": "77357638cb04fda1e89abd7c4d3caf54194982270938fed8ca9029965ed5477b",
+      "tests/test_info_dict.py": "11cf88b0a4e6989dab1e1c1101266ba48f281f56f1062a6e38189b47e1fa1b21",
+      "tests/test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "tests/test_options.py": "fd2b86d088d3e5956a1272a5a3e27e5b35bb873c3383fe2fd3b4a77321d75513",
+      "tests/test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "tests/test_shell_completion.py": "d45f0b1b42850463a3a07273989518d477f8b19c4ca0d8ef74dc29c309276bd8",
+      "tests/test_stream_lifecycle.py": "a2471fbd9c222213380aef823a537521c8dcc8224709814708149217fc932524",
+      "tests/test_termui.py": "d082866744a75b4732536cfa991260754c56b237d7a7bdc7d18fcbe04786057c",
+      "tests/test_testing.py": "4af5187e3f6eb22e2d4cd3f9edffe5d162103043e4e0d33a5734e74edebaba1c",
+      "tests/test_types/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_types/test_Choice.py": "00398174bd05739ea5feff67cec1c87d7cabe77368d0c9c79a88289bfc60a435",
+      "tests/test_types/test_File.py": "89ff92251dc91b5d41c9410cc4e3ce70976add705d0793b0db248a9d6f247895",
+      "tests/test_types/test_FloatRange.py": "b2744a9ada9809ae7331e7d203b21917b313073968ada6d5cb71f04bdc3a4bfe",
+      "tests/test_types/test_FuncParamType.py": "ff71310ada46542d4767bce3c4fce55e7bdc066e69c9a0daadc59ee8cec9f2a2",
+      "tests/test_types/test_IntRange.py": "b986a2438d9e41724153c7c60b64f23854f9732eb00d22c13d2f8e116f75d7eb",
+      "tests/test_types/test_ParamType.py": "9ba1c6607699c2a549927d95bbcc3f270bbf1c92b44a1092be6fc2cf9be79eaa",
+      "tests/test_types/test_Path.py": "d89c66c6c3dab685fb14ff32fb273d740a0c8a2e5fa6b5e1b6384eb80b0fc05d",
+      "tests/test_types/test_convert_type.py": "3c52e3e1042aa8e5efd176aa5eb937dc7971ab187a7bde959d88638e81bc1f99",
+      "tests/test_utils/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_utils/test_KeepOpenFile.py": "cf78133881a317725a200ea7175fc6ea2e10553114f4647c7c00d0ef44e257db",
+      "tests/test_utils/test_LazyFile.py": "d279f5f2c835167c0af587ac0399f7248e6a4887152701f6463278f46bca5f96",
+      "tests/test_utils/test__detect_program_name.py": "a1576feac3cb21c61871b22d25d3a14d9c4aebb84558347aa5d195b965053f46",
+      "tests/test_utils/test__expand_args.py": "053964b08e615adbbd22eb0d9f380a71d3ea3124ac8e284635790f459df9ee94",
+      "tests/test_utils/test_confirm.py": "0b4cad2a99a48421342f65c313e0d21a00ecbe14401c559c8f381e9e4ae99c2b",
+      "tests/test_utils/test_echo.py": "90a4554e7f377da24a88a8c748849eb23ba7e2de9d96f15ad617200475fb6453",
+      "tests/test_utils/test_echo_via_pager.py": "13b80d29d87f210d7ce235c54c178c90c8ed25ece419dc18d508e4e68d69dedf",
+      "tests/test_utils/test_format_filename.py": "d961c6fa256ab170dc6939b059ab63ad91ac8ae545459130780b2b15fbd1498f",
+      "tests/test_utils/test_make_default_short_help.py": "0aef0e5d3dc10c7ab6f2f09f3177f99d7d31664968d881b4b6f009af5bd11b2c",
+      "tests/test_utils/test_open_file.py": "d42a97682952291cd20d73a1f54f8b5500f63675b643c7db82e8bc4265f3de5d",
+      "tests/test_utils/test_prompt.py": "e62105b28ab4537ee2f3f9873f30a4994f4f799ee8f7a4177201f046bab6e716",
+      "tests/test_utils/test_sentinel.py": "7d37d0d6341d70972ad09d4178a3fd92f28de40e0ccd573230daaed2b6f31599",
+      "tests/test_utils/test_style.py": "cc3d9a7cf24bbc28f54405ced99380f1af677745683778d3cdb91767c5e4cee9",
+      "tests/typing/typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "tests/typing/typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "tests/typing/typing_edit.py": "eccff854a4dae04ea28eb7a01d70873a478cc6c6bffd9a5ff5fa30df92854a85",
+      "tests/typing/typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "tests/typing/typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "tests/typing/typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "tests/typing/typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "tests/typing/typing_path.py": "f62fe60d1047fb77f9b28e29773cdeace087b1ffac9da0a352453dd9023a3d4b",
+      "tests/typing/typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "tests/typing/typing_prompt.py": "25775f3fe85092da5c7c298f82564fcb6970769af332a139d883b9047f3bd0fc",
+      "tests/typing/typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "tests/typing/typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "fixed_guard_tests": 676,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/bb695aaecdef95832d167fc1d508921745aa824e",
+        "sha256": "d690275902fe8eab72c34e4f4e780afb8fdeb35f364f42b9534637c4f9506d20",
+        "files": 178
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pallets/click/tar.gz/8c73ff134480f436faa0d041bd19aaf949aac22c",
+        "sha256": "14ae088186e6b608830d9f582c50a13e240a3023605e58a377b5af52abe130b6",
+        "files": 178
+      }
+    }
+  },
+  {
+    "id": "extra-a3-funcy-182",
+    "repo": "Suor/funcy",
+    "task": "复用同一个配置好的 cache 或 memoize 装饰器包装不同函数，会让函数互相读到对方的缓存结果。请使各函数的结果与invalidate操作独立，同时保留同一函数的缓存命中。",
+    "issue_or_pr_url": "https://github.com/Suor/funcy/pull/182",
+    "base_sha": "cdf432835a57260ec703d468e9e8ea01e0f15663",
+    "fix_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+    "production_files": [
+      "funcy/calc.py"
+    ],
+    "regression_test_files": [
+      "tests/test_calc.py"
+    ],
+    "guard_paths": [
+      "tests/test_calc.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "tests/py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "tests/test_calc.py": "76eec7c292f5b489566156e6865575eaa6179ce46da9d28cdf4a655c3fe5f67e",
+      "tests/test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "tests/test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "tests/test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "tests/test_flow.py": "aefe40a0ea2c19420d8c56a5c5bc7b8006f9d8707f0e3566e18d01cc20636b57",
+      "tests/test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "tests/test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "tests/test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "tests/test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "tests/test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "tests/test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "tests/test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "tests/test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "tests/test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167"
+    },
+    "fixed_guard_tests": 18,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/cdf432835a57260ec703d468e9e8ea01e0f15663",
+        "sha256": "4a40ed472b1cf18a60fa8fbe3eb58c98cfc9b3c0acb9c011c5959935d262eed1",
+        "files": 68
+      },
+      "fix": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/0eab928c371264cb85fb022bf13b4e9d86037f5f",
+        "sha256": "7f839d5caeeffff0b4c51b616811fdc26d4e15448c11b9a2d7d28a15663c54c0",
+        "files": 68
+      }
+    }
+  },
+  {
+    "id": "extra-a3-funcy-197",
+    "repo": "Suor/funcy",
+    "task": "wrap_prop 包装带deleter的property后，del instance.prop 会抛AttributeError，而且上下文管理器不会执行。请恢复合法删除与异常传播，并保留已缓存属性删除后可重新计算的行为。",
+    "issue_or_pr_url": "https://github.com/Suor/funcy/pull/197",
+    "base_sha": "40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7",
+    "fix_sha": "e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+    "production_files": [
+      "funcy/objects.py"
+    ],
+    "regression_test_files": [
+      "tests/test_objects.py"
+    ],
+    "guard_paths": [
+      "tests/test_objects.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "tests/py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "tests/test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "tests/test_colls.py": "ea5343e2833b5a499f75453c8d5f37b1f92db2b318b2e46373a05c2739411e06",
+      "tests/test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "tests/test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "tests/test_flow.py": "d81606bf5d7caef2afc64498e5a5567ca07aed37a7b82037afa2552df599487a",
+      "tests/test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "tests/test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "tests/test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "tests/test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "tests/test_objects.py": "6647a56dbdd90847a5c88e3fdd2d9a5e9b292c033e48b2c019c4d312528d61d4",
+      "tests/test_seqs.py": "65e0a8f082a290f7065afd1c8da62c70ebaa6c436b83277feab57906ef71fae3",
+      "tests/test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "tests/test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "tests/test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "tox.ini": "c0c63b65a6d1a3681334fff34c22090b804d3af61bd64e8ca7e2b3f67759bf41"
+    },
+    "fixed_guard_tests": 16,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7",
+        "sha256": "e48093c556e7cf21d4183f2b13fc7d06cf1c2043e471ba11c1cf9cc0c83aee76",
+        "files": 68
+      },
+      "fix": {
+        "url": "https://codeload.github.com/Suor/funcy/tar.gz/e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+        "sha256": "51c03fa5b724ffd315f284136578348fc52b00b6521226940774dbf35601971a",
+        "files": 68
+      }
+    }
+  },
+  {
+    "id": "xb-023-pydash-333",
+    "repo": "dgilland/pydash",
+    "task": "duplicates 的 iteratee 声明接收 value、index 和 collection，但实际仅收到 value，带多个参数的合法回调因此失败。请正确提供回调参数并保持原对象身份和结果顺序。",
+    "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/333",
+    "base_sha": "9637faab0d583b5aeb859dae3ecac2f4eb2e6db9",
+    "fix_sha": "deed72d4964675fee282f368addc5acd6d724d17",
+    "production_files": [
+      "src/pydash/arrays.py"
+    ],
+    "regression_test_files": [
+      "tests/test_arrays.py"
+    ],
+    "guard_paths": [
+      "tests/test_arrays.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "tests/helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "tests/pytest_mypy_testing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/pytest_mypy_testing/test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "tests/pytest_mypy_testing/test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "tests/pytest_mypy_testing/test_collections.py": "112f84839ba4af6b11bf6518a1922038c0deff32ef581e1d91feb85134524dff",
+      "tests/pytest_mypy_testing/test_functions.py": "fed773a5b2318798c9aabf9a55e164873b425df63b51ea9a046e9642be467068",
+      "tests/pytest_mypy_testing/test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "tests/pytest_mypy_testing/test_objects.py": "ddfdba8fceb5d1b265ba825e9c4a40e068a95483d17ea07d79807ad6a6344488",
+      "tests/pytest_mypy_testing/test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "tests/pytest_mypy_testing/test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "tests/pytest_mypy_testing/test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "tests/test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "tests/test_arrays.py": "920e6ff39cd78d3c28d3bc0cdf307012a543207949bce757ab4a531e396ee6bc",
+      "tests/test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "tests/test_collections.py": "dbea24c3637d87705f955f0e9f17ce0b47a3fdd66a958d450f9df864feeca4a1",
+      "tests/test_difference_iterables.py": "3cdd1f84e6c61311d5fa3e48c18bf79dafcae3a26cd411b7fd89ed7198132263",
+      "tests/test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "tests/test_numerical.py": "ba2f1f0001bfc69ac0b073b7ef602448e929800268fea0d7fb76a1d15017652f",
+      "tests/test_objects.py": "a3287af75093ea2247cfaabdff97b731eadc97b6c4e1e2559a3d63929a7ef2ea",
+      "tests/test_over_args_tail.py": "6a9421043ac58213c97907ae7fc9997b945737a62fd514f1c235dde86197e1ad",
+      "tests/test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "tests/test_strings.py": "446a7f18a8edfa214b1ec0e97b5c1995b40a4424d413167456e19c7168a561cd",
+      "tests/test_utilities.py": "cf1c1013e994fd228de035e8dc4f39a54e9912d1502a662bd77c7310f48874db",
+      "tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e"
+    },
+    "fixed_guard_tests": 392,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/9637faab0d583b5aeb859dae3ecac2f4eb2e6db9",
+        "sha256": "82e5077032b7c63b8cd6cf06b50636c9b6f54886bced4ecf29dfe13ceeafc900",
+        "files": 78
+      },
+      "fix": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/deed72d4964675fee282f368addc5acd6d724d17",
+        "sha256": "29d9975cbb086ca8ca4d6e372ec3890feeaa6b3f17be59e9ae86dcd6cff756cf",
+        "files": 78
+      }
+    }
+  },
+  {
+    "id": "xb-031-pydash-277",
+    "repo": "dgilland/pydash",
+    "task": "xor 及其比较规则变体不能处理声明支持的迭代器、生成器和部分元组与列表组合，调用时抛出 TypeError。请支持这些输入且不修改原列表。",
+    "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/277",
+    "base_sha": "6e3d9538d776bcac359858004e2d2f172d2d9460",
+    "fix_sha": "5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+    "production_files": [
+      "src/pydash/arrays.py"
+    ],
+    "regression_test_files": [
+      "tests/test_arrays.py"
+    ],
+    "guard_paths": [
+      "tests/test_arrays.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "tests/helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "tests/pytest_mypy_testing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/pytest_mypy_testing/test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "tests/pytest_mypy_testing/test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "tests/pytest_mypy_testing/test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "tests/pytest_mypy_testing/test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "tests/pytest_mypy_testing/test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "tests/pytest_mypy_testing/test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "tests/pytest_mypy_testing/test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "tests/pytest_mypy_testing/test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "tests/pytest_mypy_testing/test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "tests/test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "tests/test_arrays.py": "c800d4e100823484e7a7f316b297c8479a082ad7b01c7094db1e4779db43ee64",
+      "tests/test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "tests/test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "tests/test_difference_iterables.py": "3cdd1f84e6c61311d5fa3e48c18bf79dafcae3a26cd411b7fd89ed7198132263",
+      "tests/test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "tests/test_numerical.py": "e3cb8407a8584fe4986f2f49f65d461b0d09a9b65d19923ef403483d38f6e677",
+      "tests/test_objects.py": "a5afab36338c1c4ff769ad3331e4f59e2092732593e906b4a338cfb13283909e",
+      "tests/test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "tests/test_strings.py": "e72b83bef35af1882ebc52ea2dcae6977869d49adf02a3b4dd74cc631c8c97b1",
+      "tests/test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e"
+    },
+    "fixed_guard_tests": 326,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/6e3d9538d776bcac359858004e2d2f172d2d9460",
+        "sha256": "69c914bb3f1093bb3d4ecd17bd2494eb0bc049a78309bb54abcd05790c18a944",
+        "files": 77
+      },
+      "fix": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+        "sha256": "5b011d29b6a766124e55b7253dc57b8ccccadc623f5fff7e1bc70674f09bf3da",
+        "files": 77
+      }
+    }
+  },
+  {
+    "id": "xb-038-pydash-258",
+    "repo": "dgilland/pydash",
+    "task": "median 对迭代器或生成器抛出 TypeError。请让这些声明支持的 Iterable 输入正常计算奇数、偶数和经 iteratee 转换的数据，并保持空输入行为。",
+    "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/258",
+    "base_sha": "531825d188c430ce2fdaddcaa49d8fd9e95925b0",
+    "fix_sha": "08dec5c0300f6310efe4826881d1d2fa28498b70",
+    "production_files": [
+      "src/pydash/numerical.py"
+    ],
+    "regression_test_files": [
+      "tests/test_numerical.py"
+    ],
+    "guard_paths": [
+      "tests/test_numerical.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "tests/helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "tests/pytest_mypy_testing/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/pytest_mypy_testing/test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "tests/pytest_mypy_testing/test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "tests/pytest_mypy_testing/test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "tests/pytest_mypy_testing/test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "tests/pytest_mypy_testing/test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "tests/pytest_mypy_testing/test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "tests/pytest_mypy_testing/test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "tests/pytest_mypy_testing/test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "tests/pytest_mypy_testing/test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "tests/test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "tests/test_arrays.py": "60eec3495a5ccb8f568f86788c611f631c7e8ab91f4a0dc1303c5cfa54b1a638",
+      "tests/test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "tests/test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "tests/test_functions.py": "fc8b66c77e5b873c23e8dd5d5919c35a2ef839da4e671b68d5f49f315046158e",
+      "tests/test_numerical.py": "7d8daf331a16c26ef0aff5c49719d410990cae19a98ead7b714dc152e62a63a2",
+      "tests/test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "tests/test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "tests/test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "tests/test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e"
+    },
+    "fixed_guard_tests": 109,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/531825d188c430ce2fdaddcaa49d8fd9e95925b0",
+        "sha256": "0ce49f59ac182919bafa6f4959c25eacd12da67048cc1b7f420ce09d021e6cc4",
+        "files": 76
+      },
+      "fix": {
+        "url": "https://codeload.github.com/dgilland/pydash/tar.gz/08dec5c0300f6310efe4826881d1d2fa28498b70",
+        "sha256": "39ca4cab157226f409a7562d99d9893591f2010f25a0202b65f7406565ab91df",
+        "files": 76
+      }
+    }
+  },
+  {
+    "id": "xb-052-pluggy-728",
+    "repo": "pytest-dev/pluggy",
+    "task": "启用 hook tracing 后，参数或返回值包含孤立代理字符，或对象的字符串表示抛出异常时，原本正常的 hook 调用也失败。请使诊断跟踪可处理这些值，同时保留有效非 ASCII 文本及中断行为。",
+    "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/728",
+    "base_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+    "fix_sha": "d70fe1840d01c78b7d85f693cfef01ccdf2f80a6",
+    "production_files": [
+      "src/pluggy/_tracing.py"
+    ],
+    "regression_test_files": [
+      "testing/test_pluginmanager.py",
+      "testing/test_tracer.py"
+    ],
+    "guard_paths": [
+      "testing/test_pluginmanager.py",
+      "testing/test_tracer.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "edc0b72534145e21dc647aa4c0bb63d2da8ccff05b6b88087b16dad99aa2f9d6",
+      "testing/benchmark.py": "9ab7596d77504eccf075ed526dc949b35d0f7a71debf0e34fb11367cc67b5d38",
+      "testing/conftest.py": "5ef97949398e572ec5dcc0f22e14fd485c23e3a8d7db1efa8a83bcf9c869a859",
+      "testing/test_details.py": "af3d110802d6007c752a11e6e0ec70523e14726e992d0e5568133e4740a5ce01",
+      "testing/test_helpers.py": "414810b7e72a9d0dbe32ca6239d72bf8b065cfeb4b1b9c7e7eb3247d2cab68b3",
+      "testing/test_hookcaller.py": "8d5eab213d8236b72179c2d3b035481ff66c894a530f05c1860e9d6850e7910c",
+      "testing/test_invocations.py": "5425af345f7f210b011e46f44e6fe58c2f82131895c1fdbf8eb2461945e48f16",
+      "testing/test_multicall.py": "0a17d5dc27ccd00baf2963584c1e06b453cf9151332d294773262953711e84d2",
+      "testing/test_pluginmanager.py": "41d53ca9be40d4e710da9559c60d79bec409ee2c8d5a07f78f1acd9465592016",
+      "testing/test_result.py": "4be53ed8a87b816f122a18d6ae1a1d07fccc3844cb3094d1f469a97e746b427a",
+      "testing/test_tracer.py": "f955eb1a37322462be9224713e6ad9c14066c1c1bfd0e9b39633e8e54fef937b",
+      "testing/test_warnings.py": "1e83918457071b807ccfa7ed183901b56f5d9649e771aa82128031cc86f82fcb",
+      "tox.ini": "d67acdaf8a8e905ac91b01a774747e5f8896b16bee736b69f3cb625c117cfe3f"
+    },
+    "fixed_guard_tests": 87,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/080b7d31074f773540c9e66f9d4c00a47159a35f",
+        "sha256": "b357d5f655d3e5983e3549e38f5b5095bc11c0d9fc6c28e00ff9b6e49b41b009",
+        "files": 85
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/d70fe1840d01c78b7d85f693cfef01ccdf2f80a6",
+        "sha256": "0692f914eebc117a083d7d492c10a99527d3667370d6e12b0ddcd9cd2edb604e",
+        "files": 87
+      }
+    }
+  },
+  {
+    "id": "xb-054-pluggy-504",
+    "repo": "pytest-dev/pluggy",
+    "task": "对同一个 Result 多次调用 get_result 并捕获异常时，异常 traceback 每次都继续变长。请让重复获取异常结果保持稳定的原始调用信息。",
+    "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/504",
+    "base_sha": "313eace19509f6d5cff75836cad12a58e895c07e",
+    "fix_sha": "56085d7dd20aa200999c2c711e9dd9d1908cf577",
+    "production_files": [
+      "src/pluggy/_callers.py",
+      "src/pluggy/_result.py"
+    ],
+    "regression_test_files": [
+      "testing/test_result.py"
+    ],
+    "guard_paths": [
+      "testing/test_result.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "223311b577a99461348a6b6f81f5aca80e146efd12de7bac09d985985abea050",
+      "setup.cfg": "e66c2eab8f676020514eb1d17ed4220f5166bfc6bb25cc2846b20515d3983edb",
+      "testing/benchmark.py": "cc2b9de6afdce968266d8356e0f1bcec581498448c9610772b4d4872848d857a",
+      "testing/conftest.py": "d86e00677fa34d5d73f494370d17588563f515b506dacf44f41fe7735392bfe0",
+      "testing/test_details.py": "afa0ba8c84803a76a00cd8e09a7ed305bd9d1744ac303df934b2ec3bf04c0dd4",
+      "testing/test_helpers.py": "49dadc7380f0b17f4a7bc132407d982456041815b89745b094f830d00d1a8102",
+      "testing/test_hookcaller.py": "444115ffff83905feb59b4f305986a4c1bfb829be0fb26e8be4ab0480e01924e",
+      "testing/test_invocations.py": "62d168a19b6a19241624518975b7b2b96a5a85b42c20b1ffcef28dd10cd7ee20",
+      "testing/test_multicall.py": "c36d25882648ce2f680652d764f6a4e0edda87e428a0127ed8bcc5315e388451",
+      "testing/test_pluginmanager.py": "7b6855cf2b6b29beddae0e69baef8462e85efc3cbecb4404e4a35bc6c118ea29",
+      "testing/test_result.py": "6699113439e9477954ecb107929db305361ead8cec63a16d5b12b909bdf79c21",
+      "testing/test_tracer.py": "a159e60f8eae0ff1ed54d77193ee10b9562d76bd0730a631bede242409b0f1a0",
+      "testing/test_warnings.py": "371d3166bd355fe44ad25b73c1e5066b6711a1a796f31aea518495204cd3881e",
+      "tox.ini": "f60fd5d4481b49eaba75d1f182ca1dd2a0c3f9fd207ad73825f1644474d816db"
+    },
+    "fixed_guard_tests": 1,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/313eace19509f6d5cff75836cad12a58e895c07e",
+        "sha256": "8b996b3d01f471e6f22c5de1ba28bc04445668edf5c20f8cbf4aa4c6020f6d2d",
+        "files": 63
+      },
+      "fix": {
+        "url": "https://codeload.github.com/pytest-dev/pluggy/tar.gz/56085d7dd20aa200999c2c711e9dd9d1908cf577",
+        "sha256": "5fd5b549a56e18d13520fa6086e8f575858fb102ec73b53750c9e6eac8d6b58a",
+        "files": 65
+      }
+    }
+  },
+  {
+    "id": "xb-058-cachetools-441",
+    "repo": "tkem/cachetools",
+    "task": "TTLCache 使用 datetime 计时器时，插入过程中到期时间算术溢出会留下损坏状态，后续成员检查又抛出 TypeError。请让被拒绝的插入不破坏缓存的可用性。",
+    "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/441",
+    "base_sha": "f4f288579dc3c8f82f62d0eaca7774303d9d3768",
+    "fix_sha": "39f9dd234aabc0859c703e7d9747fbefe7133f4c",
+    "production_files": [
+      "src/cachetools/__init__.py"
+    ],
+    "regression_test_files": [
+      "tests/test_ttl.py"
+    ],
+    "guard_paths": [
+      "tests/test_ttl.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "bb02a66397173399a9bcab7de0b1f0a34f7d6df83e357f94b52bd45b08f22cea",
+      "tests/__init__.py": "72d99005a5d409aa14990b42b54646b726a4f3ca7a091a6f4831ff7701293eb8",
+      "tests/test_cache.py": "dbdf81b02f344a0e62a5dcf2364be7e135e2511e765e93b43864aeb7aa3b115c",
+      "tests/test_cached.py": "27097d0df26efd2e6f72d03e5a8c9cdd7c4b5545ecee38aa439a78538c72fb0a",
+      "tests/test_cachedmethod.py": "0d276a016da5a1bd034dbb547f9cd11ff59c1854e4681b8dc223099fc55553e1",
+      "tests/test_classmethod.py": "465e882cf15481277cef959eb5d4ec0072d61c342079cac05684da55fe543851",
+      "tests/test_fifo.py": "c6134627b4d9daab20e67b27fe2ff8d7e225116ae46d6a0e79b2c9b620d25941",
+      "tests/test_func.py": "668e212d3a49b5442578e1a77579bacd20bbd466a8ea4a18ac04969fa4e75827",
+      "tests/test_keys.py": "c6e39d6e781cb737159b43d725c4a0f00ce6f2885376fb6efd01c5d59e196064",
+      "tests/test_lfu.py": "11981704035d965ae733140734efb7cd30615ef492cfeeb464f63992db59b404",
+      "tests/test_lru.py": "dbfd53eb372f24571f70d739faeb6c4963f79c80ef18228f44b38b1112bf1a6c",
+      "tests/test_rr.py": "995ee7555ebe96c8b4f988c23a8923de980b5f0c42ca073906988e28dd773ec2",
+      "tests/test_threading.py": "83a6e611d8d77fa19faf47bdecce6c67270ef47682b77c9fbb417e78aa40ab96",
+      "tests/test_tlru.py": "461fd80337d3e4a7fba830b30765cce19666611f797568f18740e4f6eea98199",
+      "tests/test_ttl.py": "963e7553e31dbaed08c853d028883e09cc37e3d6ea918b24803555665b827376",
+      "tox.ini": "ca2be656d1b20d7731eb8bcd303df16893878ee2bdd95ef93e77a3c595411a52"
+    },
+    "fixed_guard_tests": 32,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/f4f288579dc3c8f82f62d0eaca7774303d9d3768",
+        "sha256": "9150e1986cbbd621ce6bd67ae02357b44c823cd076adfb5ff2616db1a822856e",
+        "files": 43
+      },
+      "fix": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/39f9dd234aabc0859c703e7d9747fbefe7133f4c",
+        "sha256": "5dd988a30800f7f1b581964d8ff85167c0eec2f3c667a80d03a1609f20dc4994",
+        "files": 43
+      }
+    }
+  },
+  {
+    "id": "xb-067-w3lib-253",
+    "repo": "scrapy/w3lib",
+    "task": "safe_url_string 处理 IPv6 主机地址时丢掉必要的方括号，使有效 URL 变得无效。请保留 IPv6 结构，并兼顾端口、路径和查询。",
+    "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/253",
+    "base_sha": "61db33b20f611b8d0a7a3dde3842d65f5f91d8d0",
+    "fix_sha": "1ed46a8af01a5f445197322ce920b620b7ff2130",
+    "production_files": [
+      "w3lib/url.py"
+    ],
+    "regression_test_files": [
+      "tests/test_url.py"
+    ],
+    "guard_paths": [
+      "tests/test_url.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "fac93d474100537e6c86992848c942c40c39b1a5d468390472e16bb2ea95f0db",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/test_encoding.py": "89b22d4176d408ce75638de134af57546ffa63e2a42857f61964f36b4dc96238",
+      "tests/test_html.py": "68a0742e26ecf8186363659b38763af34df75ccd2d2905655eb0a19f1c7829bf",
+      "tests/test_http.py": "f6bc9b851f50a813bcd40e8f587694bb3e8f2afc9d258dda46d97f8294be78dc",
+      "tests/test_url.py": "f2e187864211bd4fd3e5ec9bc179552e0d0231088db7925eb73188dbbb8aaeb6",
+      "tests/test_util.py": "b6d0a1c6741249369e694f09b883b8e1d068d90231a5a63fb07e0ad9a767fd31",
+      "tox.ini": "704b68f0473dfd2ba2d97183835d9980a78c551291e982b6e5176d91760170fa"
+    },
+    "fixed_guard_tests": 157,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/61db33b20f611b8d0a7a3dde3842d65f5f91d8d0",
+        "sha256": "0b4c9b31db05bf922b1dbcdb331a5131f6ad11296e29648a06f967a4872169fe",
+        "files": 38
+      },
+      "fix": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/1ed46a8af01a5f445197322ce920b620b7ff2130",
+        "sha256": "539fff60e56051b7649ee5dcd751e1700e2e404374b6bb97dbf2158cef066d02",
+        "files": 38
+      }
+    }
+  },
+  {
+    "id": "xb-070-w3lib-40",
+    "repo": "scrapy/w3lib",
+    "task": "replace_entities 遇到某些 Windows-1252 控制区的数字实体时泄漏 UnicodeDecodeError。请让这些无效实体遵守 remove_illegal 的移除或保留设置。",
+    "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/40",
+    "base_sha": "21ff68ddcf35e106be60da21af2a64b44ec13baa",
+    "fix_sha": "3489ad5f6307983d2740e4516450aacb15620508",
+    "production_files": [
+      "w3lib/html.py"
+    ],
+    "regression_test_files": [
+      "tests/test_html.py"
+    ],
+    "guard_paths": [
+      "tests/test_html.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests/py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "tests/test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "tests/test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "tests/test_html.py": "bf21e591e701e836b30bf551e2989130d2303a420ad17e29aa651c74f2f77621",
+      "tests/test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "tests/test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a"
+    },
+    "fixed_guard_tests": 46,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/21ff68ddcf35e106be60da21af2a64b44ec13baa",
+        "sha256": "9c98846b329f871527a40ffb6cd57edb87868f21ede84d5dc026e9d49ff722c1",
+        "files": 32
+      },
+      "fix": {
+        "url": "https://codeload.github.com/scrapy/w3lib/tar.gz/3489ad5f6307983d2740e4516450aacb15620508",
+        "sha256": "a0f0af59cfe85daa5b3618124235d4d639269dae086105d234c30e99c872b9b2",
+        "files": 32
+      }
+    }
+  },
+  {
+    "id": "xb-072-cachetools-462e867950",
+    "repo": "tkem/cachetools",
+    "task": "缓存默认键经 pickle 保存后在另一个解释器中恢复，可能与新生成的相等键具有不同 hash，导致缓存无法命中。请修复键的序列化往返及相等哈希语义。",
+    "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/462e867950883c8ffbcfff715efd767b20c6c749",
+    "base_sha": "3e5fe022716b0263488ef8146e18e162b2bcbe96",
+    "fix_sha": "462e867950883c8ffbcfff715efd767b20c6c749",
+    "production_files": [
+      "cachetools/keys.py"
+    ],
+    "regression_test_files": [
+      "tests/test_keys.py"
+    ],
+    "guard_paths": [
+      "tests/test_keys.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "setup.cfg": "d4a2eadc06aaeaa72076bffcb193d2a229f140e0fba83318752f33d8ebdc9f61",
+      "tests/__init__.py": "78e840d38304ad8974eaef39e0177bd1dbcb4451bfde9a0bbb7213ce3893ddf1",
+      "tests/test_cache.py": "350b1768c74d7db244bc83c3f17e7cca8aefebc101786a6c60a79cfee12febef",
+      "tests/test_func.py": "41d92a6e4f93e90037082aed70342bc8e3bbee7a01bb7dda8d7c42af20b7ea78",
+      "tests/test_keys.py": "e13f3e6ec29a8943cb664866c0890454c70eb8050474a076bc48ca61c3b0a580",
+      "tests/test_lfu.py": "7d09a1a61693a7a214ae03bafc6bd6a6ff3b5bbc2488fa4b05c82f131595996d",
+      "tests/test_lru.py": "c335f6bc63942efffe58370bba01a76c2feae7aeb54a69a31fe0e9c570455906",
+      "tests/test_method.py": "32a1f22d3aae5fe17d7b5b494dcfa518d51d0ce5e4eec1686561d549fdd23604",
+      "tests/test_rr.py": "fdab953ff63b64eeb204570d25883f29cf79da45a9e60e96742c80dc7f7161a3",
+      "tests/test_ttl.py": "87fb4f88beba2fe61b95b4a8a8bafdb45f900b59fd5e9acdc8d15d7b0ce68643",
+      "tests/test_wrapper.py": "941d50c63d4fba2ff8047f1cbff7aa8e02e1b07ecbf47065ac287a9ae2ccaed8",
+      "tox.ini": "217ca70c8563df761d7e5983c94c0fa26d9548d22b526a1d301a49ab2a42b567"
+    },
+    "fixed_guard_tests": 4,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/3e5fe022716b0263488ef8146e18e162b2bcbe96",
+        "sha256": "c15b269edf724c96590d2ac39f84ae2fe67513f26f7101cfe4d1649a0502f0f6",
+        "files": 32
+      },
+      "fix": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/462e867950883c8ffbcfff715efd767b20c6c749",
+        "sha256": "a4ae04c49e0f10958c7bf57fcd9ac234ef2a0e96ddf7380c8d7ef1f86f099293",
+        "files": 32
+      }
+    }
+  },
+  {
+    "id": "xb-074-cachetools-ec0b97b8a4",
+    "repo": "tkem/cachetools",
+    "task": "cachedmethod 经 super() 从子类调用父类实现时，后续调用可能绕过覆盖方法，或在父子两层都装饰时递归失败。请保留正确的覆盖调用及父子缓存统计。",
+    "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+    "base_sha": "aa73a19299432530eb9b1c0f9acecde6ad96c9e0",
+    "fix_sha": "ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+    "production_files": [
+      "src/cachetools/_cachedmethod.py"
+    ],
+    "regression_test_files": [
+      "tests/test_cachedmethod.py"
+    ],
+    "guard_paths": [
+      "tests/test_cachedmethod.py"
+    ],
+    "phase": "replication",
+    "overlay_sha256": {
+      "pyproject.toml": "bb02a66397173399a9bcab7de0b1f0a34f7d6df83e357f94b52bd45b08f22cea",
+      "tests/__init__.py": "72d99005a5d409aa14990b42b54646b726a4f3ca7a091a6f4831ff7701293eb8",
+      "tests/test_cache.py": "dbdf81b02f344a0e62a5dcf2364be7e135e2511e765e93b43864aeb7aa3b115c",
+      "tests/test_cached.py": "27097d0df26efd2e6f72d03e5a8c9cdd7c4b5545ecee38aa439a78538c72fb0a",
+      "tests/test_cachedmethod.py": "0d276a016da5a1bd034dbb547f9cd11ff59c1854e4681b8dc223099fc55553e1",
+      "tests/test_classmethod.py": "465e882cf15481277cef959eb5d4ec0072d61c342079cac05684da55fe543851",
+      "tests/test_fifo.py": "c6134627b4d9daab20e67b27fe2ff8d7e225116ae46d6a0e79b2c9b620d25941",
+      "tests/test_func.py": "668e212d3a49b5442578e1a77579bacd20bbd466a8ea4a18ac04969fa4e75827",
+      "tests/test_keys.py": "c6e39d6e781cb737159b43d725c4a0f00ce6f2885376fb6efd01c5d59e196064",
+      "tests/test_lfu.py": "11981704035d965ae733140734efb7cd30615ef492cfeeb464f63992db59b404",
+      "tests/test_lru.py": "dbfd53eb372f24571f70d739faeb6c4963f79c80ef18228f44b38b1112bf1a6c",
+      "tests/test_rr.py": "995ee7555ebe96c8b4f988c23a8923de980b5f0c42ca073906988e28dd773ec2",
+      "tests/test_threading.py": "83a6e611d8d77fa19faf47bdecce6c67270ef47682b77c9fbb417e78aa40ab96",
+      "tests/test_tlru.py": "461fd80337d3e4a7fba830b30765cce19666611f797568f18740e4f6eea98199",
+      "tests/test_ttl.py": "dad8f3e725176a39a487d23bd4a25930db05380ce0b452f73485506dbe5284d1",
+      "tox.ini": "ca2be656d1b20d7731eb8bcd303df16893878ee2bdd95ef93e77a3c595411a52"
+    },
+    "fixed_guard_tests": 52,
+    "archives": {
+      "base": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/aa73a19299432530eb9b1c0f9acecde6ad96c9e0",
+        "sha256": "a4e3612beaffa76308386a714c9f4ca4ff14be2f0a343cdc7a4a8048b520d464",
+        "files": 43
+      },
+      "fix": {
+        "url": "https://codeload.github.com/tkem/cachetools/tar.gz/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+        "sha256": "23dc507680e368fb9d0b5a810c4f5548cd04ce848f17e7ec544a5680e265eddb",
+        "files": 43
+      }
+    }
+  }
+]

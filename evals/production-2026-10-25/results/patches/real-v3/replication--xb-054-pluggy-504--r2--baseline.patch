@@ -1,0 +1,56 @@
+diff --git a/src/pluggy/_result.py b/src/pluggy/_result.py
+index f9a081c..798c613 100644
+--- a/src/pluggy/_result.py
++++ b/src/pluggy/_result.py
+@@ -28,7 +28,7 @@ class Result(Generic[ResultType]):
+     """An object used to inspect and set the result in a :ref:`hook wrapper
+     <hookwrappers>`."""
+ 
+-    __slots__ = ("_result", "_exception")
++    __slots__ = ("_result", "_exception", "_traceback")
+ 
+     def __init__(
+         self,
+@@ -38,6 +38,8 @@ class Result(Generic[ResultType]):
+         """:meta private:"""
+         self._result = result
+         self._exception = exception
++        # Re-raising an exception changes its __traceback__, so keep the original.
++        self._traceback = exception.__traceback__ if exception is not None else None
+ 
+     @property
+     def excinfo(self) -> _ExcInfo | None:
+@@ -46,7 +48,7 @@ class Result(Generic[ResultType]):
+         if exc is None:
+             return None
+         else:
+-            return (type(exc), exc, exc.__traceback__)
++            return (type(exc), exc, self._traceback)
+ 
+     @property
+     def exception(self) -> BaseException | None:
+@@ -75,6 +77,7 @@ class Result(Generic[ResultType]):
+         """
+         self._result = result
+         self._exception = None
++        self._traceback = None
+ 
+     def force_exception(self, exception: BaseException) -> None:
+         """Force the result to fail with ``exception``.
+@@ -85,6 +88,7 @@ class Result(Generic[ResultType]):
+         """
+         self._result = None
+         self._exception = exception
++        self._traceback = exception.__traceback__
+ 
+     def get_result(self) -> ResultType:
+         """Get the result(s) for this hook call.
+@@ -97,7 +101,7 @@ class Result(Generic[ResultType]):
+         if exc is None:
+             return cast(ResultType, self._result)
+         else:
+-            raise exc.with_traceback(exc.__traceback__)
++            raise exc.with_traceback(self._traceback)
+ 
+ 
+ # Historical name (pluggy<=1.2), kept for backward compatibility.

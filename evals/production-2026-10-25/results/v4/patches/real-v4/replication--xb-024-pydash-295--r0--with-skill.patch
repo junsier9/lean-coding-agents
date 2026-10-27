@@ -1,0 +1,69 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index dd9ed0f..99c22e4 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -1456,7 +1456,7 @@ def reduce_(collection, iteratee=None, accumulator=None):
+     .. versionchanged:: 4.0.0
+         Removed aliases ``foldl`` and ``inject``.
+     """
+-    iterable = iterator(collection)
++    iterable = iter(iterator(collection))
+ 
+     if accumulator is None:
+         try:
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 3dd7b87..641cc0a 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -1,6 +1,7 @@
+ from collections import namedtuple
+ import math
+ from operator import attrgetter, itemgetter, methodcaller
++from types import MappingProxyType
+ 
+ import pytest
+ 
+@@ -823,6 +824,43 @@ def test_reduce_(case, expected):
+     assert _.reduce_(*case) == expected
+ 
+ 
++@parametrize("mapping_type", [dict, MappingProxyType])
++@parametrize(
++    "data,expected",
++    [({}, None), ({"a": 7}, 7), ({"a": 1, "b": 2, "c": 3}, 6)],
++)
++def test_reduce_mapping_without_accumulator(mapping_type, data, expected):
++    collection = mapping_type(data)
++    calls = []
++
++    def iteratee(total, value, key):
++        calls.append((key, value))
++        return total + value
++
++    if not data:
++        with pytest.raises(
++            TypeError, match=r"^reduce_\(\) of empty sequence with no initial value$"
++        ):
++            _.reduce_(collection, iteratee)
++    else:
++        assert _.reduce_(collection, iteratee) == expected
++
++    assert calls == list(data.items())[1:]
++
++
++@parametrize("mapping_type", [dict, MappingProxyType])
++@parametrize("data,expected", [({}, 10), ({"a": 1, "b": 2, "c": 3}, 16)])
++def test_reduce_mapping_with_accumulator(mapping_type, data, expected):
++    calls = []
++
++    def iteratee(total, value, key):
++        calls.append((key, value))
++        return total + value
++
++    assert _.reduce_(mapping_type(data), iteratee, 10) == expected
++    assert calls == list(data.items())
++
++
+ @parametrize("case,exception", [(([],), TypeError)])
+ def test_reduce_raise(case, exception):
+     raised = False

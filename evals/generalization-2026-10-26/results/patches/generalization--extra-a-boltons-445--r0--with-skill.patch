@@ -1,0 +1,225 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index d0afc78..6957399 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -601,10 +601,19 @@ def update_wrapper(wrapper, func, injected=None, expected=None, build_from=None,
+     for arg, default in expected_items:
+         fb.add_arg(arg, default)  # may raise ExistingArgument
+ 
++    try:
++        parameters = inspect.signature(wrapper, follow_wrapped=False).parameters
++    except (TypeError, ValueError):
++        kwonlyargs = ()  # some builtins and callable objects have no signature
++    else:
++        kwonlyargs = {name for name, param in parameters.items()
++                      if param.kind is inspect.Parameter.KEYWORD_ONLY}
++    invocation_str = fb.get_invocation_str(kwonlyargs=kwonlyargs)
++
+     if fb.is_async:
+-        fb.body = 'return await _call(%s)' % fb.get_invocation_str()
++        fb.body = 'return await _call(%s)' % invocation_str
+     else:
+-        fb.body = 'return _call(%s)' % fb.get_invocation_str()
++        fb.body = 'return _call(%s)' % invocation_str
+ 
+     execdict = dict(_call=wrapper, _func=func)
+     fully_wrapped = fb.get_func(execdict, with_dict=update_dict)
+@@ -782,21 +791,27 @@ class FunctionBuilder:
+                                      {},
+                                      annotations)
+ 
+-    def get_invocation_str(self):
++    def get_invocation_str(self, *, kwonlyargs=()):
++        """Return a call expression, forwarding *kwonlyargs* by keyword.
++
++        *kwonlyargs* names parameters that are keyword-only in the target,
++        even if they are positional in this builder's signature.
++        """
+         # Regular args with defaults (and keyword-only args) are forwarded
+         # as keywords (name=name), so values callers pass by keyword reach
+         # the wrapper's **kwargs instead of being silently flattened into
+         # *args (#343). Two classes must stay positional: positional-only
+         # params (keywords are rejected outright), and every regular arg
+         # when *varargs is present (a keyword-forwarded arg that precedes
+-        # *varargs collides with non-empty varargs).
++        # *varargs collides with non-empty varargs). Target keyword-only
++        # parameters must still be forwarded by keyword in both cases.
+         defaults = self.defaults or ()
+         args = list(self.args or ())
+         n_positional = len(args) - len(defaults)
+         parts, kw_parts = [], []
+         for i, arg in enumerate(args):
+-            if (i >= n_positional and not self.varargs
+-                    and arg not in self.posonlyargs):
++            if (arg in kwonlyargs or (i >= n_positional and not self.varargs
++                                     and arg not in self.posonlyargs)):
+                 kw_parts.append(arg + '=' + arg)
+             else:
+                 parts.append(arg)
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 5297f8b..7718a61 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -217,6 +217,162 @@ def test_wraps_inner_kwarg_only():
+     return
+ 
+ 
++@pytest.mark.parametrize('has_wrapped', [False, True])
++def test_wraps_inner_required_kwarg_only(has_wrapped):
++    def g(a, b):
++        return a, b
++
++    def f(a, *, b):
++        return a, b
++
++    if has_wrapped:
++        f = functools.wraps(g)(f)
++
++    wrapped = wraps(g)(f)
++    assert wrapped(3, 4) == (3, 4)
++    assert wrapped(a=3, b=4) == (3, 4)
++    assert wraps(f)(g)(3, b=4) == (3, 4)
++    assert inspect.signature(wrapped, follow_wrapped=False) == inspect.signature(g)
++    assert wrapped.__wrapped__ is g
++
++    with pytest.raises(TypeError):
++        wrapped(3)
++    with pytest.raises(TypeError):
++        wrapped(3, 4, extra=5)
++
++
++@pytest.mark.parametrize('defaulted', [False, True])
++def test_wraps_inner_kwarg_only_with_varargs(defaulted):
++    def required(a, b, *rest, **kwargs):
++        return a, b, rest, kwargs
++
++    def optional(a, b=10, *rest, **kwargs):
++        return a, b, rest, kwargs
++
++    def target(a, *rest, b, **kwargs):
++        return a, b, rest, kwargs
++
++    source = optional if defaulted else required
++    wrapped = wraps(source)(target)
++    assert wrapped(3, 4, 5, 6, flag=True) == (3, 4, (5, 6), {'flag': True})
++    assert wrapped(3, b=4) == (3, 4, (), {})
++    if defaulted:
++        assert wrapped(3) == (3, 10, (), {})
++    else:
++        with pytest.raises(TypeError):
++            wrapped(3)
++
++
++def test_wraps_inner_kwarg_only_method():
++    class Example:
++        def original(this, value, self):
++            return this, value, self
++
++        @wraps(original)
++        def method(this, value, *, self):
++            return this, value, self
++
++    obj = Example()
++    assert obj.method(3, 4) == (obj, 3, 4)
++    assert Example.method(this=obj, value=3, self=4) == (obj, 3, 4)
++
++
++def test_update_wrapper_kwarg_only_expected_and_injected():
++    def source(a, injected, b):
++        return a, injected, b
++
++    def target(a, *, b, extra):
++        return a, b, extra
++
++    wrapped = update_wrapper(target, source, injected='injected',
++                             expected=[('extra', 'default')])
++    assert wrapped(3, 4) == (3, 4, 'default')
++    assert wrapped(3, 4, 'explicit') == (3, 4, 'explicit')
++
++
++@pytest.mark.parametrize('error', [TypeError, ValueError])
++@pytest.mark.parametrize('varargs', [False, True])
++def test_wraps_uninspectable_target(error, varargs):
++    class Target:
++        @property
++        def __signature__(self):
++            raise error('signature unavailable')
++
++        def __call__(self, *args, **kwargs):
++            return args, kwargs
++
++    def plain(a, b=10):
++        pass
++
++    def variadic(a, b=10, *rest):
++        pass
++
++    wrapped = wraps(variadic if varargs else plain)(Target())
++    if varargs:
++        assert wrapped(3) == ((3, 10), {})
++        assert wrapped(3, 4, 5) == ((3, 4, 5), {})
++    else:
++        assert wrapped(3) == ((3,), {'b': 10})
++        assert wrapped(3, b=4) == ((3,), {'b': 4})
++
++
++def test_wraps_uninspectable_builtin():
++    def source(*args, **kwargs):
++        pass
++
++    wrapped = wraps(source)(max)
++    assert wrapped(3, 4, 5) == 5
++    assert wrapped([], default=10) == 10
++
++
++def test_wraps_unexpected_signature_error():
++    error = RuntimeError('signature failed')
++
++    class Target:
++        @property
++        def __signature__(self):
++            raise error
++
++        def __call__(self):
++            pass
++
++    def source():
++        pass
++
++    with pytest.raises(RuntimeError) as exc_info:
++        wraps(source)(Target())
++    assert exc_info.value is error
++
++
++def test_wraps_inner_kwarg_only_target_error():
++    error = RuntimeError('target failed')
++
++    def source(a, b):
++        pass
++
++    def target(a, *, b):
++        raise error
++
++    with pytest.raises(RuntimeError) as exc_info:
++        wraps(source)(target)(3, 4)
++    assert exc_info.value is error
++
++
++def test_wraps_async_inner_kwarg_only():
++    import asyncio
++
++    async def source(a, b=10, *rest):
++        return a, b, rest
++
++    async def target(a, *rest, b):
++        return a, b, rest
++
++    wrapped = wraps(source)(target)
++    assert inspect.iscoroutinefunction(wrapped)
++    assert asyncio.run(wrapped(3)) == (3, 10, ())
++    assert asyncio.run(wrapped(3, 4, 5)) == (3, 4, (5,))
++
++
+ def test_wraps_async():
+     # from https://github.com/mahmoud/boltons/issues/194
+     import asyncio

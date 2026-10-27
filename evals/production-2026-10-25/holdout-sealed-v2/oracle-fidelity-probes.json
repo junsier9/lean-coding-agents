@@ -1,0 +1,85 @@
+{
+  "probes": [
+    {
+      "variant": "legal_extra_authorization",
+      "expected_pass": true,
+      "source_sha256": "EDA815414D721E2A277ECD3096F5FA5B1C1F3CD1A5F1DB4D73FFD68966D86131",
+      "phases": {
+        "normal": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "D0B2F7D7C6159F194D0665F1F8EA3F1437DFC85784BC062B6A48A649939DB0B8",
+          "optimized": false
+        },
+        "optimized": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.204,
+          "log_sha256": "D0B2F7D7C6159F194D0665F1F8EA3F1437DFC85784BC062B6A48A649939DB0B8",
+          "optimized": true
+        }
+      },
+      "fidelity_pass": true
+    },
+    {
+      "variant": "invalid_skip_authorization_on_hit",
+      "expected_pass": false,
+      "source_sha256": "17AD9168E8A30BB349D0DEACAA1AA9EEB500A2D0AB24C6427192733A7B3D35AB",
+      "phases": {
+        "normal": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 5,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "855832FC55F765A6201B65C25663C0561708CA74D2AB3087513FC3AC6B8F1CFE",
+          "optimized": false
+        },
+        "optimized": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 5,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "C90FC03AC536B93FF6487106A58CF98850121B516AEDBBA062A7B850AF1F6BF2",
+          "optimized": true
+        }
+      },
+      "fidelity_pass": true
+    },
+    {
+      "variant": "invalid_read_before_authorization",
+      "expected_pass": false,
+      "source_sha256": "448CBFE141ADB6AE19B3777E3A6125DDC89C64711876833138FB71FB995D3C9B",
+      "phases": {
+        "normal": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 3,
+          "errors": 0,
+          "seconds": 0.094,
+          "log_sha256": "F1504B4788DAB2C793A80001B6264710DBA97CC7A1CAB99FF1863099017C5FC6",
+          "optimized": false
+        },
+        "optimized": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 3,
+          "errors": 0,
+          "seconds": 0.187,
+          "log_sha256": "CEA5241E53D567F100A64CAE460AC8939C354CD31688D7AF6B306D998ADC56FD",
+          "optimized": true
+        }
+      },
+      "fidelity_pass": true
+    }
+  ],
+  "all_passed": true,
+  "model_visible_source_changed": false,
+  "model_calls": 0
+}

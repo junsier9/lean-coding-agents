@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-10-24T19:33:30.637225+00:00",
+  "previous_sha256": "63A4B27A54D58E81EA9375EEC9420BF16623E37AA05284C88102A74BAEF11B5F",
+  "frozen_sha256": "BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F",
+  "new_solver_calls_before_amendment": 0,
+  "changes": [
+    "Same synthetic contract suite in normal and optimized Python",
+    "Production qualification additionally requires>=95% observed real treatment acceptance in each batch",
+    "Status wording identifies preregistration"
+  ],
+  "real_case_ids_and_order_changed": false
+}

@@ -1,0 +1,30 @@
+{
+  "completed_at": "2026-10-25T20:22:15.113415+00:00",
+  "client_date": "2026-10-26",
+  "request": "Codify confirmed regression and revise decision rules",
+  "development_contracts": {
+    "d10_methods_per_mode": 16,
+    "d09_methods_per_mode": 15,
+    "normal_and_optimized_reference_checks_passed": true,
+    "historical_bad_and_two_bad_repairs_rejected": true
+  },
+  "native_attempts": 6,
+  "functional_accepted": 6,
+  "full_body_observations_after_independent_audit": 6,
+  "original_shell_only_body_counter_preserved": 5,
+  "usage_complete": 6,
+  "normal_cli_completions": 6,
+  "skill_word_count": 377,
+  "skill_rules": 4,
+  "skill_files": 2,
+  "skill_sha256": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+  "frozen_cases_and_driver_still_match": true,
+  "closed_v4_evidence_and_failed_qualification_unchanged": true,
+  "private_evidence_archive_sha256": "2BA70A7367BFDC2DAE402B0F599A86C0C4CD7CAEEE0827300FF4D002B8B01062",
+  "private_raw_files_verified": 48,
+  "additional_confirmation_rounds": 0,
+  "production_qualification_assessed": false,
+  "efficiency_improvement_claimed": false,
+  "global_installation_or_external_publication": false,
+  "metadata_written_after_private_archive_snapshot": true
+}

@@ -1,0 +1,740 @@
+{
+  "review_id": "production-measurement-release-method-review-2026-10-25",
+  "language": "zh-CN",
+  "review_started_at_utc": "2026-10-24T23:47:43.929617+00:00",
+  "status": "completed_method_review_final_qualification_not_determined",
+  "summary": {
+    "original_implementation_defects_reproduced": 1,
+    "current_formal_numeric_totals_reproduced": true,
+    "production_qualification_determined": false,
+    "reason": "导出只含 formal120 行和 replication6 行；复验及 v4 原生验证尚未完成。当前 v3 首批还未满足预先的95%验收率及至少10%收益门槛，不能把单批正收益或相对质量 gate 当最终资格。",
+    "original_defect_followup": "M01 fixed by parent; independent synthetic retest passed under new helper hash.",
+    "unresolved_reproduced_implementation_defects": 0
+  },
+  "temporal_separation": {
+    "earlier_contract_reviews": "本 agent 此前的40题和87题契约审查处于结果盲态，只读取题面、base 公开契约和 fix guard，不读取模型输出或效果。那些报告保持不变。",
+    "current_method_review": "从上述 review_started_at_utc 开始，获明确授权读取已导出的旧结果；仅按测量所需字段投影阅读 JSONL，没有阅读候选 skill 正文、v4 新题正文/固定生产解、私有标签或 solver 工作区。",
+    "prior_blind_report_references_from_conversation": [
+      {
+        "path": ".local/production-oracle/contract-review.json",
+        "sha256": "7efc97a8026a76e8a4b4cd2d876969b4b514497a32250cb0b4189c811d2ca432",
+        "status_counts": {
+          "adequate": 32,
+          "underspecified": 7,
+          "inconsistent": 1
+        },
+        "reopened_in_current_review": false
+      },
+      {
+        "path": ".local/production-reserve-review/contract-review.json",
+        "sha256": "3c643fe10719a7a3c69ff31b28dc797aa517016a2253fe0f18de5a92e693bffc",
+        "status_counts": {
+          "adequate": 73,
+          "underspecified": 13,
+          "inconsistent": 1
+        },
+        "reopened_in_current_review": false
+      }
+    ]
+  },
+  "scope_and_methods": {
+    "source_scope": "按父任务列出的 protocol/protocol-v4、assess、benefit_gate、replay_analysis 及指定 results 文件；额外只读 assess 的实际纯统计依赖 evals/full-validation/analyze.py 的相关函数。",
+    "data_scope": "results/runs-real-v3.jsonl 的已导出旧结果快照。未将该导出视为实时运行状态。",
+    "methods": [
+      "带行号静态阅读与 SHA256 固定输入",
+      "独立重加总成功/失败成本、用量字段和计时字段",
+      "独立重算 formal 两个点估计",
+      "核对四次 grading-only recovery 的失败/成功计时求和",
+      "核对实际成对起始顺序平衡与时间间隔",
+      "仅对纯统计函数运行本地合成数据探针",
+      "逐项解释固定设计、交并检验、Bonferroni 预算、嵌套阈值和有限样本覆盖范围"
+    ],
+    "project_task_or_model_executions": 0,
+    "native_cli_calls": 0,
+    "network_calls": 0,
+    "data_protocol_score_skill_or_code_changes": false,
+    "only_written_artifact": ".local/production-method-review.json",
+    "no_added_approval_or_validation_workflow": true
+  },
+  "verified_measurement": {
+    "snapshot": {
+      "rows": 126,
+      "formal_rows": 120,
+      "formal_task_clusters": 20,
+      "replication_rows": 6,
+      "formal_is_lines_1_to_120": true,
+      "replication_is_lines_121_to_126": true,
+      "sha256": "1cec17e9a18c56be19ce82b50e6b641d7a136eedf8490c815db274a0ff417b70"
+    },
+    "estimand": "每臂所有尝试成本之和/该臂被固定 guard 验收的尝试数，再计算 treatment/baseline；是一次被验收产出的成本比，不是仅成功尝试的均值、典型任务中位数或单次回复延迟比。",
+    "baseline": {
+      "runs": 60,
+      "accepted": 53,
+      "acceptance_rate": 0.8833333333333333,
+      "total_tokens": 27427041,
+      "input_tokens": 27085657,
+      "cached_input_tokens": 24821760,
+      "output_tokens": 341384,
+      "client_seconds": 9816.171,
+      "grade_seconds": 86.064,
+      "wall_seconds": 9902.235,
+      "failed_attempt_tokens": 4789128,
+      "failed_attempt_wall_seconds": 1440.326,
+      "tokens_per_accepted": 517491.3396226415,
+      "seconds_per_accepted": 186.83462264150944
+    },
+    "with_skill": {
+      "runs": 60,
+      "accepted": 54,
+      "acceptance_rate": 0.9,
+      "total_tokens": 23307509,
+      "input_tokens": 22985031,
+      "cached_input_tokens": 20934144,
+      "output_tokens": 322478,
+      "client_seconds": 9130.176,
+      "grade_seconds": 83.485,
+      "wall_seconds": 9213.661,
+      "failed_attempt_tokens": 3502564,
+      "failed_attempt_wall_seconds": 1118.158,
+      "tokens_per_accepted": 431620.537037037,
+      "seconds_per_accepted": 170.62335185185185
+    },
+    "token": {
+      "recomputed_ratio": 0.8340633050048294,
+      "reported_ratio": 0.8340633050048294,
+      "reported_upper_one_sided_98_75": 0.9266945459055601,
+      "point_gain": 0.1659366949951706,
+      "reported_gain_lower_bound": 0.07330545409443989,
+      "formal_positive_threshold_met": true,
+      "formal_material10percent_threshold_met": false
+    },
+    "time": {
+      "recomputed_ratio": 0.9132319772403046,
+      "reported_ratio": 0.9132319772403046,
+      "reported_upper_one_sided_98_75": 1.0471259542229645,
+      "point_gain": 0.08676802275969542,
+      "reported_gain_lower_bound": -0.047125954222964506,
+      "formal_positive_threshold_met": false,
+      "formal_material10percent_threshold_met": false
+    },
+    "component_checks": {
+      "unknown_usage_formal": 0,
+      "timeout_formal": 0,
+      "total_tokens_equals_input_plus_output_all_formal": true,
+      "cached_input_nonnegative_and_not_above_input_all_formal": true,
+      "wall_equals_client_plus_all_grade_attempts_within_0_002_seconds": true,
+      "accepted_but_uncompleted": 0,
+      "pair_case_hash_conflicts": 0,
+      "missing_case_hashes": 0,
+      "baseline_body_reads": 0,
+      "treatment_body_reads": 60,
+      "observed_pair_first_arm_counts": {
+        "baseline": 30,
+        "with-skill": 30
+      }
+    },
+    "cache_interpretation": "cached_input_tokens 是 input_tokens 的子集，未重复相加。input 中缓存比例约 baseline91.64%、treatment91.08%。总 token 是计算/上下文用量指标，不等于收费 token、美元成本或能耗；协议已明确 token_is_not_billing。",
+    "reproduction_limit": "本审查独立重算两个点估计并核对分子/分母；未重新运行实际数据的40000次 bootstrap。formal-replay-integrity.json 的整对象/字节重放相等作为现有证据引用，未冒称本审查再次证明该 CI 完整重放。",
+    "release_requirement_timing": {
+      "frozen_at": "2026-10-24T20:40:13.300429+00:00",
+      "earliest_exported_real_start": "2026-10-24T20:59:38.747253+00:00",
+      "first_exported_start_after_freeze": true,
+      "seconds_between_freeze_and_first_exported_start": 1165.446824,
+      "limit": "Only exported rows checked; not an independent audit of every private/native invocation."
+    }
+  },
+  "multiplicity_and_threshold_interpretation": {
+    "assessment": "设计上的 alpha 分配在目标是同一 endpoint 两批均有收益的前提下合理；其频率学覆盖仍取决于各批 bootstrap 检验本身有效。",
+    "candidate_endpoint_budget": "2 个确认候选 x 2 个 endpoint = 4 个可能择优声明，每个 alpha=.0125，Bonferroni 名义总预算 .05。第二版本消耗原已预留槽位，不是刷新预算。",
+    "two_batch_conjunction": "对固定候选和 endpoint，只有两个批次均跨阈值才声明。若该联合声明为假，至少一批的原假设为真；两批都通过意味着也错误拒绝了那一批的真原假设，因此单个联合声明的名义错误概率不超过 .0125。这里是交并检验，无须再因两个批次把 alpha 除二，也不依赖两批互相独立。",
+    "same_endpoint_required": "不能把 formal 的 token 通过和 replication 的 time 通过拼成稳定收益；必须同一个 endpoint 在两批通过。",
+    "nested_thresholds": "上界 U<1.00 支持正收益，U<0.90 支持至少10%收益。两者使用同一个上置信界，强声明蕴含弱声明，不构成两次独立挑选检验。",
+    "what_is_not_simultaneous": "这不是对2候选 x2endpoint x2批次共8个单独置信界提供总体95%同时覆盖的声明。未满足两批交集的单批结果只能标为单批证据，不能借联合声明的预算包装为任意单批择优结论。",
+    "interval_labels": "ALPHA=.0125 的中央区间为97.5%，其上端是单侧98.75%界；assess.py 的标签与此一致。",
+    "selection_scope": "v4 在新的未执行题中按预定盲态契约筛选规则取题，支持其自身相对 baseline 的新确认；两候选使用不同题集，不能把其验收率或点收益差异直接当作 v4 相对 v3 的因果改进。"
+  },
+  "findings": [
+    {
+      "id": "M01",
+      "category": "implementation_defect",
+      "severity": "blocks_old_helper_on_valid_nonfinite_bound_input",
+      "status": "original_defect_preserved_fixed_and_independently_retested",
+      "title": "保守 token 界为 Infinity 时，旧收益判定 helper 抛 TypeError",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/assess.py",
+          "lines": [
+            76,
+            95
+          ],
+          "note": "保留正无穷分位数，最后交给 core._json_safe。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+          "source_sha256_at_discovery": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a"
+        },
+        {
+          "file": "evals/full-validation/analyze.py",
+          "lines": [
+            476,
+            485
+          ],
+          "note": "非有限数值转换为 JSON 安全字符串 Infinity/-Infinity。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\full-validation\\analyze.py",
+          "source_sha256_at_discovery": "308fc2e8076ba93c74353bdf8156ae86c7e3767c2616bf301f43ee086cd337c3"
+        },
+        {
+          "file": "evals/production-2026-10-25/benefit_gate.py",
+          "lines": [
+            14,
+            20
+          ],
+          "note": "旧版本在检查有限性之前直接执行 0 < upper < 1，upper 字符串导致异常。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\benefit_gate.py",
+          "source_sha256_at_discovery": "2996bc9da985458c5e7ba481a40b2458e8630ca0906ab2454633f2eebb961af9"
+        }
+      ],
+      "reproduction": "构造20题，每题两臂各3次，全部 accepted/completed=True；baseline 每次1000token、skill每次500token，wall分别10和5秒。将其中19题的 baseline 改成 usage_complete=False,total_tokens=None，其余全部完整。运行 assess(rows,'formal',draws=40000)，再 credible_benefit(result,'token')。",
+      "observed": {
+        "mode": "baseline_cost_lower_bound_only",
+        "actual_ratio": null,
+        "observed_ratio_upper_bound": 10.0,
+        "upper_one_sided_98_75": "Infinity",
+        "positive_infinite_draws": 14381,
+        "batch_criterion_met": false,
+        "credible_benefit_error": "TypeError: '<' not supported between instances of 'int' and 'str'"
+      },
+      "impact": "应拒绝该收益声明，而不是在合法未知用量输入下崩溃。assess 自己的 material gate 已为 False，没有观察到错误认证通过。当前真实 formal 用量全部完整，已报点估计和 CI 不受此复现影响。",
+      "original_helper_sha256": "2996bc9da985458c5e7ba481a40b2458e8630ca0906ab2454633f2eebb961af9",
+      "remediation_boundary": "父任务已确认并说明只修改 benefit_gate 的数值有限性判断；本 agent 未修改代码。须在报告中另记新 hash 与合成复核结果，不覆盖原始发现。"
+    },
+    {
+      "id": "M02",
+      "category": "current_claim_blocker",
+      "severity": "blocks_current_v3_formal_production_or_material_gain_claim",
+      "status": "snapshot_finding_not_final_study_verdict",
+      "title": "首批相对质量通过不等于满足发布验收率，观察收益不等于跨过10%门槛",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/results/formal-v3-analysis.json",
+          "lines": [
+            22,
+            29
+          ],
+          "note": "token 点收益16.59%，上界 .92669，对应收益下界7.33%。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-v3-analysis.json",
+          "source_sha256_at_discovery": "e17ddeede6c7d1ff7bb7bc704f34113f383973c1411a2bb143dbe0a57c6dbd30"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/formal-v3-analysis.json",
+          "lines": [
+            84,
+            90
+          ],
+          "note": "54/60，quality.gate_pass=True 仅表示相对无观察损失。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-v3-analysis.json",
+          "source_sha256_at_discovery": "e17ddeede6c7d1ff7bb7bc704f34113f383973c1411a2bb143dbe0a57c6dbd30"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/release-requirements.json",
+          "lines": [
+            7,
+            19
+          ],
+          "note": "另需每批>=95%、同 endpoint 双批正收益；至少10%要求两批 U<.90。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json",
+          "source_sha256_at_discovery": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797"
+        }
+      ],
+      "impact": "54/60=90% 少于95%要求的57/60，且 token 首批 U>.90。time 首批 U>1，连首批正收益也未确认。复验即使最终更好，也不能回填首批这些必要条件；v4 的最终资格仍未知。"
+    },
+    {
+      "id": "M03",
+      "category": "integration_and_label_limit",
+      "severity": "must_not_use_narrow_predicates_as_standalone_release_gate",
+      "status": "no_actual_false_release_observed",
+      "title": "现有单项 gate 有意只覆盖部分门槛，最终资格不能由一个布尔值代表",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/assess.py",
+          "lines": [
+            28,
+            35
+          ],
+          "note": "quality 只检查总成功数和逐题不损失，没有95%最低率。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+          "source_sha256_at_discovery": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a"
+        },
+        {
+          "file": "evals/production-2026-10-25/assess.py",
+          "lines": [
+            78,
+            89
+          ],
+          "note": "material criterion 用 n>=20，未固定必须恰好20，也不查冻结任务/候选 manifest。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+          "source_sha256_at_discovery": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a"
+        },
+        {
+          "file": "evals/production-2026-10-25/benefit_gate.py",
+          "lines": [
+            5,
+            20
+          ],
+          "note": "benefit 是单批单 endpoint 谓词，要求20题但不是完整 release 资格函数。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\benefit_gate.py",
+          "source_sha256_at_discovery": "2996bc9da985458c5e7ba481a40b2458e8630ca0906ab2454633f2eebb961af9"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            89,
+            93
+          ],
+          "note": "正式 release 还需已有发展/回归/routing、双批质量、八对盲审、安装回滚及完整性。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+          "source_sha256_at_discovery": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746"
+        }
+      ],
+      "synthetic_checks": {
+        "only_one_success_repeat_each_arm": {
+          "acceptance": 0.3333333333333333,
+          "quality_gate_pass": true,
+          "token_material_flag": true,
+          "credible_benefit": true
+        },
+        "twenty_one_complete_half_cost_tasks": {
+          "assess_token_material_flag": true,
+          "credible_benefit": false
+        }
+      },
+      "impact": "这是接口范围和标签的限制；没有证据表明父任务把它们当作完整发布 gate。provided files 未含最终组合判定产物，因而本审查不能认定其已完成。最终只需遵守已有完整门槛，不需要新增流程。"
+    },
+    {
+      "id": "M04",
+      "category": "statistical_coverage_limit",
+      "severity": "limits_population_and_stability_wording",
+      "status": "not_an_arithmetic_bug",
+      "title": "任务簇重采样保留了重复相关性，但20题 percentile bootstrap 不是分布无关保证",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/assess.py",
+          "lines": [
+            61,
+            93
+          ],
+          "note": "按整题抽样，保留两臂所有3次，40000次 inverted_cdf 分位数。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+          "source_sha256_at_discovery": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/source-identity-integrity.json",
+          "lines": [
+            7,
+            12
+          ],
+          "note": "唯一 commit/URL 不证明相关题统计独立或排除训练污染。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\source-identity-integrity.json",
+          "source_sha256_at_discovery": "645ccf2edb10146e428b281526c53a075315d7527cd35b5b58eced1cee85247f"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            61,
+            73
+          ],
+          "note": "协议本身限定 coverage approximate。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+          "source_sha256_at_discovery": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746"
+        }
+      ],
+      "actual_cluster_structure": {
+        "tasks": 20,
+        "repos": 9,
+        "tasks_per_repo": {
+          "Suor/funcy": 3,
+          "pytoolz/toolz": 2,
+          "pytest-dev/pluggy": 2,
+          "more-itertools/more-itertools": 3,
+          "scrapy/w3lib": 2,
+          "tkem/cachetools": 2,
+          "dgilland/pydash": 2,
+          "mahmoud/boltons": 2,
+          "pallets/click": 2
+        }
+      },
+      "synthetic_tail_counterexample": {
+        "definition": "每题三次完全同类成本；baseline=1000，skill以.99概率500、.01概率50500；全部成功。总体期望成本比恰好1。",
+        "probability_20_tasks_miss_rare_type": 0.8179069375972308,
+        "probability_both_batches_miss_rare_type": 0.6689717585696803,
+        "all_common_sample_bootstrap_upper": 0.5,
+        "interpretation": "在这种允许重尾的总体下，两批均可能显著表观获益；40000次重采样不能补回未观察尾部。例子说明没有分布无关的精确错误率保证，不说明真实数据来自此分布。"
+      },
+      "impact": "可称按冻结方法得到的近似置信界和跨这两批任务的重复证据；不能称在所有 Python 生产任务/未来日期中以严格95%全局保证稳定提速。共享仓库/函数族相关性也可能降低有效独立样本数。无需因此改变已冻结分析或临时加题。"
+    },
+    {
+      "id": "M05",
+      "category": "quality_inference_limit",
+      "severity": "limits_industrial_safety_or_noninferiority_claims",
+      "status": "protocol_discloses_this_boundary",
+      "title": "观察到的质量门槛与成本置信界不能转成总体非劣或零缺陷保证",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/protocol.json",
+          "lines": [
+            31,
+            38
+          ],
+          "note": "质量明确是 observed gate，非 population noninferiority proof。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol.json",
+          "source_sha256_at_discovery": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol.json",
+          "lines": [
+            76,
+            81
+          ],
+          "note": "定位为已有检查/审查中的编程辅助，不是无人部署授权。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol.json",
+          "source_sha256_at_discovery": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/release-requirements.json",
+          "lines": [
+            7,
+            21
+          ],
+          "note": "安全盲审、关键回归及 scope 要求另列，不能用 token CI 替代。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json",
+          "source_sha256_at_discovery": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797"
+        }
+      ],
+      "illustration_only": {
+        "assumption": "仅假设独立 Bernoulli 时的单侧95% Clopper-Pearson 下界；实际同题重复不满足此独立性假设，不能作为本实验正式区间。",
+        "54_of_60_lower": 0.8121426180110176,
+        "60_of_60_lower": 0.9512970866899024,
+        "20_of_20_independent_clusters_lower": 0.8608916593317348
+      },
+      "zero_success_probes": "两臂零成功产生40000个未定义比率、无可用界，两个收益 gate 均不通过。只有 baseline 零成功时虽然展示 extended ratio=0/gain=1，但两个 gate 仍拒绝；这些展示字段不能被单独解释为100%已证收益。",
+      "impact": "工业级适用性只能按用户选择的 Codex+Python 维护辅助范围、现有项目检查和审查条件陈述；固定 contracts 全过及少量盲审不证明未来错误处理永不缺失。"
+    },
+    {
+      "id": "M06",
+      "category": "timing_and_recovery_limit",
+      "severity": "limits_end_to_end_latency_and_temporal_pairing_claims",
+      "status": "original_active_costs_preserved_in_export",
+      "title": "grading-only 恢复保留活跃成本，但排队/人工等待和两对大时间间隔不在 wall 指标内",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/protocol.json",
+          "lines": [
+            40,
+            43
+          ],
+          "note": "预先排除 controller queue、setup/copy 和外部审查，包含 CLI+grade。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol.json",
+          "source_sha256_at_discovery": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/formal-grading-recovery.json",
+          "lines": [
+            14,
+            27
+          ],
+          "note": "一次评分的原失败与恢复相隔约93.6分钟。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-grading-recovery.json",
+          "source_sha256_at_discovery": "ea9402f13c14ea9dc82c9068a7cdcf7c8249209550dc77dd30f5a9fbb90ff784"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/formal-grading-recovery.json",
+          "lines": [
+            105,
+            112
+          ],
+          "note": "无额外模型调用，两臂晚启动，且原 phase 摘要曾被覆盖，保留 checkpoint 补证。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-grading-recovery.json",
+          "source_sha256_at_discovery": "ea9402f13c14ea9dc82c9068a7cdcf7c8249209550dc77dd30f5a9fbb90ff784"
+        }
+      ],
+      "recovery_time_recheck": {
+        "grade_seconds_match_all_attempts": [
+          0.843,
+          0.859,
+          0.843,
+          0.921
+        ],
+        "first_to_last_grade_start_seconds": [
+          5613.237093,
+          3735.400803,
+          3755.889868,
+          108.111798
+        ]
+      },
+      "pair_start_gaps_seconds": {
+        "pairs": 60,
+        "median": 141.90994899999998,
+        "max": 5881.187067,
+        "over600": 2,
+        "over3600": 2,
+        "first_arm_counts": {
+          "baseline": 30,
+          "with-skill": 30
+        }
+      },
+      "impact": "指标可解释为计入服务等待/工具/局部重试的活跃处理秒数每被验收产出；不能解释为真实从提交到最终验收的全部日历延迟，也不能声称所有成对调用都紧邻且免受时间/缓存状态变化影响。当前 time 界本就未确认正收益。",
+      "provenance_limit": "本审查验证导出中的四次尝试时间之和；没有越权读取原 private checkpoints，因此原始失败日志完整保留与不重跑模型的全链条证明仍依赖已引用恢复记录/存档，而不是本审查独立认证。"
+    },
+    {
+      "id": "M07",
+      "category": "oracle_and_target_population_limit",
+      "severity": "limits_task_solved_and_production_generalization_claims",
+      "status": "prior_blind_findings_preserved",
+      "title": "固定 guard 通过率是所用 oracle 的成功率，不能忽略已盲审发现的契约窄化",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/protocol.json",
+          "lines": [
+            27,
+            38
+          ],
+          "note": "固定原始失败/reference通过的 whole-file guard 不等于题面支持每个新增要求。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol.json",
+          "source_sha256_at_discovery": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            46,
+            59
+          ],
+          "note": "第二确认从盲审 adequate 储备题筛选，保持源/guard及预定顺序，不按结果替换。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+          "source_sha256_at_discovery": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746"
+        }
+      ],
+      "prior_blind_examples": "已发现固定异常文字、自动 help 内部名、私有缓存布局、实现特定回调/计时路径，以及 truncate 最大长度政策冲突；这些问题在观察收益前已单独记录。",
+      "impact": "旧主分应继续按冻结 oracle 原样报告，不在看结果后删题或放宽断言来提高通过率；同时必须把结论限定为冻结验收下的收益/质量。盲态契约审查本身未读候选，所以不能仅凭这些缺口断言某次实际失败是假失败或由 skill 导致。第二语料的筛选改变适用总体，不能据跨语料差异宣称候选版本本身更强。"
+    },
+    {
+      "id": "M08",
+      "category": "completion_and_replay_scope_limit",
+      "severity": "blocks_final_qualification_now",
+      "status": "incomplete_confirmation_evidence",
+      "title": "可重复的 formal 分析和 harness 检查不能替代完整复验与 v4 原生证据",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/results/formal-replay-integrity.json",
+          "lines": [
+            3,
+            31
+          ],
+          "note": "重放对象限定 formal120行的原相位输入上下文。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-replay-integrity.json",
+          "source_sha256_at_discovery": "676b5bfe75e4358c1611bd4af34412be49da7ad371d575c7b33fcee04c4ab020"
+        },
+        {
+          "file": "evals/production-2026-10-25/replay_analysis.py",
+          "lines": [
+            8,
+            14
+          ],
+          "note": "formal 过滤 formal；replication 保留原控制器的跨相位诊断上下文。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\replay_analysis.py",
+          "source_sha256_at_discovery": "f640b143bc824cd2962c38d0bcfac588cd6fcd7668d5bcb0574dafa6112a9bba"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/harness-validation.json",
+          "lines": [
+            29,
+            39
+          ],
+          "note": "22个 harness 单元测试及附加检查支持测量实现，但明确不等于 skill 普遍正确。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\harness-validation.json",
+          "source_sha256_at_discovery": "1d6153b0ed12db63dadfb2e207023565a9255ce893a55e7bb52bd80504b3c313"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            46,
+            59
+          ],
+          "note": "每批20题、全3重复/2臂，两批都完成，无结果驱动替换或扩样。",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+          "source_sha256_at_discovery": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746"
+        }
+      ],
+      "impact": "快照有6条 replication 行不能支撑固定20题的复验结论；导出也不证明实时模型调用数量。父任务明确当前复验/v4未完，因此本报告不先行宣布最终通过或最终失败，只指出当前首批未满足的必要门槛。"
+    }
+  ],
+  "reviewed_correct_behaviors": [
+    "成本分子累加所有成功和失败尝试，分母只计 accepted；当前失败成本确实保留。",
+    "按完整题簇重采样，两臂与3次重复一起保留，避免把120行当作120个独立任务。",
+    "缺失用量没有填成实际0；只允许 baseline 未知且 treatment 已知时构造 baseline 成本下界，所报比率是保守上界，actual_ratio 留空。",
+    "保守界方向正确：baseline 真成本增加会降低 treatment/baseline 比率；bootstrap 各相同重采样下同样成立。",
+    "任何未定义 bootstrap draw 不被删除以制造区间；零成功的主 gate 拒绝收益声明。",
+    "同一 endpoint 两批交集与嵌套阈值的名义 multiplicity 解释合理，协议没有以第二候选刷新 alpha。",
+    "恢复没有在导出里丢掉原失败 grading 秒数；四个恢复条目各自等于失败+完成尝试之和。",
+    "当前 formal 输入完整、两臂先后30/30平衡、用量组成与时间组成一致，点估计与现有分析文件完全吻合。"
+  ],
+  "uncompleted_or_out_of_scope": [
+    "完整 replication 固定样本结果及两批同 endpoint 的最终交集判断。",
+    "v4 发展/关键回归/routing/新确认和最终资格；未读取任何新40题正文或固定解，也未触发原生调用。",
+    "最终八对盲审、包安装回滚、完整最终资格组合产物；未因未知风险增设额外流程，只保留协议已有项目。",
+    "原始 CLI/评分 private checkpoint 与存档的独立字节审计；本次只核对指定导出和恢复证据。",
+    "真实数据40000抽样界的独立再次重放；现有 byte replay 记录被引用，独立工作完成了点估计和纯合成统计边界复核。",
+    "成本到收费金额换算、未来模型/服务状态变化和跨仓库总体推广，均未被本实验直接证明。"
+  ],
+  "post_finding_followup": [
+    {
+      "checked_at_utc": "2026-10-24T23:57:20.064543+00:00",
+      "source_change_owner": "parent agent；本审查没有修改 helper",
+      "helper_sha256": "06b981fbc683bdbcdaea6fef2292eb0fc5d103a8d52742184db849a1cebecb6e",
+      "assess_sha256_unchanged": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a",
+      "core_sha256_unchanged": "308fc2e8076ba93c74353bdf8156ae86c7e3767c2616bf301f43ee086cd337c3",
+      "method": "新 Python 进程重新导入 helper，对同一纯统计合成构造独立运行，无模型/真实任务执行。",
+      "checks": [
+        {
+          "name": "exact_half_cost",
+          "upper": 0.5,
+          "credible_benefit": true
+        },
+        {
+          "name": "nineteen_baseline_tasks_unknown",
+          "upper": "Infinity",
+          "credible_benefit": false,
+          "raised": false
+        },
+        {
+          "name": "one_baseline_task_unknown",
+          "upper": 0.625,
+          "credible_benefit": true
+        },
+        {
+          "name": "one_skill_task_unknown",
+          "available": false,
+          "credible_benefit": false
+        },
+        {
+          "name": "both_arms_zero_success",
+          "available": false,
+          "credible_benefit": false
+        }
+      ],
+      "result": "M01 在这个新 helper hash 下修复通过；原始错误、原 helper hash 和影响范围保留。该修复没有改变被冻结的 assess/core 推断或真实结果。"
+    }
+  ],
+  "review_completed_at_utc": "2026-10-24T23:58:15.644768+00:00",
+  "input_provenance": [
+    {
+      "file": "evals/production-2026-10-25/protocol.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol.json",
+      "sha256_at_initial_read": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f",
+      "sha256_at_completion": "be8c9bec416b386980dd5f398b4a3e74c0c30f954a9863dcfe9f2173c3e2163f",
+      "changed_during_review": false,
+      "lines_at_completion": 87
+    },
+    {
+      "file": "evals/production-2026-10-25/protocol-v4.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+      "sha256_at_initial_read": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+      "sha256_at_completion": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+      "changed_during_review": false,
+      "lines_at_completion": 95
+    },
+    {
+      "file": "evals/production-2026-10-25/assess.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+      "sha256_at_initial_read": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a",
+      "sha256_at_completion": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a",
+      "changed_during_review": false,
+      "lines_at_completion": 109
+    },
+    {
+      "file": "evals/production-2026-10-25/benefit_gate.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\benefit_gate.py",
+      "sha256_at_initial_read": "2996bc9da985458c5e7ba481a40b2458e8630ca0906ab2454633f2eebb961af9",
+      "sha256_at_completion": "06b981fbc683bdbcdaea6fef2292eb0fc5d103a8d52742184db849a1cebecb6e",
+      "changed_during_review": true,
+      "lines_at_completion": 20
+    },
+    {
+      "file": "evals/production-2026-10-25/replay_analysis.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\replay_analysis.py",
+      "sha256_at_initial_read": "f640b143bc824cd2962c38d0bcfac588cd6fcd7668d5bcb0574dafa6112a9bba",
+      "sha256_at_completion": "f640b143bc824cd2962c38d0bcfac588cd6fcd7668d5bcb0574dafa6112a9bba",
+      "changed_during_review": false,
+      "lines_at_completion": 28
+    },
+    {
+      "file": "evals/production-2026-10-25/results/release-requirements.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json",
+      "sha256_at_initial_read": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+      "sha256_at_completion": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+      "changed_during_review": false,
+      "lines_at_completion": 22
+    },
+    {
+      "file": "evals/production-2026-10-25/results/formal-v3-analysis.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-v3-analysis.json",
+      "sha256_at_initial_read": "e17ddeede6c7d1ff7bb7bc704f34113f383973c1411a2bb143dbe0a57c6dbd30",
+      "sha256_at_completion": "e17ddeede6c7d1ff7bb7bc704f34113f383973c1411a2bb143dbe0a57c6dbd30",
+      "changed_during_review": false,
+      "lines_at_completion": 91
+    },
+    {
+      "file": "evals/production-2026-10-25/results/formal-replay-integrity.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-replay-integrity.json",
+      "sha256_at_initial_read": "676b5bfe75e4358c1611bd4af34412be49da7ad371d575c7b33fcee04c4ab020",
+      "sha256_at_completion": "676b5bfe75e4358c1611bd4af34412be49da7ad371d575c7b33fcee04c4ab020",
+      "changed_during_review": false,
+      "lines_at_completion": 32
+    },
+    {
+      "file": "evals/production-2026-10-25/results/grading-temp-copy-amendment-v3.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\grading-temp-copy-amendment-v3.json",
+      "sha256_at_initial_read": "a3ad7d600bad3f0f5580ad3c0b89dfd408ce68b27510331067cafe4c222137fd",
+      "sha256_at_completion": "a3ad7d600bad3f0f5580ad3c0b89dfd408ce68b27510331067cafe4c222137fd",
+      "changed_during_review": false,
+      "lines_at_completion": 38
+    },
+    {
+      "file": "evals/production-2026-10-25/results/formal-grading-recovery.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\formal-grading-recovery.json",
+      "sha256_at_initial_read": "ea9402f13c14ea9dc82c9068a7cdcf7c8249209550dc77dd30f5a9fbb90ff784",
+      "sha256_at_completion": "ea9402f13c14ea9dc82c9068a7cdcf7c8249209550dc77dd30f5a9fbb90ff784",
+      "changed_during_review": false,
+      "lines_at_completion": 113
+    },
+    {
+      "file": "evals/production-2026-10-25/results/source-identity-integrity.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\source-identity-integrity.json",
+      "sha256_at_initial_read": "645ccf2edb10146e428b281526c53a075315d7527cd35b5b58eced1cee85247f",
+      "sha256_at_completion": "645ccf2edb10146e428b281526c53a075315d7527cd35b5b58eced1cee85247f",
+      "changed_during_review": false,
+      "lines_at_completion": 13
+    },
+    {
+      "file": "evals/production-2026-10-25/results/harness-validation.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\harness-validation.json",
+      "sha256_at_initial_read": "1d6153b0ed12db63dadfb2e207023565a9255ce893a55e7bb52bd80504b3c313",
+      "sha256_at_completion": "cc45ae858cf2b545bfcbcfbe12be171ddb444d38662cae0b0e1d12b30bfdb346",
+      "changed_during_review": true,
+      "lines_at_completion": 41
+    },
+    {
+      "file": "evals/production-2026-10-25/results/runs-real-v3.jsonl",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\runs-real-v3.jsonl",
+      "sha256_at_initial_read": "1cec17e9a18c56be19ce82b50e6b641d7a136eedf8490c815db274a0ff417b70",
+      "sha256_at_completion": "1cec17e9a18c56be19ce82b50e6b641d7a136eedf8490c815db274a0ff417b70",
+      "changed_during_review": false,
+      "lines_at_completion": 126
+    },
+    {
+      "file": "evals/full-validation/analyze.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\full-validation\\analyze.py",
+      "sha256_at_initial_read": "308fc2e8076ba93c74353bdf8156ae86c7e3767c2616bf301f43ee086cd337c3",
+      "sha256_at_completion": "308fc2e8076ba93c74353bdf8156ae86c7e3767c2616bf301f43ee086cd337c3",
+      "changed_during_review": false,
+      "lines_at_completion": 526
+    }
+  ]
+}

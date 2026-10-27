@@ -1,0 +1,10 @@
+diff --git a/app.py b/app.py
+index 31da02f..7af4371 100644
+--- a/app.py
++++ b/app.py
+@@ -9,4 +9,4 @@ def quote_web(payload, parser=parse_cart):
+ 
+ def quote_partner(cart):
+     """Partners can construct Cart objects outside our parser."""
+-    return _price(cart)
++    return _price(validate_cart(cart))

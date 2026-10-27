@@ -1,0 +1,90 @@
+{
+  "verified_at": "2026-10-25T01:21:35.077314+00:00",
+  "study_version": "v3",
+  "planned_native_runs": 343,
+  "actual_native_runs": 343,
+  "branch_counts": {
+    "dev-v3": 16,
+    "routing-v3-python": 6,
+    "routing-v3-python-v2": 9,
+    "safety-v3": 72,
+    "real-v3": 240
+  },
+  "all_planned_runs_present": true,
+  "integrity_issues": [],
+  "analyses_reproduced_from_exported_rows": {
+    "formal": true,
+    "replication": true
+  },
+  "raw_artifacts_checked": 2744,
+  "private_archive_verified": true,
+  "untracked_listing_limitations_for_explicit_review": [
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r2--with-skill",
+      "warning": "warning: could not open directory '.test-tmp/pytest/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r2--baseline",
+      "warning": "warning: could not open directory '.pytest-tmp-shared-flags/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r0--baseline",
+      "warning": "warning: could not open directory '.pytest-tmp-sentinel-18953232a9224b96b79e7a7e4c1d619a/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r0--with-skill",
+      "warning": "warning: could not open directory '.pytest-tmp-sentinel/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--with-skill",
+      "warning": "warning: could not open directory '.tmp-sentinel-checks/pytest-focused/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r0--baseline",
+      "warning": "warning: could not open directory '.task-local-tmp/pytest/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r2--baseline",
+      "warning": "warning: could not open directory '.maintenance-pytest-tmp/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--baseline",
+      "warning": "warning: could not open directory '.test-tmp/pytest/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r0--with-skill",
+      "warning": "warning: could not open directory '.pt-shared-default/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3884--r0--baseline",
+      "warning": "warning: could not open directory '.pytest-tmp-task/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3884--r2--baseline",
+      "warning": "warning: could not open directory '.pytest-show-envvar-20261025/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r0--with-skill",
+      "warning": "warning: could not open directory '.pytest-local-temp-source/': Permission denied"
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r1--with-skill",
+      "warning": "warning: could not open directory '.pytest-temp-source-9bda0e4cbff54667aa5636339da3203b/': Permission denied"
+    }
+  ],
+  "qualification_evidence_integrity_pass": true,
+  "scope": "Exact local bytes and arithmetic checks; not a proof of scientific generalization or correctness of all source contracts."
+}

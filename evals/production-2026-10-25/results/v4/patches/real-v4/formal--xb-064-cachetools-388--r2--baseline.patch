@@ -1,0 +1,55 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..244e3b4 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -76,6 +76,8 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is None:
++            return self
+         wrapper = self.Wrapper(obj)
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..f4b5c6f 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,5 +1,6 @@
+ import unittest
+ import warnings
++from unittest.mock import create_autospec
+ 
+ 
+ from cachetools import Cache, cachedmethod, keys
+@@ -514,6 +515,30 @@ class MethodDecoratorTestMixin:
+             cached.bar()
+ 
+ 
++class CachedMethodIntrospectionTest(unittest.TestCase):
++
++    def test_class_access(self):
++        for name, descriptor in vars(Cached).items():
++            if not name.startswith("get"):
++                continue
++            with self.subTest(method=name), warnings.catch_warnings():
++                warnings.simplefilter("error")
++                self.assertIs(getattr(Cached, name), descriptor)
++                self.assertIs(getattr(Unhashable, name), descriptor)
++
++    def test_autospec(self):
++        for cls in (Cached, Unhashable):
++            for instance in (False, True):
++                with self.subTest(cls=cls, instance=instance):
++                    with warnings.catch_warnings():
++                        warnings.simplefilter("error")
++                        mock = create_autospec(cls, instance=instance)
++                        if not instance:
++                            mock = mock({})
++                        mock.get(42)
++                        mock.get.assert_called_once_with(42)
++
++
+ class CacheMethodTest(unittest.TestCase, MethodDecoratorTestMixin):
+ 
+     def cache(self, minsize, **kwargs):

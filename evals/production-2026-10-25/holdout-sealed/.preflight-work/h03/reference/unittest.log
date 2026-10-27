@@ -1,0 +1,15 @@
+test_bad_container (test_contract.Contract.test_bad_container) ... ok
+test_cart_alias (test_contract.Contract.test_cart_alias) ... ok
+test_catalog_alias (test_contract.Contract.test_catalog_alias) ... ok
+test_empty (test_contract.Contract.test_empty) ... ok
+test_frozen (test_contract.Contract.test_frozen) ... ok
+test_input_not_changed (test_contract.Contract.test_input_not_changed) ... ok
+test_missing_sku (test_contract.Contract.test_missing_sku) ... ok
+test_prices (test_contract.Contract.test_prices) ... ok
+test_quantities (test_contract.Contract.test_quantities) ... ok
+test_values (test_contract.Contract.test_values) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK

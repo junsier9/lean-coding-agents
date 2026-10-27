@@ -1,0 +1,58 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 1367a54..ae3ecd9 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -161,7 +161,7 @@ class Bits:
+             raise ValueError('Bits cannot represent negative values')
+         if len_ is None:
+             len_ = len(f'{val:b}')
+-        if val > 2 ** len_:
++        if val >= 2 ** len_:
+             raise ValueError(f'value {val} cannot be represented with {len_} bits')
+         self.val = val  # data is stored internally as integer
+         self.len = len_
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 4187a6b..d21bce7 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -110,3 +110,34 @@ def test_bits():
+             ).as_int()
+         ),
+         Bits('101'))
++
++
++@mark.parametrize('constructor', [Bits, Bits.from_int])
++@mark.parametrize('width', [0, 1, 2, 8, 64])
++def test_bits_reject_overflow(constructor, width):
++    for value in (2 ** width, 2 ** width + 1):
++        with raises(ValueError, match='cannot be represented'):
++            constructor(value, width)
++
++
++@mark.parametrize('width', [1, 2, 8, 64])
++def test_bits_maximum_value(width):
++    value = 2 ** width - 1
++    bits = Bits(value, width)
++    assert bits.as_int() == value
++    assert len(bits) == width
++    assert bits.as_bin() == '1' * width
++
++
++@mark.parametrize('value', [0, 1, 2, 4, 256, 2 ** 64])
++def test_bits_inferred_width(value):
++    bits = Bits(value)
++    assert bits.as_int() == value
++    assert bits.as_bin() == format(value, 'b')
++    assert len(bits) == len(bits.as_bin())
++
++
++@mark.parametrize('value', ['100', b'100', '0x4', [True, False, False]])
++def test_bits_reject_converted_overflow(value):
++    with raises(ValueError, match='cannot be represented'):
++        Bits(value, 2)

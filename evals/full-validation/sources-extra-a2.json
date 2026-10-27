@@ -1,0 +1,320 @@
+{
+  "cases": [
+    {
+      "id": "extra-a2-mi-587",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/587",
+      "task": "ichunked 顺序消费各个分块时仍保留已读取的大对象，造成不必要的内存峰值；例如读取含大字符串的一个块时会缓存整个块。请让顺序消费仅保留必要数据，同时保持分块顺序、块大小及乱序读取已生成块的支持。",
+      "fix_sha": "b469c17e2bb48d7b9aca11365e112736b8e814f6",
+      "base_sha": "775e4974292431acbda362b208d6b9b78bf1b07c",
+      "production_files": [
+        "more_itertools/more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_more.py。上游新增 IchunkedTests.test_memory_in_order，使用tracemalloc消费50个大字符串，检查峰值低于两个字符串大小；PyPy按上游规则跳过。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix inefficient use of `tee`s in `ichunked`",
+        "merged_at": "2021-12-06T18:08:18Z",
+        "commit_url": "https://github.com/more-itertools/more-itertools/commit/b469c17e2bb48d7b9aca11365e112736b8e814f6",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 38,
+        "evidence_urls": [
+          "https://github.com/more-itertools/more-itertools/pull/587",
+          "https://github.com/more-itertools/more-itertools/commit/b469c17e2bb48d7b9aca11365e112736b8e814f6",
+          "https://api.github.com/repos/more-itertools/more-itertools/commits/b469c17e2bb48d7b9aca11365e112736b8e814f6",
+          "https://github.com/more-itertools/more-itertools/blob/b469c17e2bb48d7b9aca11365e112736b8e814f6/tests/test_more.py"
+        ],
+        "regression_evidence": "上游新增 IchunkedTests.test_memory_in_order，使用tracemalloc消费50个大字符串，检查峰值低于两个字符串大小；PyPy按上游规则跳过。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-boltons-32",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/32",
+      "task": "ParsedException.from_string 只保留异常消息的第一行，并把分隔冒号后的空格混入消息。请完整保存多行异常消息及其中换行，并让普通单行消息保持正常内容，保留回溯帧解析。",
+      "fix_sha": "d8a2d7100cafba73dadb40760ba24022aacf252d",
+      "base_sha": "51ddb6c9115260417a4178a7fa8212c5bcbb5e14",
+      "production_files": [
+        "boltons/tbutils.py"
+      ],
+      "regression_test_files": [
+        "tests/tbutils_test.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/tbutils_test.py。新增 tests/tbutils_test.py::test_multiline_exception_message，并修改test_normal_tb的消息空格断言。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix multiline exception messages",
+        "merged_at": "2015-04-21T00:38:58Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/d8a2d7100cafba73dadb40760ba24022aacf252d",
+        "sha_basis": "PR历史merge_commit_sha当前返回422。使用仓库中可解析的合并提交d8a2d7100cafba73dadb40760ba24022aacf252d；其message明确标识Merge pull request #32，第一父等于PR的base_sha，第二父等于PR的head_sha，且生产及测试patch与PR一致。未猜测不可解析SHA。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/32",
+          "https://github.com/mahmoud/boltons/commit/d8a2d7100cafba73dadb40760ba24022aacf252d",
+          "https://api.github.com/repos/mahmoud/boltons/commits/d8a2d7100cafba73dadb40760ba24022aacf252d",
+          "https://github.com/mahmoud/boltons/blob/d8a2d7100cafba73dadb40760ba24022aacf252d/tests/tbutils_test.py"
+        ],
+        "regression_evidence": "新增 tests/tbutils_test.py::test_multiline_exception_message，并修改test_normal_tb的消息空格断言。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-boltons-64",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/64",
+      "task": "is_uuid 对无法作为UUID解析的普通对象会抛 AttributeError，而作为布尔验证工具应返回 False。请使这类非法输入安全返回 False，保留UUID对象、合法字符串和版本限制的判断。",
+      "fix_sha": "c3523874c23131a89fffc830d60b9428d4b04156",
+      "base_sha": "e5f82de36b1bde28c61d004b6b0f7c5b4941fe7e",
+      "production_files": [
+        "boltons/strutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strutils.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_strutils.py。新增 tests/test_strutils.py::test_is_uuid，包括set('garbage')、UUID实例、字符串及不同版本的断言。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix is_uuid() on un-parsable types.",
+        "merged_at": "2016-03-02T10:44:50Z",
+        "commit_url": "https://github.com/mahmoud/boltons/commit/c3523874c23131a89fffc830d60b9428d4b04156",
+        "sha_basis": "PR历史merge_commit_sha当前返回422。使用仓库中可解析的合并提交c3523874c23131a89fffc830d60b9428d4b04156；其message明确标识Merge pull request #64，第一父等于PR的base_sha，第二父等于PR的head_sha，且生产及测试patch与PR一致。未猜测不可解析SHA。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/mahmoud/boltons/pull/64",
+          "https://github.com/mahmoud/boltons/commit/c3523874c23131a89fffc830d60b9428d4b04156",
+          "https://api.github.com/repos/mahmoud/boltons/commits/c3523874c23131a89fffc830d60b9428d4b04156",
+          "https://github.com/mahmoud/boltons/blob/c3523874c23131a89fffc830d60b9428d4b04156/tests/test_strutils.py"
+        ],
+        "regression_evidence": "新增 tests/test_strutils.py::test_is_uuid，包括set('garbage')、UUID实例、字符串及不同版本的断言。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3884",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3884",
+      "task": "show_envvar 对空字符串或空序列仍在帮助和错误提示里显示空的环境变量信息，多个候选变量则显示成被整体加引号的Python列表。请让空配置与未配置一致，并逐项清楚列出多个变量，保留自动环境变量前缀的行为。",
+      "fix_sha": "8c73ff134480f436faa0d041bd19aaf949aac22c",
+      "base_sha": "bb695aaecdef95832d167fc1d508921745aa824e",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_options.py。新增test_show_envvar_empty与test_missing_envvar_sequence，覆盖None、空值、list/tuple及自动前缀。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix `show_envvar` output for a sequence or an empty `envvar`",
+        "merged_at": "2026-10-06T20:59:00Z",
+        "commit_url": "https://github.com/pallets/click/commit/8c73ff134480f436faa0d041bd19aaf949aac22c",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 23,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3884",
+          "https://github.com/pallets/click/commit/8c73ff134480f436faa0d041bd19aaf949aac22c",
+          "https://api.github.com/repos/pallets/click/commits/8c73ff134480f436faa0d041bd19aaf949aac22c",
+          "https://github.com/pallets/click/blob/8c73ff134480f436faa0d041bd19aaf949aac22c/tests/test_options.py"
+        ],
+        "regression_evidence": "新增test_show_envvar_empty与test_missing_envvar_sequence，覆盖None、空值、list/tuple及自动前缀。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3865",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3865",
+      "task": "默认短帮助文本把vs.、e.g.这类句中缩写误当句子结束，导致命令列表中的说明过早截断。请保留缩写后的同一句内容，并保持首段、空白折叠、宽度、省略号和完整词边界的既有短帮助契约。",
+      "fix_sha": "70689853e39c30e36eb0d83d586cc914a74db9d3",
+      "base_sha": "d036881798e34289a49b18a5c550c7cf687e5a7a",
+      "production_files": [
+        "src/click/utils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils/test_make_default_short_help.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_utils/test_make_default_short_help.py。扩展test_make_default_short_help的参数矩阵，覆盖缩写、截断、连字符词、极小和负宽度。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix short help abbreviation",
+        "merged_at": "2026-09-12T02:35:08Z",
+        "commit_url": "https://github.com/pallets/click/commit/70689853e39c30e36eb0d83d586cc914a74db9d3",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 52,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3865",
+          "https://github.com/pallets/click/commit/70689853e39c30e36eb0d83d586cc914a74db9d3",
+          "https://api.github.com/repos/pallets/click/commits/70689853e39c30e36eb0d83d586cc914a74db9d3",
+          "https://github.com/pallets/click/blob/70689853e39c30e36eb0d83d586cc914a74db9d3/tests/test_utils/test_make_default_short_help.py"
+        ],
+        "regression_evidence": "扩展test_make_default_short_help的参数矩阵，覆盖缩写、截断、连字符词、极小和负宽度。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3805",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3805",
+      "task": "Sentinel 成员以及持有默认 UNSET 的Option，在复制或pickle往返时可能失败，某些Python版本还无法deepcopy参数对象。请保留哨兵的单例身份，使参数对象的复制和序列化保持有效默认值及名称。",
+      "fix_sha": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+      "base_sha": "3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+      "production_files": [
+        "src/click/_utils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils/test_sentinel.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_utils/test_sentinel.py。新增参数化test_sentinel_duplication_preserves_identity与test_parameter_duplication，分别覆盖copy、deepcopy和pickle。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix `copy`, `deepcopy` and `pickle` of `Sentinel` members",
+        "merged_at": "2026-08-29T15:12:36Z",
+        "commit_url": "https://github.com/pallets/click/commit/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 9,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3805",
+          "https://github.com/pallets/click/commit/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+          "https://api.github.com/repos/pallets/click/commits/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+          "https://github.com/pallets/click/blob/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d/tests/test_utils/test_sentinel.py"
+        ],
+        "regression_evidence": "新增参数化test_sentinel_duplication_preserves_identity与test_parameter_duplication，分别覆盖copy、deepcopy和pickle。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3678",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3678",
+      "task": "用户参数的内部名称为help或与自定义帮助选项名称相同时，会与自动帮助选项冲突而破坏解析或丢失值。请让这些正常参数与自动帮助共存，保留显式用户--help覆盖默认帮助的行为，并使确实冲突的参数名称得到诊断。",
+      "fix_sha": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "base_sha": "8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py",
+        "tests/test_info_dict.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_basic.py tests/test_info_dict.py tests/test_options.py。新增test_param_named_help的四组场景、保留help标志覆盖、保留名占用诊断及参数共享名称的控制测试。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix parsing when a parameter is named `help`",
+        "merged_at": "2026-07-10T03:24:09Z",
+        "commit_url": "https://github.com/pallets/click/commit/b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 46,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3678",
+          "https://github.com/pallets/click/commit/b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+          "https://api.github.com/repos/pallets/click/commits/b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_basic.py",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_info_dict.py",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_options.py"
+        ],
+        "regression_evidence": "新增test_param_named_help的四组场景、保留help标志覆盖、保留名占用诊断及参数共享名称的控制测试。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3578",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3578",
+      "task": "可选的Choice或DateTime位置参数在用法摘要中出现双重方括号，例如[[foo|bar]]，变长参数也受到影响。请让摘要只显示一层合适的可选标记，并保留变长后缀和正常类型元变量。",
+      "fix_sha": "09195f6a92972c4e1bbb5493686456e6ba624520",
+      "base_sha": "d9ff13369ac78d9acff693faa79f26badd566ab3",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_basic.py。新增test_choice_argument_optional_metavar与test_datetime_argument_optional_metavar，检查可选及变长用法。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix double-bracketing of choices in synopsis",
+        "merged_at": "2026-06-13T03:59:03Z",
+        "commit_url": "https://github.com/pallets/click/commit/09195f6a92972c4e1bbb5493686456e6ba624520",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3578",
+          "https://github.com/pallets/click/commit/09195f6a92972c4e1bbb5493686456e6ba624520",
+          "https://api.github.com/repos/pallets/click/commits/09195f6a92972c4e1bbb5493686456e6ba624520",
+          "https://github.com/pallets/click/blob/09195f6a92972c4e1bbb5493686456e6ba624520/tests/test_basic.py"
+        ],
+        "regression_evidence": "新增test_choice_argument_optional_metavar与test_datetime_argument_optional_metavar，检查可选及变长用法。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3493",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3493",
+      "task": "echo(b'', file=BytesIO(), nl=True) 会因空字节内容而走错文本路径并抛类型错误。请让空字节输出像普通二进制内容一样写入一个换行，保留文本、bytearray、None及自定义对象的现有输出行为。",
+      "fix_sha": "a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+      "base_sha": "d42f15b71757de791a5781fb179fd972da9169f5",
+      "production_files": [
+        "src/click/utils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_utils.py。在test_echo_custom_file中新增空bytes写入BytesIO后结果为b'\\n'的回归。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Handle empty bytes in echo",
+        "merged_at": "2026-05-21T22:46:00Z",
+        "commit_url": "https://github.com/pallets/click/commit/a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 16,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3493",
+          "https://github.com/pallets/click/commit/a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+          "https://api.github.com/repos/pallets/click/commits/a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+          "https://github.com/pallets/click/blob/a5f5aa6d4012d256ccca24638f2642fc371e9f77/tests/test_utils.py"
+        ],
+        "regression_evidence": "在test_echo_custom_file中新增空bytes写入BytesIO后结果为b'\\n'的回归。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    },
+    {
+      "id": "extra-a2-click-3484",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3484",
+      "task": "参数类型转换和eager回调中调用get_parameter_source()会得到None，即使参数值来源已经确定；这会让依赖默认值来源的回调错误覆盖环境配置。请让来源在这些阶段可查询，同时保持多个共享存储名的选项竞争后胜出值及其来源一致。",
+      "fix_sha": "d42f15b71757de791a5781fb179fd972da9169f5",
+      "base_sha": "4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "仅移植对应回归测试到独立base-test，验证base失败、fix通过且非零收集；完整保护文件命令：python -m pytest -q tests/test_defaults.py tests/test_options.py。新增类型转换、eager回调、环境debug保持及布尔功能组来源回归，生产改动仅src/click/core.py。 本次只研究来源，未运行测试或模型。",
+      "source_notes": {
+        "pr_title": "Fix `get_parameter_source()` during type conversion and eager callbacks",
+        "merged_at": "2026-05-21T15:20:36Z",
+        "commit_url": "https://github.com/pallets/click/commit/d42f15b71757de791a5781fb179fd972da9169f5",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha为merge_commit_sha；base_sha来自该提交的第一父SHA。",
+        "production_diff_lines": 17,
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3484",
+          "https://github.com/pallets/click/commit/d42f15b71757de791a5781fb179fd972da9169f5",
+          "https://api.github.com/repos/pallets/click/commits/d42f15b71757de791a5781fb179fd972da9169f5",
+          "https://github.com/pallets/click/blob/d42f15b71757de791a5781fb179fd972da9169f5/tests/test_defaults.py",
+          "https://github.com/pallets/click/blob/d42f15b71757de791a5781fb179fd972da9169f5/tests/test_options.py"
+        ],
+        "regression_evidence": "新增类型转换、eager回调、环境debug保持及布尔功能组来源回归，生产改动仅src/click/core.py。",
+        "verification_status": "仅核实公开来源、可解析固定提交、首父、生产diff及上游测试。未运行测试/模型，未读取真实实验结果。",
+        "source_collection_scope": "与当前sources-a、sources-b及sources-extra-a按PR URL和fix_sha全部排重。"
+      }
+    }
+  ]
+}

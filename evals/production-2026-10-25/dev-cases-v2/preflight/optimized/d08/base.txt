@@ -1,0 +1,75 @@
+test_charge_exception_propagates (test_contract.Contract.test_charge_exception_propagates) ... ok
+test_hook_can_change_currency (test_contract.Contract.test_hook_can_change_currency) ... ok
+test_hook_return_value_is_ignored (test_contract.Contract.test_hook_return_value_is_ignored) ... ok
+test_invalid_currency_types_before_hook (test_contract.Contract.test_invalid_currency_types_before_hook) ... ok
+test_invalid_external_does_not_reach_hook_or_charge (test_contract.Contract.test_invalid_external_does_not_reach_hook_or_charge) ... ok
+test_invalid_external_types (test_contract.Contract.test_invalid_external_types) ... ok
+test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge) ... 
+  test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge) (amount=-1) ... FAIL
+test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge) ... FAIL
+test_invalid_plugin_preserves_original (test_contract.Contract.test_invalid_plugin_preserves_original) ... FAIL
+test_normal_no_hook (test_contract.Contract.test_normal_no_hook) ... ok
+test_plugin_cancellation_propagates_without_charge (test_contract.Contract.test_plugin_cancellation_propagates_without_charge) ... ok
+test_plugin_exception_is_not_success (test_contract.Contract.test_plugin_exception_is_not_success) ... ok
+test_plugin_invalid_currency_rejected (test_contract.Contract.test_plugin_invalid_currency_rejected) ... FAIL
+test_plugin_shape_change_rejected (test_contract.Contract.test_plugin_shape_change_rejected) ... ERROR
+test_valid_hook_and_input_ownership (test_contract.Contract.test_valid_hook_and_input_ownership) ... ok
+test_zero_is_valid (test_contract.Contract.test_zero_is_valid) ... ok
+
+======================================================================
+ERROR: test_plugin_shape_change_rejected (test_contract.Contract.test_plugin_shape_change_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\test_contract.py", line 71, in test_plugin_shape_change_rejected
+    process_charge({"amount": 5, "currency": "USD"}, charge, hook)
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\app.py", line 15, in process_charge
+    return charge(owned["amount"], owned["currency"])
+                  ~~~~~^^^^^^^^^^
+KeyError: 'amount'
+
+======================================================================
+FAIL: test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge) (amount=-1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\test_contract.py", line 63, in test_invalid_plugin_amount_does_not_charge
+    with self.subTest(amount=amount), self.assertRaises(InputError):
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: InputError not raised
+
+======================================================================
+FAIL: test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\test_contract.py", line 65, in test_invalid_plugin_amount_does_not_charge
+    self.assertEqual(charge.calls, [])
+AssertionError: Lists differ: [(-1, 'USD')] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+(-1, 'USD')
+
+- [(-1, 'USD')]
++ []
+
+======================================================================
+FAIL: test_invalid_plugin_preserves_original (test_contract.Contract.test_invalid_plugin_preserves_original)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\test_contract.py", line 82, in test_invalid_plugin_preserves_original
+    with self.assertRaises(InputError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: InputError not raised
+
+======================================================================
+FAIL: test_plugin_invalid_currency_rejected (test_contract.Contract.test_plugin_invalid_currency_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-i3nnjnke\test_contract.py", line 76, in test_plugin_invalid_currency_rejected
+    with self.assertRaises(InputError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: InputError not raised
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.002s
+
+FAILED (failures=4, errors=1)

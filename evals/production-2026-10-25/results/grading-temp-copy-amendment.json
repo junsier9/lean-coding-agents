@@ -1,0 +1,15 @@
+{
+  "documented_at": "2026-10-24T21:36:40.511661+00:00",
+  "amendment": "Copy exclusion for one observed model-created temporary directory only",
+  "key": "formal--extra-a2-click-3805--r1--with-skill",
+  "original_checkpoint_sha256": "778742EE20A976CD61192E31318F186EA74CA71EBBE6FB0635C7A6E623441E2A",
+  "reason": "Windows permission error copying untracked .tmp-sentinel-checks/pytest-focused, after model completed",
+  "affected_directory_has_no_tracked_files": true,
+  "frozen_runner_or_grader_source_modified": false,
+  "candidate_task_guard_overlay_and_thresholds_unchanged": true,
+  "model_reruns_allowed": false,
+  "recovery_waits_until_current_suite_is_idle": true,
+  "failed_grading_cost_retained": true,
+  "original_checkpoint_retained_before_recovery": true,
+  "interpretation": "Infrastructure recovery; no currently graded failure is relabelled or retried."
+}

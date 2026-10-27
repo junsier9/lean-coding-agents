@@ -1,0 +1,109 @@
+test_boundary_prices (test_contract.Contract.test_boundary_prices) ... ok
+test_input_unchanged (test_contract.Contract.test_input_unchanged) ... ok
+test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) ... 
+  test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=True) ... FAIL
+  test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=-1) ... FAIL
+  test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=101) ... FAIL
+  test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d='10') ... ERROR
+test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) ... 
+  test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=True) ... FAIL
+  test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=0) ... FAIL
+  test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=-1) ... FAIL
+  test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=1.5) ... FAIL
+test_partner_negative_price (test_contract.Contract.test_partner_negative_price) ... FAIL
+test_partner_price (test_contract.Contract.test_partner_price) ... ok
+test_web_invalid (test_contract.Contract.test_web_invalid) ... ok
+test_web_missing_fields (test_contract.Contract.test_web_missing_fields) ... ok
+test_web_parser_once (test_contract.Contract.test_web_parser_once) ... ok
+test_web_price (test_contract.Contract.test_web_price) ... ok
+
+======================================================================
+ERROR: test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d='10')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 24, in test_partner_bad_discount
+    quote_partner(Cart(100, 1, d))
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\app.py", line 12, in quote_partner
+    return _price(cart)
+           ^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\app.py", line 4, in _price
+    return cart.unit_cents * cart.quantity * (100 - cart.discount) // 100
+                                              ~~~~^~~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for -: 'int' and 'str'
+
+======================================================================
+FAIL: test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 23, in test_partner_bad_discount
+    with self.subTest(d=d), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=-1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 23, in test_partner_bad_discount
+    with self.subTest(d=d), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) (d=101)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 23, in test_partner_bad_discount
+    with self.subTest(d=d), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 18, in test_partner_bad_quantity
+    with self.subTest(q=q), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 18, in test_partner_bad_quantity
+    with self.subTest(q=q), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=-1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 18, in test_partner_bad_quantity
+    with self.subTest(q=q), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) (q=1.5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 18, in test_partner_bad_quantity
+    with self.subTest(q=q), self.assertRaises(CartError):
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+======================================================================
+FAIL: test_partner_negative_price (test_contract.Contract.test_partner_negative_price)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h02\initial\test_contract.py", line 13, in test_partner_negative_price
+    with self.assertRaises(CartError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CartError not raised
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+FAILED (failures=8, errors=1)

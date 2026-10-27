@@ -1,0 +1,173 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..3e07ff1 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2608,6 +2608,8 @@ class Parameter(ABC):
+ 
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
++            # Make the incoming source available to type conversion and callbacks.
++            ctx.set_parameter_source(self.name, source)
+ 
+             # Display a deprecation warning if necessary.
+             if (
+@@ -2658,10 +2660,9 @@ class Parameter(ABC):
+             if self.expose_value:
+                 ctx.params[self.name] = value
+                 ctx._param_default_explicit[self.name] = self._default_explicit
+-        elif existing_source is None:
+-            # Nothing has claimed the slot yet. Record at least our source so downstream
+-            # lookups don't return ``None``.
+-            ctx.set_parameter_source(self.name, source)
++        elif existing_source is not None:
++            # Restore the source of the value that kept the shared slot.
++            ctx.set_parameter_source(self.name, existing_source)
+ 
+         return value, args
+ 
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 49f0ac6..8c878a2 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -265,6 +265,87 @@ def test_default_map_source(runner, args, default_map, expected_value, expected_
+     assert f"source={expected_source}" in result.output
+ 
+ 
++@pytest.mark.parametrize("is_eager", [False, True])
++@pytest.mark.parametrize("expose_value", [False, True])
++@pytest.mark.parametrize(
++    ("invoke_kwargs", "expected_value", "expected_source"),
++    [
++        ({}, 42, click.ParameterSource.DEFAULT),
++        ({"default_map": {"number": "43"}}, 43, click.ParameterSource.DEFAULT_MAP),
++        ({"env": {"TEST_NUMBER": "44"}}, 44, click.ParameterSource.ENVIRONMENT),
++        ({"args": ["--number", "45"]}, 45, click.ParameterSource.COMMANDLINE),
++    ],
++)
++def test_parameter_source_during_processing(
++    runner, is_eager, expose_value, invoke_kwargs, expected_value, expected_source
++):
++    sources = []
++
++    class SourceAwareInt(click.ParamType):
++        name = "integer"
++
++        def convert(self, value, param, ctx):
++            sources.append(("convert", ctx.get_parameter_source(param.name)))
++            return click.INT.convert(value, param, ctx)
++
++    def callback(ctx, param, value):
++        sources.append(("callback", ctx.get_parameter_source(param.name)))
++        return value
++
++    @click.command()
++    @click.option(
++        "--number",
++        type=SourceAwareInt(),
++        default=42,
++        envvar="TEST_NUMBER",
++        callback=callback,
++        is_eager=is_eager,
++        expose_value=expose_value,
++    )
++    @click.pass_context
++    def cli(ctx, **params):
++        return params, ctx.get_parameter_source("number")
++
++    result = runner.invoke(cli, standalone_mode=False, **invoke_kwargs)
++    assert result.exception is None
++    assert sources == [("convert", expected_source), ("callback", expected_source)]
++    assert result.return_value == (
++        {"number": expected_value} if expose_value else {},
++        expected_source,
++    )
++
++
++@pytest.mark.parametrize(
++    ("env", "expected"),
++    [
++        ({}, "42:DEFAULT\n"),
++        ({"TEST_NUMBER": "44"}, "44:ENVIRONMENT\n"),
++    ],
++)
++def test_parameter_source_in_exiting_eager_callback(runner, env, expected):
++    def callback(ctx, param, value):
++        source = ctx.get_parameter_source(param.name)
++        click.echo(f"{value}:{source.name}")
++        ctx.exit()
++
++    @click.command()
++    @click.option(
++        "--number",
++        default=42,
++        envvar="TEST_NUMBER",
++        callback=callback,
++        is_eager=True,
++        expose_value=False,
++    )
++    @click.argument("required")
++    def cli(required):
++        pytest.fail("The eager callback should exit before invoking the command.")
++
++    result = runner.invoke(cli, env=env)
++    assert result.exception is None
++    assert result.output == expected
++
++
+ def test_lookup_default_override_respected(runner):
+     """A subclass override of ``lookup_default()`` should be called by Click
+     internals, not bypassed by a private method.
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 25e649d..4beaa63 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -2836,6 +2836,49 @@ def test_bool_flag_group_competition(runner, opts, args, expected):
+     assert result.output == repr(expected)
+ 
+ 
++@pytest.mark.parametrize("reverse", [False, True])
++@pytest.mark.parametrize(
++    ("default_map", "fallback_source"),
++    [
++        (None, click.ParameterSource.DEFAULT),
++        ({"value": "mapped"}, click.ParameterSource.DEFAULT_MAP),
++    ],
++)
++def test_shared_parameter_source_during_callbacks(
++    runner, reverse, default_map, fallback_source
++):
++    sources = []
++
++    def callback(ctx, param, value):
++        sources.append((param.opts[0], ctx.get_parameter_source(param.name)))
++        return value
++
++    @click.command()
++    @click.option("--configured", "value", envvar="TEST_VALUE", callback=callback)
++    @click.option("--fallback", "value", default="fallback", callback=callback)
++    @click.pass_context
++    def cli(ctx, value):
++        return value, ctx.get_parameter_source("value")
++
++    expected_sources = [
++        ("--configured", click.ParameterSource.ENVIRONMENT),
++        ("--fallback", fallback_source),
++    ]
++    if reverse:
++        cli.params.reverse()
++        expected_sources.reverse()
++
++    result = runner.invoke(
++        cli,
++        env={"TEST_VALUE": "configured"},
++        default_map=default_map,
++        standalone_mode=False,
++    )
++    assert result.exception is None
++    assert sources == expected_sources
++    assert result.return_value == ("configured", click.ParameterSource.ENVIRONMENT)
++
++
+ @pytest.mark.parametrize(
+     ("envvar_value", "args", "expected"),
+     [

@@ -1,0 +1,60 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 66808a8..fed4903 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Avoid extra blank lines when a command's help text is empty after
++    truncating at a form feed.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/core.py b/src/click/core.py
+index d61f7ba..24c8604 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1365,8 +1365,9 @@ class Command(BaseCommand):
+         if self.deprecated:
+             text = _("(Deprecated) {text}").format(text=text)
+ 
++        text = inspect.cleandoc(text).partition("\f")[0]
++
+         if text:
+-            text = inspect.cleandoc(text).partition("\f")[0]
+             formatter.write_paragraph()
+ 
+             with formatter.indentation():
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index 3a0d4b9..5b6e608 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -109,6 +109,27 @@ def test_help_truncation(runner):
+     assert "This is a command with truncated help." in result.output
+ 
+ 
++@pytest.mark.parametrize("deprecated", [False, True])
++def test_empty_help_truncation(runner, deprecated):
++    @click.command(deprecated=deprecated)
++    def cli():
++        """
++        \f
++
++        This text should be truncated.
++        """
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    expected = "Usage: cli [OPTIONS]\n\n"
++
++    if deprecated:
++        expected += "  (Deprecated)\n\n"
++
++    expected += "Options:\n  --help  Show this message and exit.\n"
++    assert result.output == expected
++
++
+ def test_no_args_is_help(runner):
+     @click.command(no_args_is_help=True)
+     def cli():

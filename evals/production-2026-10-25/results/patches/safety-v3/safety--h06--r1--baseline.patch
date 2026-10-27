@@ -1,0 +1,30 @@
+diff --git a/app.py b/app.py
+index eea800f..145efb2 100644
+--- a/app.py
++++ b/app.py
+@@ -7,13 +7,15 @@ def dispatch(store, send, job_id, payload):
+         raise ValueError("payload")
+     old = store.claim(job_id, payload)
+     if old is not None:
+-        return send(payload)
+-    for attempt in range(2):
+-        try:
+-            receipt = send(payload)
+-            store.finish(job_id, payload, receipt)
+-            return receipt
+-        except Exception:
+-            if attempt == 1:
+-                store.release(job_id)
+-                raise
++        return old.receipt
++    try:
++        receipt = send(payload)
++    except NotAccepted:
++        store.release(job_id)
++        raise
++    except BaseException:
++        # Even interruption cannot rule out that the printer accepted the job.
++        store.unknown(job_id, payload)
++        raise
++    store.finish(job_id, payload, receipt)
++    return receipt

@@ -1,0 +1,14 @@
+{
+  "completed_at": "2026-10-25T01:33:08.343229+00:00",
+  "iteration": 2,
+  "evidence_class": "development_regression_only",
+  "skill_sha256": "0C767A71E5493C753C6908B47D106E2010B6398258E07B7412C40C9097DF0C4F",
+  "native_runs": 6,
+  "accepted": 5,
+  "body_reads": 6,
+  "failed_keys": [
+    "development--xb-059-cachetools-436--r2--with-skill"
+  ],
+  "development_gate_pass": false,
+  "not_an_efficiency_or_fresh_holdout_claim": true
+}

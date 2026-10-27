@@ -1,0 +1,123 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c850a73..b61ef38 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -658,13 +658,17 @@ def one(iterable, too_short=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+-    raise too_short or ValueError('too few items in iterable (expected 1)')
++    if too_short is not None:
++        raise too_short
++    raise ValueError('too few items in iterable (expected 1)')
+ 
+ 
+ def raise_(exception, *args):
+@@ -3681,11 +3685,13 @@ def only(iterable, default=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+     return default
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4e5f27f..0cf6458 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -773,6 +773,23 @@ class OneTests(TestCase):
+             OverflowError, lambda: mi.one(it, too_short=OverflowError)
+         )
+ 
++    def test_too_short_falsy_exception(self):
++        class FalsyError(Exception):
++            def __bool__(self):
++                return False
++
++        error = FalsyError('too short')
++        with self.assertRaises(FalsyError) as caught:
++            mi.one([], too_short=error)
++        self.assertIs(caught.exception, error)
++
++    def test_too_short_default_message(self):
++        with self.assertRaises(ValueError) as caught:
++            mi.one([], too_short=None)
++        self.assertEqual(
++            str(caught.exception), 'too few items in iterable (expected 1)'
++        )
++
+     def test_too_long(self):
+         it = count()
+         self.assertRaises(ValueError, lambda: mi.one(it))  # burn 0 and 1
+@@ -4386,6 +4403,55 @@ class OnlyTests(TestCase):
+         )
+ 
+ 
++class OneAndOnlyExceptionTests(TestCase):
++    def test_too_long_falsy_exception(self):
++        class FalsyError(Exception):
++            def __bool__(self):
++                return False
++
++        for func in (mi.one, mi.only):
++            with self.subTest(func=func.__name__):
++                error = FalsyError('too long')
++                iterator = iter([1, 2, 3])
++                with self.assertRaises(FalsyError) as caught:
++                    func(iterator, too_long=error)
++                self.assertIs(caught.exception, error)
++                self.assertEqual(next(iterator), 3)
++
++    def test_custom_exception_skips_repr(self):
++        class BadRepr:
++            def __repr__(self):
++                raise AssertionError('repr should not be called')
++
++        for func in (mi.one, mi.only):
++            for index in (0, 1):
++                with self.subTest(func=func.__name__, index=index):
++                    items = [1, 2]
++                    items[index] = BadRepr()
++                    error = RuntimeError('too long')
++                    with self.assertRaises(RuntimeError) as caught:
++                        func(items, too_long=error)
++                    self.assertIs(caught.exception, error)
++                    with self.assertRaises(RuntimeError):
++                        func(items, too_long=RuntimeError)
++
++    def test_default_exception_preserves_repr_failure(self):
++        error = RuntimeError('repr failed')
++
++        class BadRepr:
++            def __repr__(self):
++                raise error
++
++        for func in (mi.one, mi.only):
++            for index in (0, 1):
++                with self.subTest(func=func.__name__, index=index):
++                    items = [1, 2]
++                    items[index] = BadRepr()
++                    with self.assertRaises(RuntimeError) as caught:
++                        func(items, too_long=None)
++                    self.assertIs(caught.exception, error)
++
++
+ class IchunkedTests(TestCase):
+     def test_even(self):
+         iterable = (str(x) for x in range(10))

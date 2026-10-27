@@ -1,0 +1,671 @@
+{
+  "pair": "01",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "nth_combination 在 r 大于输入长度、因而根本没有组合时抛 ValueError，和其按索引选择元素的契约及文档等价实现不一致。请使无有效索引的情况抛 IndexError，仍对负 r 抛 ValueError，并保留正常及负索引取值。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair01.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B"
+    ],
+    "rubric": [
+      "保留公开调用、正常与必要错误路径",
+      "新增 guard/copy/wrapper/retry 须有当前需求",
+      "不用代码行数或测试数量选择一侧",
+      "以可见源码和隔离探针佐证并区分未知边界"
+    ],
+    "not_accessed_for_this_review": [
+      "分组标签",
+      "成本或计时",
+      "skill 正文",
+      "隐藏 grader",
+      "固定生产解或参考修复",
+      "其他生产结果",
+      "第一轮揭盲",
+      "原生模型记录"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false
+  },
+  "comparison": "A/B 的 more_itertools/recipes.py 完整字节相同。两侧只拆分原有 r 范围错误，使 r<0 继续 ValueError、r>输入长度改为 IndexError，正常计算与索引逻辑不变。独立标准库输出对照、错误传播、一次性输入与对象所有权检查均通过，无一侧偏好。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整目标生产文件字节比较",
+    "equal": true
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "01-A-error-contract",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+          "line": 655,
+          "title": "将无组合索引错误与非法负 r 分开，直接满足题面",
+          "evidence": "原有合并 ValueError 范围拆为 r<0 抛 ValueError、r>n 抛 IndexError，避免无组合时落入后续计算；没有吞错、默认值或参数强制归一化。修改后的文档同时解释异常类别。全部 r 大于长度的正负整数索引现在按空组合列表的索引语义抛 IndexError。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 657
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 649
+            }
+          ],
+          "probe_ids": [
+            "r_above_length_any_index_is_indexerror",
+            "negative_r_stays_valueerror"
+          ]
+        },
+        {
+          "id": "01-A-normal-indexing",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+          "line": 665,
+          "title": "正常和负索引、空组合与完整组合保持原值及边界错误",
+          "evidence": "组合计数、负索引调整和结果选择逻辑未修改。独立枚举 0..7 长度输入、所有合法 r，并对重复且未按值排序的输入逐项比对标准库，正负索引一致。r=0 与 r=n 的唯一结果、有效 r 的两端越界及较大索引均保持正确。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 668
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 671
+            }
+          ],
+          "probe_ids": [
+            "exhaustive_positive_negative_index_stdlib_oracle",
+            "valid_r_invalid_index_empty_and_full_width",
+            "larger_index_stdlib_islice_oracle"
+          ]
+        },
+        {
+          "id": "01-A-input-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+          "line": 653,
+          "title": "输入只物化一次，输入故障先传播，未为范围检查吞没意外错误",
+          "evidence": "保留 tuple(iterable) 在范围判断前的既有位置。一次性迭代器在合法及 r 非法路径只被遍历一次；中途 RuntimeError 与 __iter__ 的 KeyboardInterrupt 均传播同一异常对象，即使 r 本身为负或过大，也没有用范围错误掩盖实际输入故障。该物化是原有组合随机索引算法的数据边界，没有新增重复验证或拷贝。",
+          "probe_ids": [
+            "one_shot_materialization_once_including_error_paths",
+            "unexpected_input_runtimeerror_keyboardinterrupt_identity"
+          ]
+        },
+        {
+          "id": "01-A-ownership-api",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+          "line": 638,
+          "title": "公开关键字调用及原元素引用、输入次序保持",
+          "evidence": "函数签名未变，iterable/r/index 的位置、混合与关键字调用正常。结果是 tuple，内部元素保持输入对象身份，含重复引用时仍按原输入位置选择；输入 list 未被改变。故意让元素相等比较和排序抛错的对象仍可选择，说明未引入元素验证、排序或防御深拷贝。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 677
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\A\\more_itertools\\recipes.py",
+              "line": 679
+            }
+          ],
+          "probe_ids": [
+            "public_keyword_forms_object_identity_input_order"
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "01-B-error-contract",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+          "line": 655,
+          "title": "将无组合索引错误与非法负 r 分开，直接满足题面",
+          "evidence": "原有合并 ValueError 范围拆为 r<0 抛 ValueError、r>n 抛 IndexError，避免无组合时落入后续计算；没有吞错、默认值或参数强制归一化。修改后的文档同时解释异常类别。全部 r 大于长度的正负整数索引现在按空组合列表的索引语义抛 IndexError。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 657
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 649
+            }
+          ],
+          "probe_ids": [
+            "r_above_length_any_index_is_indexerror",
+            "negative_r_stays_valueerror"
+          ]
+        },
+        {
+          "id": "01-B-normal-indexing",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+          "line": 665,
+          "title": "正常和负索引、空组合与完整组合保持原值及边界错误",
+          "evidence": "组合计数、负索引调整和结果选择逻辑未修改。独立枚举 0..7 长度输入、所有合法 r，并对重复且未按值排序的输入逐项比对标准库，正负索引一致。r=0 与 r=n 的唯一结果、有效 r 的两端越界及较大索引均保持正确。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 668
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 671
+            }
+          ],
+          "probe_ids": [
+            "exhaustive_positive_negative_index_stdlib_oracle",
+            "valid_r_invalid_index_empty_and_full_width",
+            "larger_index_stdlib_islice_oracle"
+          ]
+        },
+        {
+          "id": "01-B-input-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+          "line": 653,
+          "title": "输入只物化一次，输入故障先传播，未为范围检查吞没意外错误",
+          "evidence": "保留 tuple(iterable) 在范围判断前的既有位置。一次性迭代器在合法及 r 非法路径只被遍历一次；中途 RuntimeError 与 __iter__ 的 KeyboardInterrupt 均传播同一异常对象，即使 r 本身为负或过大，也没有用范围错误掩盖实际输入故障。该物化是原有组合随机索引算法的数据边界，没有新增重复验证或拷贝。",
+          "probe_ids": [
+            "one_shot_materialization_once_including_error_paths",
+            "unexpected_input_runtimeerror_keyboardinterrupt_identity"
+          ]
+        },
+        {
+          "id": "01-B-ownership-api",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+          "line": 638,
+          "title": "公开关键字调用及原元素引用、输入次序保持",
+          "evidence": "函数签名未变，iterable/r/index 的位置、混合与关键字调用正常。结果是 tuple，内部元素保持输入对象身份，含重复引用时仍按原输入位置选择；输入 list 未被改变。故意让元素相等比较和排序抛错的对象仍可选择，说明未引入元素验证、排序或防御深拷贝。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 677
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\01\\B\\more_itertools\\recipes.py",
+              "line": 679
+            }
+          ],
+          "probe_ids": [
+            "public_keyword_forms_object_identity_input_order"
+          ]
+        }
+      ],
+      "unresolved": []
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "将对应 base/A/B 的 more_itertools 包分别复制到本审查员独立临时目录；每份使用单独 python -B 子进程，以 PYTHONPATH、PROBE_COPY、PYTHONDONTWRITEBYTECODE=1 隔离，并断言实际导入来自对应副本。仅本地构造有限输入和故意失败的迭代器，没有修改待审副本。",
+    "oracle": "独立使用标准库 itertools.combinations 的结果与 Python list 索引语义，不复制 nth_combination 的组合计数或选择算法。较大索引用 itertools.islice 获取标准库期望值。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "import itertools\nimport json\nimport os\nfrom pathlib import Path\nimport more_itertools\nfrom more_itertools import recipes\n\nassert Path(recipes.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nnth = more_itertools.nth_combination\nresults = []\n\n\ndef eq(actual, expected):\n    assert actual == expected, (repr(actual), repr(expected))\n\n\ndef raises(expected, function, same=None):\n    try:\n        function()\n    except expected as exc:\n        if same is not None:\n            assert exc is same\n        return exc\n    else:\n        raise AssertionError(f'{expected.__name__} not raised')\n\n\ndef check(name, function):\n    try:\n        detail = function()\n        results.append({'id':name,'status':'pass','detail':detail})\n    except Exception as exc:\n        results.append({'id':name,'status':'fail','error':type(exc).__name__,'message':str(exc)})\n\n\ndef exhaustive_selection():\n    count = 0\n    for size in range(8):\n        values = list(range(size))\n        for r in range(size+1):\n            expected = list(itertools.combinations(values,r))\n            for index in range(-len(expected),len(expected)):\n                eq(nth(values,r,index),expected[index])\n                count += 1\n    for r in range(5):\n        values = 'baca'\n        expected = list(itertools.combinations(values,r))\n        for index in range(-len(expected),len(expected)):\n            eq(nth(values,r,index),expected[index])\n            count += 1\n    return {'selected_indices_checked':count,'oracle':'stdlib itertools.combinations and Python list indexing'}\n\n\ndef nonexistent_combination_indices():\n    count = 0\n    for values in ([],list('abc'),list(range(9))):\n        for r in (len(values)+1,len(values)+4):\n            assert list(itertools.combinations(values,r)) == []\n            for index in (-100,-1,0,1,100):\n                raises(IndexError,lambda:nth(values,r,index))\n                count += 1\n    return {'nonexistent_indices_checked':count}\n\n\ndef negative_r():\n    for values in ([],[1,2,3]):\n        for r in (-1,-4):\n            for index in (-100,0,100):\n                raises(ValueError,lambda:nth(values,r,index))\n\n\ndef valid_r_out_of_bounds_and_zero():\n    count = 0\n    for size in range(8):\n        values = list(range(size))\n        for r in range(size+1):\n            expected = list(itertools.combinations(values,r))\n            for index in (-len(expected)-1,len(expected)):\n                raises(IndexError,lambda:nth(values,r,index))\n                count += 1\n        eq(nth(values,0,0),())\n        eq(nth(values,0,-1),())\n        eq(nth(values,size,0),tuple(values))\n        eq(nth(values,size,-1),tuple(values))\n    return {'out_of_bounds_indices_checked':count}\n\n\ndef one_shot_input_consumption():\n    class Tracked:\n        def __init__(self,values):\n            self.values = iter(values)\n            self.iter_calls = 0\n            self.next_calls = 0\n        def __iter__(self):\n            self.iter_calls += 1\n            if self.iter_calls > 1:\n                raise AssertionError('input traversed twice')\n            return self\n        def __next__(self):\n            self.next_calls += 1\n            return next(self.values)\n    values = Tracked(['a','b','c'])\n    eq(nth(values,2,1),('a','c'))\n    eq((values.iter_calls,values.next_calls),(1,4))\n    for r,error in ((-1,ValueError),(4,IndexError)):\n        values = Tracked(['a','b','c'])\n        raises(error,lambda:nth(values,r,0))\n        eq((values.iter_calls,values.next_calls),(1,4))\n\n\ndef input_errors_propagate():\n    for r in (-1,1,10):\n        failure = RuntimeError('input failed during materialization')\n        events = []\n        def values():\n            events.append('first')\n            yield 'a'\n            events.append('failure')\n            raise failure\n        raises(RuntimeError,lambda:nth(values(),r,0),failure)\n        eq(events,['first','failure'])\n    failure = KeyboardInterrupt('input interrupted')\n    class Interrupted:\n        def __iter__(self):\n            raise failure\n    raises(KeyboardInterrupt,lambda:nth(Interrupted(),1,0),failure)\n\n\ndef identity_order_and_public_forms():\n    class Item:\n        def __eq__(self,other):\n            raise AssertionError('element equality should not be consulted')\n        def __lt__(self,other):\n            raise AssertionError('elements should not be sorted')\n    a,b,c = Item(),Item(),Item()\n    values = [c,a,b,a]\n    snapshot_ids = [id(item) for item in values]\n    expected = list(itertools.combinations(values,2))\n    for index in (0,2,-1):\n        actual = nth(iterable=values,r=2,index=index)\n        assert isinstance(actual,tuple)\n        assert all(left is right for left,right in zip(actual,expected[index]))\n        eq(len(actual),len(expected[index]))\n    eq([id(item) for item in values],snapshot_ids)\n    eq(nth('abc',2,index=1),('a','c'))\n    eq(nth(iter('abc'),r=2,index=-1),('b','c'))\n\n\ndef larger_direct_selection():\n    values = range(30)\n    r,index = 4,10001\n    expected = next(itertools.islice(itertools.combinations(values,r),index,None))\n    eq(nth(values,r,index),expected)\n    expected_last = tuple(range(26,30))\n    eq(nth(values,r,-1),expected_last)\n    # This is an output check; no runtime or complexity claim is measured.\n\n\ncheck('exhaustive_positive_negative_index_stdlib_oracle',exhaustive_selection)\ncheck('r_above_length_any_index_is_indexerror',nonexistent_combination_indices)\ncheck('negative_r_stays_valueerror',negative_r)\ncheck('valid_r_invalid_index_empty_and_full_width',valid_r_out_of_bounds_and_zero)\ncheck('one_shot_materialization_once_including_error_paths',one_shot_input_consumption)\ncheck('unexpected_input_runtimeerror_keyboardinterrupt_identity',input_errors_propagate)\ncheck('public_keyword_forms_object_identity_input_order',identity_order_and_public_forms)\ncheck('larger_index_stdlib_islice_oracle',larger_direct_selection)\nprint(json.dumps({'module':recipes.__file__,'results':results},ensure_ascii=True))\n",
+    "source_sha256": "1f9d49c4de90924d94a3faa1163b0e284ff95a6e26da78dc75821ad150a3f6b9",
+    "reproduction": "将 source 保存为 probe.py，将目标 more_itertools 包复制到独立目录；设置 PYTHONPATH、PROBE_COPY 指向该目录，以 Python 3.12 -B 运行，无需联网或额外安装。"
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\base\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "exhaustive_positive_negative_index_stdlib_oracle",
+            "status": "pass",
+            "detail": {
+              "selected_indices_checked": 542,
+              "oracle": "stdlib itertools.combinations and Python list indexing"
+            }
+          },
+          {
+            "id": "r_above_length_any_index_is_indexerror",
+            "status": "fail",
+            "error": "ValueError",
+            "message": ""
+          },
+          {
+            "id": "negative_r_stays_valueerror",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "valid_r_invalid_index_empty_and_full_width",
+            "status": "pass",
+            "detail": {
+              "out_of_bounds_indices_checked": 72
+            }
+          },
+          {
+            "id": "one_shot_materialization_once_including_error_paths",
+            "status": "fail",
+            "error": "ValueError",
+            "message": ""
+          },
+          {
+            "id": "unexpected_input_runtimeerror_keyboardinterrupt_identity",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_forms_object_identity_input_order",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "larger_index_stdlib_islice_oracle",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\A\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "exhaustive_positive_negative_index_stdlib_oracle",
+            "status": "pass",
+            "detail": {
+              "selected_indices_checked": 542,
+              "oracle": "stdlib itertools.combinations and Python list indexing"
+            }
+          },
+          {
+            "id": "r_above_length_any_index_is_indexerror",
+            "status": "pass",
+            "detail": {
+              "nonexistent_indices_checked": 30
+            }
+          },
+          {
+            "id": "negative_r_stays_valueerror",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "valid_r_invalid_index_empty_and_full_width",
+            "status": "pass",
+            "detail": {
+              "out_of_bounds_indices_checked": 72
+            }
+          },
+          {
+            "id": "one_shot_materialization_once_including_error_paths",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unexpected_input_runtimeerror_keyboardinterrupt_identity",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_forms_object_identity_input_order",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "larger_index_stdlib_islice_oracle",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair01-review-4f_m8zkq\\B\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "exhaustive_positive_negative_index_stdlib_oracle",
+            "status": "pass",
+            "detail": {
+              "selected_indices_checked": 542,
+              "oracle": "stdlib itertools.combinations and Python list indexing"
+            }
+          },
+          {
+            "id": "r_above_length_any_index_is_indexerror",
+            "status": "pass",
+            "detail": {
+              "nonexistent_indices_checked": 30
+            }
+          },
+          {
+            "id": "negative_r_stays_valueerror",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "valid_r_invalid_index_empty_and_full_width",
+            "status": "pass",
+            "detail": {
+              "out_of_bounds_indices_checked": 72
+            }
+          },
+          {
+            "id": "one_shot_materialization_once_including_error_paths",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unexpected_input_runtimeerror_keyboardinterrupt_identity",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_forms_object_identity_input_order",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "larger_index_stdlib_islice_oracle",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 8,
+    "A_functional_passed": 8,
+    "B_functional_passed": 8,
+    "base_functional_passed": 6,
+    "baseline_control": "base 在两组包含 r 大于长度的路径中抛原 ValueError，复现题面；其余六组控制路径通过。两侧八组均通过，包含 542 个有效正/负索引输出对照、30 个无组合索引及 72 个 r 有效但索引越界检查。覆盖数量只是说明，不用作两侧排名。",
+    "performance_claim": "较大索引仅检查结果，不据此声称性能或复杂度改善。"
+  },
+  "source_immutability": {
+    "files_verified": 121,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair01.json": "975599c701760697f5ccb6ffbb0b38254a070966a1bf61dc5de65d3ed47c702c",
+      "01\\task.json": "71853a9714dafe9ea91ac5d8afd8229f79e39e2744ac3db06ef5e0c0111797d8",
+      "01\\A.patch": "086d4b49d16e723702557bd6197c1db9d64b57a5aa55c33e2bff05fa83d2e8d4",
+      "01\\B.patch": "4eb8dd03c7b724a9f49c7b9e1fb9bf9f97246fad91cacf212102e503f33467df",
+      "01\\base\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\base\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\base\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\base\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\base\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\base\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\base\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\base\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\base\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\base\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\base\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\base\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\base\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\base\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\base\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\base\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\base\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\base\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\base\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\base\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\base\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\base\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\base\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\base\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\base\\more_itertools\\recipes.py": "1e8bda732ea129a51f3c1db49e09bb8387188435a6be25ccd3f5cc0b4bc7a585",
+      "01\\base\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\base\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\base\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\base\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\base\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\base\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\base\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\base\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\base\\tests\\test_recipes.py": "f510ac78cfab5dbb404216213c8ba240de0300f9f51923ddea7c534f161e25b2",
+      "01\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\base\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\base\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\base\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\base\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "01\\A\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\A\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\A\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\A\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\A\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\A\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\A\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\A\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\A\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\A\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\A\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\A\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\A\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\A\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\A\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\A\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\A\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\A\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\A\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\A\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\A\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\A\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\A\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\A\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\A\\more_itertools\\recipes.py": "e475a6884da1bb6736e0e63617671fb809b9c8bffd77bfa4e07383823e7d198d",
+      "01\\A\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\A\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\A\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\A\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\A\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\A\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\A\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\A\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\A\\tests\\test_recipes.py": "ea852b10e8339a3393d91459ae3d99def642e02e3c655e76bc665320b19a981f",
+      "01\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\A\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\A\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\A\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\A\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "01\\B\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\B\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\B\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\B\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\B\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\B\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\B\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\B\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\B\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\B\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\B\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\B\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\B\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\B\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\B\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\B\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\B\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\B\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\B\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\B\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\B\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\B\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\B\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\B\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\B\\more_itertools\\recipes.py": "e475a6884da1bb6736e0e63617671fb809b9c8bffd77bfa4e07383823e7d198d",
+      "01\\B\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\B\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\B\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\B\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\B\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\B\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\B\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\B\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\B\\tests\\test_recipes.py": "dccd2f8d8521de76aa402812c589ee60e2fba0fbeabf6231f51c3aa17661979e",
+      "01\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\B\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\B\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\B\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\B\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0"
+    },
+    "source_hashes_after": {
+      "tasks-pair01.json": "975599c701760697f5ccb6ffbb0b38254a070966a1bf61dc5de65d3ed47c702c",
+      "01\\task.json": "71853a9714dafe9ea91ac5d8afd8229f79e39e2744ac3db06ef5e0c0111797d8",
+      "01\\A.patch": "086d4b49d16e723702557bd6197c1db9d64b57a5aa55c33e2bff05fa83d2e8d4",
+      "01\\B.patch": "4eb8dd03c7b724a9f49c7b9e1fb9bf9f97246fad91cacf212102e503f33467df",
+      "01\\base\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\base\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\base\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\base\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\base\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\base\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\base\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\base\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\base\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\base\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\base\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\base\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\base\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\base\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\base\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\base\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\base\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\base\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\base\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\base\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\base\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\base\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\base\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\base\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\base\\more_itertools\\recipes.py": "1e8bda732ea129a51f3c1db49e09bb8387188435a6be25ccd3f5cc0b4bc7a585",
+      "01\\base\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\base\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\base\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\base\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\base\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\base\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\base\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\base\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\base\\tests\\test_recipes.py": "f510ac78cfab5dbb404216213c8ba240de0300f9f51923ddea7c534f161e25b2",
+      "01\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\base\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\base\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\base\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\base\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "01\\A\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\A\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\A\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\A\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\A\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\A\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\A\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\A\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\A\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\A\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\A\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\A\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\A\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\A\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\A\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\A\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\A\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\A\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\A\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\A\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\A\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\A\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\A\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\A\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\A\\more_itertools\\recipes.py": "e475a6884da1bb6736e0e63617671fb809b9c8bffd77bfa4e07383823e7d198d",
+      "01\\A\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\A\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\A\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\A\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\A\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\A\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\A\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\A\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\A\\tests\\test_recipes.py": "ea852b10e8339a3393d91459ae3d99def642e02e3c655e76bc665320b19a981f",
+      "01\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\A\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\A\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\A\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\A\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "01\\B\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "01\\B\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "01\\B\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "01\\B\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "01\\B\\Makefile": "2710b3641442e26725f235f40ad31c13e02cd7a157752ddb5919e5d815175761",
+      "01\\B\\MANIFEST.in": "ca56ed2ec43dc7f30b79b3ab3b4d84d7ef33ae23688facfa7dd40de417cba88f",
+      "01\\B\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "01\\B\\README.rst": "970510402de9eaf79a0db611798e0b8ef13032ca57da36e2a255184f802c2970",
+      "01\\B\\setup.cfg": "c58ce73ab8a5c66dba64f6e9569cb16a78170438cb8f674971fe0e0b9f26883c",
+      "01\\B\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "01\\B\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "01\\B\\docs\\api.rst": "6ebad4991e03b21b52d9362202c4793612529dfded1214748c67c705d6d6f9d0",
+      "01\\B\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "01\\B\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "01\\B\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "01\\B\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "01\\B\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "01\\B\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "01\\B\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "01\\B\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "01\\B\\docs\\versions.rst": "0292b15a2784c68a8a286f096a559555e38314eacf4df29e86091647489389e4",
+      "01\\B\\more_itertools\\more.py": "a5bbe17a73596c0176d27b2974d783099aaaf9624606d72358ca27dfa4e2d80b",
+      "01\\B\\more_itertools\\more.pyi": "b4e3445fa531cad1cfce09a72338b10f5210a61ad5cbdb3f3b67ebd8e8270e86",
+      "01\\B\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\B\\more_itertools\\recipes.py": "e475a6884da1bb6736e0e63617671fb809b9c8bffd77bfa4e07383823e7d198d",
+      "01\\B\\more_itertools\\recipes.pyi": "7a3bf86069bb16d07c58130510de94d37ec960187acff27a058795b49286808b",
+      "01\\B\\more_itertools\\__init__.py": "e45ec4ff3a6819c1015bf4ffdd613459862df23fa0268748ba205c389c6b3aff",
+      "01\\B\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "01\\B\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "01\\B\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "01\\B\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "01\\B\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "01\\B\\tests\\test_more.py": "92d4f5cd6c464043b2008fedd6aa00c930e74047321d15664d1cc25f1fd2e0cf",
+      "01\\B\\tests\\test_recipes.py": "dccd2f8d8521de76aa402812c589ee60e2fba0fbeabf6231f51c3aa17661979e",
+      "01\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "01\\B\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "01\\B\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "01\\B\\.github\\workflows\\python-app.yml": "4c121f5c12002db3f20a5a89a1865ed50f48b3662b4548044017a22d87815803",
+      "01\\B\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0"
+    },
+    "includes": "仅本 pair 的 base/A/B 全部常规文件、task.json、A.patch、B.patch 与 tasks-pair01.json；文件枚举只用于字节校验。"
+  },
+  "limitations": [
+    "这是指定公开任务及源码上的局部盲审，未运行候选测试套件或全项目认证、没有隐藏 grader。未调用模型 CLI、网络或委派，没有改动真实项目源码。",
+    "本轮未读取分组、成本、skill、其他成绩、参考修复或第一轮揭盲。审查员有先前案例开发和匿名 pair 审阅背景，不能声称完全从未接触整个项目；本 pair 的证据只来自其公开输入及自制探针，没有跨 pair 推断 A/B。",
+    "只验证 Python 3.12.14 上有限可迭代输入与整数 r/index。非整数参数、无限输入和所有历史 Python 版本不在本轮证明范围内，没有把这些未测范围当成缺陷或要求新增防御层。"
+  ]
+}

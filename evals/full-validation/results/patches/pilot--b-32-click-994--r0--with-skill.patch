@@ -1,0 +1,59 @@
+diff --git a/click/decorators.py b/click/decorators.py
+index 8e5a462..eac682d 100644
+--- a/click/decorators.py
++++ b/click/decorators.py
+@@ -163,10 +163,10 @@ def option(*param_decls, **attrs):
+     :param cls: the option class to instantiate.  This defaults to
+                 :class:`Option`.
+     """
++    OptionClass = attrs.pop('cls', Option)
+     def decorator(f):
+         if 'help' in attrs:
+             attrs['help'] = inspect.cleandoc(attrs['help'])
+-        OptionClass = attrs.pop('cls', Option)
+         _param_memo(f, OptionClass(param_decls, **attrs))
+         return f
+     return decorator
+diff --git a/tests/test_options.py b/tests/test_options.py
+index fcd755a..6f5b883 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -311,6 +311,38 @@ def test_option_custom_class(runner):
+     assert 'you wont see me' not in result.output
+ 
+ 
++@pytest.mark.parametrize('command_first', [False, True])
++def test_option_custom_class_reused(runner, command_first):
++    class CustomOption(click.Option):
++        def get_default(self, ctx):
++            return 'custom ' + click.Option.get_default(self, ctx)
++
++    shared_option = click.option('--value', cls=CustomOption, default='default')
++    options = []
++
++    for name in ('first', 'second', 'third'):
++        def callback(value):
++            click.echo(value)
++
++        if command_first:
++            cmd = shared_option(click.command(name)(callback))
++        else:
++            cmd = click.command(name)(shared_option(callback))
++
++        option = cmd.params[0]
++        assert isinstance(option, CustomOption)
++        assert all(option is not previous for previous in options)
++        options.append(option)
++
++        result = runner.invoke(cmd)
++        assert result.exit_code == 0
++        assert result.output == 'custom default\n'
++
++        result = runner.invoke(cmd, ['--value', 'explicit'])
++        assert result.exit_code == 0
++        assert result.output == 'explicit\n'
++
++
+ def test_aliases_for_flags(runner):
+     @click.command()
+     @click.option('--warnings/--no-warnings', ' /-W', default=True)

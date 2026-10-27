@@ -1,0 +1,108 @@
+test_cancellation_closes_and_propagates (test_contract.Contract.test_cancellation_closes_and_propagates) ... FAIL
+test_empty_source_closes (test_contract.Contract.test_empty_source_closes) ... FAIL
+test_exact_limit (test_contract.Contract.test_exact_limit) ... ok
+test_exhaustion_returns_prefix (test_contract.Contract.test_exhaustion_returns_prefix) ... FAIL
+test_first_read_failure (test_contract.Contract.test_first_read_failure) ... FAIL
+test_input_not_consumed_beyond_page (test_contract.Contract.test_input_not_consumed_beyond_page) ... ok
+test_invalid_limit_does_not_open (test_contract.Contract.test_invalid_limit_does_not_open) ... ok
+test_middle_failure_is_not_successful_prefix (test_contract.Contract.test_middle_failure_is_not_successful_prefix) ... FAIL
+test_none_is_an_item (test_contract.Contract.test_none_is_an_item) ... ok
+test_open_failure_does_not_close (test_contract.Contract.test_open_failure_does_not_close) ... ok
+test_stop_during_open_is_not_normal_exhaustion (test_contract.Contract.test_stop_during_open_is_not_normal_exhaustion) ... ok
+test_zero_does_not_open (test_contract.Contract.test_zero_does_not_open) ... ok
+
+======================================================================
+FAIL: test_cancellation_closes_and_propagates (test_contract.Contract.test_cancellation_closes_and_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oppob9k0\test_contract.py", line 72, in test_cancellation_closes_and_propagates
+    with self.assertRaises(asyncio.CancelledError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CancelledError not raised
+
+======================================================================
+FAIL: test_empty_source_closes (test_contract.Contract.test_empty_source_closes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oppob9k0\test_contract.py", line 22, in test_empty_source_closes
+    self.assertEqual((source.opens, source.closes), (1, 1))
+AssertionError: Tuples differ: (1, 0) != (1, 1)
+
+First differing element 1:
+0
+1
+
+- (1, 0)
+?     ^
+
++ (1, 1)
+?     ^
+
+
+======================================================================
+FAIL: test_exhaustion_returns_prefix (test_contract.Contract.test_exhaustion_returns_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oppob9k0\test_contract.py", line 15, in test_exhaustion_returns_prefix
+    self.assertEqual(await read_page(source, 5), [1, 2])
+AssertionError: Lists differ: [] != [1, 2]
+
+Second list contains 2 additional elements.
+First extra element 0:
+1
+
+- []
++ [1, 2]
+
+======================================================================
+FAIL: test_first_read_failure (test_contract.Contract.test_first_read_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oppob9k0\test_contract.py", line 42, in test_first_read_failure
+    with self.assertRaises(RuntimeError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+======================================================================
+FAIL: test_middle_failure_is_not_successful_prefix (test_contract.Contract.test_middle_failure_is_not_successful_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-oppob9k0\test_contract.py", line 55, in test_middle_failure_is_not_successful_prefix
+    with self.assertRaises(ValueError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.084s
+
+FAILED (failures=5)

@@ -1,0 +1,27 @@
+{
+  "reviewed_at": "2026-10-24T19:56:29.919389+00:00",
+  "reviewer": "independent runner agent; not a case author",
+  "models_run_by_reviewer": 0,
+  "development_d06": {
+    "verdict": "oracle_false_failure",
+    "evidence": "Visible factory returns sqlite3.connect(...,isolation_level=None); actual connection supports context manager with explicit BEGIN. Hidden Tracked omitted that protocol. Candidate finally.close correctly releases connection.",
+    "local_probe": "Python3.12.14 SQLite3.53.1: success commits; RuntimeError/KeyboardInterrupt and real deferred-FK commit failure roll back; context alone does not close.",
+    "source": "https://docs.python.org/3.12/library/sqlite3.html#how-to-use-the-connection-context-manager",
+    "action": "Version oracle; keep task, model artifacts and original scores; regrade without model rerun; no new skill rule banning context managers."
+  },
+  "sealed_holdout": {
+    "cases_reviewed": 12,
+    "model_calls_before_review": 0,
+    "blocking_oracle_issues": [
+      {
+        "id": "h11",
+        "issue": "Hidden exactly-one authorization constraint absent from request; safe extra authorization must not be scored as incorrect.",
+        "action": "Version hidden oracle to retain per-request-before-data authorization without an unstated upper bound."
+      }
+    ],
+    "other_blocking_protocol_or_oracle_gaps_found": false,
+    "candidate_skill_not_read": true,
+    "model_outcomes_not_read": true
+  },
+  "not_a_security_proof_or_exhaustive_oracle_proof": true
+}

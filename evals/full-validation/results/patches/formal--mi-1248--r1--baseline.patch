@@ -1,0 +1,231 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 5dc2b32..32be2c5 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2283,7 +2283,8 @@ class numeric_range(Sequence):
+         [3.0, 2.0, 1.0, 0.0]
+ 
+     Be aware of the limitations of floating-point numbers; the representation
+-    of the yielded numbers may be surprising.
++    of the yielded numbers may be surprising. Membership tests use exact
++    equality with the yielded values, without rounding or tolerances.
+ 
+     ``datetime.datetime`` objects can be used for *start* and *stop*, if *step*
+     is a ``datetime.timedelta`` object:
+@@ -2326,6 +2327,10 @@ class numeric_range(Sequence):
+         if self._step == self._zero:
+             raise ValueError('numeric_range() arg 3 must not be zero')
+         self._growing = self._step > self._zero
++        self._is_float = any(
++            isinstance(arg, float)
++            for arg in (self._start, self._stop, self._step)
++        )
+ 
+     def __bool__(self):
+         if self._growing:
+@@ -2334,14 +2339,11 @@ class numeric_range(Sequence):
+             return self._start > self._stop
+ 
+     def __contains__(self, elem):
+-        if self._growing:
+-            if self._start <= elem < self._stop:
+-                return (elem - self._start) % self._step == self._zero
+-        else:
+-            if self._start >= elem > self._stop:
+-                return (self._start - elem) % (-self._step) == self._zero
+-
+-        return False
++        try:
++            self.index(elem)
++        except ValueError:
++            return False
++        return True
+ 
+     def __eq__(self, other):
+         # numeric_range object equality is intended to mirror the built-in range
+@@ -2407,6 +2409,16 @@ class numeric_range(Sequence):
+ 
+     @cached_property
+     def _len(self):
++        if self._is_float:
++            # Find the first excluded value using the iterator's arithmetic.
++            # Floating-point division can round the length in either direction.
++            before = lt if self._growing else gt
++            lo, hi = 0, 1
++            while before(self._start + hi * self._step, self._stop):
++                lo = hi + 1
++                hi *= 2
++            return self._bisect(self._stop, lo, hi)
++
+         if self._growing:
+             start = self._start
+             stop = self._stop
+@@ -2444,10 +2456,21 @@ class numeric_range(Sequence):
+         )
+ 
+     def count(self, value):
++        if self._is_float:
++            try:
++                i = self.index(value)
++            except ValueError:
++                return 0
++            # Rounding can make several indices yield the same value.
++            return self._bisect(value, i, self._len, right=True) - i
+         return int(value in self)
+ 
+     def index(self, value):
+-        if self._growing:
++        if self._is_float or isinstance(value, float):
++            i = self._bisect(value, 0, self._len)
++            if i < self._len and self._start + i * self._step == value:
++                return i
++        elif self._growing:
+             if self._start <= value < self._stop:
+                 q, r = divmod(value - self._start, self._step)
+                 if r == self._zero:
+@@ -2460,6 +2483,17 @@ class numeric_range(Sequence):
+ 
+         raise ValueError(f"{value} is not in numeric range")
+ 
++    def _bisect(self, value, lo, hi, *, right=False):
++        before = lt if self._growing else gt
++        while lo < hi:
++            mid = (lo + hi) // 2
++            item = self._start + mid * self._step
++            if before(item, value) or (right and item == value):
++                lo = mid + 1
++            else:
++                hi = mid
++        return lo
++
+     def _get_by_index(self, i):
+         if i < 0:
+             i += self._len
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 7440f5a..bb919a0 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -27,6 +27,7 @@ from itertools import (
+     product,
+     repeat,
+ )
++from math import inf, nextafter
+ from operator import add, mul, itemgetter, not_
+ from pickle import loads, dumps
+ from random import Random, choices, random, randrange, seed
+@@ -2626,6 +2627,115 @@ class GroupByTransformTests(TestCase):
+ 
+ 
+ class NumericRangeTests(TestCase):
++    def assert_sequence_operations(self, args):
++        r = mi.numeric_range(*args)
++        # Use iteration as the reference without consulting its length hint.
++        values = list(iter(r))
++        self.assertEqual(len(r), len(values))
++        for i, value in enumerate(values):
++            self.assertEqual(r[i], value)
++            self.assertEqual(r[i - len(values)], value)
++            self.assertIn(value, r)
++            self.assertEqual(r.index(value), values.index(value))
++            self.assertEqual(r.count(value), values.count(value))
++        for i in (len(values), -len(values) - 1):
++            with self.assertRaises(IndexError):
++                r[i]
++        self.assertNotIn(args[1], r)
++        self.assertEqual(r.count(args[1]), 0)
++        with self.assertRaises(ValueError):
++            r.index(args[1])
++
++    def test_float_sequence_operations(self):
++        for args in [
++            (0, 1, 0.1),
++            (1, 0, -0.1),
++            (0.1, 0.4, 0.1),
++            (0.4, 0.1, -0.1),
++            (0.0, 0.9, 0.3),
++            (0.9, 0.0, -0.3),
++            (0.0, 0.3, 0.1),
++            (0.0, nextafter(0.3, inf), 0.1),
++            (0.0, nextafter(nextafter(0.3, inf), inf), 0.1),
++            (0.3, nextafter(0.0, inf), -0.1),
++            (0.3, nextafter(0.0, -inf), -0.1),
++            (1.0, 0.0, 0.1),
++            (0.0, 1.0, -0.1),
++            (1e16, 1e16 + 4, 1.0),
++            (1e16 + 4, 1e16, -1.0),
++            (-1e308, 1e308, 1e308),
++            (1e308, -1e308, -1e308),
++        ]:
++            with self.subTest(args=args):
++                self.assert_sequence_operations(args)
++
++    def test_float_membership_requires_yielded_value(self):
++        for args, missing in [
++            ((0, 1, 0.1), (0.3, 0.15, -0.1, 1.0)),
++            ((1, 0, -0.1), (0.3, 0.15, 1.1, 0.0)),
++        ]:
++            r = mi.numeric_range(*args)
++            value = r[3]
++            for candidate in (
++                *missing,
++                nextafter(value, inf),
++                nextafter(value, -inf),
++            ):
++                with self.subTest(args=args, candidate=candidate):
++                    self.assertNotIn(candidate, list(iter(r)))
++                    self.assertNotIn(candidate, r)
++                    self.assertEqual(r.count(candidate), 0)
++                    with self.assertRaises(ValueError):
++                        r.index(candidate)
++
++    def test_large_float_range(self):
++        for args in [(0.0, 1e8, 0.1), (1e8, 0.0, -0.1)]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual(len(r), 1_000_000_000)
++                i = 900_000_003
++                value = r[i]
++                self.assertIn(value, r)
++                self.assertEqual(r.index(value), i)
++                self.assertEqual(r.count(value), 1)
++
++    def test_float_queries_of_exact_range(self):
++        for args in [
++            (0, 1, Fraction(1, 10)),
++            (Decimal(0), Decimal(1), Decimal('0.1')),
++            (2**60 + 1, 2**60 + 1025, 1),
++        ]:
++            r = mi.numeric_range(*args)
++            values = list(iter(r))
++            for value in (0.0, 0.1, 0.3, 0.5, 1.0, float(2**60 + 256)):
++                with self.subTest(args=args, value=value):
++                    self.assertEqual(value in r, value in values)
++                    self.assertEqual(r.count(value), values.count(value))
++                    if value in values:
++                        self.assertEqual(r.index(value), values.index(value))
++                    else:
++                        with self.assertRaises(ValueError):
++                            r.index(value)
++
++    def test_exact_sequence_operations(self):
++        for start, stop, step in [
++            (2**60, 2**60 + 10, 1),
++            (
++                Decimal('1000000000000000000.1'),
++                Decimal('1000000000000000000.4'),
++                Decimal('0.1'),
++            ),
++            (Fraction(10**30), Fraction(10**30 + 1), Fraction(1, 7)),
++            (
++                datetime(2019, 3, 29),
++                datetime(2019, 3, 30),
++                timedelta(hours=10),
++            ),
++        ]:
++            for args in [(start, stop, step), (stop, start, -step)]:
++                with self.subTest(args=args):
++                    self.assert_sequence_operations(args)
++
+     def test_basic(self):
+         for args, expected in [
+             ((4,), [0, 1, 2, 3]),

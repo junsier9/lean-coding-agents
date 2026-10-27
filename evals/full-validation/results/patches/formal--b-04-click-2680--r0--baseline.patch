@@ -1,0 +1,114 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index cb4136a..0617da8 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Close resources registered with ``Context.call_on_close`` and
++    ``Context.with_resource`` before exiting with ``Context.exit``.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/src/click/core.py b/src/click/core.py
+index f17a8a8..c76a356 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -699,7 +699,14 @@ class Context:
+         raise Abort()
+ 
+     def exit(self, code: int = 0) -> t.NoReturn:
+-        """Exits the application with a given exit code."""
++        """Exits the application with a given exit code.
++
++        .. versionchanged:: 8.2
++            Callbacks and context managers registered with
++            :meth:`call_on_close` and :meth:`with_resource` are closed before
++            exiting.
++        """
++        self.close()
+         raise Exit(code)
+ 
+     def get_usage(self) -> str:
+diff --git a/tests/test_context.py b/tests/test_context.py
+index df8b497..9e21200 100644
+--- a/tests/test_context.py
++++ b/tests/test_context.py
+@@ -320,6 +320,76 @@ def test_exit_not_standalone():
+     assert cli.main([], "test_exit_not_standalone", standalone_mode=False) == 0
+ 
+ 
++@pytest.mark.parametrize("standalone_mode", [True, False])
++@pytest.mark.parametrize(
++    ("args", "exit_code"),
++    [([], 0), (["--help"], 0), (["--exit-code", "0"], 0), (["--exit-code", "42"], 42)],
++)
++def test_exit_cleanup(runner, standalone_mode, args, exit_code):
++    active = []
++    closed = []
++
++    @contextmanager
++    def resource(ctx):
++        assert not active
++        active.append(ctx)
++        yield
++        assert click.get_current_context() is ctx
++        assert active.pop() is ctx
++        closed.append("resource")
++
++    def acquire_resource(ctx, param, value):
++        if not value:
++            return
++
++        ctx.with_resource(resource(ctx))
++
++        @ctx.call_on_close
++        def cleanup():
++            assert click.get_current_context() is ctx
++            assert active == [ctx]
++            closed.append("callback")
++
++    def exit_cli(ctx, param, value):
++        if value is not None:
++            ctx.exit(value)
++
++    @click.command()
++    @click.option(
++        "--resource",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=acquire_resource,
++    )
++    @click.option("--exit-code", type=int, expose_value=False, callback=exit_cli)
++    def cli():
++        pass
++
++    assert click.get_current_context(silent=True) is None
++
++    for invocation in range(1, 3):
++        result = runner.invoke(
++            cli, ["--resource", *args], standalone_mode=standalone_mode
++        )
++
++        if standalone_mode:
++            assert result.exit_code == exit_code
++            if exit_code:
++                assert isinstance(result.exception, SystemExit)
++                assert result.exception.code == exit_code
++            else:
++                assert result.exception is None
++        else:
++            assert result.exit_code == 0
++            assert result.exception is None
++            assert result.return_value == (exit_code if args else None)
++
++        assert not active
++        assert closed == ["callback", "resource"] * invocation
++        assert click.get_current_context(silent=True) is None
++
++
+ @pytest.mark.parametrize(
+     ("option_args", "invoke_args", "expect"),
+     [

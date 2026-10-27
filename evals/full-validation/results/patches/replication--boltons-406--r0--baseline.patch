@@ -1,0 +1,35 @@
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 433eaf5..4e7a37f 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -158,7 +158,7 @@ def split_iter(src, sep=None, maxsplit=None):
+     if maxsplit is not None:
+         maxsplit = int(maxsplit)
+         if maxsplit == 0:
+-            yield [src]
++            yield list(src)
+             return
+ 
+     if callable(sep):
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index f56468a..8ed368b 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -24,6 +24,17 @@ even = lambda x: isint(x) and x % 2 == 0
+ is_meaning_of_life = lambda x: x == 42
+ 
+ 
++@pytest.mark.parametrize('values', [[], [None], [1, None, None, 2, None],
++                                  [[1], [2]]])
++@pytest.mark.parametrize('src_type', [list, iter])
++@pytest.mark.parametrize('sep', [None, [None], lambda value: value is None])
++def test_split_maxsplit_zero(values, src_type, sep):
++    from boltons.iterutils import split, split_iter
++
++    assert split(src_type(values), sep=sep, maxsplit=0) == [values]
++    assert list(split_iter(src_type(values), sep=sep, maxsplit=0)) == [values]
++
++
+ class TestFirst:
+     def test_empty_iterables(self):
+         """

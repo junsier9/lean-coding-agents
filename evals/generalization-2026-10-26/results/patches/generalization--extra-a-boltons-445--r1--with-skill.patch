@@ -1,0 +1,189 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index d0afc78..0bd0ddf 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -601,10 +601,16 @@ def update_wrapper(wrapper, func, injected=None, expected=None, build_from=None,
+     for arg, default in expected_items:
+         fb.add_arg(arg, default)  # may raise ExistingArgument
+ 
++    try:
++        target_sig = inspect.signature(wrapper, follow_wrapped=False)
++    except (TypeError, ValueError):
++        target_sig = None
++    invocation_str = fb.get_invocation_str(target_sig)
++
+     if fb.is_async:
+-        fb.body = 'return await _call(%s)' % fb.get_invocation_str()
++        fb.body = 'return await _call(%s)' % invocation_str
+     else:
+-        fb.body = 'return _call(%s)' % fb.get_invocation_str()
++        fb.body = 'return _call(%s)' % invocation_str
+ 
+     execdict = dict(_call=wrapper, _func=func)
+     fully_wrapped = fb.get_func(execdict, with_dict=update_dict)
+@@ -782,28 +788,41 @@ class FunctionBuilder:
+                                      {},
+                                      annotations)
+ 
+-    def get_invocation_str(self):
++    def get_invocation_str(self, target_sig=None):
+         # Regular args with defaults (and keyword-only args) are forwarded
+         # as keywords (name=name), so values callers pass by keyword reach
+         # the wrapper's **kwargs instead of being silently flattened into
+         # *args (#343). Two classes must stay positional: positional-only
+-        # params (keywords are rejected outright), and every regular arg
+-        # when *varargs is present (a keyword-forwarded arg that precedes
+-        # *varargs collides with non-empty varargs).
++        # params (keywords are rejected outright), and regular args before
++        # *varargs. The target's keyword-only args override these rules.
++        target_params = target_sig.parameters.values() if target_sig is not None else ()
++        target_kwonlyargs = {p.name for p in target_params
++                             if p.kind == inspect.Parameter.KEYWORD_ONLY}
++        target_posargs = [p.name for p in target_params
++                          if p.kind in (inspect.Parameter.POSITIONAL_ONLY,
++                                        inspect.Parameter.POSITIONAL_OR_KEYWORD)]
+         defaults = self.defaults or ()
+         args = list(self.args or ())
++        kwonlyargs = self.kwonlyargs or ()
+         n_positional = len(args) - len(defaults)
+         parts, kw_parts = [], []
+         for i, arg in enumerate(args):
+-            if (i >= n_positional and not self.varargs
+-                    and arg not in self.posonlyargs):
++            if (arg in target_kwonlyargs
++                    or (i >= n_positional and not self.varargs
++                        and arg not in self.posonlyargs)):
+                 kw_parts.append(arg + '=' + arg)
+             else:
+                 parts.append(arg)
+         if self.varargs:
++            # Reverse wrapping must fill the target's fixed positional
++            # slots before expanding *varargs to avoid duplicate binding.
++            for i, arg in enumerate(target_posargs):
++                if arg in kwonlyargs:
++                    parts.insert(i, arg)
+             parts.append('*' + self.varargs)
+         parts += kw_parts
+-        parts += [arg + '=' + arg for arg in self.kwonlyargs or ()]
++        parts += [arg + '=' + arg for arg in kwonlyargs
++                  if not (self.varargs and arg in target_posargs)]
+         if self.varkw:
+             parts.append('**' + self.varkw)
+         return ', '.join(parts)
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 5297f8b..06a0cc4 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -217,6 +217,112 @@ def test_wraps_inner_kwarg_only():
+     return
+ 
+ 
++def test_wraps_inner_required_kwonly():
++    def outer(a, b):
++        return a, b
++
++    @functools.wraps(outer)
++    def inner(a, *, b):
++        return a, b
++
++    wrapped = wraps(outer)(inner)
++    assert wrapped(3, 4) == (3, 4)
++    assert wrapped(a=3, b=funcutils.NO_DEFAULT) == (3, funcutils.NO_DEFAULT)
++    assert wrapped(3, b='*args') == (3, '*args')
++    assert inspect.signature(wrapped, follow_wrapped=False) == inspect.signature(outer)
++    assert wrapped.__wrapped__ is outer
++    with pytest.raises(TypeError):
++        wrapped(3)
++    with pytest.raises(TypeError):
++        wrapped(3, 4, 5)
++
++    reverse = wraps(inner)(outer)
++    assert reverse(3, b=4) == (3, 4)
++    with pytest.raises(TypeError):
++        reverse(3, 4)
++
++
++@pytest.mark.parametrize('defaulted', [False, True])
++def test_wraps_inner_kwonly_with_varargs(defaulted):
++    if defaulted:
++        def outer(a, b=10, *rest, **extras):
++            return a, b, rest, extras
++    else:
++        def outer(a, b, *rest, **extras):
++            return a, b, rest, extras
++
++    def inner(a, *rest, b=1, **extras):
++        return a, b, rest, extras
++
++    wrapped = wraps(outer)(inner)
++    assert wrapped(3, 4, 5, 6, label='test') == (3, 4, (5, 6), {'label': 'test'})
++    assert wrapped(a=3, b=4) == (3, 4, (), {})
++    if defaulted:
++        assert wrapped(3) == (3, 10, (), {})
++    else:
++        with pytest.raises(TypeError):
++            wrapped(3)
++
++    reverse = wraps(inner)(outer)
++    assert reverse(3, 5, 6, b=4, label='test') == (3, 4, (5, 6), {'label': 'test'})
++    assert reverse(3) == (3, 1, (), {})
++
++
++def test_wraps_inner_kwonly_method():
++    def outer(receiver, a, b):
++        return receiver, a, b
++
++    def inner(receiver, a, *, b):
++        return receiver, a, b
++
++    class Example:
++        method = wraps(outer)(inner)
++
++    instance = Example()
++    assert instance.method(3, 4) == (instance, 3, 4)
++    assert Example.method(receiver=instance, a=3, b=4) == (instance, 3, 4)
++
++    def bound_outer(a, b):
++        pass
++
++    assert wraps(bound_outer)(instance.method)(3, 4) == (instance, 3, 4)
++
++
++@pytest.mark.parametrize('error', [TypeError, ValueError])
++def test_wraps_uninspectable_target(error):
++    class Uninspectable:
++        @property
++        def __signature__(self):
++            raise error('signature unavailable')
++
++        def __call__(self, *args, **kwargs):
++            return args, kwargs
++
++    def outer(a, b=10):
++        pass
++
++    wrapped = wraps(outer)(Uninspectable())
++    assert wrapped(3) == ((3,), {'b': 10})
++    assert wrapped(3, 4) == ((3,), {'b': 4})
++
++
++def test_wraps_inner_kwonly_failure():
++    def outer(a, b):
++        pass
++
++    calls = []
++    error = TypeError('target failed')
++
++    def inner(a, *, b):
++        calls.append((a, b))
++        raise error
++
++    with pytest.raises(TypeError) as exc_info:
++        wraps(outer)(inner)(3, 4)
++    assert exc_info.value is error
++    assert calls == [(3, 4)]
++
++
+ def test_wraps_async():
+     # from https://github.com/mahmoud/boltons/issues/194
+     import asyncio

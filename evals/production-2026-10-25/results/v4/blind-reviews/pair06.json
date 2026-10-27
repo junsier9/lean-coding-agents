@@ -1,0 +1,937 @@
+{
+  "pair": "06",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "in_range 在 start 大于 end 的范围中返回错误结果，不符合其反向范围约定。请正确处理反向和负数范围，并保留上下边界包含关系。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair06.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B"
+    ],
+    "rubric": [
+      "核对受影响公开调用、正常边界、必要错误和所有权",
+      "guard/copy/wrapper/retry 须有当前需求",
+      "不按行数或测试数量偏好一侧",
+      "用源码及最小隔离探针佐证，不将未知边界擅定为缺陷"
+    ],
+    "not_accessed_for_this_review": [
+      "分组标签",
+      "成本或计时",
+      "skill 正文",
+      "参考或隐藏修复",
+      "评分器",
+      "其他模型结果",
+      "旧轮揭盲",
+      "原生模型记录"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false,
+    "release_qualification_judgment": false
+  },
+  "comparison": "A/B 的完整 predicates.py 忽略文档字符串后 AST 相同。两侧在既有数字判断和缺省端点处理之后，仅在 start>end 时交换本地端点，修复反向及负数范围并保持较小端点包含、较大端点排除。八组功能探针均通过，无一侧偏好；Decimal NaN 端点的比较错误先后单独记录为未明示边界。本报告不作发布资格判断。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整目标生产文件 AST 比较，忽略文档字符串和位置属性",
+    "equal": true,
+    "raw_file_bytes_equal": false
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "06-A-reverse-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+          "line": 404,
+          "title": "交换反向端点直接满足当前范围约定，保持半开区间",
+          "evidence": "start>end 时仅交换本地引用，然后沿用 start<=value<end。整数网格与独立 range 成员集合一致，负数、跨零、浮点和相等端点正确；较小端点包含、较大端点排除，无端点次序依赖的错误结果。没有新增校验链、特殊负数分支、复制、wrapper 或重试。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+              "line": 407
+            }
+          ],
+          "probe_ids": [
+            "integer_forward_reverse_membership_grid_half_open",
+            "floating_reverse_normal_equal_endpoint_inclusion",
+            "implicit_negative_end_and_public_keyword_calls"
+          ]
+        },
+        {
+          "id": "06-A-existing-normalization",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+          "line": 392,
+          "title": "保留原非数字与缺省规则，不扩大为通用数字强制转换",
+          "evidence": "非数字 value（含 bool）仍提前 False；原有非数字端点变成 0 的规则仍在，end=None 仍将 start 用作 end、原 start 归零。新增交换位于这些规则之后，转换后的反向范围也按新约定判断。不会为字符串数字新增解析，也不对已拒绝的 value 做无需求端点比较。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+              "line": 395
+            }
+          ],
+          "probe_ids": [
+            "existing_forward_defaults_nonnumeric_curried_controls",
+            "existing_nonnumeric_policy_bool_rejection_early_exit",
+            "implicit_negative_end_and_public_keyword_calls"
+          ]
+        },
+        {
+          "id": "06-A-public-curried-ownership",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+          "line": 410,
+          "title": "公开柯里化调用同步修复，端点对象和调用参数保持",
+          "evidence": "in_range_cmp 仍返回延迟调用 in_range 的 predicate，故反向和单负端点过滤得到正确结果，正向控制与直接调用一致。创建 predicate 不预先比较或复制端点，非数字 value 的早退仍成立；整数子类端点的值、附加 tag 和原调用参数引用未变化。结果保持 bool，没有额外缓存或转换。",
+          "probe_ids": [
+            "curried_factory_filtering_and_direct_normal_forms",
+            "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "comparison_error_identity_no_retry_curried_laziness"
+          ]
+        },
+        {
+          "id": "06-A-numeric-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+          "line": 404,
+          "title": "保持数值精度与必要比较错误的原对象传播",
+          "evidence": "交换没有浮点转换，1001位整数和 Decimal 有序端点保持精度；正负无穷与浮点 NaN 按比较语义返回预期 bool。新增必要端点比较遇到自制整数子类的 RuntimeError 时传播同一异常对象，故障点只调用一次；Decimal NaN value 的原 InvalidOperation 也不被吞掉或改为默认 False。",
+          "probe_ids": [
+            "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "comparison_error_identity_no_retry_curried_laziness"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "06-A-unordered-decimal-bound",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\A\\src\\pydash\\predicates.py",
+          "line": 404,
+          "title": "非有序 Decimal NaN 端点会因新增端点比较更早报错",
+          "evidence": "显式开启 InvalidOperation trap：base 的 in_range(0,1,Decimal(\"NaN\")) 在 1<=0 时短路 False；A/B 先比较 1>Decimal(\"NaN\")，因此 InvalidOperation。现有 is_number 明确包含 Decimal，但旧版对 Decimal NaN value 或实际触及 NaN 比较的其他路径本来就会报错。任务要求有序反向/负数范围，没有定义未排序 NaN 区间究竟应 False 还是沿用 Decimal 的异常；实际差异已确认，未据此自动记缺陷，也没有无依据建议捕获 Decimal 异常或强制转换。",
+          "original_numeric_contract": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\base\\src\\pydash\\predicates.py",
+            "line": 1406
+          },
+          "defect_claimed": false,
+          "probe_ids": [
+            "unordered_decimal_nan_bound_error_order_observation"
+          ]
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "06-B-reverse-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+          "line": 402,
+          "title": "交换反向端点直接满足当前范围约定，保持半开区间",
+          "evidence": "start>end 时仅交换本地引用，然后沿用 start<=value<end。整数网格与独立 range 成员集合一致，负数、跨零、浮点和相等端点正确；较小端点包含、较大端点排除，无端点次序依赖的错误结果。没有新增校验链、特殊负数分支、复制、wrapper 或重试。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+              "line": 405
+            }
+          ],
+          "probe_ids": [
+            "integer_forward_reverse_membership_grid_half_open",
+            "floating_reverse_normal_equal_endpoint_inclusion",
+            "implicit_negative_end_and_public_keyword_calls"
+          ]
+        },
+        {
+          "id": "06-B-existing-normalization",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+          "line": 390,
+          "title": "保留原非数字与缺省规则，不扩大为通用数字强制转换",
+          "evidence": "非数字 value（含 bool）仍提前 False；原有非数字端点变成 0 的规则仍在，end=None 仍将 start 用作 end、原 start 归零。新增交换位于这些规则之后，转换后的反向范围也按新约定判断。不会为字符串数字新增解析，也不对已拒绝的 value 做无需求端点比较。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+              "line": 393
+            }
+          ],
+          "probe_ids": [
+            "existing_forward_defaults_nonnumeric_curried_controls",
+            "existing_nonnumeric_policy_bool_rejection_early_exit",
+            "implicit_negative_end_and_public_keyword_calls"
+          ]
+        },
+        {
+          "id": "06-B-public-curried-ownership",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+          "line": 408,
+          "title": "公开柯里化调用同步修复，端点对象和调用参数保持",
+          "evidence": "in_range_cmp 仍返回延迟调用 in_range 的 predicate，故反向和单负端点过滤得到正确结果，正向控制与直接调用一致。创建 predicate 不预先比较或复制端点，非数字 value 的早退仍成立；整数子类端点的值、附加 tag 和原调用参数引用未变化。结果保持 bool，没有额外缓存或转换。",
+          "probe_ids": [
+            "curried_factory_filtering_and_direct_normal_forms",
+            "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "comparison_error_identity_no_retry_curried_laziness"
+          ]
+        },
+        {
+          "id": "06-B-numeric-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+          "line": 402,
+          "title": "保持数值精度与必要比较错误的原对象传播",
+          "evidence": "交换没有浮点转换，1001位整数和 Decimal 有序端点保持精度；正负无穷与浮点 NaN 按比较语义返回预期 bool。新增必要端点比较遇到自制整数子类的 RuntimeError 时传播同一异常对象，故障点只调用一次；Decimal NaN value 的原 InvalidOperation 也不被吞掉或改为默认 False。",
+          "probe_ids": [
+            "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "comparison_error_identity_no_retry_curried_laziness"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "06-B-unordered-decimal-bound",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\B\\src\\pydash\\predicates.py",
+          "line": 402,
+          "title": "非有序 Decimal NaN 端点会因新增端点比较更早报错",
+          "evidence": "显式开启 InvalidOperation trap：base 的 in_range(0,1,Decimal(\"NaN\")) 在 1<=0 时短路 False；A/B 先比较 1>Decimal(\"NaN\")，因此 InvalidOperation。现有 is_number 明确包含 Decimal，但旧版对 Decimal NaN value 或实际触及 NaN 比较的其他路径本来就会报错。任务要求有序反向/负数范围，没有定义未排序 NaN 区间究竟应 False 还是沿用 Decimal 的异常；实际差异已确认，未据此自动记缺陷，也没有无依据建议捕获 Decimal 异常或强制转换。",
+          "original_numeric_contract": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\06\\base\\src\\pydash\\predicates.py",
+            "line": 1406
+          },
+          "defect_claimed": false,
+          "probe_ids": [
+            "unordered_decimal_nan_bound_error_order_observation"
+          ]
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "各 base/A/B 的 src/pydash 包分别复制到审查员独立临时目录，以单独 python -B 子进程、PYTHONPATH、PROBE_COPY、PYTHONDONTWRITEBYTECODE=1 导入，并断言实际模块位于对应副本。只构造标准库数字、自制整数子类和调用参数；Decimal trap 通过 localcontext 隔离，不改变外部环境。没有待审或真实项目源码修改。",
+    "oracle": "整数预期由标准库 range 生成的半开区间成员集合决定；浮点端点和负端点使用明确的数值例子。没有复制被审函数的分支实现或使用候选测试当 oracle。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "from decimal import Decimal, InvalidOperation, localcontext\nimport json\nimport os\nfrom pathlib import Path\nimport pydash\nfrom pydash import predicates\n\nassert Path(predicates.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nin_range=pydash.in_range\nresults=[]\n\n\ndef eq(actual,expected):\n    assert actual==expected,(repr(actual),repr(expected))\n\n\ndef raises(expected,function,same=None):\n    try:\n        function()\n    except expected as exc:\n        if same is not None:\n            assert exc is same\n        return exc\n    else:\n        raise AssertionError(f'{expected.__name__} not raised')\n\n\ndef check(name,function):\n    try:\n        detail=function()\n        results.append({'id':name,'status':'pass','detail':detail})\n    except Exception as exc:\n        results.append({'id':name,'status':'fail','error':type(exc).__name__,'message':str(exc)})\n\n\ndef integer_membership_grid():\n    checked=0\n    for start in range(-4,5):\n        for end in range(-4,5):\n            expected_members=set(range(min(start,end),max(start,end)))\n            for value in range(-5,6):\n                actual=in_range(value,start,end)\n                eq(actual,value in expected_members)\n                assert type(actual) is bool\n                checked+=1\n    return {'calls_checked':checked,'oracle':'stdlib integer range membership after selecting lower and upper endpoints'}\n\n\ndef legacy_forward_controls():\n    for value,start,end,expected in ((3,2,4,True),(2,2,4,True),(4,2,4,False),\n                                    (-3,-4,-2,True),(-4,-4,-2,True),(-2,-4,-2,False),\n                                    (2,2,2,False),(1,'not-number',3,True)):\n        eq(in_range(value,start,end),expected)\n    eq(in_range(2,4),True)\n    eq(in_range(4,2),False)\n    eq(in_range('2',0,4),False)\n    eq(in_range(True,0,4),False)\n    eq(pydash.in_range_cmp(1,4)(2),True)\n    eq(in_range(float('nan'),0,1),False)\n\n\ndef floating_endpoints():\n    cases=[(-2.5,-0.5,-2.5,True),(-1.5,-0.5,-2.5,True),(-0.5,-0.5,-2.5,False),\n           (0.5,2.5,0.5,True),(1.5,2.5,0.5,True),(2.5,2.5,0.5,False),\n           (1.5,0.5,2.5,True),(0.5,0.5,2.5,True),(2.5,0.5,2.5,False),\n           (1.5,1.5,1.5,False),(-0.0,0.0,-0.0,False)]\n    for value,start,end,expected in cases:\n        eq(in_range(value,start,end),expected)\n\n\ndef implicit_end_and_keyword_forms():\n    for value,expected in ((-5,False),(-4,True),(-1,True),(0,False),(1,False)):\n        eq(in_range(value,-4),expected)\n        eq(in_range(value,start=-4,end=None),expected)\n        eq(in_range(value=value,start=0,end=-4),expected)\n    for value,expected in ((-1,False),(0,True),(3,True),(4,False)):\n        eq(in_range(value,4),expected)\n    eq(in_range(0),False)\n    eq(in_range(0,0),False)\n    eq(in_range(value=2,start=3,end=1),True)\n\n\ndef curried_public_protocol():\n    values=list(range(-5,6))\n    positive=pydash.in_range_cmp(start=4,end=2)\n    negative=pydash.in_range_cmp(-4)\n    assert callable(positive) and callable(negative)\n    eq(list(filter(positive,values)),[2,3])\n    eq(list(filter(negative,values)),[-4,-3,-2,-1])\n    eq([pydash.in_range_cmp(3,3)(value) for value in values],[False]*len(values))\n    eq([pydash.in_range_cmp(1,4)(value) for value in values],\n       [in_range(value,1,4) for value in values])\n\n\ndef existing_nonnumber_defaults_and_early_exit():\n    for value in ('2','',None,False,True,[],object()):\n        eq(in_range(value,4,2),False)\n    # Existing nonnumeric bounds become zero; this is not new coercion.\n    for value,start,end,expected in ((1,'not-a-number',3,True),(1,3,'not-a-number',True),\n                                    (-1,-2,'not-a-number',True),(-1,'not-a-number',-2,True),\n                                    (1,'2','3',False),(0,False,True,False)):\n        eq(in_range(value,start,end),expected)\n    class Hostile:\n        def __bool__(self):\n            raise AssertionError('non-number input truthiness must not be consulted')\n        def __gt__(self,other):\n            raise AssertionError('non-number bounds must not be compared')\n    eq(in_range('not-number',Hostile(),Hostile()),False)\n    eq(in_range(1,Hostile(),3),True)\n\n\ndef exact_numbers_infinity_nan_and_original_objects():\n    huge=10**1000\n    eq(in_range(huge,huge+1,huge-1),True)\n    eq(in_range(huge-1,huge+1,huge-1),True)\n    eq(in_range(huge+1,huge+1,huge-1),False)\n    for value,expected in ((Decimal('-2'),True),(Decimal('1.5'),True),(Decimal('2'),False)):\n        eq(in_range(value,Decimal('2'),Decimal('-2')),expected)\n    high,low=float('inf'),float('-inf')\n    eq(in_range(0,high,low),True)\n    eq(in_range(low,high,low),True)\n    eq(in_range(high,high,low),False)\n    eq(in_range(0,high,high),False)\n    nan=float('nan')\n    for value,start,end in ((nan,0,1),(nan,1,0),(0,nan,1),(0,1,nan)):\n        eq(in_range(value,start,end),False)\n    class TaggedInt(int):\n        pass\n    start,end=TaggedInt(4),TaggedInt(2)\n    start.tag,end.tag='start','end'\n    arguments={'value':3,'start':start,'end':end}\n    eq(in_range(**arguments),True)\n    assert arguments['start'] is start and arguments['end'] is end\n    eq((int(start),int(end),start.tag,end.tag),(4,2,'start','end'))\n\n\ndef comparison_failures_and_lazy_curried_factory():\n    failure=RuntimeError('numeric ordering failed')\n    class BrokenInt(int):\n        def __new__(cls,value):\n            obj=super().__new__(cls,value)\n            obj.comparisons=0\n            return obj\n        def __gt__(self,other):\n            self.comparisons+=1\n            raise failure\n    start=BrokenInt(0)\n    predicate=pydash.in_range_cmp(start,3)\n    eq(start.comparisons,0)\n    eq(predicate('not-a-number'),False)\n    eq(start.comparisons,0)\n    raises(RuntimeError,lambda:predicate(1),failure)\n    eq(start.comparisons,1)\n    with localcontext() as context:\n        context.traps[InvalidOperation]=True\n        raises(InvalidOperation,lambda:in_range(Decimal('NaN'),0,1))\n\n\ndef unordered_decimal_bound_observation():\n    observed={}\n    with localcontext() as context:\n        context.traps[InvalidOperation]=True\n        cases=[('value_below_start_nan_end',0,1,Decimal('NaN')),\n               ('decimal_nan_value',Decimal('NaN'),0,1),\n               ('float_nan_end',0,1,float('nan'))]\n        for label,value,start,end in cases:\n            try:\n                observed[label]={'result':in_range(value,start,end)}\n            except Exception as exc:\n                observed[label]={'error':type(exc).__name__}\n    return observed\n\n\ncheck('integer_forward_reverse_membership_grid_half_open',integer_membership_grid)\ncheck('existing_forward_defaults_nonnumeric_curried_controls',legacy_forward_controls)\ncheck('floating_reverse_normal_equal_endpoint_inclusion',floating_endpoints)\ncheck('implicit_negative_end_and_public_keyword_calls',implicit_end_and_keyword_forms)\ncheck('curried_factory_filtering_and_direct_normal_forms',curried_public_protocol)\ncheck('existing_nonnumeric_policy_bool_rejection_early_exit',existing_nonnumber_defaults_and_early_exit)\ncheck('huge_int_decimal_infinity_float_nan_no_object_mutation',exact_numbers_infinity_nan_and_original_objects)\ncheck('comparison_error_identity_no_retry_curried_laziness',comparison_failures_and_lazy_curried_factory)\ncheck('unordered_decimal_nan_bound_error_order_observation',unordered_decimal_bound_observation)\nprint(json.dumps({'module':predicates.__file__,'results':results},ensure_ascii=True))\n",
+    "source_sha256": "e382d377e29bbbb679768ba5dbe5220156164cc9f7290aad082da63de7b16084",
+    "reproduction": "将 source 保存为 probe.py，把对应 src/pydash 包复制到独立目录；设置 PYTHONPATH 和 PROBE_COPY 指向该目录，用 Python 3.12 -B 运行。使用运行时已有依赖，无需安装或联网。"
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\base\\pydash\\predicates.py",
+        "results": [
+          {
+            "id": "integer_forward_reverse_membership_grid_half_open",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('False', 'True')"
+          },
+          {
+            "id": "existing_forward_defaults_nonnumeric_curried_controls",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "floating_reverse_normal_equal_endpoint_inclusion",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('False', 'True')"
+          },
+          {
+            "id": "implicit_negative_end_and_public_keyword_calls",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('False', 'True')"
+          },
+          {
+            "id": "curried_factory_filtering_and_direct_normal_forms",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('[]', '[2, 3]')"
+          },
+          {
+            "id": "existing_nonnumeric_policy_bool_rejection_early_exit",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('False', 'True')"
+          },
+          {
+            "id": "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('False', 'True')"
+          },
+          {
+            "id": "comparison_error_identity_no_retry_curried_laziness",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "RuntimeError not raised"
+          },
+          {
+            "id": "unordered_decimal_nan_bound_error_order_observation",
+            "status": "pass",
+            "detail": {
+              "value_below_start_nan_end": {
+                "result": false
+              },
+              "decimal_nan_value": {
+                "error": "InvalidOperation"
+              },
+              "float_nan_end": {
+                "result": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\A\\pydash\\predicates.py",
+        "results": [
+          {
+            "id": "integer_forward_reverse_membership_grid_half_open",
+            "status": "pass",
+            "detail": {
+              "calls_checked": 891,
+              "oracle": "stdlib integer range membership after selecting lower and upper endpoints"
+            }
+          },
+          {
+            "id": "existing_forward_defaults_nonnumeric_curried_controls",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "floating_reverse_normal_equal_endpoint_inclusion",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "implicit_negative_end_and_public_keyword_calls",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "curried_factory_filtering_and_direct_normal_forms",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "existing_nonnumeric_policy_bool_rejection_early_exit",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "comparison_error_identity_no_retry_curried_laziness",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unordered_decimal_nan_bound_error_order_observation",
+            "status": "pass",
+            "detail": {
+              "value_below_start_nan_end": {
+                "error": "InvalidOperation"
+              },
+              "decimal_nan_value": {
+                "error": "InvalidOperation"
+              },
+              "float_nan_end": {
+                "result": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair06-review-f18m5j8h\\B\\pydash\\predicates.py",
+        "results": [
+          {
+            "id": "integer_forward_reverse_membership_grid_half_open",
+            "status": "pass",
+            "detail": {
+              "calls_checked": 891,
+              "oracle": "stdlib integer range membership after selecting lower and upper endpoints"
+            }
+          },
+          {
+            "id": "existing_forward_defaults_nonnumeric_curried_controls",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "floating_reverse_normal_equal_endpoint_inclusion",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "implicit_negative_end_and_public_keyword_calls",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "curried_factory_filtering_and_direct_normal_forms",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "existing_nonnumeric_policy_bool_rejection_early_exit",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "huge_int_decimal_infinity_float_nan_no_object_mutation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "comparison_error_identity_no_retry_curried_laziness",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unordered_decimal_nan_bound_error_order_observation",
+            "status": "pass",
+            "detail": {
+              "value_below_start_nan_end": {
+                "error": "InvalidOperation"
+              },
+              "decimal_nan_value": {
+                "error": "InvalidOperation"
+              },
+              "float_nan_end": {
+                "result": false
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 8,
+    "observational_groups_per_variant": 1,
+    "A_functional_passed": 8,
+    "B_functional_passed": 8,
+    "base_functional_passed": 1,
+    "baseline_control": "单独的原有正向/缺省/非数字/柯里化控制组在 base/A/B 全过。base 六组含反向结果的检查失败，复现题面；比较错误注入组中 base 不执行新增的端点比较，故不会触发该专门注入的 RuntimeError，这不被当作独立旧版缺陷。某组提前失败时未执行子项不视为通过。",
+    "coverage": "891 个整数正向/反向/相等端点对照；另有浮点、隐式负数 end、默认/关键字、in_range_cmp/filter、非数字原规则、1001位整数、Decimal、无穷、浮点 NaN、原端点对象及自制比较异常。覆盖数量不用于候选优劣评分。",
+    "unordered_decimal_observation": "开启标准 Decimal InvalidOperation trap 后，in_range(0,1,Decimal(\"NaN\")) 从 base False 变为两侧 InvalidOperation；Decimal NaN 作为 value 时三份都 InvalidOperation，float NaN 端点仍 False。"
+  },
+  "source_immutability": {
+    "files_verified": 232,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair06.json": "ea358e4f8caef128f098b95ddbe98244d46b014672a921579a4b857c1a97cb84",
+      "06\\task.json": "47f9a3a48367b11fe8ca72a4bac2132cf76d097d6be4ddcd8355edd065241a81",
+      "06\\A.patch": "541ea4417cfb69afd041760f0037d7147216b7706512f220ae433a5dd24ed29f",
+      "06\\B.patch": "35062f6c41493163a283cd6e1c728855d130d501719c22d07eff7ec1ca336008",
+      "06\\base\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\base\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\base\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\base\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\base\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\base\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\base\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\base\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\base\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\base\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\base\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\base\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\base\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\base\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\base\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\base\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\base\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\base\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\base\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\base\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\base\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\base\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\base\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\base\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\base\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\base\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\base\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\base\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\base\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\base\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\base\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\base\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\base\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\base\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\base\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\base\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\base\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\base\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\base\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\base\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\base\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\base\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\base\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\base\\tests\\test_predicates.py": "3c15691ff16a04e23f976caa31d0c191dce0f1712a5cdd78d3f788440a06db59",
+      "06\\base\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\base\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\base\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\base\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\base\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\base\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\base\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\base\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\base\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\base\\src\\pydash\\predicates.py": "641a2da51b802dabf22572c77cc6acd32d31fa28ff7c17bb6d20cf52044f38e3",
+      "06\\base\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\base\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\base\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\base\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\base\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\base\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\base\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\base\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\base\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\base\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\base\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\base\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\base\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\base\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\base\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\base\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\base\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\base\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\A\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\A\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\A\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\A\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\A\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\A\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\A\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\A\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\A\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\A\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\A\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\A\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\A\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\A\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\A\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\A\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\A\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\A\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\A\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\A\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\A\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\A\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\A\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\A\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\A\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\A\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\A\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\A\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\A\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\A\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\A\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\A\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\A\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\A\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\A\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\A\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\A\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\A\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\A\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\A\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\A\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\A\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\A\\tests\\test_predicates.py": "544b53c2fc2c353340adb9005ce60ebd5cfc16667fb1184107642eae1ef430de",
+      "06\\A\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\A\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\A\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\A\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\A\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\A\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\A\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\A\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\A\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\A\\src\\pydash\\predicates.py": "461dd019d9cb01341833e4a0a962235965ac947fdae8719ad7f511330fa86403",
+      "06\\A\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\A\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\A\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\A\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\A\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\A\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\A\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\A\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\A\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\A\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\A\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\A\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\A\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\A\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\A\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\A\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\A\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\A\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\B\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\B\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\B\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\B\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\B\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\B\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\B\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\B\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\B\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\B\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\B\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\B\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\B\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\B\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\B\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\B\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\B\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\B\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\B\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\B\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\B\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\B\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\B\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\B\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\B\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\B\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\B\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\B\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\B\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\B\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\B\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\B\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\B\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\B\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\B\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\B\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\B\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\B\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\B\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\B\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\B\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\B\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\B\\tests\\test_predicates.py": "4714165aba7bb811c2986695d05b06cc3b4aec1ac047d9a7a214d9b6b72d47f5",
+      "06\\B\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\B\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\B\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\B\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\B\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\B\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\B\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\B\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\B\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\B\\src\\pydash\\predicates.py": "173278bca330bf4f0d55da6088719735cb74aea7adef2b1b55665f07f42d4ac8",
+      "06\\B\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\B\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\B\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\B\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\B\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\B\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\B\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\B\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\B\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\B\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\B\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\B\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\B\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\B\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\B\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\B\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\B\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\B\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_hashes_after": {
+      "tasks-pair06.json": "ea358e4f8caef128f098b95ddbe98244d46b014672a921579a4b857c1a97cb84",
+      "06\\task.json": "47f9a3a48367b11fe8ca72a4bac2132cf76d097d6be4ddcd8355edd065241a81",
+      "06\\A.patch": "541ea4417cfb69afd041760f0037d7147216b7706512f220ae433a5dd24ed29f",
+      "06\\B.patch": "35062f6c41493163a283cd6e1c728855d130d501719c22d07eff7ec1ca336008",
+      "06\\base\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\base\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\base\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\base\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\base\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\base\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\base\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\base\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\base\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\base\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\base\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\base\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\base\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\base\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\base\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\base\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\base\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\base\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\base\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\base\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\base\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\base\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\base\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\base\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\base\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\base\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\base\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\base\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\base\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\base\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\base\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\base\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\base\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\base\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\base\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\base\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\base\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\base\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\base\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\base\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\base\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\base\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\base\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\base\\tests\\test_predicates.py": "3c15691ff16a04e23f976caa31d0c191dce0f1712a5cdd78d3f788440a06db59",
+      "06\\base\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\base\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\base\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\base\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\base\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\base\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\base\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\base\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\base\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\base\\src\\pydash\\predicates.py": "641a2da51b802dabf22572c77cc6acd32d31fa28ff7c17bb6d20cf52044f38e3",
+      "06\\base\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\base\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\base\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\base\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\base\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\base\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\base\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\base\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\base\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\base\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\base\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\base\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\base\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\base\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\base\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\base\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\base\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\base\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\A\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\A\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\A\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\A\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\A\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\A\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\A\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\A\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\A\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\A\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\A\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\A\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\A\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\A\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\A\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\A\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\A\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\A\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\A\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\A\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\A\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\A\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\A\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\A\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\A\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\A\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\A\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\A\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\A\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\A\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\A\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\A\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\A\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\A\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\A\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\A\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\A\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\A\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\A\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\A\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\A\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\A\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\A\\tests\\test_predicates.py": "544b53c2fc2c353340adb9005ce60ebd5cfc16667fb1184107642eae1ef430de",
+      "06\\A\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\A\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\A\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\A\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\A\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\A\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\A\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\A\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\A\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\A\\src\\pydash\\predicates.py": "461dd019d9cb01341833e4a0a962235965ac947fdae8719ad7f511330fa86403",
+      "06\\A\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\A\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\A\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\A\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\A\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\A\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\A\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\A\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\A\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\A\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\A\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\A\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\A\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\A\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\A\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\A\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\A\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\A\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "06\\B\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "06\\B\\AUTHORS.rst": "6f61fcb95e6a64d2c2cf519d01165348d2d833eaaa7dbd0f1cf3dca1795e24c8",
+      "06\\B\\CHANGELOG.rst": "c56b4e766bd124d9b4c13b83a8a8c37ea56ee87c568aa80d4baaba7dd069386e",
+      "06\\B\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "06\\B\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "06\\B\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "06\\B\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "06\\B\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "06\\B\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "06\\B\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "06\\B\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "06\\B\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "06\\B\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "06\\B\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "06\\B\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "06\\B\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "06\\B\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "06\\B\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "06\\B\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "06\\B\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "06\\B\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "06\\B\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "06\\B\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "06\\B\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "06\\B\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "06\\B\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "06\\B\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "06\\B\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "06\\B\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "06\\B\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "06\\B\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "06\\B\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "06\\B\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "06\\B\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "06\\B\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "06\\B\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "06\\B\\tests\\test_arrays.py": "2a3deabc017311d749ae80841913ff91d7b9b2c5c948eb932c9b6955953814c6",
+      "06\\B\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "06\\B\\tests\\test_collections.py": "f57a2b006f4bbd341a4793359c417001c8fe3f9105bfa29e84f472c5e22fe159",
+      "06\\B\\tests\\test_functions.py": "c661a5c45fda5b313263a740fce4b981132b4b7d5acd689af31f8b6e815351a1",
+      "06\\B\\tests\\test_numerical.py": "082cce3324b089ef6bb2605d40911df96c932115810c615d7a7951f734eb3f85",
+      "06\\B\\tests\\test_objects.py": "c330ae309ebca696eb10b187678f5b727892b43725918570768802c6117f1617",
+      "06\\B\\tests\\test_predicates.py": "4714165aba7bb811c2986695d05b06cc3b4aec1ac047d9a7a214d9b6b72d47f5",
+      "06\\B\\tests\\test_strings.py": "adb155954a0993fb248a49c04e383123f936d97826e4198631b68ecc7e9e4727",
+      "06\\B\\tests\\test_utilities.py": "c631924186240c9a38105c0f58e28d892fb3d56d5317294de72a6e37cef81b87",
+      "06\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "06\\B\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\src\\pydash\\arrays.py": "006264485bf76c3bfae0b870c57a2a7d9ad6235c2c8c9698915aded024dfd6ab",
+      "06\\B\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "06\\B\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "06\\B\\src\\pydash\\functions.py": "c27a66da7c114c13d776c3f4dfc8b6886a6add368502832c7b0495f6b04f009e",
+      "06\\B\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "06\\B\\src\\pydash\\numerical.py": "4461b912e161a6b29cc4303effe375ff26ab62fe03a2e4d0341a6bacd38adfa3",
+      "06\\B\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "06\\B\\src\\pydash\\predicates.py": "173278bca330bf4f0d55da6088719735cb74aea7adef2b1b55665f07f42d4ac8",
+      "06\\B\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\src\\pydash\\strings.py": "0fbbf2ee68c4bf2093ecc622abb0c868ad604ac4394616e66c3797a9544e22c6",
+      "06\\B\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "06\\B\\src\\pydash\\utilities.py": "b3ecfa4d2aaf8d71ea870d512d61e10ac1b413ba8c44f7acc865a68c5176ee7c",
+      "06\\B\\src\\pydash\\__init__.py": "740597b1b7d6523f5afc7d1ef507156734baf49199959d210f97620e8f572d17",
+      "06\\B\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "06\\B\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "06\\B\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "06\\B\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "06\\B\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "06\\B\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "06\\B\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "06\\B\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "06\\B\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "06\\B\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "06\\B\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "06\\B\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "06\\B\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "06\\B\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "includes": "只包含本 pair 的 base/A/B 全部常规文件、task.json、A.patch、B.patch 与 tasks-pair06.json；文件枚举仅用于字节校验。"
+  },
+  "limitations": [
+    "这是公开输入上的独立行为审阅，不作发布资格或全项目认证；未运行候选测试套件或评分器，没有 native 模型 CLI、网络、委派或真实源码改动。前七份报告未读未改。",
+    "审查员有先前案例开发及匿名 pair 审阅背景，因此不能声称从未接触整个项目；本 pair 证据只来自指定公开输入和自制探针，没有使用跨 pair 或跨轮信息推断分组。",
+    "只验证 Python 3.12.14 上记录的普通有序数字和比较协议。任务没有为 Decimal NaN 端点、自定义非全序数字、所有数值扩展或所有 Python 版本定义完整规范；相应未知边界未被无证据判为缺陷。",
+    "该 predicate 的生产改动只涉及本地端点和比较，没有新增外部资源操作；对象所有权检查只证明本报告记录的端点对象及调用参数没有被改写，不保证用户自定义比较方法绝对无副作用。"
+  ]
+}

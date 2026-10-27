@@ -1,0 +1,7 @@
+已完成，仅修改 [app.py](C:/Users/ASUS/AppData/Local/Temp/lean-coding-codex-f7ea3a63d0934ee180513de15998925e/with-skill/h04/app.py:1)。
+
+- 删除 reducer 调用前的复制；IdentityReducer 仅复制一次，DoubleReducer 直接排序其新列表。
+- 保留原输入、预览独立可修改、排序稳定性及异常传播语义。
+- 使用本地 Python 3.13.5 运行 6 项检查，全部通过，覆盖两个 reducer、复制次数、列表复用及失败路径。
+
+未完成项：无。未联网、安装依赖、委派或新增报告文件。

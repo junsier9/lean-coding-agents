@@ -1,0 +1,11 @@
+2026-10-24T10:23:27.839766Z  WARN codex_skills::interface: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:27.839893Z  WARN codex_skills::interface: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:27.849357Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
+2026-10-24T10:23:29.237387Z  WARN codex_skills::interface: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:29.238125Z  WARN codex_skills::interface: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:58.995017Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (1/5 in 198ms)... turn_id=01a16d6f-d6e6-7973-bca0-4594164619bd retries=1 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:14.220362Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (2/5 in 361ms)... turn_id=01a16d6f-d6e6-7973-bca0-4594164619bd retries=2 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:29.600949Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (3/5 in 724ms)... turn_id=01a16d6f-d6e6-7973-bca0-4594164619bd retries=3 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:45.350448Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (4/5 in 1.513s)... turn_id=01a16d6f-d6e6-7973-bca0-4594164619bd retries=4 max_retries=5 sampling_error=request timed out
+2026-10-24T10:25:01.886348Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (5/5 in 2.948s)... turn_id=01a16d6f-d6e6-7973-bca0-4594164619bd retries=5 max_retries=5 sampling_error=request timed out
+2026-10-24T10:25:19.845991Z  WARN codex_core::client: falling back to HTTP

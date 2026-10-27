@@ -1,0 +1,508 @@
+{
+  "pair": "06",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "replace_entities 遇到某些 Windows-1252 控制区的数字实体时泄漏 UnicodeDecodeError。请让这些无效实体遵守 remove_illegal 的移除或保留设置。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind\\tasks-pair06.json",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind\\06\\B"
+    ],
+    "rubric": [
+      "按公开任务和既有源码契约判断正常及失败路径",
+      "新增 guard/copy/wrapper/retry 须有当前可观察需求",
+      "不按代码行数或测试数量判优",
+      "已确认行为变化与未确定的产品边界分开记录"
+    ],
+    "not_accessed_for_this_review": [
+      "分组或标签映射",
+      "成本或计时",
+      "skill",
+      "隐藏评分器",
+      "参考修复",
+      "父任务其他生产成绩"
+    ],
+    "cross_pair_labels_inferred": false
+  },
+  "comparison": "A/B 的 w3lib/html.py 字节相同；局部行为相同，均修复题面实体解码错误，并保留输入编码及非预期错误的传播。",
+  "preferred_arm": null,
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "06-A-entity-policy",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\A\\w3lib\\html.py",
+          "line": 84,
+          "title": "将可恢复的实体转换失败交给既有 remove_illegal 策略",
+          "evidence": "仅将 Windows-1252 单字节解码移入原有 ValueError 处理区域。UnicodeDecodeError 是 ValueError 子类；五个未定义映射的十进制/大小写十六进制实体现在分别移除或原样保留，不引入全函数吞错。第 91 行既有分号判断继续决定无分号非法实体保留。",
+          "probe_ids": [
+            "undefined_cp1252_remove_keep",
+            "missing_semicolon_existing_policy",
+            "existing_invalid_entity_fallback"
+          ],
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\A\\w3lib\\html.py",
+              "line": 91
+            }
+          ]
+        },
+        {
+          "id": "06-A-error-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\A\\w3lib\\html.py",
+          "line": 93,
+          "title": "源文本编码失败与非预期内部错误仍传播",
+          "evidence": "str_to_unicode(text, encoding) 仍位于实体内部异常处理之外。含原始非法 cp1252 字节的输入在两种 remove_illegal 设置下均抛 UnicodeDecodeError；给 int2byte 注入 RuntimeError 后同一异常对象传播。有效 cp1252 映射、普通 Unicode/命名实体和 keep 策略保持可观察行为。",
+          "probe_ids": [
+            "source_decode_error_propagates",
+            "narrow_failure_scope_and_inheritance",
+            "valid_numeric_named_keep_and_input_encoding"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "06-A-future-inputs",
+          "title": "未扩展到未声明的输入或外部编码修复策略",
+          "evidence": "探针未将未知输入编码、非文本对象或任意猴子补丁的 ValueError 视为题面要求。源码已有的无分号保留策略没有在此次请求中要求重定义。",
+          "defect_claimed": false
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "06-B-entity-policy",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\B\\w3lib\\html.py",
+          "line": 84,
+          "title": "将可恢复的实体转换失败交给既有 remove_illegal 策略",
+          "evidence": "仅将 Windows-1252 单字节解码移入原有 ValueError 处理区域。UnicodeDecodeError 是 ValueError 子类；五个未定义映射的十进制/大小写十六进制实体现在分别移除或原样保留，不引入全函数吞错。第 91 行既有分号判断继续决定无分号非法实体保留。",
+          "probe_ids": [
+            "undefined_cp1252_remove_keep",
+            "missing_semicolon_existing_policy",
+            "existing_invalid_entity_fallback"
+          ],
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\B\\w3lib\\html.py",
+              "line": 91
+            }
+          ]
+        },
+        {
+          "id": "06-B-error-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind\\06\\B\\w3lib\\html.py",
+          "line": 93,
+          "title": "源文本编码失败与非预期内部错误仍传播",
+          "evidence": "str_to_unicode(text, encoding) 仍位于实体内部异常处理之外。含原始非法 cp1252 字节的输入在两种 remove_illegal 设置下均抛 UnicodeDecodeError；给 int2byte 注入 RuntimeError 后同一异常对象传播。有效 cp1252 映射、普通 Unicode/命名实体和 keep 策略保持可观察行为。",
+          "probe_ids": [
+            "source_decode_error_propagates",
+            "narrow_failure_scope_and_inheritance",
+            "valid_numeric_named_keep_and_input_encoding"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "06-B-future-inputs",
+          "title": "未扩展到未声明的输入或外部编码修复策略",
+          "evidence": "探针未将未知输入编码、非文本对象或任意猴子补丁的 ValueError 视为题面要求。源码已有的无分号保留策略没有在此次请求中要求重定义。",
+          "defect_claimed": false
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "每个 base/A/B 包源码单独复制到本审查员临时目录，以独立 python -B 子进程导入；设置 PYTHONDONTWRITEBYTECODE=1 和 PYTHONPATH，并断言实际导入位于各自副本。仅临时进程内替换函数以检查错误传播。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "import json\nimport os\nfrom pathlib import Path\nfrom w3lib import html\n\nassert Path(html.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nresults = []\n\n\ndef check(name, function):\n    try:\n        detail = function()\n        results.append({'id': name, 'status': 'pass', 'detail': detail})\n    except Exception as exc:\n        results.append({'id': name, 'status': 'fail', 'error': type(exc).__name__, 'message': str(exc)})\n\n\ndef eq(actual, expected):\n    assert actual == expected, (repr(actual), repr(expected))\n\n\ndef illegal_entities():\n    count = 0\n    for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):\n        for entity in (f'&#{number};', f'&#x{number:x};', f'&#X{number:X};'):\n            source = 'x' + entity + 'y'\n            for value in (source, source.encode('ascii')):\n                eq(html.replace_entities(value), 'xy')\n                eq(html.replace_entities(value, remove_illegal=True), 'xy')\n                eq(html.replace_entities(value, remove_illegal=False), source)\n                count += 3\n    return {'assertions': count}\n\n\ndef no_semicolon():\n    count = 0\n    for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):\n        for entity in (f'&#{number}', f'&#x{number:x}', f'&#X{number:X}'):\n            source = 'x' + entity + 'z'\n            for value in (source, source.encode('ascii')):\n                for policy in (True, False):\n                    eq(html.replace_entities(value, remove_illegal=policy), source)\n                    count += 1\n    return {'assertions': count}\n\n\ndef valid_entities():\n    for value in ('x&#128;&#x99;&amp;&#x1F642;y', b'x&#128;&#x99;&amp;&#x1F642;y'):\n        eq(html.replace_entities(value), 'x\\u20ac\\u2122&\\U0001f642y')\n    eq(html.replace_entities('&amp;&gt;&pound;', keep=('amp', 'gt')), '&amp;&gt;\\u00a3')\n    eq(html.replace_entities('\\u00a3&#153;'.encode('cp1252'), encoding='cp1252'), '\\u00a3\\u2122')\n\n\ndef existing_invalid_entity_fallback():\n    for source in ('x&#x110000;y', 'x&nosuchentity;y'):\n        eq(html.replace_entities(source), 'xy')\n        eq(html.replace_entities(source, remove_illegal=False), source)\n\n\ndef invalid_original_bytes():\n    for policy in (True, False):\n        try:\n            html.replace_entities(b'x\\x81&#129;y', encoding='cp1252', remove_illegal=policy)\n        except UnicodeDecodeError as exc:\n            eq(exc.encoding, 'charmap')\n            eq(exc.object, b'x\\x81&#129;y')\n        else:\n            raise AssertionError('source decoding error was swallowed')\n\n\ndef inheritance_and_scope():\n    assert issubclass(UnicodeDecodeError, ValueError)\n    failure = RuntimeError('unexpected decoder failure')\n    original = html.six.int2byte\n    def broken(number):\n        raise failure\n    html.six.int2byte = broken\n    try:\n        try:\n            html.replace_entities('&#128;')\n        except RuntimeError as exc:\n            assert exc is failure\n        else:\n            raise AssertionError('unexpected error was swallowed')\n    finally:\n        html.six.int2byte = original\n\n\ncheck('undefined_cp1252_remove_keep', illegal_entities)\ncheck('missing_semicolon_existing_policy', no_semicolon)\ncheck('valid_numeric_named_keep_and_input_encoding', valid_entities)\ncheck('existing_invalid_entity_fallback', existing_invalid_entity_fallback)\ncheck('source_decode_error_propagates', invalid_original_bytes)\ncheck('narrow_failure_scope_and_inheritance', inheritance_and_scope)\nprint(json.dumps({'module': html.__file__, 'results': results}, ensure_ascii=True))\n",
+    "source_sha256": "d1f8e46f804370aee219a6eafe3eec97a64ca6a766547ea6533e0b7b1bba6f0b",
+    "reproduction": "将 source 保存为 probe.py，将指定 arm 的包目录复制到独立目录；设置 PROBE_COPY 和 PYTHONPATH 为该目录，以 Python 3.12 的 -B 运行。使用预装 six 库（仅 pair06），未安装或改写运行时依赖。"
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\probe06.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\06\\base\\w3lib\\html.py",
+        "results": [
+          {
+            "id": "undefined_cp1252_remove_keep",
+            "status": "fail",
+            "error": "UnicodeDecodeError",
+            "message": "'charmap' codec can't decode byte 0x81 in position 0: character maps to <undefined>"
+          },
+          {
+            "id": "missing_semicolon_existing_policy",
+            "status": "fail",
+            "error": "UnicodeDecodeError",
+            "message": "'charmap' codec can't decode byte 0x81 in position 0: character maps to <undefined>"
+          },
+          {
+            "id": "valid_numeric_named_keep_and_input_encoding",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "existing_invalid_entity_fallback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "source_decode_error_propagates",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "narrow_failure_scope_and_inheritance",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\probe06.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\06\\A\\w3lib\\html.py",
+        "results": [
+          {
+            "id": "undefined_cp1252_remove_keep",
+            "status": "pass",
+            "detail": {
+              "assertions": 90
+            }
+          },
+          {
+            "id": "missing_semicolon_existing_policy",
+            "status": "pass",
+            "detail": {
+              "assertions": 60
+            }
+          },
+          {
+            "id": "valid_numeric_named_keep_and_input_encoding",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "existing_invalid_entity_fallback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "source_decode_error_propagates",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "narrow_failure_scope_and_inheritance",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\probe06.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-pair06-08-review-rug3wc8w\\06\\B\\w3lib\\html.py",
+        "results": [
+          {
+            "id": "undefined_cp1252_remove_keep",
+            "status": "pass",
+            "detail": {
+              "assertions": 90
+            }
+          },
+          {
+            "id": "missing_semicolon_existing_policy",
+            "status": "pass",
+            "detail": {
+              "assertions": 60
+            }
+          },
+          {
+            "id": "valid_numeric_named_keep_and_input_encoding",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "existing_invalid_entity_fallback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "source_decode_error_propagates",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "narrow_failure_scope_and_inheritance",
+            "status": "pass",
+            "detail": null
+          }
+        ]
+      }
+    }
+  },
+  "source_immutability": {
+    "files_verified": 100,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair06.json": "375a8355b4f8cc9bc7e53540adffbde1226771b8233ca95b82edca61af498b08",
+      "06\\task.json": "49fbee74541f091ba9e6aa2d35bef46817ab81a21f8161b8f0f848384da7825d",
+      "06\\A.patch": "b3a7acac08f295956d9cc23067e52922b00723b0ff4e38fb22bdd4ec844cf05d",
+      "06\\B.patch": "494553c6209e6f94a9a4d2636a0ce743d0ed15ab662570e40ee5fb923c85c45c",
+      "06\\base\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\base\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\base\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\base\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\base\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\base\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\base\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\base\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\base\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\base\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\base\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\base\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\base\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\base\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\base\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\base\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\base\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\base\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\base\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\base\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\base\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\base\\tests\\test_html.py": "b8eb9178670ec7ba5797eea67dbe3494ef055d5bd3487756a0e389a9e863f986",
+      "06\\base\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\base\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\base\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\base\\w3lib\\html.py": "808f58a31b351bca72d65e0ef1dac8db2692ae8ab6956238e8ab6715422311c7",
+      "06\\base\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\base\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\base\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\base\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\A\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\A\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\A\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\A\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\A\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\A\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\A\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\A\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\A\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\A\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\A\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\A\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\A\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\A\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\A\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\A\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\A\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\A\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\A\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\A\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\A\\tests\\test_html.py": "7809c6f14d01147b15e65a06c22b7ae607ef74c1e9e7e917cf54f8a1d2b17593",
+      "06\\A\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\A\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\A\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\A\\w3lib\\html.py": "008181309e3641f4f9c2451505cea53ee7c0d644feb7084930c4b6220f9f750d",
+      "06\\A\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\A\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\A\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\A\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\B\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\B\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\B\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\B\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\B\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\B\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\B\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\B\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\B\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\B\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\B\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\B\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\B\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\B\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\B\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\B\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\B\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\B\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\B\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\B\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\B\\tests\\test_html.py": "05f3b1cc9280ba4febe86166e56631dcc477a467922099dc10faed24593743a7",
+      "06\\B\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\B\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\B\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\B\\w3lib\\html.py": "008181309e3641f4f9c2451505cea53ee7c0d644feb7084930c4b6220f9f750d",
+      "06\\B\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\B\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\B\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\B\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_hashes_after": {
+      "tasks-pair06.json": "375a8355b4f8cc9bc7e53540adffbde1226771b8233ca95b82edca61af498b08",
+      "06\\task.json": "49fbee74541f091ba9e6aa2d35bef46817ab81a21f8161b8f0f848384da7825d",
+      "06\\A.patch": "b3a7acac08f295956d9cc23067e52922b00723b0ff4e38fb22bdd4ec844cf05d",
+      "06\\B.patch": "494553c6209e6f94a9a4d2636a0ce743d0ed15ab662570e40ee5fb923c85c45c",
+      "06\\base\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\base\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\base\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\base\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\base\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\base\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\base\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\base\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\base\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\base\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\base\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\base\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\base\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\base\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\base\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\base\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\base\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\base\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\base\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\base\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\base\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\base\\tests\\test_html.py": "b8eb9178670ec7ba5797eea67dbe3494ef055d5bd3487756a0e389a9e863f986",
+      "06\\base\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\base\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\base\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\base\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\base\\w3lib\\html.py": "808f58a31b351bca72d65e0ef1dac8db2692ae8ab6956238e8ab6715422311c7",
+      "06\\base\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\base\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\base\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\base\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\A\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\A\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\A\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\A\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\A\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\A\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\A\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\A\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\A\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\A\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\A\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\A\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\A\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\A\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\A\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\A\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\A\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\A\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\A\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\A\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\A\\tests\\test_html.py": "7809c6f14d01147b15e65a06c22b7ae607ef74c1e9e7e917cf54f8a1d2b17593",
+      "06\\A\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\A\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\A\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\A\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\A\\w3lib\\html.py": "008181309e3641f4f9c2451505cea53ee7c0d644feb7084930c4b6220f9f750d",
+      "06\\A\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\A\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\A\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\A\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\.bumpversion.cfg": "9f615535e15caa6c74213c97e86b8fde163da1e38b89ce0ef0bd469d301f4001",
+      "06\\B\\.coveragerc": "ea2e2a9001c427f7fe47d6d858fcfcd0df2978a515e9942ced5d63aac7528cbd",
+      "06\\B\\.gitignore": "526f9872e50b60e46139a18badf2fb62c139d9780268825597e65276ed26b5ae",
+      "06\\B\\.travis.yml": "fee417ae473b7d5538e3a25c7459cadb526af73539ee8ea342bf45c31f6889c6",
+      "06\\B\\conftest.py": "4f57d6a042ba4e59f6341167980808ce6d87ddc191a2818a8f3631fa31a2fac8",
+      "06\\B\\LICENSE": "13d9ddde1b026748ce91b799f32f9741fd5ecc2bfdf267174a10fb49610c61ab",
+      "06\\B\\MANIFEST.in": "98c52f6748a6c1c8bd4f2e87e1cc4de43a2687ed4bbd65b6ed11733508d29a2f",
+      "06\\B\\NEWS": "02c9713f6b853c391560e6f10469a9348974823c390de5681c1fece516b959b2",
+      "06\\B\\README.rst": "aefeb6e64807aebe0dd39d782cf8d9d25c4df9c6725ffce634796f883dc8236e",
+      "06\\B\\setup.cfg": "e4bd33cba1e9779df4fe84fc34e92a4c43a4adcbcfe4b937ae1302bd3e73d4b8",
+      "06\\B\\setup.py": "a90b22c7fe73cca4d619fddf2cd1ce76951162f1f2b06c2a2ed73abb1dbbe039",
+      "06\\B\\stdeb.cfg": "11e04013bbd24587735cccda900b1025250aeffed7914a6ed130dd56b899f0d9",
+      "06\\B\\tox.ini": "90c25ff5107515c69a9ef8aa1c1b2c0e7bf4361996e191d5c31025cf5fb0742a",
+      "06\\B\\docs\\conf.py": "e845f3a3b5e075e0efcf1df9e91ff6891637fe41d54b0bb1a8f4e1d35675f4c0",
+      "06\\B\\docs\\index.rst": "67dd2071d425f2e33bdfff8ee3ffaab85b16a7d04bc0f096d1334c1d36646bbe",
+      "06\\B\\docs\\make.bat": "f732e9b71b288dc8268e561eaa5b7210558def5a6769dae7872b5c7507535ba7",
+      "06\\B\\docs\\Makefile": "89c470302bf71689bb76cdfe3e346025d092883ef3680e510dd1478b8ce35c39",
+      "06\\B\\docs\\w3lib.rst": "9f416c33045af9ae108c6f3f4f1eb609bad534fba05b7c7b1e0bd11fd60f6f98",
+      "06\\B\\tests\\py3-ignores.txt": "47517dac5132579fd625ae5a436af7333e3d5dd4658225c8548e66d9a8398408",
+      "06\\B\\tests\\test_encoding.py": "458bdaac5c22287b0405a21434d55a4c30a968e40985bbb5e1c8729dc202722c",
+      "06\\B\\tests\\test_form.py": "da1acf8231975f2dee70682c5f1439b22c89305943d508712699c2928f6ab64c",
+      "06\\B\\tests\\test_html.py": "05f3b1cc9280ba4febe86166e56631dcc477a467922099dc10faed24593743a7",
+      "06\\B\\tests\\test_http.py": "ae7a918a26ec541e3ba3bb2676ea6053f57997388f4bee3873736db6c792af24",
+      "06\\B\\tests\\test_url.py": "13aa1a48955ddae031ff9b0ac8684f7501346f0252cd3cd6a22895d3b976b469",
+      "06\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "06\\B\\w3lib\\encoding.py": "01e207389af3b963da430596ba8d70c3a53b61cc688095f709318a27c378cf66",
+      "06\\B\\w3lib\\form.py": "65d8df147874c60daf245e065b918b5092a1085a7a7370cb76e953639ea96ce6",
+      "06\\B\\w3lib\\html.py": "008181309e3641f4f9c2451505cea53ee7c0d644feb7084930c4b6220f9f750d",
+      "06\\B\\w3lib\\http.py": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802",
+      "06\\B\\w3lib\\url.py": "08987b3eea9ea131ab2117729c295214e7f156e43e2b1ff3bd13c2332e67eab5",
+      "06\\B\\w3lib\\util.py": "fbcc032d3ca40219f635c26c6efcfbe2a82ad27b0c2488677156f89b005b2d1c",
+      "06\\B\\w3lib\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "includes": "对应 base/A/B 全部常规文件、task.json、A.patch、B.patch 和 tasks-pairXX.json；只为字节校验列举所有文件，未读取其他结果。"
+  },
+  "limitations": [
+    "这是公开任务与源码的局部盲审，不是隐藏评分或全项目兼容性认证；未运行候选提交的测试套件，也未联网。",
+    "本轮只读取指定 pair 的公开输入和本审查员生成的探针；没有分组映射。审查员先前参与开发案例构建并审阅其他预选匿名 pair，存在先前工作记忆，因此不声称整个项目从未接触背景的全新审查员；没有用跨 pair 信息判断本 pair 的标签或优劣。",
+    "本地行为探针只覆盖明确记录的 Python 3.12.14 情况，未证明所有历史 Python 或自定义调用者均兼容。"
+  ],
+  "production_code_equivalence": {
+    "method": "完整目标生产文件字节比较",
+    "equal": true
+  },
+  "probe_summary": {
+    "groups_per_variant": 6,
+    "A_passed": 6,
+    "B_passed": 6,
+    "base_passed": 4,
+    "baseline_control": "base 在含未定义 cp1252 数字实体的两组探针中复现 UnicodeDecodeError；两侧修复后通过。数字实体 remove/keep 组覆盖 90 项断言，无分号组覆盖 60 项；这些数量仅描述覆盖，不用于两侧排名。"
+  }
+}

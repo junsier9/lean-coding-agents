@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-10-25T01:26:56.006174+00:00",
+  "fresh_confirmation_model_calls": 0,
+  "change": "Freeze the actual imported statistics dependency hash and NumPy version, and check the existing Python executable and NumPy snapshot before the confirmation",
+  "statistics_code_or_data_changed": false,
+  "numpy_version": "2.3.5",
+  "statistics_dependency_sha256": "308FC2E8076BA93C74353BDF8156AE86C7E3767C2616BF301F43EE086CD337C3",
+  "controller_sha256": "8836432FB9166A370C1CF250923E01DAB8D6FE29DD3C0F285DC300A6C7468A22",
+  "actual_executable_and_numpy_match_original_snapshot": true
+}

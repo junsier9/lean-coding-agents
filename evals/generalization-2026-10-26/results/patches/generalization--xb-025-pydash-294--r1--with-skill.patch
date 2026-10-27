@@ -1,0 +1,103 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 3dd4dc0..c5cd098 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -7,6 +7,7 @@ Numerical/mathematical related functions.
+ from __future__ import annotations
+ 
+ from collections.abc import Sized
++from fractions import Fraction
+ import math
+ import operator
+ import typing as t
+@@ -1269,10 +1270,17 @@ def call_math_operator(value1, value2, op, default):
+ 
+ 
+ def rounder(func, x, precision):
+-    precision = pow(10, precision)
++    factor = pow(10, precision)
+ 
+     def rounder_func(item):
+-        return func(item * precision) / precision
++        if func in (math.ceil, math.floor) and isinstance(precision, int) and (
++            type(item) is int or type(item) is float and math.isfinite(item)
++        ):
++            # Scale decimal values exactly, including when undoing the scaling.
++            number = Fraction(str(item)) if type(item) is float else item
++            exact_factor = Fraction(10) ** precision
++            return float(func(number * exact_factor) / exact_factor)
++        return func(item * factor) / factor
+ 
+     result = None
+ 
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 91f609f..8a2b1d2 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -68,6 +68,66 @@ def test_floor(case, expected):
+     assert _.floor(*case) == expected
+ 
+ 
++@parametrize(
++    "value,precision,expected_floor,expected_ceil",
++    [
++        (0.29, 2, 0.29, 0.29),
++        (0.07, 2, 0.07, 0.07),
++        (-0.29, 2, -0.29, -0.29),
++        (-0.07, 2, -0.07, -0.07),
++        (0.291, 2, 0.29, 0.30),
++        (-0.291, 2, -0.30, -0.29),
++        (math.nextafter(0.29, -math.inf), 2, 0.28, 0.29),
++        (math.nextafter(0.29, math.inf), 2, 0.29, 0.30),
++        (2900000.0, -5, 2900000.0, 2900000.0),
++        (-2900000.0, -5, -2900000.0, -2900000.0),
++        (2900000, -5, 2900000.0, 2900000.0),
++        (-2900000, -5, -2900000.0, -2900000.0),
++        (2910000.0, -5, 2900000.0, 3000000.0),
++        (-2910000.0, -5, -3000000.0, -2900000.0),
++        (1e-7, 8, 1e-7, 1e-7),
++        (-1e-7, 8, -1e-7, -1e-7),
++        (1e308, 1, 1e308, 1e308),
++        (0.0, 2, 0.0, 0.0),
++        (-1.5, 0, -2.0, -1.0),
++    ],
++)
++def test_floor_ceil_precision(value, precision, expected_floor, expected_ceil):
++    assert _.floor(x=value, precision=precision) == expected_floor
++    assert _.ceil(x=value, precision=precision) == expected_ceil
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("as_iterable", [list, iter])
++def test_floor_ceil_precision_iterable(function, as_iterable):
++    assert function(as_iterable([0.29, -0.07]), 2) == [0.29, -0.07]
++    assert function(as_iterable([2900000.0, -2900000]), -5) == [2900000.0, -2900000.0]
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("precision", [-2, 0, 2])
++@parametrize(
++    "value,error", [(math.nan, ValueError), (math.inf, OverflowError), (-math.inf, OverflowError)]
++)
++def test_floor_ceil_nonfinite(function, precision, value, error):
++    with pytest.raises(error):
++        function(value, precision)
++    with pytest.raises(error):
++        function([0.29, value], precision)
++
++
++@parametrize("function", [_.floor, _.ceil])
++def test_floor_ceil_preserve_other_inputs(function):
++    assert function(Decimal("0.29"), 2) == 0.29
++    assert isinstance(function(29, Decimal("2")), Decimal)
++    assert function(29, Decimal("2")) == Decimal("29")
++    assert function(29, 2.0) == 29.0
++    assert function([True], 2) == [1.0]
++    assert function(None, 2) is None
++    assert function("junk", 2) is None
++    assert function([0.29, "junk"], 2) is None
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,146 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index cd8052f..913d827 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2246,7 +2246,8 @@ class Parameter:
+         self, ctx: Context, call: bool = True
+     ) -> t.Any | t.Callable[[], t.Any] | None:
+         """Get the default for the parameter. Tries
+-        :meth:`Context.lookup_default` first, then the local default.
++        :meth:`Context.lookup_default` first, then the local default,
++        then a default declared by another parameter with the same name.
+ 
+         :param ctx: Current context.
+         :param call: If the default is a callable, call it. Disable to
+@@ -2270,6 +2271,12 @@ class Parameter:
+         if value is UNSET:
+             value = self.default
+ 
++        if value is UNSET:
++            for param in ctx.command.params:
++                if param.name == self.name and param.default is not UNSET:
++                    value = param.default
++                    break
++
+         if call and callable(value):
+             value = value()
+ 
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 3f293e8..41f7fa3 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,4 +1,7 @@
++import pytest
++
+ import click
++from click.core import UNSET
+ 
+ 
+ def test_basic_defaults(runner):
+@@ -61,6 +64,106 @@ def test_multiple_flag_default(runner):
+     assert result.return_value == ((True, False), (True,), (1, -1))
+ 
+ 
++@pytest.mark.parametrize("default_option", ["upper", "lower"])
++@pytest.mark.parametrize(
++    ("default", "expected"),
++    [
++        (True, True),
++        ("upper", "upper"),
++        ("lower", "lower"),
++        ("custom", "custom"),
++        (False, False),
++        (0, 0),
++        ("", ""),
++        (None, None),
++        (lambda: "custom", "custom"),
++    ],
++)
++def test_shared_flag_default(runner, default_option, default, expected):
++    @click.command()
++    @click.option(
++        "--upper",
++        "case",
++        flag_value="upper",
++        default=default if default_option == "upper" else UNSET,
++        type=click.UNPROCESSED,
++    )
++    @click.option(
++        "--lower",
++        "case",
++        flag_value="lower",
++        default=default if default_option == "lower" else UNSET,
++        type=click.UNPROCESSED,
++    )
++    def cli(case):
++        return case
++
++    result = runner.invoke(cli, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == (default_option if default is True else expected)
++
++
++@pytest.mark.parametrize("reverse_order", [False, True])
++@pytest.mark.parametrize(
++    ("args", "expected"),
++    [
++        (["--upper"], "upper"),
++        (["--lower"], "lower"),
++        (["--upper", "--lower"], "lower"),
++        (["--lower", "--upper"], "upper"),
++    ],
++)
++def test_shared_flag_explicit_override(runner, reverse_order, args, expected):
++    @click.command()
++    @click.option("--upper", "case", flag_value="upper", default=True)
++    @click.option("--lower", "case", flag_value="lower")
++    def cli(case):
++        return case
++
++    if reverse_order:
++        cli.params.reverse()
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == expected
++
++
++def test_shared_flag_get_default(runner):
++    def default():
++        return "custom"
++
++    @click.command()
++    @click.option("--upper", "case", flag_value="upper")
++    @click.option("--lower", "case", flag_value="lower", default=default)
++    def cli(case):
++        return case
++
++    ctx = click.Context(cli)
++    for param in cli.params:
++        assert param.get_default(ctx, call=False) is default
++        assert param.get_default(ctx) == "custom"
++
++    result = runner.invoke(cli, default_map={"case": None}, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value is None
++
++    result = runner.invoke(cli, default_map={"case": "mapped"}, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == "mapped"
++
++
++def test_shared_flag_invalid_default(runner):
++    @click.command()
++    @click.option("--one", "number", flag_value=1)
++    @click.option("--two", "number", flag_value=2, default="invalid")
++    def cli(number):
++        pytest.fail("An invalid default must not reach the command callback.")
++
++    result = runner.invoke(cli)
++    assert result.exit_code == 2
++    assert "'invalid' is not a valid integer" in result.output
++
++
+ def test_flag_default_map(runner):
+     """test flag with default map"""
+ 

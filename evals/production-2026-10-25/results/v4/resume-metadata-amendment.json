@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-10-25T04:55:41.793698+00:00",
+  "study": "v4",
+  "observed_issue": "A cached controller resume rewrites completed_at in identical safety/routing summaries, then rejects its own freeze hash check.",
+  "failed_resume_log_sha256": "979BA25F5AD1F8F72B5180647B361584ACCF9EBD6C4B531AA4599E10C4416176",
+  "native_model_calls_in_failed_resume": 0,
+  "non_timestamp_summary_fields_verified_equal": true,
+  "original_frozen_summary_bytes_restored_from_git": true,
+  "new_generated_summaries_retained": true,
+  "process_local_resumer_sha256": "3803547DF919956FD4B0075007F3A8CE934917A454882BF6ADB278D8942487B2",
+  "process_local_resumer_source_utf8": "\"\"\"Resume frozen v4 without rewriting identical completed gate summaries.\"\"\"\nfrom pathlib import Path\nimport json\nimport sys\n\nPROJECT = Path(__file__).resolve().parent.parent\nHERE = PROJECT / \"evals/production-2026-10-25\"\nsys.path.insert(0, str(HERE))\nimport runner\nimport controller_v4\n\n\ndef main():\n    assert not (PROJECT / \".local/production-v4-controller.lock\").exists()\n    assert not list((PROJECT / \".local/production-runtime\").glob(\"*/active-suite.lock\"))\n    freeze = runner.read(HERE / \"results/v4/candidate-freeze.json\")\n    assert runner.digest(Path(controller_v4.__file__)) == freeze[\"controller_sha256\"]\n    bindings = {\n        (HERE / \"results/v4/safety-iteration3.json\").resolve(): \"safety_summary_sha256\",\n        (HERE / \"results/v4/routing-iteration3.json\").resolve(): \"routing_summary_sha256\",\n    }\n    saved = {}\n    for path, field in bindings.items():\n        assert runner.digest(path) == freeze[field]\n        saved[path] = runner.read(path)\n    original_write = runner.write\n\n    def preserve_completed_summary(path, value):\n        path = Path(path).resolve()\n        if path not in saved:\n            return original_write(path, value)\n        expected = dict(saved[path])\n        observed = dict(value)\n        assert \"completed_at\" in expected and \"completed_at\" in observed\n        expected.pop(\"completed_at\")\n        observed.pop(\"completed_at\")\n        if observed != expected:\n            raise ValueError(\"Recomputed gate differs beyond summary timestamp: \" + str(path))\n        assert runner.digest(path) == freeze[bindings[path]]\n        print(json.dumps({\"resume_preserved_frozen_summary\": path.name,\n                          \"all_non_timestamp_fields_identical\": True}), flush=True)\n\n    runner.write = preserve_completed_summary\n    try:\n        return controller_v4.main(3, HERE / \"candidates/v4-python/SKILL.md\")\n    finally:\n        runner.write = original_write\n        for path, field in bindings.items():\n            assert runner.digest(path) == freeze[field]\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+  "controller_source_sha256_unchanged": "8836432FB9166A370C1CF250923E01DAB8D6FE29DD3C0F285DC300A6C7468A22",
+  "model_inputs_grader_statistics_and_thresholds_changed": false,
+  "behavior": "Recompute existing gates from cached native records; retain only the two prior summary files when every field except completed_at is identical. Refuse all other differences. All other writes remain unchanged.",
+  "independent_review_status": "11 isolated probes passed; no reproduced blocking defect",
+  "new_summary_backups_sha256": {
+    "safety-iteration3.json": "8C475211DDC46828B277CB6E6ACBE6E82F0F190A6F7199D63B78DDD114387BF6",
+    "routing-iteration3.json": "012A67AEA824B075B7ECCBB68E967A9CFDECD29BB17E68E4E81BA17D717841F5"
+  },
+  "independent_review_raw_sha256": "A8FDC1CF52DC8844092473D595DA49366C7D8B19F227103C93DD8B5590B99B54",
+  "independent_review_public_sha256": "5FF41184D6AD402B753C2BA8679988217E4A3FA2FC4AB84AAC9737D6014953BF"
+}

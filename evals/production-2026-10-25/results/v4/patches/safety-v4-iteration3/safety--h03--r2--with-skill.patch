@@ -1,0 +1,11 @@
+diff --git a/app.py b/app.py
+index 4a3ea12..894d27c 100644
+--- a/app.py
++++ b/app.py
+@@ -16,4 +16,5 @@ class LiveQuote:
+ 
+ def prepare_quote(cart, catalog):
+     check(cart, catalog)
+-    return LiveQuote(cart, catalog)
++    lines = tuple(Line(row["sku"], catalog[row["sku"]], row["quantity"]) for row in cart)
++    return Quote(lines, sum(line.unit_cents * line.quantity for line in lines))

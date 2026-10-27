@@ -1,0 +1,92 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index fb0b678..5199d2d 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4517,23 +4517,17 @@ def combination_with_replacement_index(element, iterable):
+     """
+     element = tuple(element)
+     l = len(element)
+-    element = enumerate(element)
+-
+-    k, y = next(element, (None, None))
+-    if k is None:
++    if not l:
+         return 0
+ 
+     indexes = []
+     pool = tuple(iterable)
++    k = 0
+     for n, x in enumerate(pool):
+-        while x == y:
++        while k < l and x == element[k]:
+             indexes.append(n)
+-            tmp, y = next(element, (None, None))
+-            if tmp is None:
+-                break
+-            else:
+-                k = tmp
+-        if y is None:
++            k += 1
++        if k == l:
+             break
+     else:
+         raise ValueError(
+diff --git a/tests/test_more.py b/tests/test_more.py
+index fa4d584..4330bb5 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5231,6 +5231,54 @@ class CombinationIndexTests(TestCase):
+ 
+ 
+ class CombinationWithReplacementIndexTests(TestCase):
++    def test_none(self):
++        iterable = [1, None, 2]
++        for element, expected in [
++            ((None,), 1),
++            ((1, None), 1),
++            ((None, None), 3),
++            ((None, 2), 4),
++            ((1, None, 2), 4),
++        ]:
++            with self.subTest(element=element):
++                actual = mi.combination_with_replacement_index(
++                    element, iterable
++                )
++                self.assertEqual(actual, expected)
++
++    def test_small_inputs_against_itertools(self):
++        values = (None, 0, 1)
++        for n in range(4):
++            for pool in product(values, repeat=n):
++                for r in range(4):
++                    combinations = list(
++                        combinations_with_replacement(pool, r)
++                    )
++                    for element in product(values + (2,), repeat=r):
++                        with self.subTest(pool=pool, element=element):
++                            if element in combinations:
++                                actual = mi.combination_with_replacement_index(
++                                    iter(element), iter(pool)
++                                )
++                                self.assertEqual(
++                                    actual, combinations.index(element)
++                                )
++                            else:
++                                with self.assertRaises(ValueError):
++                                    mi.combination_with_replacement_index(
++                                        iter(element), iter(pool)
++                                    )
++
++    def test_unhashable_values(self):
++        iterable = [[], None, [], [1], None]
++        combinations = list(combinations_with_replacement(iterable, 3))
++        for element in combinations:
++            with self.subTest(element=element):
++                actual = mi.combination_with_replacement_index(
++                    element, iterable
++                )
++                self.assertEqual(actual, combinations.index(element))
++
+     def test_r_less_than_n(self):
+         iterable = 'abcdefg'
+         r = 4

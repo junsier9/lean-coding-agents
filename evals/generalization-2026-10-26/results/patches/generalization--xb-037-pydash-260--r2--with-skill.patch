@@ -1,0 +1,94 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index af6baed..7108491 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -985,7 +985,7 @@ def scale(array: t.Iterable[NumberT], maximum: int = 1) -> t.List[float]: ...
+ 
+ def scale(array, maximum: NumberT = 1):
+     """
+-    Scale list of value to a maximum number.
++    Scale numbers from an iterable to a maximum value.
+ 
+     Args:
+         array: Numbers to scale.
+@@ -1007,6 +1007,7 @@ def scale(array, maximum: NumberT = 1):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = list(array)
+     array_max = max(array)
+     factor = maximum / array_max
+     return [item * factor for item in array]
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 54add19..96f7e15 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal, DivisionByZero
+ import math
+ 
+ import pytest
+@@ -293,6 +294,63 @@ def test_scale(case, expected):
+     assert _.scale(*case) == expected
+ 
+ 
++@parametrize("iterable", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize(
++    "case,expected",
++    [
++        (([2, 5, 10],), [0.2, 0.5, 1]),
++        (([5, 1, 5, 2], 2), [2, 0.4, 2, 0.8]),
++        (([1, 2, 5], 0), [0, 0, 0]),
++        (([1, 2, 5], -5), [-1, -2, -5]),
++    ],
++)
++def test_scale_iterable(iterable, case, expected):
++    assert _.scale(iterable(case[0]), *case[1:]) == expected
++
++
++@parametrize("iterable", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize(
++    "kwargs,expected",
++    [
++        ({}, [Decimal("0.25"), Decimal("1")]),
++        ({"maximum": Decimal("2")}, [Decimal("0.5"), Decimal("2")]),
++    ],
++)
++def test_scale_decimal(iterable, kwargs, expected):
++    result = _.scale(array=iterable([Decimal("1"), Decimal("4")]), **kwargs)
++    assert result == expected
++    assert all(isinstance(value, Decimal) for value in result)
++
++
++@parametrize("iterable", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize(
++    "values,maximum,error",
++    [
++        ([], 1, ValueError),
++        ([0, 0], 1, ZeroDivisionError),
++        ([1, "2"], 1, TypeError),
++        ([1, 2], None, TypeError),
++        ([Decimal("0")], Decimal("1"), DivisionByZero),
++    ],
++)
++def test_scale_errors(iterable, values, maximum, error):
++    with pytest.raises(error):
++        _.scale(iterable(values), maximum)
++
++
++def test_scale_iterator_error():
++    def values():
++        yield 1
++        raise RuntimeError("iterator failed")
++
++    with pytest.raises(RuntimeError, match="iterator failed"):
++        _.scale(values())
++
++
++def test_scale_chained_iterator():
++    assert _.chain(iter([2, 5, 10])).scale(maximum=2).value() == [0.4, 1, 2]
++
++
+ @parametrize(
+     "case,expected",
+     [

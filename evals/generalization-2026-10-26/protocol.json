@@ -1,0 +1,32 @@
+{
+  "candidate": "v5-python",
+  "evidence_class": "prospective_beta_quality_generalization_only",
+  "purpose": "Previously unused tasks validate beta quality; not a third efficiency confirmation or industrial qualification.",
+  "selection": "First 20 remaining_adequate entries in the frozen second-corpus-selection.json, without replacement, no v5 outcome selection",
+  "fresh_tasks": 20,
+  "fresh_repeats": 3,
+  "known_critical_tasks": 12,
+  "known_critical_repeats": 1,
+  "arms": ["with-skill"],
+  "max_native_attempts": 72,
+  "max_concurrent_native_clients": 3,
+  "model": "gpt-6.1-sol",
+  "model_reasoning_effort": "xhigh",
+  "gates": {
+    "fresh_accepted_minimum": 57,
+    "each_fresh_task_accepted_minimum": 2,
+    "known_critical_accepted": 12,
+    "completed_without_timeout_and_full_body_output": 72,
+    "preselected_artifact_reviews": 8,
+    "confirmed_unsafe_or_unjustified_mechanisms_in_reviews": 0,
+    "source_trace_integrity_and_distribution_checks": true
+  },
+  "review_selection": {"zero_based_selected_task_positions": [0, 2, 5, 7, 9, 12, 14, 17], "repeat": 0},
+  "review_method": "Independent reviewer receives only original task, base and candidate source under neutral names. No skill, reference fix, hidden grader, grades, token/time data or prior conclusions. Review contract correctness and mechanisms needing a current reason; do not judge by patch size alone.",
+  "measurement": "Keep all attempts, failures, timeouts, incomplete usage and actual grading recoveries. No replacement model runs. Unsupported output requires explicit raw-evidence adjudication, without changing the full-body criterion. Missing usage remains null.",
+  "frozen_candidate_sha256": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+  "frozen_ui_sha256": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+  "publication": {"github": "public", "license": "MIT for original work; retain upstream licenses", "agensi": "free beta", "no_unproven_speed_or_token_claim": true},
+  "failure_policy": "Do not tune against these tasks and reuse them as fresh. Preserve all outcomes. A failed beta gate prevents claiming that this candidate passed.",
+  "limitations": ["No baseline arm, causal benefit or stable efficiency estimate", "Source-contract-screened reserve tasks from previously seen repositories, not repository-disjoint or training-contamination-free", "Known critical tasks are regression evidence only", "Single configured Codex endpoint, Python environment and limited maintenance tasks; Claude untested", "Old v4 qualification remains false and old confirmatory budget remains closed"]
+}

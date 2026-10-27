@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "trial_id": "2026-10-24-lean-coding-full",
+  "frozen_before_any_solver_run": true,
+  "scope": "Codex CLI, explicitly loaded skill, real Python utility/CLI library maintenance tasks. Claude excluded at user request.",
+  "skill": {
+    "version": "prototype-2",
+    "file": "skill-frozen.md",
+    "sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF",
+    "no_changes_during_experiment": true
+  },
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning": "xhigh",
+  "model_override": false,
+  "transport": {
+    "provider": "lean_eval_http",
+    "requires_openai_auth": true,
+    "supports_websockets": false,
+    "process_local_only": true,
+    "global_config_modified": false
+  },
+  "runtime": {
+    "python": "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "isolated_dependency_target": true,
+    "pytest": "8.4.2",
+    "pytest_timeout": "2.4.0",
+    "solver_concurrency": 3,
+    "timeout_seconds_per_run": 600
+  },
+  "corpus": {
+    "candidates": 80,
+    "eligible": 61,
+    "excluded": 19,
+    "independent_source_curation": true,
+    "one_case_per_pr_url": true,
+    "admission": "Verified first parent, base fails changed frozen tests, fix passes changed tests and whole-file guard suite; no collection/setup errors; all rules applied before model runs.",
+    "repos": [
+      "more-itertools/more-itertools",
+      "mahmoud/boltons",
+      "pallets/click",
+      "pallets/itsdangerous",
+      "pytest-dev/pluggy"
+    ],
+    "not_a_production_random_sample": true
+  },
+  "partition": {
+    "seed": 20261024,
+    "pilot_tasks": 10,
+    "task_sampling": "Seeded repository-stratified interleaving; no case selected using model outcomes.",
+    "formal_and_replication": "Disjoint untouched tasks after pilot. If pilot-derived size exceeds reserve, extend public corpus under the same admission rules before formal runs.",
+    "repeats_per_arm": 3,
+    "fresh_context_every_run": true,
+    "balanced_random_arm_order": true,
+    "pair_execution": "A and B within a task/repeat execute sequentially; independent pairs may run concurrently."
+  },
+  "metrics": {
+    "token_cost_per_accepted": "Sum reported input_tokens + output_tokens across all valid runs, including failed task attempts, divided by accepted runs. Cached input is a subset, not added twice.",
+    "time_per_accepted": "Sum client execution seconds plus independent grading seconds across all runs divided by accepted runs. Setup and queue waiting excluded; skill read, exploration, testing, in-agent retries included.",
+    "correctness": "Same frozen upstream whole-file guard suite for both arms; candidate tests/config cannot replace the grader. Require nonzero and matching test count.",
+    "observed_quality_gate": "Skill accepted-run rate must be >= baseline in each confirmatory batch. Report quality uncertainty and worsened tasks; this is not a universal no-regression guarantee.",
+    "missing_usage": "Never treat missing usage as zero. If any task-attempt usage is missing, token-saving proof is unavailable unless a conservative full bound is available; wall-time evidence remains separately reportable."
+  },
+  "statistical_plan": {
+    "minimum_material_gain": 0.1,
+    "primary": "token_cost_per_accepted",
+    "secondary": "time_per_accepted",
+    "hypothesis": "Cost ratio R = skill/baseline. Benefit requires upper one-sided 97.5% confidence bound <0.90.",
+    "multiple_comparisons": "At most two benefit claims (token/time); alpha=.025 each gives familywise alpha <=.05 by union bound.",
+    "ci": "Paired task-cluster percentile bootstrap, 20000 draws, all repeats of a task kept together, seed fixed. Report two-sided 95% interval and gain interval.",
+    "pilot_planning": "Jackknife task pseudovalue SD of log overall cost ratio; plan for R=0.80 versus null boundary R=0.90, power=.80, z(.975)+z(.80). Floor planning SD at .05.",
+    "formal_task_count": "ceil required n, minimum20 maximum80 per batch; use max required n across token/time. If needed>80, cap and state underpowered rather than claim adequacy.",
+    "confirmation": "Run a second disjoint held-out batch of same size after the formal batch, using unchanged skill, metric and thresholds. Benefit claim requires both batches to meet the corresponding bound and observed quality gate.",
+    "no_optional_stopping": "No looking at formal outcomes to change sample size, task eligibility, skill, or success metric. Only operational health may interrupt.",
+    "interpretation": "Passing functional checks is not itself evidence of speed/token benefit. Final outcome may be effective, not demonstrated, or inconclusive."
+  },
+  "operational_rules": {
+    "no_additional_approval_needed": "User explicitly authorized full validation after the proposed paired/repeated path.",
+    "no_external_messages_or_publication": true,
+    "read_usage_only_no_credit_purchases_or_resets": true,
+    "do_not_change_model_on_rate_limit": true,
+    "resume_completed_jobs_without_rerunning": true,
+    "source_archives_sha256_saved": true
+  }
+}

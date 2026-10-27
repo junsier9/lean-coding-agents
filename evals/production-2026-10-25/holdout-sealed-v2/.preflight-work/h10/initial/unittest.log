@@ -1,0 +1,78 @@
+test_bad_labels_after_hook (test_contract.Contract.test_bad_labels_after_hook) ... FAIL
+test_bool_after_hook (test_contract.Contract.test_bool_after_hook) ... FAIL
+test_hook_error_propagates (test_contract.Contract.test_hook_error_propagates) ... ok
+test_hook_valid_changes (test_contract.Contract.test_hook_valid_changes) ... FAIL
+test_input_ownership (test_contract.Contract.test_input_ownership) ... FAIL
+test_invalid_after_hook (test_contract.Contract.test_invalid_after_hook) ... FAIL
+test_invalid_initial_skips_hook (test_contract.Contract.test_invalid_initial_skips_hook) ... ok
+test_normal (test_contract.Contract.test_normal) ... FAIL
+test_result_frozen (test_contract.Contract.test_result_frozen) ... ok
+test_stashed_hook_reference (test_contract.Contract.test_stashed_hook_reference) ... FAIL
+
+======================================================================
+FAIL: test_bad_labels_after_hook (test_contract.Contract.test_bad_labels_after_hook)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 50, in test_bad_labels_after_hook
+    with self.assertRaises(OrderError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OrderError not raised
+
+======================================================================
+FAIL: test_bool_after_hook (test_contract.Contract.test_bool_after_hook)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 43, in test_bool_after_hook
+    with self.assertRaises(OrderError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OrderError not raised
+
+======================================================================
+FAIL: test_hook_valid_changes (test_contract.Contract.test_hook_valid_changes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 22, in test_hook_valid_changes
+    self.assertEqual(result, Record("A", 4, ("new", "plugin")))
+AssertionError: Record(sku='A', quantity=4, labels=['new', 'plugin']) != Record(sku='A', quantity=4, labels=('new', 'plugin'))
+
+======================================================================
+FAIL: test_input_ownership (test_contract.Contract.test_input_ownership)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 67, in test_input_ownership
+    self.assertEqual(payload, self.payload())
+AssertionError: {'sku': 'A', 'quantity': 2, 'labels': ['new', 'changed']} != {'sku': 'A', 'quantity': 2, 'labels': ['new']}
+- {'labels': ['new', 'changed'], 'quantity': 2, 'sku': 'A'}
+?                  -----------
+
++ {'labels': ['new'], 'quantity': 2, 'sku': 'A'}
+
+======================================================================
+FAIL: test_invalid_after_hook (test_contract.Contract.test_invalid_after_hook)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 36, in test_invalid_after_hook
+    with self.assertRaises(OrderError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OrderError not raised
+
+======================================================================
+FAIL: test_normal (test_contract.Contract.test_normal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 13, in test_normal
+    self.assertEqual(process(self.store, self.payload()), Record("A", 2, ("new",)))
+AssertionError: Record(sku='A', quantity=2, labels=['new']) != Record(sku='A', quantity=2, labels=('new',))
+
+======================================================================
+FAIL: test_stashed_hook_reference (test_contract.Contract.test_stashed_hook_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h10\initial\test_contract.py", line 74, in test_stashed_hook_reference
+    self.assertEqual(result, Record("A", 2, ("new",)))
+AssertionError: Record(sku='A', quantity=2, labels=['new', 'later']) != Record(sku='A', quantity=2, labels=('new',))
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+FAILED (failures=7)

@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-24",
+  "timezone": "Asia/Singapore",
+  "skill_version": "prototype-1",
+  "skill_sha256": "9D6CD83C1EDC9B2CCF6B85242BF7C3CB09CC1EFB325A797A881031FAF35C033E",
+  "execution": "Two independent Codex collaboration subagents, each assigned the same 12-task batch.",
+  "model_control": "Both inherit the parent model with no model or reasoning override; exact effective model ID is not exposed by the collaboration response.",
+  "arms": {
+    "baseline": "No additional skill loaded.",
+    "with_skill": "Explicitly reads skills/lean-coding/SKILL.md."
+  },
+  "exposure_control": "Neither executor receives research, expected fixes, rubric, or external contract tests.",
+  "replicates_per_arm": 1,
+  "task_order": "t01 through t12 in both arms; tasks within an arm share a conversation.",
+  "test_methods": 23,
+  "seed_result": {
+    "cases_passed": 7,
+    "cases_failed": [
+      "t03",
+      "t07",
+      "t08",
+      "t09",
+      "t12"
+    ],
+    "interpretation": "Initial fixtures contain unfinished requested changes; this is not the completed baseline arm."
+  },
+  "harness_note": "During executor runs, added a read/close-only resource check and non-app file-change capture to both arms. t10's original implementation supports that interface. Executors did not receive this change.",
+  "limitations": [
+    "Synthetic Python tasks adapted from research; no production-repository replay.",
+    "Single grouped run, no randomization or per-task fresh contexts.",
+    "No native Claude execution available.",
+    "Token usage and full tool-call traces were not exposed; no measured speedup claim."
+  ],
+  "delegation_basis": "skill-creator/SKILL.md: Independent Forward-Testing"
+}

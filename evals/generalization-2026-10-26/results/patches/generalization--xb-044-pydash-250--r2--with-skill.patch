@@ -1,0 +1,45 @@
+diff --git a/src/pydash/objects.py b/src/pydash/objects.py
+index 996b0ba..7674c57 100644
+--- a/src/pydash/objects.py
++++ b/src/pydash/objects.py
+@@ -2115,7 +2115,7 @@ def to_list(obj, split_strings=True):
+     if isinstance(obj, list):
+         return obj[:]
+     elif isinstance(obj, dict):
+-        return obj.values()
++        return list(obj.values())
+     elif not split_strings and isinstance(obj, (str, bytes)):
+         return [obj]
+     elif split_strings and isinstance(obj, bytes):
+diff --git a/tests/test_objects.py b/tests/test_objects.py
+index d9a4abf..5ddcd78 100644
+--- a/tests/test_objects.py
++++ b/tests/test_objects.py
+@@ -877,6 +877,27 @@ def test_to_integer(case, expected):
+     assert _.to_integer(case) == expected
+ 
+ 
++@parametrize("case,expected", [({}, []), ({"b": 2, "a": 1, "c": 2}, [2, 1, 2])])
++@parametrize("split_strings", [True, False])
++def test_to_list_dict(case, expected, split_strings):
++    result = _.to_list(obj=case, split_strings=split_strings)
++
++    assert isinstance(result, list)
++    assert result == expected
++
++
++def test_to_list_dict_snapshot():
++    value = []
++    obj = {"a": value}
++    result = _.to_list(obj)
++
++    obj["a"] = "changed"
++    obj["b"] = "added"
++
++    assert result == [[]]
++    assert result[0] is value
++
++
+ @parametrize(
+     "case,expected",
+     [(("2.556",), 3.0), (("2.556", 1), 2.6), (("999.999", -1), 990.0), (("foo",), None)],

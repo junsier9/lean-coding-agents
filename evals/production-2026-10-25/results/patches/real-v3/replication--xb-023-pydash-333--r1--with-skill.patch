@@ -1,0 +1,98 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index df7a81e..f5a0a32 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -492,8 +492,7 @@ def duplicates(
+     .. versionadded:: 3.0.0
+     """
+     if iteratee is not None:
+-        cbk = pyd.iteratee(iteratee)
+-        computed = [cbk(item) for item in array]
++        computed = pyd.map_(array, iteratee)
+     else:
+         computed = array  # type: ignore
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index f2f0761..2d95fc1 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -223,6 +223,79 @@ def test_duplicates_falsey_iteratee_controls_and_empty_input():
+     assert _.duplicates(records, lambda value: value % 2) == [3, 4, 5]
+ 
+ 
++def test_duplicates_passes_value_and_index():
++    records = [{"id": index} for index in range(6)]
++    calls = []
++
++    def iteratee(value, index):
++        assert value is records[index]
++        calls.append(index)
++        return index % 2
++
++    result = _.duplicates(records, iteratee)
++
++    assert calls == list(range(6))
++    assert result == records[2:]
++    assert all(value is records[index + 2] for index, value in enumerate(result))
++
++
++@parametrize("array_type", [list, tuple])
++def test_duplicates_passes_original_collection(array_type):
++    records = array_type(
++        [
++            {"group": "a", "id": "first-a"},
++            {"group": "b", "id": "first-b"},
++            {"group": "b", "id": "second-b"},
++            {"group": "a", "id": "second-a"},
++            {"group": "b", "id": "second-b"},
++        ]
++    )
++    calls = []
++
++    def iteratee(value, index, collection):
++        assert collection is records
++        assert value is collection[index]
++        calls.append(index)
++        return [value["group"]]
++
++    result = _.duplicates(records, iteratee)
++
++    assert calls == list(range(5))
++    assert result == [records[2], records[3]]
++    assert result[0] is records[2]
++    assert result[1] is records[3]
++
++
++def test_duplicates_passes_all_arguments_to_variadic_iteratee():
++    records = [1, 2, 3, 4]
++    calls = []
++
++    def iteratee(*args):
++        calls.append(args)
++        value, index, collection = args
++        assert collection is records
++        assert value == records[index]
++        return value % 2
++
++    assert _.duplicates(records, iteratee) == [3, 4]
++    assert len(calls) == len(records)
++
++
++def test_duplicates_propagates_iteratee_error():
++    error = TypeError("iteratee failed")
++    calls = []
++
++    def iteratee(value, index, collection):
++        calls.append(index)
++        raise error
++
++    with pytest.raises(TypeError) as exc_info:
++        _.duplicates([1, 2, 3], iteratee)
++
++    assert exc_info.value is error
++    assert calls == [0]
++
++
+ @parametrize(
+     "case,expected",
+     [

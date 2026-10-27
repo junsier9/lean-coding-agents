@@ -1,0 +1,131 @@
+{
+  "cases": 8,
+  "reference_tests_total": 95,
+  "base_all_rejected": true,
+  "reference_all_passed": true,
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "results": [
+    {
+      "id": "d01",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 11,
+        "log": "preflight/d01/base.txt",
+        "log_sha256": "ED3485EAF96F908C8FF93A8B72EEE32AD3C9E01C978E05E8CCA7F1702B6AB83C"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 11,
+        "log": "preflight/d01/reference.txt",
+        "log_sha256": "FA8573C3B45221EA7FC2118AD0158E88A84FF077ABFF31542CAFBC4D1868BBBA"
+      }
+    },
+    {
+      "id": "d02",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 11,
+        "log": "preflight/d02/base.txt",
+        "log_sha256": "D06BEAE45C4147C4437584449F2F0DE62D1DF3AE50602E6259B0A9460836BDE3"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 11,
+        "log": "preflight/d02/reference.txt",
+        "log_sha256": "B0646974B7899114DC5EFAFC6D4754FE8DBC10FAFC6C126EF1568711BDE1E419"
+      }
+    },
+    {
+      "id": "d03",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 11,
+        "log": "preflight/d03/base.txt",
+        "log_sha256": "628738375E99514DE4DF5E320B4F923F6519D6F1458F60F0E88B3E124E5244AA"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 11,
+        "log": "preflight/d03/reference.txt",
+        "log_sha256": "05429FCD58A7710D70649A357FDDEE227116692E8593E50A01F5B719A84112A1"
+      }
+    },
+    {
+      "id": "d04",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 11,
+        "log": "preflight/d04/base.txt",
+        "log_sha256": "E2B540FE914E5F85B3753F758179496D3AD47908E492CD717DB62C54842524F6"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 11,
+        "log": "preflight/d04/reference.txt",
+        "log_sha256": "1CCBB606405D26128BDFD9D2699258A7FCDB6E98E042706FC21110C0EBCA1F81"
+      }
+    },
+    {
+      "id": "d05",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 12,
+        "log": "preflight/d05/base.txt",
+        "log_sha256": "A5336263062642A346E7305B56D08F34FF0E3D602DBBCAD8B69A2441506F10E1"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 12,
+        "log": "preflight/d05/reference.txt",
+        "log_sha256": "94805CE88466A4CC316038FFE633DDE745EBB558C18C9B6F4CD125F45471CEDB"
+      }
+    },
+    {
+      "id": "d06",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 12,
+        "log": "preflight/d06/base.txt",
+        "log_sha256": "864F00E62C0C0722C93941B4C901F02CA8760216CF69683E272B22503EECCDCB"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 12,
+        "log": "preflight/d06/reference.txt",
+        "log_sha256": "9A6D2C26F729F92CA4E3C862E2014AF41AA50FD055CD7A506A51571C15405F05"
+      }
+    },
+    {
+      "id": "d07",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 12,
+        "log": "preflight/d07/base.txt",
+        "log_sha256": "800DF4CFDFF49FB22C7F6CB099797B1728F4EDBD67B68F43687AA1200E7EC3DB"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 12,
+        "log": "preflight/d07/reference.txt",
+        "log_sha256": "2ADCE3FE19B1D1052C8D4B9331DD62ED85847F3039E4F143445826A539C9E7A3"
+      }
+    },
+    {
+      "id": "d08",
+      "base": {
+        "exit_code": 1,
+        "tests_ran": 15,
+        "log": "preflight/d08/base.txt",
+        "log_sha256": "F79F03A4BC1E7CEA86D138A6E788647B71FF8AD7A29D8F270BF03CB8C1903F96"
+      },
+      "reference": {
+        "exit_code": 0,
+        "tests_ran": 15,
+        "log": "preflight/d08/reference.txt",
+        "log_sha256": "04CFEFA36D41EBB26028228B67DFA062CEEF454BEF98374887CC46DB9AECCBBB"
+      }
+    }
+  ],
+  "model_calls": 0,
+  "synthetic_development_cases_only": true
+}

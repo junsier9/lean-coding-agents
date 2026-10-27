@@ -1,0 +1,59 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 2229563..d8891f8 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4414,9 +4414,11 @@ def value_chain(*args):
+             yield value
+             continue
+         try:
+-            yield from value
++            iterator = iter(value)
+         except TypeError:
+             yield value
++        else:
++            yield from iterator
+ 
+ 
+ def product_index(element, *iterables, repeat=1):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 03b1206..8b17711 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5074,6 +5074,37 @@ class ValueChainTests(TestCase):
+         expected = [1, (2, (3,)), 'foo', ['bar', ['baz']], 'tic', 'key', obj]
+         self.assertEqual(actual, expected)
+ 
++    def test_map_type_error(self):
++        for values in ([5], ['ab', 'cde', 5]):
++            with self.subTest(values=values):
++                actual = mi.value_chain(map(len, values), 'tail')
++                for value in values[:-1]:
++                    self.assertEqual(next(actual), len(value))
++                with self.assertRaises(TypeError):
++                    next(actual)
++
++    def test_sequence_type_error(self):
++        error = TypeError('cannot get item')
++
++        class Sequence:
++            def __getitem__(self, index):
++                if index == 0:
++                    return 'first'
++                raise error
++
++        actual = mi.value_chain(Sequence())
++        self.assertEqual(next(actual), 'first')
++        with self.assertRaises(TypeError) as caught:
++            next(actual)
++        self.assertIs(caught.exception, error)
++
++    def test_non_iterable(self):
++        class NonIterable:
++            __iter__ = None
++
++        obj = NonIterable()
++        self.assertEqual(list(mi.value_chain(None, obj, [1])), [None, obj, 1])
++
+ 
+ class ProductIndexTests(TestCase):
+     def test_basic(self):

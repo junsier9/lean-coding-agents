@@ -1,0 +1,139 @@
+{
+  "phase": "development",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "skill_sha256": "3492543F0B453DB741674AEC1564532D10B0F3F0DF71FFBA87E9E054BDA9CE92",
+  "cases": {
+    "d01": "FA2DBE7A11C3A1E77308F301E3E182EDFC44604FB7F1F11BAB62A9834096E064",
+    "d02": "F606D0F92A0D21D98918922F5523DC9BA43D842808295907D9E5A74D66CC04D0",
+    "d03": "AC9A497939A2008FBB6683D8348F217DAF4B2843B7E6381AB54EFE84CBF04D34",
+    "d04": "E4166543DF5AC408C4AC39A0BDA133FCB5EF2D7592A6DDAF1C33F15B1C895D7D",
+    "d05": "781251174E82D55F3D7EA758E871746D6D7C5CAAA622CFD498F7A35718D1A9AD",
+    "d06": "71721174F48A367B85E7B0275FF199E773CCB7DDE1F83AD22EBB52E77A920A96",
+    "d07": "ABE522CA3E53C823B36CA7A2702E5E47AD79FA489A68419E20F14EFBE2D86B05",
+    "d08": "529437FFF8CD39F7134748DE48B2E140BAF4423B3270BB896585DAD8B8B29F29"
+  },
+  "seed": 20261025,
+  "repeats": 2,
+  "arms": [
+    "with-skill"
+  ],
+  "workers": 3,
+  "schedule": [
+    {
+      "case_id": "d05",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d01",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d03",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d06",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d08",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d02",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d06",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d03",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d04",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d08",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d05",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d04",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d02",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d07",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d07",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d01",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    }
+  ],
+  "grading_contract": "synthetic-unittest-normal-and-O-v1;upstream-frozen"
+}

@@ -1,0 +1,1895 @@
+{
+  "pair": "05",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "选项同时声明 is_flag=False 与 flag_value 后，本来应允许省略、只提供选项名或显式提供一个值，但部分调用返回错误结果。请恢复这三种用法，覆盖字符串和整数类型。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair05.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B"
+    ],
+    "rubric": [
+      "保留受影响公开调用、正常结果和错误路径",
+      "新增 guard/copy/wrapper/retry 须有当前需求",
+      "不按代码行数或测试数量偏好一侧",
+      "对可疑问题用公开源码和隔离探针佐证并注明边界"
+    ],
+    "not_accessed_for_this_review": [
+      "A/B 标签或分组映射",
+      "成本或计时",
+      "skill 正文",
+      "隐藏修复或参考 fix",
+      "隐藏评分器",
+      "其他模型结果",
+      "旧轮揭盲",
+      "原生模型记录"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false,
+    "release_qualification_judgment": false
+  },
+  "comparison": "A/B 的 core.py 完整执行 AST 相同，仅注释措辞不同。两侧均修复普通省略/裸选项/显式正值等路径，但也共有已确认兼容性回归：明确附加的 --opt=--other 被改当裸 opt 与另一选项，--opt=-3 等先前有效整数变成 NoSuchOption。没有一侧偏好；本报告只作盲审，不作发布资格判断。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整 src/click/core.py AST 比较，忽略位置属性；注释本来不进入 AST",
+    "equal": true,
+    "raw_file_bytes_equal": false
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [
+        {
+          "id": "05-A-attached-value-reinterpreted",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+          "line": 2783,
+          "title": "[P2] 明确附加的显式值被误当新选项，改变值并可激活另一选项",
+          "classification": "confirmed public-call compatibility and argument-value regression; not a claim of a security exploit",
+          "evidence": "以 Option([\"-o\",\"--opt\"],is_flag=False,flag_value=\"flag\",default=\"default\",type=str) 加独立 --other 布尔选项：base 对 [\"--opt=--other\"] 返回 (\"--other\",False)，A/B 返回 (\"flag\",True)，命令体实际被调用且另一选项被激活。短附加形式 -o--other 相同。整数选项 type=int,default=1,flag_value=2 的 --opt=-3 与 -o-3 在 base 返回 -3，A/B 都 NoSuchOption，命令体不执行。它们是明确附加值，不能解释为用户传了两个有歧义的独立选项。",
+          "cause": "本次将默认已设置的选项 _flag_needs_value 改为 True，暴露 parser 的值来源混淆：_match_long_opt 374-377 行把 = 后的 explicit_value 压回 rargs，_match_short_opt 409-412 行也将附加值压回；_get_value_from_state 452-460 行随后仅因值以选项前缀开头就返回 FLAG_NEEDS_VALUE，留下原本明确绑定的值再按选项解释。",
+          "contract_basis": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\docs\\options.md",
+              "line": 487,
+              "reason": "is_flag=False 与 flag_value 的公开文档明确仍可显式传值"
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\src\\click\\parser.py",
+              "line": 370,
+              "reason": "公开原源码对注入 explicit_value 的分支说明值会完整消费"
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\src\\click\\parser.py",
+              "line": 474,
+              "reason": "等号明确分出 long option 与 explicit value"
+            }
+          ],
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\parser.py",
+              "line": 374
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\parser.py",
+              "line": 409
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\parser.py",
+              "line": 452
+            }
+          ],
+          "probe_ids": [
+            "unambiguous_attached_option_like_string_negative_int",
+            "separate_negative_integer_hyphen_string_compatibility_observation"
+          ],
+          "confidence": "high for actual changed results and explicit attached-value contract",
+          "suggested_resolution": "区分明确附加的值与下一独立 argv token，确保明确绑定值继续被消费，同时保留裸选项后识别真正下一选项的行为；补充带选项前缀字符串与负整数的明确附加形式验收。"
+        }
+      ],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "05-A-unset-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+          "line": 2783,
+          "title": "是否允许缺省值按 flag_value 是否设置决定，有直接题面依据",
+          "evidence": "以 flag_value is not UNSET 替代 self.default is UNSET，区分是否声明可选值与实际默认值。这使普通省略/裸选项/显式字符串或正整数生效，并正确接受显式 None、空串和 0 作为 flag_value，没有使用 truthiness 把假值当缺失。没有新增 guard 链、拷贝、包装或重试；该局部规则的目的合理，但与 parser 的明确值协议整合缺陷另列。",
+          "probe_ids": [
+            "omitted_bare_explicit_string_int_falsey_and_inferred_types",
+            "attached_short_long_values_and_following_option",
+            "public_option_decorator_api"
+          ]
+        },
+        {
+          "id": "05-A-required-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+          "line": 2782,
+          "title": "未给 flag_value 的普通选项仍必须有值，非法整数不被当作 flag 回退",
+          "evidence": "未设置 flag_value 的显式非 flag 选项，现在无论默认为 UNSET、None 或普通字符串，只有裸选项都报 BadOptionUsage，且不调用命令体。无效整数（分离或等号形式）报 BadParameter，未知选项仍报 NoSuchOption；没有用 flag_value 隐藏显式非法值。",
+          "probe_ids": [
+            "no_flag_value_still_requires_value_no_callback_on_error",
+            "invalid_integer_unknown_option_errors_no_callback"
+          ]
+        },
+        {
+          "id": "05-A-other-public-paths",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+          "line": 2767,
+          "title": "既有 prompt、multiple、环境和 CLI 来源边界保留",
+          "evidence": "已有 prompt_required=False 的分支保持：省略使用默认，裸选项触发 prompt，显式值不 prompt。multiple=True 的省略默认与混合裸/显式值按 tuple 返回；环境值、裸 CLI flag_value 和显式 CLI 值遵循原来源优先级，ParameterSource 保持正确。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+              "line": 3250
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+              "line": 3273
+            }
+          ],
+          "probe_ids": [
+            "multiple_values_env_cli_precedence_parameter_sources",
+            "optional_prompt_omitted_bare_explicit"
+          ]
+        },
+        {
+          "id": "05-A-context-resource-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\core.py",
+          "line": 3250,
+          "title": "正常值路径的参数回调与上下文资源关闭仍完整",
+          "evidence": "用公开参数 callback 在 ctx.with_resource 注册真实本地文件句柄：省略/裸选项/显式整数三路径，callback 与命令体各运行一次，句柄在命令体中可用，正常返回和 RuntimeError 命令体失败后都已关闭。原 RuntimeError 对象继续传播到 CliRunner；显式无效整数在 callback 前拒绝，没有打开文件或执行命令体。没有观察到资源泄漏或额外调用。",
+          "probe_ids": [
+            "context_resource_closed_success_failure_no_invalid_callbacks"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "05-A-separate-prefix-value-policy",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\A\\src\\click\\parser.py",
+          "line": 452,
+          "title": "分离的带前缀值与下一选项的词法优先级需区分",
+          "evidence": "--opt -3 和 --opt -data 也从 base 成功变成 NoSuchOption；--opt --other 从旧版消费字符串改为 flag_value 加 other=True。对于最后一种独立 token 形式，新的解析正是可选值后接真正选项的正常需求。报告没有把这一有歧义形式单独记作缺陷，确认问题依赖明确附加形式。是否还需要为分离负整数设计特殊规则，题面没有详细规定。",
+          "defect_claimed": "不对分离写法的所有前缀策略作额外缺陷断言；明确附加值问题已独立确认。",
+          "probe_ids": [
+            "separate_negative_integer_hyphen_string_compatibility_observation"
+          ]
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [
+        {
+          "id": "05-B-attached-value-reinterpreted",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+          "line": 2783,
+          "title": "[P2] 明确附加的显式值被误当新选项，改变值并可激活另一选项",
+          "classification": "confirmed public-call compatibility and argument-value regression; not a claim of a security exploit",
+          "evidence": "以 Option([\"-o\",\"--opt\"],is_flag=False,flag_value=\"flag\",default=\"default\",type=str) 加独立 --other 布尔选项：base 对 [\"--opt=--other\"] 返回 (\"--other\",False)，A/B 返回 (\"flag\",True)，命令体实际被调用且另一选项被激活。短附加形式 -o--other 相同。整数选项 type=int,default=1,flag_value=2 的 --opt=-3 与 -o-3 在 base 返回 -3，A/B 都 NoSuchOption，命令体不执行。它们是明确附加值，不能解释为用户传了两个有歧义的独立选项。",
+          "cause": "本次将默认已设置的选项 _flag_needs_value 改为 True，暴露 parser 的值来源混淆：_match_long_opt 374-377 行把 = 后的 explicit_value 压回 rargs，_match_short_opt 409-412 行也将附加值压回；_get_value_from_state 452-460 行随后仅因值以选项前缀开头就返回 FLAG_NEEDS_VALUE，留下原本明确绑定的值再按选项解释。",
+          "contract_basis": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\docs\\options.md",
+              "line": 487,
+              "reason": "is_flag=False 与 flag_value 的公开文档明确仍可显式传值"
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\src\\click\\parser.py",
+              "line": 370,
+              "reason": "公开原源码对注入 explicit_value 的分支说明值会完整消费"
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\base\\src\\click\\parser.py",
+              "line": 474,
+              "reason": "等号明确分出 long option 与 explicit value"
+            }
+          ],
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\parser.py",
+              "line": 374
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\parser.py",
+              "line": 409
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\parser.py",
+              "line": 452
+            }
+          ],
+          "probe_ids": [
+            "unambiguous_attached_option_like_string_negative_int",
+            "separate_negative_integer_hyphen_string_compatibility_observation"
+          ],
+          "confidence": "high for actual changed results and explicit attached-value contract",
+          "suggested_resolution": "区分明确附加的值与下一独立 argv token，确保明确绑定值继续被消费，同时保留裸选项后识别真正下一选项的行为；补充带选项前缀字符串与负整数的明确附加形式验收。"
+        }
+      ],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "05-B-unset-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+          "line": 2783,
+          "title": "是否允许缺省值按 flag_value 是否设置决定，有直接题面依据",
+          "evidence": "以 flag_value is not UNSET 替代 self.default is UNSET，区分是否声明可选值与实际默认值。这使普通省略/裸选项/显式字符串或正整数生效，并正确接受显式 None、空串和 0 作为 flag_value，没有使用 truthiness 把假值当缺失。没有新增 guard 链、拷贝、包装或重试；该局部规则的目的合理，但与 parser 的明确值协议整合缺陷另列。",
+          "probe_ids": [
+            "omitted_bare_explicit_string_int_falsey_and_inferred_types",
+            "attached_short_long_values_and_following_option",
+            "public_option_decorator_api"
+          ]
+        },
+        {
+          "id": "05-B-required-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+          "line": 2782,
+          "title": "未给 flag_value 的普通选项仍必须有值，非法整数不被当作 flag 回退",
+          "evidence": "未设置 flag_value 的显式非 flag 选项，现在无论默认为 UNSET、None 或普通字符串，只有裸选项都报 BadOptionUsage，且不调用命令体。无效整数（分离或等号形式）报 BadParameter，未知选项仍报 NoSuchOption；没有用 flag_value 隐藏显式非法值。",
+          "probe_ids": [
+            "no_flag_value_still_requires_value_no_callback_on_error",
+            "invalid_integer_unknown_option_errors_no_callback"
+          ]
+        },
+        {
+          "id": "05-B-other-public-paths",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+          "line": 2767,
+          "title": "既有 prompt、multiple、环境和 CLI 来源边界保留",
+          "evidence": "已有 prompt_required=False 的分支保持：省略使用默认，裸选项触发 prompt，显式值不 prompt。multiple=True 的省略默认与混合裸/显式值按 tuple 返回；环境值、裸 CLI flag_value 和显式 CLI 值遵循原来源优先级，ParameterSource 保持正确。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+              "line": 3250
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+              "line": 3273
+            }
+          ],
+          "probe_ids": [
+            "multiple_values_env_cli_precedence_parameter_sources",
+            "optional_prompt_omitted_bare_explicit"
+          ]
+        },
+        {
+          "id": "05-B-context-resource-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\core.py",
+          "line": 3250,
+          "title": "正常值路径的参数回调与上下文资源关闭仍完整",
+          "evidence": "用公开参数 callback 在 ctx.with_resource 注册真实本地文件句柄：省略/裸选项/显式整数三路径，callback 与命令体各运行一次，句柄在命令体中可用，正常返回和 RuntimeError 命令体失败后都已关闭。原 RuntimeError 对象继续传播到 CliRunner；显式无效整数在 callback 前拒绝，没有打开文件或执行命令体。没有观察到资源泄漏或额外调用。",
+          "probe_ids": [
+            "context_resource_closed_success_failure_no_invalid_callbacks"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "05-B-separate-prefix-value-policy",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\05\\B\\src\\click\\parser.py",
+          "line": 452,
+          "title": "分离的带前缀值与下一选项的词法优先级需区分",
+          "evidence": "--opt -3 和 --opt -data 也从 base 成功变成 NoSuchOption；--opt --other 从旧版消费字符串改为 flag_value 加 other=True。对于最后一种独立 token 形式，新的解析正是可选值后接真正选项的正常需求。报告没有把这一有歧义形式单独记作缺陷，确认问题依赖明确附加形式。是否还需要为分离负整数设计特殊规则，题面没有详细规定。",
+          "defect_claimed": "不对分离写法的所有前缀策略作额外缺陷断言；明确附加值问题已独立确认。",
+          "probe_ids": [
+            "separate_negative_integer_hyphen_string_compatibility_observation"
+          ]
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "分别将 base/A/B 的 src/click 包复制到本审查员独立临时目录，用单独 python -B 子进程、PYTHONPATH、PROBE_COPY、PYTHONDONTWRITEBYTECODE=1 导入，断言实际模块来自该副本。通过公开 CliRunner、Option/Command 和装饰器 API 构造命令，没有运行候选测试。资源探针文件只写在审查员临时目录并由 Click Context 管理打开句柄。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "import json\nimport os\nfrom pathlib import Path\nimport click\nfrom click._utils import UNSET\nfrom click.core import ParameterSource\nfrom click.exceptions import BadOptionUsage, BadParameter\nfrom click.testing import CliRunner\n\nassert Path(click.core.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nrunner=CliRunner()\nresults=[]\n\n\ndef eq(actual,expected):\n    assert actual==expected,(repr(actual),repr(expected))\n\n\ndef check(name,function):\n    try:\n        detail=function()\n        results.append({'id':name,'status':'pass','detail':detail})\n    except Exception as exc:\n        results.append({'id':name,'status':'fail','error':type(exc).__name__,'message':str(exc)})\n\n\ndef command(type_=str,default='default',flag='flag',**extra):\n    calls=[]\n    attrs={'is_flag':False,'type':type_,'default':default,**extra}\n    if flag is not UNSET:\n        attrs['flag_value']=flag\n    option=click.Option(['-o','--opt'],**attrs)\n    def callback(opt,other):\n        ctx=click.get_current_context()\n        calls.append((opt,other))\n        return opt,other,ctx.get_parameter_source('opt').name\n    cli=click.Command('probe',params=[option,click.Option(['--other'],is_flag=True)],callback=callback)\n    return cli,calls\n\n\ndef successful(cli,args,expected,other=False,source='COMMANDLINE',**kwargs):\n    result=runner.invoke(cli,args,standalone_mode=False,**kwargs)\n    assert result.exception is None,(type(result.exception).__name__,str(result.exception),result.output)\n    value=result.return_value\n    eq(value,(expected,other,source))\n    assert type(value[0]) is type(expected),(type(value[0]).__name__,type(expected).__name__)\n    return result\n\n\ndef three_forms_falsey_and_types():\n    cases=[(str,'default','flag','value'),(str,None,'flag','value'),(str,'default','','value'),\n           (str,'default',None,'value'),(int,1,2,3),(int,None,0,3),(int,UNSET,0,3),\n           (None,'default','flag','value'),(None,1,2,3)]\n    checked=0\n    for type_,default,flag,explicit in cases:\n        for option in ('--opt','-o'):\n            cli,calls=command(type_,default,flag)\n            successful(cli,[],None if default is UNSET else default,source='DEFAULT')\n            successful(cli,[option],flag)\n            successful(cli,[option,str(explicit)],explicit)\n            eq(len(calls),3)\n            checked+=3\n    return {'successful_calls':checked}\n\n\ndef attached_and_next_option_forms():\n    for type_,default,flag,value in ((str,'default','flag','value'),(int,1,2,3)):\n        cli,calls=command(type_,default,flag)\n        for args in ([f'--opt={value}'],[f'-o{value}']):\n            successful(cli,args,value)\n        for option in ('--opt','-o'):\n            successful(cli,[option,'--other'],flag,other=True)\n\n\ndef ordinary_option_no_flag_value_errors():\n    for default in (UNSET,None,'default'):\n        cli,calls=command(str,default,UNSET)\n        result=runner.invoke(cli,['--opt'],standalone_mode=False)\n        assert isinstance(result.exception,BadOptionUsage),(type(result.exception).__name__,result.output)\n        eq(calls,[])\n        successful(cli,['--opt','provided'],'provided')\n\n\ndef invalid_integer_and_unknown_option_errors():\n    cli,calls=command(int,1,2)\n    for args in (['--opt','invalid'],['--opt=invalid']):\n        result=runner.invoke(cli,args,standalone_mode=False)\n        assert isinstance(result.exception,BadParameter),(type(result.exception).__name__,result.output)\n        eq(calls,[])\n    result=runner.invoke(cli,['--unrecognized'],standalone_mode=False)\n    assert isinstance(result.exception,click.NoSuchOption)\n    eq(calls,[])\n\n\ndef multiple_values_and_parameter_sources():\n    cli,calls=command(int,(1,),2,multiple=True)\n    successful(cli,[],(1,),source='DEFAULT')\n    successful(cli,['--opt','--opt','3','-o'],(2,3,2))\n    cli,calls=command(int,1,2,envvar='BLIND_REVIEW_OPTION_VALUE')\n    environment={'BLIND_REVIEW_OPTION_VALUE':'5'}\n    successful(cli,[],5,source='ENVIRONMENT',env=environment)\n    successful(cli,['--opt'],2,env=environment)\n    successful(cli,['--opt','7'],7,env=environment)\n\n\ndef optional_prompt_keeps_its_boundary():\n    cli,calls=command(str,'default','flag',prompt='Value',prompt_required=False)\n    successful(cli,[],'default',source='DEFAULT')\n    successful(cli,['--opt'],'typed',source='PROMPT',input='typed\\n')\n    successful(cli,['--opt','explicit'],'explicit')\n\n\ndef decorator_api():\n    @click.command()\n    @click.option('--opt',is_flag=False,flag_value=0,default=1,type=int)\n    def cli(opt):\n        return opt\n    for args,expected in (([],1),(['--opt'],0),(['--opt','3'],3)):\n        result=runner.invoke(cli,args,standalone_mode=False)\n        assert result.exception is None,(type(result.exception).__name__,result.output)\n        eq(result.return_value,expected)\n        assert type(result.return_value) is int\n\n\ndef context_resources_close_on_success_and_body_error():\n    resource_path=Path(os.environ['PROBE_COPY'])/'owned-resource.txt'\n    resource_path.write_text('resource content',encoding='utf-8')\n    failure=RuntimeError('command body failed')\n    for args in ([],['--opt'],['--opt','3']):\n        for fail in (False,True):\n            handles=[]\n            callback_values=[]\n            body_values=[]\n            def parameter_callback(ctx,param,value):\n                handle=ctx.with_resource(resource_path.open(encoding='utf-8'))\n                handles.append(handle)\n                callback_values.append(value)\n                assert not handle.closed\n                return value\n            def body(opt):\n                body_values.append(opt)\n                eq(handles[0].read(),'resource content')\n                if fail:\n                    raise failure\n                return opt\n            option=click.Option(['--opt'],is_flag=False,flag_value=2,default=1,type=int,callback=parameter_callback)\n            cli=click.Command('resource',params=[option],callback=body)\n            result=runner.invoke(cli,args,standalone_mode=False)\n            expected=1 if not args else 2 if len(args)==1 else 3\n            eq(callback_values,[expected])\n            eq(body_values,[expected])\n            eq(len(handles),1)\n            assert handles[0].closed\n            if fail:\n                assert result.exception is failure\n            else:\n                assert result.exception is None,result.output\n                eq(result.return_value,expected)\n            handles.clear()\n            callback_values.clear()\n            body_values.clear()\n            result=runner.invoke(cli,['--opt','invalid'],standalone_mode=False)\n            assert isinstance(result.exception,BadParameter)\n            eq((handles,callback_values,body_values),([],[],[]))\n\n\ndef negative_and_hyphen_value_observation():\n    observed=[]\n    for type_,default,flag,explicit in ((int,1,2,-3),(str,'default','flag','-data'),(str,'default','flag','--other')):\n        for args in (['--opt',str(explicit)],['-o',str(explicit)],[f'--opt={explicit}'],[f'-o{explicit}']):\n            cli,calls=command(type_,default,flag)\n            result=runner.invoke(cli,args,standalone_mode=False)\n            entry={'type':type_.__name__,'args':args,'callback_calls':calls}\n            if result.exception is None:\n                entry['return_value']=result.return_value\n            else:\n                entry['error']=type(result.exception).__name__\n            observed.append(entry)\n    return observed\n\n\ndef unambiguous_explicit_values():\n    cli,calls=command(str,'default','flag')\n    successful(cli,['--opt=--other'],'--other')\n    successful(cli,['-o--other'],'--other')\n    cli,calls=command(int,1,2)\n    successful(cli,['--opt=-3'],-3)\n    successful(cli,['-o-3'],-3)\n\n\ncheck('omitted_bare_explicit_string_int_falsey_and_inferred_types',three_forms_falsey_and_types)\ncheck('attached_short_long_values_and_following_option',attached_and_next_option_forms)\ncheck('no_flag_value_still_requires_value_no_callback_on_error',ordinary_option_no_flag_value_errors)\ncheck('invalid_integer_unknown_option_errors_no_callback',invalid_integer_and_unknown_option_errors)\ncheck('multiple_values_env_cli_precedence_parameter_sources',multiple_values_and_parameter_sources)\ncheck('optional_prompt_omitted_bare_explicit',optional_prompt_keeps_its_boundary)\ncheck('public_option_decorator_api',decorator_api)\ncheck('context_resource_closed_success_failure_no_invalid_callbacks',context_resources_close_on_success_and_body_error)\ncheck('unambiguous_attached_option_like_string_negative_int',unambiguous_explicit_values)\ncheck('separate_negative_integer_hyphen_string_compatibility_observation',negative_and_hyphen_value_observation)\nprint(json.dumps({'module':click.core.__file__,'results':results},ensure_ascii=True))\n",
+    "source_sha256": "22b4f9a4128ee7106a62cf5d50fc66a09f6f61e790c29a919ffe35b0a9606c33",
+    "reproduction": "将 source 保存为 probe.py，将指定 src/click 包复制到独立目录；设置 PYTHONPATH、PROBE_COPY 为该目录，用 Python 3.12 -B 运行。环境值由 CliRunner 的临时环境控制；无需联网、模型或额外安装。",
+    "adaptive_probe_note": "先观察以连字符开头的显式值，再根据实际 parser 的 attached-value 路径增加明确绑定形式的独立契约断言；未读取私有 oracle 或其他模型结果。"
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\base\\click\\core.py",
+        "results": [
+          {
+            "id": "omitted_bare_explicit_string_int_falsey_and_inferred_types",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('BadOptionUsage', \"Option '--opt' requires an argument.\", '')"
+          },
+          {
+            "id": "attached_short_long_values_and_following_option",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"('--other', False, 'COMMANDLINE')\", \"('flag', True, 'COMMANDLINE')\")"
+          },
+          {
+            "id": "no_flag_value_still_requires_value_no_callback_on_error",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('NoneType', '')"
+          },
+          {
+            "id": "invalid_integer_unknown_option_errors_no_callback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "multiple_values_env_cli_precedence_parameter_sources",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('BadOptionUsage', \"Option '-o' requires an argument.\", '')"
+          },
+          {
+            "id": "optional_prompt_omitted_bare_explicit",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_option_decorator_api",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('BadOptionUsage', '')"
+          },
+          {
+            "id": "context_resource_closed_success_failure_no_invalid_callbacks",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('[]', '[2]')"
+          },
+          {
+            "id": "unambiguous_attached_option_like_string_negative_int",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "separate_negative_integer_hyphen_string_compatibility_observation",
+            "status": "pass",
+            "detail": [
+              {
+                "type": "int",
+                "args": [
+                  "--opt",
+                  "-3"
+                ],
+                "callback_calls": [
+                  [
+                    -3,
+                    false
+                  ]
+                ],
+                "return_value": [
+                  -3,
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o",
+                  "-3"
+                ],
+                "callback_calls": [
+                  [
+                    -3,
+                    false
+                  ]
+                ],
+                "return_value": [
+                  -3,
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "int",
+                "args": [
+                  "--opt=-3"
+                ],
+                "callback_calls": [
+                  [
+                    -3,
+                    false
+                  ]
+                ],
+                "return_value": [
+                  -3,
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o-3"
+                ],
+                "callback_calls": [
+                  [
+                    -3,
+                    false
+                  ]
+                ],
+                "return_value": [
+                  -3,
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "-data"
+                ],
+                "callback_calls": [
+                  [
+                    "-data",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "-data",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "-data"
+                ],
+                "callback_calls": [
+                  [
+                    "-data",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "-data",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=-data"
+                ],
+                "callback_calls": [
+                  [
+                    "-data",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "-data",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o-data"
+                ],
+                "callback_calls": [
+                  [
+                    "-data",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "-data",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "--other",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "--other",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "--other",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "--other",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=--other"
+                ],
+                "callback_calls": [
+                  [
+                    "--other",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "--other",
+                  false,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o--other"
+                ],
+                "callback_calls": [
+                  [
+                    "--other",
+                    false
+                  ]
+                ],
+                "return_value": [
+                  "--other",
+                  false,
+                  "COMMANDLINE"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\A\\click\\core.py",
+        "results": [
+          {
+            "id": "omitted_bare_explicit_string_int_falsey_and_inferred_types",
+            "status": "pass",
+            "detail": {
+              "successful_calls": 54
+            }
+          },
+          {
+            "id": "attached_short_long_values_and_following_option",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "no_flag_value_still_requires_value_no_callback_on_error",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "invalid_integer_unknown_option_errors_no_callback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "multiple_values_env_cli_precedence_parameter_sources",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "optional_prompt_omitted_bare_explicit",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_option_decorator_api",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "context_resource_closed_success_failure_no_invalid_callbacks",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unambiguous_attached_option_like_string_negative_int",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"('flag', True, 'COMMANDLINE')\", \"('--other', False, 'COMMANDLINE')\")"
+          },
+          {
+            "id": "separate_negative_integer_hyphen_string_compatibility_observation",
+            "status": "pass",
+            "detail": [
+              {
+                "type": "int",
+                "args": [
+                  "--opt",
+                  "-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o",
+                  "-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "--opt=-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair05-review-jfzpb3qw\\B\\click\\core.py",
+        "results": [
+          {
+            "id": "omitted_bare_explicit_string_int_falsey_and_inferred_types",
+            "status": "pass",
+            "detail": {
+              "successful_calls": 54
+            }
+          },
+          {
+            "id": "attached_short_long_values_and_following_option",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "no_flag_value_still_requires_value_no_callback_on_error",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "invalid_integer_unknown_option_errors_no_callback",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "multiple_values_env_cli_precedence_parameter_sources",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "optional_prompt_omitted_bare_explicit",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_option_decorator_api",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "context_resource_closed_success_failure_no_invalid_callbacks",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unambiguous_attached_option_like_string_negative_int",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"('flag', True, 'COMMANDLINE')\", \"('--other', False, 'COMMANDLINE')\")"
+          },
+          {
+            "id": "separate_negative_integer_hyphen_string_compatibility_observation",
+            "status": "pass",
+            "detail": [
+              {
+                "type": "int",
+                "args": [
+                  "--opt",
+                  "-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o",
+                  "-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "--opt=-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "int",
+                "args": [
+                  "-o-3"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o-data"
+                ],
+                "callback_calls": [],
+                "error": "NoSuchOption"
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o",
+                  "--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "--opt=--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              },
+              {
+                "type": "str",
+                "args": [
+                  "-o--other"
+                ],
+                "callback_calls": [
+                  [
+                    "flag",
+                    true
+                  ]
+                ],
+                "return_value": [
+                  "flag",
+                  true,
+                  "COMMANDLINE"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 9,
+    "observational_groups_per_variant": 1,
+    "A_functional_passed": 8,
+    "A_functional_failed": 1,
+    "B_functional_passed": 8,
+    "B_functional_failed": 1,
+    "base_functional_passed": 3,
+    "baseline_control": "base 在六组题面或相邻规则相关路径中失败，复现裸选项及后续选项解析问题；非法整数/未知选项、已有可选 prompt、明确附加的带连字符显式值三组通过。两侧前八组功能要求通过，明确附加值兼容性组失败。观察组记录各写法的完整结果，不以“观察程序成功”声称业务检查通过。",
+    "coverage": "普通三形式组覆盖 54 次实际调用，含字符串/整数、显式类型/默认推断类型、None/空串/0、UNSET 默认、长短选项。资源组覆盖省略/裸选项/显式值下正常与命令体异常关闭，并确认非法整数没有参数回调、资源打开或命令体副作用。数量仅说明覆盖，不作优劣评分。"
+  },
+  "source_immutability": {
+    "files_verified": 436,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair05.json": "c11aa85b928160f8fe7965c65cfddd333850ae069fdd291b900953aa9b70ef22",
+      "05\\task.json": "b4f7b12880e0cf24cf34c143faf4f146cee1d1b01591c849ea47da169c58c9f9",
+      "05\\A.patch": "1070a639d868c2e3fb466e08ec4d1f94b998d87cb65750716f0e2296457500fd",
+      "05\\B.patch": "66bd2910479979be73d123b1702830bc76c8bd547ac57197264573888a941b88",
+      "05\\base\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\base\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\base\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\base\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\base\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\base\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\base\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\base\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\base\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\base\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\base\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\base\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\base\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\base\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\base\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\base\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\base\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\base\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\base\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\base\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\base\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\base\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\base\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\base\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\base\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\base\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\base\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\base\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\base\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\base\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\base\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\base\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\base\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\base\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\base\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\base\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\base\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\base\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\base\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\base\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\base\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\base\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\base\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\base\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\base\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\base\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\base\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\base\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\base\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\base\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\base\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\base\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\base\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\base\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\base\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\base\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\base\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\base\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\base\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\base\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\base\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\base\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\base\\tests\\test_options.py": "32e0602352adea872a0e54285aae2be2782d6dd94b3a105ae1bd169f5e82d93e",
+      "05\\base\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\base\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\base\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\base\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\base\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\base\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\base\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\base\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\base\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\base\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\base\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\base\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\base\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\base\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\base\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\base\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\base\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\base\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\base\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\base\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\base\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\base\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\base\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\base\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\base\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\base\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\base\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\base\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\base\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\base\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\base\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\base\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\base\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\base\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\base\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\base\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\base\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\base\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\base\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\base\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\base\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\base\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\base\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\base\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\base\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\base\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\base\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\base\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\base\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\base\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\src\\click\\core.py": "53a05fc6df06923343ab22741ea5ef96e247b72678b18e54480bccd4276aee64",
+      "05\\base\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\base\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\base\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\base\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\base\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\base\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\base\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\base\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\base\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\base\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\base\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\base\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\base\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\base\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\base\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\base\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\base\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\base\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\base\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\base\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\base\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\base\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\base\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\base\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\base\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719",
+      "05\\A\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\A\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\A\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\A\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\A\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\A\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\A\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\A\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\A\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\A\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\A\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\A\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\A\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\A\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\A\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\A\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\A\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\A\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\A\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\A\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\A\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\A\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\A\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\A\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\A\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\A\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\A\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\A\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\A\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\A\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\A\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\A\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\A\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\A\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\A\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\A\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\A\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\A\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\A\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\A\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\A\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\A\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\A\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\A\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\A\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\A\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\A\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\A\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\A\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\A\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\A\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\A\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\A\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\A\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\A\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\A\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\A\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\A\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\A\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\A\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\A\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\A\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\A\\tests\\test_options.py": "7d139d8140f6fb10fca93a6a0d2ba6dba05453fe89d447038e77fd586a7598a3",
+      "05\\A\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\A\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\A\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\A\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\A\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\A\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\A\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\A\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\A\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\A\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\A\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\A\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\A\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\A\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\A\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\A\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\A\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\A\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\A\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\A\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\A\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\A\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\A\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\A\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\A\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\A\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\A\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\A\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\A\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\A\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\A\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\A\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\A\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\A\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\A\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\A\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\A\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\A\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\A\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\A\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\A\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\A\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\A\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\A\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\A\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\A\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\A\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\A\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\A\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\A\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\src\\click\\core.py": "8a3980061d05367ba83a0377fe7db93c9f41a61d4d9d32cdf6245aa0424c4d0c",
+      "05\\A\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\A\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\A\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\A\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\A\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\A\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\A\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\A\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\A\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\A\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\A\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\A\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\A\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\A\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\A\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\A\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\A\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\A\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\A\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\A\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\A\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\A\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\A\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\A\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\A\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719",
+      "05\\B\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\B\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\B\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\B\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\B\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\B\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\B\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\B\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\B\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\B\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\B\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\B\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\B\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\B\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\B\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\B\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\B\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\B\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\B\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\B\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\B\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\B\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\B\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\B\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\B\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\B\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\B\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\B\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\B\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\B\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\B\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\B\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\B\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\B\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\B\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\B\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\B\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\B\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\B\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\B\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\B\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\B\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\B\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\B\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\B\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\B\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\B\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\B\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\B\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\B\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\B\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\B\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\B\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\B\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\B\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\B\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\B\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\B\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\B\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\B\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\B\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\B\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\B\\tests\\test_options.py": "01bd88956d70cc0a012326bc85f901e6856f519d844cb9632cd94d31d5184987",
+      "05\\B\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\B\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\B\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\B\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\B\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\B\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\B\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\B\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\B\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\B\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\B\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\B\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\B\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\B\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\B\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\B\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\B\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\B\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\B\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\B\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\B\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\B\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\B\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\B\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\B\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\B\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\B\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\B\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\B\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\B\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\B\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\B\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\B\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\B\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\B\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\B\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\B\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\B\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\B\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\B\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\B\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\B\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\B\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\B\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\B\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\B\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\B\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\B\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\B\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\B\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\src\\click\\core.py": "92d9b28797dffea9857099546ff8f0e2394693d3b99da690f44a557a875d35f9",
+      "05\\B\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\B\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\B\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\B\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\B\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\B\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\B\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\B\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\B\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\B\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\B\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\B\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\B\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\B\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\B\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\B\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\B\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\B\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\B\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\B\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\B\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\B\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\B\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\B\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\B\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "source_hashes_after": {
+      "tasks-pair05.json": "c11aa85b928160f8fe7965c65cfddd333850ae069fdd291b900953aa9b70ef22",
+      "05\\task.json": "b4f7b12880e0cf24cf34c143faf4f146cee1d1b01591c849ea47da169c58c9f9",
+      "05\\A.patch": "1070a639d868c2e3fb466e08ec4d1f94b998d87cb65750716f0e2296457500fd",
+      "05\\B.patch": "66bd2910479979be73d123b1702830bc76c8bd547ac57197264573888a941b88",
+      "05\\base\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\base\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\base\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\base\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\base\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\base\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\base\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\base\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\base\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\base\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\base\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\base\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\base\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\base\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\base\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\base\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\base\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\base\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\base\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\base\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\base\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\base\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\base\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\base\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\base\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\base\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\base\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\base\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\base\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\base\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\base\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\base\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\base\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\base\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\base\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\base\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\base\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\base\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\base\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\base\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\base\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\base\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\base\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\base\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\base\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\base\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\base\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\base\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\base\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\base\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\base\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\base\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\base\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\base\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\base\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\base\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\base\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\base\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\base\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\base\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\base\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\base\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\base\\tests\\test_options.py": "32e0602352adea872a0e54285aae2be2782d6dd94b3a105ae1bd169f5e82d93e",
+      "05\\base\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\base\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\base\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\base\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\base\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\base\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\base\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\base\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\base\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\base\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\base\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\base\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\base\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\base\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\base\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\base\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\base\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\base\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\base\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\base\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\base\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\base\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\base\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\base\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\base\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\base\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\base\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\base\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\base\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\base\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\base\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\base\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\base\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\base\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\base\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\base\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\base\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\base\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\base\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\base\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\base\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\base\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\base\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\base\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\base\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\base\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\base\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\base\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\base\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\base\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\base\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\src\\click\\core.py": "53a05fc6df06923343ab22741ea5ef96e247b72678b18e54480bccd4276aee64",
+      "05\\base\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\base\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\base\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\base\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\base\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\base\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\base\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\base\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\base\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\base\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\base\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\base\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\base\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\base\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\base\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\base\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\base\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\base\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\base\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\base\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\base\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\base\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\base\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\base\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\base\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\base\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719",
+      "05\\A\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\A\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\A\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\A\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\A\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\A\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\A\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\A\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\A\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\A\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\A\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\A\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\A\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\A\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\A\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\A\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\A\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\A\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\A\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\A\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\A\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\A\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\A\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\A\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\A\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\A\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\A\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\A\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\A\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\A\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\A\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\A\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\A\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\A\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\A\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\A\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\A\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\A\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\A\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\A\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\A\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\A\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\A\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\A\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\A\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\A\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\A\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\A\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\A\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\A\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\A\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\A\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\A\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\A\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\A\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\A\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\A\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\A\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\A\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\A\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\A\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\A\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\A\\tests\\test_options.py": "7d139d8140f6fb10fca93a6a0d2ba6dba05453fe89d447038e77fd586a7598a3",
+      "05\\A\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\A\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\A\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\A\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\A\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\A\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\A\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\A\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\A\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\A\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\A\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\A\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\A\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\A\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\A\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\A\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\A\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\A\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\A\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\A\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\A\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\A\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\A\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\A\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\A\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\A\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\A\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\A\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\A\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\A\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\A\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\A\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\A\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\A\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\A\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\A\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\A\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\A\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\A\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\A\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\A\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\A\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\A\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\A\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\A\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\A\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\A\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\A\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\A\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\A\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\A\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\src\\click\\core.py": "8a3980061d05367ba83a0377fe7db93c9f41a61d4d9d32cdf6245aa0424c4d0c",
+      "05\\A\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\A\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\A\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\A\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\A\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\A\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\A\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\A\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\A\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\A\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\A\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\A\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\A\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\A\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\A\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\A\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\A\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\A\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\A\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\A\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\A\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\A\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\A\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\A\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\A\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\A\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719",
+      "05\\B\\.editorconfig": "f45c88dc00e3e9f273cc30b2f139ee880ef27a6a404ca4d2fd7f0e96f9ec0f9c",
+      "05\\B\\.gitignore": "a23e3badc7c5092fd3529fbe465c342a97a309ad2a2f74b5f795732d5b8169d8",
+      "05\\B\\.pre-commit-config.yaml": "084080f1b3a2946cb48cb5def9d354c2b4c8a8cb494d4dfb59595031cf7750ff",
+      "05\\B\\.readthedocs.yaml": "0a21349ad847b7ea4975c46804314daf5a45dc57d40a3c61a42129ea476b9d4b",
+      "05\\B\\CHANGES.rst": "9e365bbb64513d2481293629e77b126ece96d7d5b8df6215006508fe1d5262f2",
+      "05\\B\\LICENSE.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+      "05\\B\\pyproject.toml": "6b571cd5dd11163ec190c482c6fd4db403116e2ba4782733d9fb6d5025ffab94",
+      "05\\B\\README.md": "4c3de4aa0918deac2f712facacd1dc30a8cc4627d0118dd290292ab0af65ca0b",
+      "05\\B\\uv.lock": "af20e85f735d4ffbc6546e139b43d33d576ba7b2fbfed64be376d04ab0a2a52e",
+      "05\\B\\.devcontainer\\devcontainer.json": "bcd781152fe5729c83a612f3186c011f217082bb68d07f73fc4d49f53c6c369f",
+      "05\\B\\.devcontainer\\on-create-command.sh": "b863a4cb17ddda2276b26ca97949e480a04fdd89000d8b3a292a95907cd0dafa",
+      "05\\B\\.github\\pull_request_template.md": "f92d7fa6366d19dfed8f7b49e753c506c39bb17e23f0908da9dea408f0f07800",
+      "05\\B\\docs\\advanced.md": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7",
+      "05\\B\\docs\\api.md": "368d75822b19b0e1c9bb1d6d40d02f6c395439d34595e1bee98fcd867e894d71",
+      "05\\B\\docs\\arguments.rst": "72a82703cda3bd83d8a4f72d394cae9b2eac897d68ba13ee292fee32f95754bd",
+      "05\\B\\docs\\changes.rst": "94c7e3657f8795af8f66d20fb6208f83df46bce9cab9b82d2c16ad961a87f7e0",
+      "05\\B\\docs\\click-concepts.rst": "f463c57d1bc2906b7119d5f1a7ddedca979b37349b126101af586c68968fd58f",
+      "05\\B\\docs\\command-line-reference.md": "2dae95cf440164461ce224dd3571da48e6619655b866aa993a17619cc73f3988",
+      "05\\B\\docs\\commands-and-groups.rst": "7e3f09ceb33448209fdc28aa63a65ff3ca6875807c09135651b08e55d6278e7d",
+      "05\\B\\docs\\commands.rst": "0ee02e90b2c4f03d32eb9dccb114115fa609147207004d6357b76c2b35f3a185",
+      "05\\B\\docs\\complex.rst": "de6d4383e66516aa6253bf2f512e0ad5bbc29f74ab512c0bc09c6a65ba0e9508",
+      "05\\B\\docs\\conf.py": "b9e32ca07d3d005453b04f6d887439fdf13fbe53ca7f9c7dff183ddb53b9e19b",
+      "05\\B\\docs\\contrib.md": "b06443ba789a6f17d98d82473fc44fa7381412480a15c02e00f412e169c8b674",
+      "05\\B\\docs\\design-opinions.md": "1336bbec4e0d5e29a2b0e67d8662e7a5bb35c325f8c739d3c287f65bf44547ed",
+      "05\\B\\docs\\documentation.md": "881a01a2b9d638f0666540881e07df25ba6c83e7b2e24d4e3fd02e3cc7b9f614",
+      "05\\B\\docs\\entry-points.md": "4d044227e4073d6f94e28f24a6d3cfdadb167a83be50e5fb22a3bf9a846b7cd1",
+      "05\\B\\docs\\exceptions.md": "a8d8ca99aa5b2a1c310e4d88d5b5a2b779d9ee9c7775994cf65c409ae2577b86",
+      "05\\B\\docs\\extending-click.md": "e3723877d1805d4785e736c86a05b330beda91be442bd93f1abea109786aa12f",
+      "05\\B\\docs\\faqs.md": "e7f604c033964f97ebe129779b7516079b3c927a8d0feca6457cee2f1cdf43f5",
+      "05\\B\\docs\\handling-files.md": "29772e71f20f345c9d784edbad59557d3c949d8e7fcb49845ceb35b84a2edbf4",
+      "05\\B\\docs\\index.rst": "5415ddf13cfaf3f00327d00a2cf5530b13630db64a4482264577fb4557693e8d",
+      "05\\B\\docs\\license.md": "b4aa3a8b0dfd4c8cea97ea65b3f19ef54bd280665533478f35c0a5d205a7d341",
+      "05\\B\\docs\\option-decorators.md": "f964fda95010f7c300b277a2289506d113563eec579cdd22e443fd2c88d4a836",
+      "05\\B\\docs\\options.md": "1af78c99a62e88d2efdeda749c1b25ba0ed469720c4e1db7bf1d242041cdcc26",
+      "05\\B\\docs\\parameter-types.md": "ba1d2247379afee24df9f359555586fd195465af30b61c2e0f2b4566e3fe900c",
+      "05\\B\\docs\\parameters.md": "e08154956bf7832d85bd4ca52110baaaf7aa53a5fe73c9a9fac49c92c81a5563",
+      "05\\B\\docs\\prompts.md": "409509e5aba1fb846c24ba716e89fe44ec4e064be5adadbe9d254f227a1a0bf8",
+      "05\\B\\docs\\quickstart.md": "bac053b34a5d6fb109fbbaa11e9ae77c566d9515a603041c4941a8b2243bec58",
+      "05\\B\\docs\\setuptools.md": "52397a6999ed2be086a807068c691f9c55b6897e578c405c05911860f1aed55f",
+      "05\\B\\docs\\shell-completion.md": "383805255639a6365ff8d86c1241d7ac42a8202a5d4fa189cd15a3b8f73bfffb",
+      "05\\B\\docs\\support-multiple-versions.md": "2326dae1f082952030ea31d28e103e24d3b2f8794af1009d1e423f3783bf0f7e",
+      "05\\B\\docs\\testing.md": "a9242b5bdac18255775951ec18e0850c96633c0fc4cae20a81d502ae6aa687e8",
+      "05\\B\\docs\\unicode-support.md": "063f0a6127bdb220994780093454942cdae90cb350c8d5ad3ddc93b36435adf8",
+      "05\\B\\docs\\utils.md": "ec4cc945e3d161dd20b0a6a652b277a44b57999b126025cd0ff6d58a60fdeab9",
+      "05\\B\\docs\\virtualenv.md": "cfa6bf88dc769b65a4cdd8a697ac96e062692c3d741d52bb6f74d7a95a194f0c",
+      "05\\B\\docs\\why.md": "f351b5d4dc3c81145bec405c9c8353c6ed239af28e8315dc7b356b4e920ccad6",
+      "05\\B\\docs\\wincmd.md": "2eb195be23fce0f4429b766eb05ac31e073e5f3e605ff3e9f625269add38e220",
+      "05\\B\\examples\\README": "8643885584197d9d76dc8332f9c6f5cca2af59584dbf53ca600cf3ebf8278e58",
+      "05\\B\\tests\\conftest.py": "192be82444d6048fd222e2d73cd5c3bec768d65c6e10c0ffc230f307f363590b",
+      "05\\B\\tests\\test_arguments.py": "5425827c97ea4f530a33cc94430b353b4d98da338cd499d2ed60511e5cc9b359",
+      "05\\B\\tests\\test_basic.py": "8f07cd5c9583ad4efc4a97837bbd3f18542f6a62807fda5112146bcbb36f4a9f",
+      "05\\B\\tests\\test_chain.py": "32247d8a208c84e571a89e87cbce389cc9aac08e98ece741c7d53fca0c63d881",
+      "05\\B\\tests\\test_commands.py": "417f7d9e13eee687a8aaea7729d0d452e5a0579ebb3ddece396b2fdc7a5389ac",
+      "05\\B\\tests\\test_command_decorators.py": "234ede359da2839923af2436056680bab68bdba622bf596452bbfbe1e1cfd6fa",
+      "05\\B\\tests\\test_compat.py": "5373454ca4b0718b079d1f49f1d153b0535686d6cf1f25291253b2dff1b5e748",
+      "05\\B\\tests\\test_context.py": "187b7b8f9b1e666af21629c93d69702239b06a8ecd4840b83ede37e7cc32adcf",
+      "05\\B\\tests\\test_custom_classes.py": "9d403c3b960ca927170645dcb144db33eb42c705208b6fa3b235c54889eee8e0",
+      "05\\B\\tests\\test_defaults.py": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589",
+      "05\\B\\tests\\test_formatting.py": "4bc87ae6e4e646f74489623c70a2cbb43da2e6588747a33e1f2924903cd32e34",
+      "05\\B\\tests\\test_imports.py": "6addbf44af0bc24cb2ebe945a48a89935499febbb70a02ddb7b96fa9dc74aa06",
+      "05\\B\\tests\\test_info_dict.py": "b6ccfd8b3ea640d3e9016dcf0a4d3718a8e80090f4a890d7ed94ebdc8213dc84",
+      "05\\B\\tests\\test_normalization.py": "5619fb315c33b79976693893dde41e84cd5e806e0c3e5bea15346f0fafa934e0",
+      "05\\B\\tests\\test_options.py": "01bd88956d70cc0a012326bc85f901e6856f519d844cb9632cd94d31d5184987",
+      "05\\B\\tests\\test_parser.py": "9e3a95fb896166e23bb8070de55a7d81a72a95c0b4909da659e54274b1615069",
+      "05\\B\\tests\\test_shell_completion.py": "f07a9dd5694b7866810ca640f767dd9e8f3eed3e02de14aa3b0af589cbb07dc2",
+      "05\\B\\tests\\test_termui.py": "f6e9b4cc17879e99a9d71ae75f439a784e0c0e23ac486b9f21adf0947a4fc5df",
+      "05\\B\\tests\\test_testing.py": "1a684de16aeeadafec424fae9b95f129062fbe95b8098d32748e615abb0f364f",
+      "05\\B\\tests\\test_types.py": "25923647c4cc5d912ca37164f6f3d67463f4b06e59db998e5ea42b2ea90f6c0d",
+      "05\\B\\tests\\test_utils.py": "a98806cb4c119f9c4060c06e83706e7456eae5b0ba1252e1023de92ac543df78",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\bug-report.md": "b21efd841c0f91179caf8366d97ee897bd4322ee948329fc5bd9a937b17b543a",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\config.yml": "ec732b9892bea1fe1b9b00dfda018e219ab9d256120205ba8c0ad5591f6bd126",
+      "05\\B\\.github\\ISSUE_TEMPLATE\\feature-request.md": "fbfa2d2287f86d437e8a4f2ad8a5fbd69c58b6adc27f053da7757e943fb6bf3c",
+      "05\\B\\.github\\workflows\\lock.yaml": "1539cb23c54fc10e2b49a3a69c9df9d30ecd768351e9f24193e2d32213f78618",
+      "05\\B\\.github\\workflows\\pre-commit.yaml": "242e6b052a68455871044227ce0363be3bbc59b3c90241e24c534f61b10cf14c",
+      "05\\B\\.github\\workflows\\publish.yaml": "cd1754dce9e1dae58ab82decdc0109b9226552d9f07d06a014b6727fddd20aad",
+      "05\\B\\.github\\workflows\\tests.yaml": "33f72aff1c37076024fc4636b30aab3d51cd0f0f77cd6e0eccda52b3aa88ea2a",
+      "05\\B\\docs\\_static\\click-icon.svg": "20c9f54b71a2958e8391b7db36b509fa1b90fd77536f6dcd5bf5a8a21a84cae8",
+      "05\\B\\docs\\_static\\click-logo.svg": "b37f0c46a2c3a41989e3bb219c632d30f108b8b7a2ec55b5b2a089a252700ec2",
+      "05\\B\\docs\\_static\\click-name.svg": "311f6c120eaa6f5f710cf0da7a29698fa98a698201e66dfe6595d9e579ba59e8",
+      "05\\B\\examples\\aliases\\aliases.ini": "64369c475fbf5404b40fa74e05147003c746b4ef51017cf115623a04bbcb45ab",
+      "05\\B\\examples\\aliases\\aliases.py": "12afe07e2ce986b4b08f348598b1ab0e65f965a38c0a5547b60f2cf13a5f3cd4",
+      "05\\B\\examples\\aliases\\pyproject.toml": "413ab0bd185393b340373afd839d19c1c0bf85123ed241946d311fb5eeb60331",
+      "05\\B\\examples\\aliases\\README": "20ac19ee5fe14683191cc25f20f9c161c37b53ae3bea31637ba6f25d91488242",
+      "05\\B\\examples\\colors\\colors.py": "674b6442b8cd39319a9448fe67c9badbcbe512da7280985065aa51b8839e9614",
+      "05\\B\\examples\\colors\\pyproject.toml": "7d5aa5c4ba2c8223beead363223a54688a01093b4771ac50fd329e5bf1fa66c3",
+      "05\\B\\examples\\colors\\README": "a1e7bc461f0df1927c015fad89f82eb079d676fc180d1b029846717f8f4a2e21",
+      "05\\B\\examples\\completion\\completion.py": "ceeb4f35fa92d4abcc537e0759624cb404e5b1600690467a099c8552a4b7bff2",
+      "05\\B\\examples\\completion\\pyproject.toml": "80aefd652ee7df03457208eae0fef567c9423d014fc1e60adb1c6d666950cc1d",
+      "05\\B\\examples\\completion\\README": "cfa5f48113e8838e249639c9a458ac70b6e933fced0a808267934f707f8f9b0e",
+      "05\\B\\examples\\complex\\pyproject.toml": "d7e12fcc656a46f56fa68874987d355c09c0c3a43d7ded4404d0f34bd3715841",
+      "05\\B\\examples\\complex\\README": "7ab227ec7de296ea1a6d4e9b3ee6b74c72e05ff696115dbc8033460dca9c36ba",
+      "05\\B\\examples\\imagepipe\\.gitignore": "2259ebafe9b7fccd958fc09608b02d2d630fa69be9348454a88076583464c439",
+      "05\\B\\examples\\imagepipe\\example01.jpg": "128e4e0f813010e6a0b5e4f51f5cc9c03a48507e0f67546ad298187114f69210",
+      "05\\B\\examples\\imagepipe\\example02.jpg": "6d314402631c2ce8a3c19505570308f5f1557fbac346062edba23861ded0a09c",
+      "05\\B\\examples\\imagepipe\\imagepipe.py": "eaf679fc90b988c938b2a32ff4d716d25127fe63a8c3804222628ffe8ec46dc2",
+      "05\\B\\examples\\imagepipe\\pyproject.toml": "437435a60f616da84629bf838f43d999830246276e327cb4856c7229244dcd01",
+      "05\\B\\examples\\imagepipe\\README": "896408521c4395a488727fb857d42d4d9821ac047b56110aabdaa9ff1f24066e",
+      "05\\B\\examples\\inout\\inout.py": "f0a15c4c3d331111841605298951dd281f5b8df116119e331094880704159e35",
+      "05\\B\\examples\\inout\\pyproject.toml": "198672121cdb99f76ba2cd3fdc7cf2466b4b99cfe3fb6723ffd19ef668cd8e2e",
+      "05\\B\\examples\\inout\\README": "fcafee766484f079ed5d2e4a36143f23074d3842fb47ce88b5e018e9da08fa78",
+      "05\\B\\examples\\naval\\naval.py": "a8d3748eeaa204012b1794ea77be6dd23dfdb141c2d5940332c06c73b266a0c1",
+      "05\\B\\examples\\naval\\pyproject.toml": "04fbd3515c198fea621d8e0ab25c0d2cbc75d6a725b8f09801c92487664bac05",
+      "05\\B\\examples\\naval\\README": "4a9876e6f33247905e0a714dd4f34e07fc9dd21ae297aa920269b3b00fbbf284",
+      "05\\B\\examples\\repo\\pyproject.toml": "5c749725e190dc0de9237f79df37519551036105e365edefbfd3be673b1458b1",
+      "05\\B\\examples\\repo\\README": "1bd41a77284420eb92fee285705a2189232148f383825e9768e5ade7263cd647",
+      "05\\B\\examples\\repo\\repo.py": "f71e14c39b440c36d006e6152f06942932ac60359e2a8b987099ab464bf176eb",
+      "05\\B\\examples\\termui\\pyproject.toml": "6fd8cb6be9bd49cace3f9216861993da62aa6a7f513f3762cede7bc66828807e",
+      "05\\B\\examples\\termui\\README": "06b845269de7a573eaae8196667e3de11b684f2875b602df0d13ff13b2052611",
+      "05\\B\\examples\\termui\\termui.py": "cc79721d0e7250c9aa23cfafb4f897cd1fd25711371ae58aab616760be47381d",
+      "05\\B\\examples\\validation\\pyproject.toml": "1961631b9fbf0d82f1c66f86b3abf66251577626a59b01e7aec60ef9c521d4c4",
+      "05\\B\\examples\\validation\\README": "bfe27c7db860a086b52b1f8c23844755da14b088add3be709f309e9cb32fa676",
+      "05\\B\\examples\\validation\\validation.py": "52dc6ffa606e4d4d93d7ff40977797e77d5124a5190b5f76287319dacb946711",
+      "05\\B\\examples\\complex\\complex\\cli.py": "2042ffdb1e77f0f937036f3f0a33c67bacbad90477873d7576cc297674a55de7",
+      "05\\B\\examples\\complex\\complex\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\examples\\complex\\complex\\commands\\cmd_init.py": "6068f21b5874685d6e4d467f24bc45ddf2cc28457cd27b1b2dc2aadef24ddde4",
+      "05\\B\\examples\\complex\\complex\\commands\\cmd_status.py": "22bbe1f58b41c89b12ce6b74a3b95932bf607c73cdec9d0ef82e9f948a06803d",
+      "05\\B\\examples\\complex\\complex\\commands\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\src\\click\\core.py": "92d9b28797dffea9857099546ff8f0e2394693d3b99da690f44a557a875d35f9",
+      "05\\B\\src\\click\\decorators.py": "e4feda6e126d010629fca1e08d4be132fe3ae044703b3aefd9e9cd9279701f24",
+      "05\\B\\src\\click\\exceptions.py": "f2eb5ff30e95e612573273bf89cd4536bb5bc2e127d4d52ed5a0f057c52a9c6e",
+      "05\\B\\src\\click\\formatting.py": "4557f0c2bd2bc16369806afc35a1e874fce422beffb54c9587f9c375a9cb30d7",
+      "05\\B\\src\\click\\globals.py": "80cf8d87a0383341c1fd2824685e4ce2770618c0c773f7e51d7bbdfe88781845",
+      "05\\B\\src\\click\\parser.py": "437d691f416541912af945c4fc0051ce5ca011fbf13d3b996d6361e317d79b3c",
+      "05\\B\\src\\click\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "05\\B\\src\\click\\shell_completion.py": "09ce0641416e5a97d005af6c179a9779e608ee7ded23fd64e997529f80596d3d",
+      "05\\B\\src\\click\\termui.py": "86a0848cd9dd53e9f35b4f2744090169581f669fc574203d2b17c85a529868c7",
+      "05\\B\\src\\click\\testing.py": "10445bcdc9756ebd265b4a814bd12a9249df35f5c1f564045b410b22992fb92b",
+      "05\\B\\src\\click\\types.py": "7a4e7804d485c0f2acaad7d3ee3b2a71ce161ee8bc00815530a338a156485e17",
+      "05\\B\\src\\click\\utils.py": "8025287b0740840f902c15141f1acb878ba3ea6ed3d568d964c34fbd1d08ed80",
+      "05\\B\\src\\click\\_compat.py": "bf7c4166415bbc0d415cf46415f04973afa92303c8ef7e399be910127a5502ce",
+      "05\\B\\src\\click\\_termui_impl.py": "ae009bdce9fc5f9038db4d2b0392fa8b5deee626a99857abeecaeee7b272eb30",
+      "05\\B\\src\\click\\_textwrap.py": "04e69ed1143abe0dc590d8122723a81b31b599e18cc49fee9165592b1feffb4a",
+      "05\\B\\src\\click\\_utils.py": "919c2d4dfe6032e0a294925c792da24c2bd1bc263ed1a379ac9abc80ac3ba7c8",
+      "05\\B\\src\\click\\_winconsole.py": "fefc54b946b1c01868474bd458236e1d8f1551e7e231d088c94d925cfaa817e0",
+      "05\\B\\src\\click\\__init__.py": "e98c92d5a7b29276742d8c1e5a8ccd672d00f6767fd75c2660886fddc6d0ad8a",
+      "05\\B\\tests\\typing\\typing_aliased_group.py": "ca86e8ac186216908648a53b971ba5f0baa0d532b9cba10640c12ff8a332ccd5",
+      "05\\B\\tests\\typing\\typing_confirmation_option.py": "cbeb42b982a93992b7529a54820ac09ff8b35f053da334490b7fe85b96b7e66c",
+      "05\\B\\tests\\typing\\typing_group_kw_options.py": "53cb7ef7d78a9bbb1cd82e2e841a2b43efd1bf6b235ae002398eaf3272ecc87e",
+      "05\\B\\tests\\typing\\typing_help_option.py": "5dc1e21f7d8f4328f9c050294e1fc5964dd6b5ec01964b0f371fc2750721e545",
+      "05\\B\\tests\\typing\\typing_options.py": "a6e0f3a662f55b059a179fb2d2d2e6e7011bf705cfcf546070f621103b08149a",
+      "05\\B\\tests\\typing\\typing_password_option.py": "71b7ae0e53bdde145628cbcb5f7a06a21e88ae58b438abfe99a8f0685549f4b6",
+      "05\\B\\tests\\typing\\typing_progressbar.py": "ba0529f20aa25016ffe36176db14437030b1fc7805a083b11742c5e03b3ba59c",
+      "05\\B\\tests\\typing\\typing_simple_example.py": "82c6a9d71dad51af7ce9f3c3cba5a9f9fc89184592d17d9385c14f330b81c64f",
+      "05\\B\\tests\\typing\\typing_version_option.py": "f02ed457b05868b4639fe7cb70546e0141d3d60c915c5955a53b3abe5137b719"
+    },
+    "includes": "仅本 pair 的 base/A/B 全部常规文件、task.json、A.patch、B.patch 与 tasks-pair05.json；文件枚举仅为字节校验。"
+  },
+  "limitations": [
+    "这是指定公开任务及源码上的局部盲审，不评价发布资格，也没有运行候选测试套件或全项目认证、隐藏 grader。无模型 CLI、网络、委派或真实源码改动，前四份报告未读未改。",
+    "审查员有先前案例开发及匿名 pair 审阅背景，不能声称完全从未接触整个项目；本次证据只来自 pair05 的公开输入与自制探针，没有使用跨 pair 信息或猜测 A/B 身份。",
+    "只验证 Python 3.12.14、nargs=1 的受影响字符串/整数选项及记录的 prompt/multiple/env/context 路径；没有建立任意自定义 ParamType、所有平台 shell 或多值 nargs 的新兼容性保证。",
+    "分离写法 --opt --other 本就需要区分“可选值缺省后跟另一选项”；该写法的变化不能独自证明错误。确认缺陷依据为 --opt=--other、-o--other、--opt=-3 和 -o-3 这类明确附加值，以及原基线与公开 parser 的 explicit-value 协议。"
+  ]
+}

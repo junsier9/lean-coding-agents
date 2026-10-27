@@ -1,0 +1,20 @@
+{
+  "reviewed_at": "2026-10-24T18:10:40.870199+00:00",
+  "reviewer": "independent agent B, read-only",
+  "scope": "Draft methods, frozen protocol, completed formal analysis, sample plan and blinded diagnostics. No replication costs, re-sampling or model runs.",
+  "verdict": "Method distinctions correct; wording corrections required.",
+  "corrections_applied": [
+    "Describe N=20 as determined after pilot under frozen planning rule, not fixed before pilot.",
+    "Do not describe planned300 as completed until replication finishes.",
+    "Exclude controller queue waiting only; CLI service wait remains measured. Successful grading timing includes startup and log parsing, excludes pre-grade copying.",
+    "For600-second timeout say code was graded after termination; do not claim natural model completion.",
+    "Conservative bound is monotone relative to same-draw full-data bootstrap, whose population coverage remains approximate.",
+    "Use fixed-seed random eight-pair review wording; do not imply its exact selection was preregistered or establishes causal redundancy savings.",
+    "Link source and calibration ledgers and original allocation-embedded pilot plan."
+  ],
+  "formal_token_upper_one_sided97_5": 0.961762825665278,
+  "formal_time_upper_one_sided97_5": 0.9752848920325144,
+  "formal_material10percent_criteria_met": false,
+  "replication_outcomes_not_used_to_change_protocol": true,
+  "skill_not_modified": true
+}

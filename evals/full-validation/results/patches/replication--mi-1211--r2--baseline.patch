@@ -1,0 +1,108 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index b101aa0..fba3a33 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -1471,11 +1471,11 @@ def running_mean(iterable, *, maxlen=None):
+ 
+ 
+ def _windowed_running_min(iterator, maxlen):
+-    sis = deque()  # Strictly increasing subsequence
++    sis = deque()  # Non-decreasing subsequence
+     for index, value in enumerate(iterator):
+         if sis and sis[0][0] == index - maxlen:
+             sis.popleft()
+-        while sis and not sis[-1][1] < value:  # Remove non-increasing values
++        while sis and value < sis[-1][1]:  # Remove strictly larger values
+             sis.pop()
+         sis.append((index, value))  # Most recent value at position -1
+         yield sis[0][1]  # Window minimum at position 0
+@@ -1488,6 +1488,8 @@ def running_min(iterable, *, maxlen=None):
+     of the sliding window.  The default of *None* is equivalent to
+     an unbounded window.
+ 
++    When values compare equal, return the earliest one still in the window.
++
+     For example:
+ 
+         >>> list(running_min([4, 3, 7, 0, 8, 1, 6, 2, 9, 5]))
+@@ -1512,11 +1514,11 @@ def running_min(iterable, *, maxlen=None):
+ 
+ 
+ def _windowed_running_max(iterator, maxlen):
+-    sds = deque()  # Strictly decreasing subsequence
++    sds = deque()  # Non-increasing subsequence
+     for index, value in enumerate(iterator):
+         if sds and sds[0][0] == index - maxlen:
+             sds.popleft()
+-        while sds and not sds[-1][1] > value:  # Remove non-decreasing values
++        while sds and value > sds[-1][1]:  # Remove strictly smaller values
+             sds.pop()
+         sds.append((index, value))  # Most recent value at position -1
+         yield sds[0][1]  # Window maximum at position 0
+@@ -1529,6 +1531,8 @@ def running_max(iterable, *, maxlen=None):
+     of the sliding window.  The default of *None* is equivalent to
+     an unbounded window.
+ 
++    When values compare equal, return the earliest one still in the window.
++
+     For example:
+ 
+         >>> list(running_max([4, 3, 7, 0, 8, 1, 6, 2, 9, 5]))
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 10992e5..01dad48 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -6800,6 +6800,26 @@ class TestRunningMin(TestCase):
+                 actual = list(mi.running_min(iterable))
+                 self.assertEqual(actual, expected)
+ 
++    def test_equal_values(self):
++        for data in permutations([1, 1.0, Fraction(1, 1), Decimal('1.0')]):
++            for maxlen in (None, 1, 2, 3, len(data), len(data) + 1):
++                with self.subTest(data=data, maxlen=maxlen):
++                    actual = list(mi.running_min(iter(data), maxlen=maxlen))
++                    expected = list(
++                        map(min, grow_to_window(data, maxlen or len(data)))
++                    )
++                    self.assertEqual(len(actual), len(expected))
++                    for value, expected_value in zip(actual, expected):
++                        self.assertIs(value, expected_value)
++
++    def test_equal_values_expire(self):
++        data = [1, 2, 1.0, 3, Fraction(1, 1), 4, Decimal('1.0'), 5, 6, 7]
++        actual = list(mi.running_min(iter(data), maxlen=3))
++        expected = list(map(min, grow_to_window(data, 3)))
++        self.assertEqual(len(actual), len(expected))
++        for value, expected_value in zip(actual, expected):
++            self.assertIs(value, expected_value)
++
+     def test_maxlen(self):
+         data = choices(range(20), k=1000)
+ 
+@@ -6846,6 +6866,26 @@ class TestRunningMax(TestCase):
+                 actual = list(mi.running_max(iterable))
+                 self.assertEqual(actual, expected)
+ 
++    def test_equal_values(self):
++        for data in permutations([1, 1.0, Fraction(1, 1), Decimal('1.0')]):
++            for maxlen in (None, 1, 2, 3, len(data), len(data) + 1):
++                with self.subTest(data=data, maxlen=maxlen):
++                    actual = list(mi.running_max(iter(data), maxlen=maxlen))
++                    expected = list(
++                        map(max, grow_to_window(data, maxlen or len(data)))
++                    )
++                    self.assertEqual(len(actual), len(expected))
++                    for value, expected_value in zip(actual, expected):
++                        self.assertIs(value, expected_value)
++
++    def test_equal_values_expire(self):
++        data = [1, 0, 1.0, -1, Fraction(1, 1), 0, Decimal('1.0'), -1, -2, -3]
++        actual = list(mi.running_max(iter(data), maxlen=3))
++        expected = list(map(max, grow_to_window(data, 3)))
++        self.assertEqual(len(actual), len(expected))
++        for value, expected_value in zip(actual, expected):
++            self.assertIs(value, expected_value)
++
+     def test_maxlen(self):
+         data = choices(range(20), k=1000)
+ 

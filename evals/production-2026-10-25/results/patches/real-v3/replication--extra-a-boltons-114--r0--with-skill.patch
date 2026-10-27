@@ -1,0 +1,103 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index 54b4397..eaaca55 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -75,13 +75,15 @@ class Callpoint(object):
+         self.line = line
+ 
+     def to_dict(self):
+-        "Get a :class:`dict` copy of the Callpoint. Useful for serialization."
++        "Get a :class:`dict` copy of the Callpoint for JSON serialization."
+         ret = {}
+         for slot in self.__slots__:
+             try:
+                 ret[slot] = getattr(self, slot)
+             except AttributeError:
+                 pass
++        if isinstance(ret.get('line'), _DeferredLine):
++            ret['line'] = str(ret['line'])
+         return ret
+ 
+     @classmethod
+diff --git a/tests/test_tbutils.py b/tests/test_tbutils.py
+index 84f6725..e08e29f 100644
+--- a/tests/test_tbutils.py
++++ b/tests/test_tbutils.py
+@@ -1,13 +1,17 @@
+ # -*- coding: utf-8 -*-
+ 
++import json
+ import sys
+ 
++import pytest
++
+ try:
+     from cStringIO import StringIO
+ except:
+     from io import StringIO
+ 
+-from boltons.tbutils import (TracebackInfo,
++from boltons.tbutils import (Callpoint,
++                             TracebackInfo,
+                              ExceptionInfo,
+                              print_exception,
+                              fix_print_exception,
+@@ -15,6 +19,58 @@ from boltons.tbutils import (TracebackInfo,
+                              ContextualExceptionInfo)
+ 
+ 
++@pytest.mark.parametrize('callpoint_type', [Callpoint, ContextualCallpoint])
++def test_callpoint_to_dict(callpoint_type):
++    callpoint = callpoint_type.from_current()
++    original_line = callpoint.line
++
++    data = callpoint.to_dict()
++
++    assert json.loads(json.dumps(data)) == data
++    assert data['line'].strip() == 'callpoint = callpoint_type.from_current()'
++    assert data['func_name'] == 'test_callpoint_to_dict'
++    assert data['lineno'] == callpoint.lineno
++    assert data['module_name'] == __name__
++    assert data['module_path'] == __file__
++    assert data['lasti'] == callpoint.lasti
++    assert callpoint.line is original_line
++
++
++@pytest.mark.parametrize('line', [None, '', u'value = "\u6e90\u7801"'])
++def test_callpoint_to_dict_explicit_line(line):
++    callpoint = Callpoint('example', 'example.py', 'example_func', 12, 34,
++                          line=line)
++
++    assert json.loads(json.dumps(callpoint.to_dict())) == {
++        'module_name': 'example', 'module_path': 'example.py',
++        'func_name': 'example_func', 'lineno': 12, 'lasti': 34, 'line': line}
++
++
++def test_callpoint_to_dict_without_source():
++    namespace = {'Callpoint': Callpoint}
++    code = compile('callpoint = Callpoint.from_current()',
++                   '<source-unavailable>', 'exec')
++    exec(code, namespace)
++
++    assert json.loads(json.dumps(namespace['callpoint'].to_dict()))['line'] == ''
++
++
++@pytest.mark.parametrize('exc_info_type', [ExceptionInfo, ContextualExceptionInfo])
++def test_exception_info_to_dict(exc_info_type):
++    try:
++        raise ValueError('serializable diagnostic')
++    except ValueError:
++        exc_info = exc_info_type.from_current()
++
++    data = exc_info.to_dict()
++
++    assert json.loads(json.dumps(data)) == data
++    assert data['exc_type'] == 'ValueError'
++    assert data['exc_msg'] == 'serializable diagnostic'
++    frame = data['exc_tb']['frames'][-1]
++    assert frame['line'].strip() == "raise ValueError('serializable diagnostic')"
++
++
+ 
+ def test_exception_info():
+     # test ExceptionInfo and TracebackInfo and hooks, via StringIOs

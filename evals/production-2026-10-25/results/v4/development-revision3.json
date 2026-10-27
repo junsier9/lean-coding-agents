@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-25T01:34:28.988525+00:00",
+  "fresh_confirmation_model_calls": 0,
+  "previous_skill_sha256": "0C767A71E5493C753C6908B47D106E2010B6398258E07B7412C40C9097DF0C4F",
+  "revision_skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "previous_words": 346,
+  "revision_words": 359,
+  "previous_native_development_runs": 6,
+  "previous_native_development_accepted": 5,
+  "observed_failure": "One implementation makes its new public wrapped receiver positional-only and changes its name; the old legal keyword class call still fails although the proxy own receiver collision was removed.",
+  "narrow_change": "Separate internal proxy and wrapped receiver; keep original public receiver name and keyword eligibility; actually check a class call supplying that original receiver by keyword when legal.",
+  "case_specific_names_messages_or_implementations_added_to_skill": false,
+  "oracle_protocol_or_threshold_changed": false,
+  "all_previous_failures_and_costs_retained": true,
+  "next_development_iteration": 3
+}

@@ -1,0 +1,175 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..5bfdfce 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -5,6 +5,7 @@
+ __all__ = ()
+ 
+ import functools
++import inspect
+ import warnings
+ import weakref
+ 
+@@ -81,14 +82,21 @@ class _DescriptorBase:
+                 f"({self.__attrname!r} and {name!r})."
+             )
+ 
++    def __call__(self, /, *args, **kwargs):
++        signature = inspect.signature(self.__wrapped__)  # type: ignore
++        bound = signature.bind(*args, **kwargs)
++        name = next(iter(signature.parameters))
++        obj = bound.arguments[name]
++        if args:
++            return self.__get__(obj)(*args[1:], **kwargs)
++        del kwargs[name]
++        return self.__get__(obj)(**kwargs)
++
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++            return self
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+@@ -131,9 +139,11 @@ class _DeprecatedDescriptorBase(_DescriptorBase):
+         self.__cache_clear = cache_clear
+ 
+     # called for @classmethod with Python >= 3.13
+-    def __call__(self, *args, **kwargs):
+-        _warn_classmethod(stacklevel=3)
+-        return self.__wrapper(*args, **kwargs)
++    def __call__(self, /, *args, **kwargs):
++        if args and isinstance(args[0], type):
++            _warn_classmethod(stacklevel=3)
++            return self.__wrapper(*args, **kwargs)
++        return super().__call__(*args, **kwargs)
+ 
+     # backward-compatible @classmethod handling with Python >= 3.13
+     def cache_clear(self, objtype):
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..f06eb62 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -93,6 +93,115 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+         cached.cache.clear()
+         self.assertEqual(cached.get(1), 2)
+ 
++    def test_decorator_class_call(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                first = Unhashable(self.cache(2))
++                second = Unhashable(self.cache(2), count=10)
++                unbound = getattr(Cached, name)
++
++                self.assertEqual(unbound(first, 0), 0)
++                self.assertEqual(getattr(first, name)(0), 0)
++                self.assertEqual(unbound(first, 0), 0)
++                self.assertEqual(unbound(second, 0), 10)
++                self.assertEqual(getattr(second, name)(0), 10)
++                self.assertEqual(first.count, 1)
++                self.assertEqual(second.count, 11)
++
++                bound = getattr(first, name)
++                other = getattr(second, name)
++                self.assertIs(bound.cache, first.cache)
++                self.assertIs(other.cache, second.cache)
++                self.assertIsNot(bound, other)
++                if name.endswith("_info"):
++                    maxsize = (
++                        first.cache.maxsize if isinstance(first.cache, Cache) else None
++                    )
++                    self.assertEqual(bound.cache_info(), (2, 1, maxsize, 1))
++                    self.assertEqual(other.cache_info(), (1, 1, maxsize, 1))
++
++                bound.cache_clear()
++                self.assertEqual(len(first.cache), 0)
++                self.assertEqual(len(second.cache), 1)
++                if name.endswith("_info"):
++                    self.assertEqual(bound.cache_info(), (0, 0, maxsize, 0))
++                    self.assertEqual(other.cache_info(), (1, 1, maxsize, 1))
++
++    def test_decorator_class_call_keyword(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                cached = Cached(self.cache(2))
++                unbound = getattr(Cached, name)
++
++                self.assertEqual(unbound(self=cached, value=0), 0)
++                self.assertEqual(getattr(cached, name)(value=0), 0)
++                self.assertEqual(unbound(cached, value=0), 0)
++                self.assertEqual(cached.count, 1)
++                self.assertIs(unbound.__wrapped__, getattr(cached, name).__wrapped__)
++                self.assertEqual(unbound.__name__, name)
++                if name.endswith("_info"):
++                    self.assertEqual(getattr(cached, name).cache_info()[:2], (2, 1))
++
++    def test_decorator_class_call_receiver(self):
++        for info in (False, True):
++            with self.subTest(info=info):
++
++                class Renamed:
++                    def __init__(instance):
++                        instance.cache = self.cache(2)
++
++                    @cachedmethod(lambda instance: instance.cache, info=info)
++                    def get(instance, value):
++                        return value
++
++                    @cachedmethod(lambda instance: instance.cache, info=info)
++                    def get_positional(instance, /, value):
++                        return value
++
++                cached = Renamed()
++                self.assertEqual(Renamed.get(instance=cached, value=42), 42)
++                self.assertEqual(cached.get(value=42), 42)
++                self.assertEqual(Renamed.get_positional(cached, 42), 42)
++                with self.assertRaises(TypeError):
++                    Renamed.get_positional(instance=cached, value=42)
++                with self.assertRaises(TypeError):
++                    Renamed.get(value=42)
++                with self.assertRaises(TypeError):
++                    Renamed.get(cached, instance=cached, value=42)
++                with self.assertRaises(TypeError):
++                    Renamed.get(cached)
++                with self.assertRaises(TypeError):
++                    Renamed.get(cached, value=42, unexpected=True)
++
++    def test_decorator_class_call_error(self):
++        cached = Cached(self.cache(2))
++        for _ in range(2):
++            with self.assertRaisesRegex(ValueError, "test error"):
++                Cached.get_cond_error(cached, 0)
++        self.assertEqual(len(cached.cache), 0)
++        self.assertEqual(cached.cond.wait_count, 2)
++        self.assertEqual(cached.cond.notify_count, 2)
++
+     def test_decorator_typed(self):
+         cached = Cached(self.cache(3))
+ 

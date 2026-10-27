@@ -1,0 +1,136 @@
+diff --git a/boltons/fileutils.py b/boltons/fileutils.py
+index 2a05770..74cfebd 100644
+--- a/boltons/fileutils.py
++++ b/boltons/fileutils.py
+@@ -341,7 +341,7 @@ class AtomicSaver:
+     moves occur).
+ 
+     Args:
+-        dest_path (str): The path where the completed file will be
++        dest_path (str or os.PathLike): The path where the completed file will be
+             written.
+         overwrite (bool): Whether to overwrite the destination file if
+             it exists at completion time. Defaults to ``True``.
+@@ -386,6 +386,7 @@ class AtomicSaver:
+ 
+     # TODO: option to abort if target file modify date has changed since start?
+     def __init__(self, dest_path, **kwargs):
++        dest_path = os.fspath(dest_path)
+         self.dest_path = dest_path
+         self.overwrite = kwargs.pop('overwrite', True)
+         self.file_perms = kwargs.pop('file_perms', None)
+@@ -495,7 +496,7 @@ def iter_find_files(directory, patterns, ignored=None, include_dirs=False, max_d
+     supports *ignored* patterns.
+ 
+     Args:
+-        directory (str): Path that serves as the root of the
++        directory (str or os.PathLike): Path that serves as the root of the
+             search. Yielded paths will include this as a prefix.
+         patterns (str or list): A single pattern or list of
+             glob-formatted patterns to find under *directory*.
+@@ -521,6 +522,7 @@ def iter_find_files(directory, patterns, ignored=None, include_dirs=False, max_d
+     .. _glob: https://en.wikipedia.org/wiki/Glob_%28programming%29
+ 
+     """
++    directory = os.fspath(directory)
+     if isinstance(patterns, str):
+         patterns = [patterns]
+     pats_re = re.compile('|'.join([fnmatch.translate(p) for p in patterns]))
+diff --git a/tests/test_fileutils.py b/tests/test_fileutils.py
+index 81987b0..75dfb6d 100644
+--- a/tests/test_fileutils.py
++++ b/tests/test_fileutils.py
+@@ -1,8 +1,7 @@
+ import os.path
++from pathlib import Path
+ 
+-
+-
+-
++import pytest
+ 
+ from boltons import fileutils
+ from boltons.fileutils import FilePerms, iter_find_files
+@@ -12,6 +11,57 @@ from boltons.strutils import removeprefix
+ BOLTONS_PATH = os.path.dirname(os.path.abspath(fileutils.__file__))
+ 
+ 
++class _PathLike(os.PathLike):
++    def __init__(self, path):
++        self.path = path
++
++    def __fspath__(self):
++        return str(self.path)
++
++
++@pytest.mark.parametrize('path_type', [str, Path, _PathLike])
++@pytest.mark.parametrize('save', [fileutils.AtomicSaver, fileutils.atomic_save])
++@pytest.mark.parametrize('text_mode', [False, True])
++def test_atomic_save_pathlike(tmp_path, path_type, save, text_mode):
++    dest = tmp_path / 'saved.txt'
++    part = tmp_path / 'saved.txt.part'
++    previous = None
++    for content in ('first save', 'replacement'):
++        with save(path_type(dest), text_mode=text_mode) as output:
++            output.write(content if text_mode else content.encode('ascii'))
++            assert part.exists()
++            if previous is None:
++                assert not dest.exists()
++            else:
++                assert dest.read_text() == previous
++        assert dest.read_text() == content
++        assert not part.exists()
++        previous = content
++
++
++@pytest.mark.parametrize('path_type', [str, Path, _PathLike])
++def test_atomic_save_pathlike_exception(tmp_path, path_type):
++    dest = tmp_path / 'saved.txt'
++    dest.write_bytes(b'original')
++    with pytest.raises(RuntimeError, match='abort save'):
++        with fileutils.atomic_save(path_type(dest)) as output:
++            output.write(b'incomplete')
++            raise RuntimeError('abort save')
++    assert dest.read_bytes() == b'original'
++    assert not (tmp_path / 'saved.txt.part').exists()
++
++
++@pytest.mark.parametrize('path_type', [str, Path, _PathLike])
++def test_atomic_save_pathlike_no_overwrite(tmp_path, path_type):
++    dest = tmp_path / 'saved.txt'
++    dest.write_bytes(b'original')
++    with pytest.raises(OSError):
++        with fileutils.atomic_save(path_type(dest), overwrite=False):
++            pytest.fail('existing destination must not be overwritten')
++    assert dest.read_bytes() == b'original'
++    assert not (tmp_path / 'saved.txt.part').exists()
++
++
+ def test_fileperms():
+     up = FilePerms()
+     up.other = ''
+@@ -41,6 +91,24 @@ def test_iter_find_files():
+     assert 'fileutils.py' not in _to_baseless_list(iter_find_files(boltons_parent, patterns=['*.py'], max_depth=0))
+ 
+ 
++@pytest.mark.parametrize('path_type', [str, Path, _PathLike])
++def test_iter_find_files_pathlike(tmp_path, path_type):
++    top = tmp_path / 'top.txt'
++    top.write_text('top')
++    (tmp_path / 'skip.txt').write_text('ignored')
++    (tmp_path / 'other.py').write_text('other')
++    subdir = tmp_path / 'nested.txt'
++    subdir.mkdir()
++    nested = subdir / 'child.txt'
++    nested.write_text('nested')
++    directory = path_type(tmp_path)
++
++    assert set(iter_find_files(directory, '*.txt', ignored='skip*')) == {str(top), str(nested)}
++    assert list(iter_find_files(directory, '*.txt', ignored='skip*', max_depth=0)) == [str(top)]
++    assert set(iter_find_files(directory, ['*.txt'], ignored=['skip*'], include_dirs=True)) == {
++        str(top), str(subdir), str(nested)}
++
++
+ def test_rotate_file_no_rotation(tmp_path):
+     file_path = tmp_path / 'test_file.txt'
+     fileutils.rotate_file(file_path)

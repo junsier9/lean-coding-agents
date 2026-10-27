@@ -1,0 +1,189 @@
+diff --git a/src/pluggy/_tracing.py b/src/pluggy/_tracing.py
+index e90418f..cce5611 100644
+--- a/src/pluggy/_tracing.py
++++ b/src/pluggy/_tracing.py
+@@ -13,6 +13,13 @@ _Writer = Callable[[str], object]
+ _Processor = Callable[[tuple[str, ...], tuple[Any, ...]], object]
+ 
+ 
++def _safe_str(value: object) -> str:
++    try:
++        return str(value)
++    except Exception:
++        return f"<unprintable {type(value).__name__} object>"
++
++
+ class TagTracer:
+     def __init__(self) -> None:
+         self._tags2proc: dict[tuple[str, ...], _Processor] = {}
+@@ -29,15 +36,15 @@ class TagTracer:
+         else:
+             extra = {}
+ 
+-        content = " ".join(map(str, args))
++        content = " ".join(map(_safe_str, args))
+         indent = "  " * self.indent
+ 
+         lines = [f"{indent}{content} [{':'.join(tags)}]\n"]
+ 
+         for name, value in extra.items():
+-            lines.append(f"{indent}    {name}: {value}\n")
++            lines.append(f"{indent}    {_safe_str(name)}: {_safe_str(value)}\n")
+ 
+-        return "".join(lines)
++        return "".join(lines).encode("utf-8", "backslashreplace").decode("utf-8")
+ 
+     def _processmessage(self, tags: tuple[str, ...], args: tuple[object, ...]) -> None:
+         if self._writer is not None and args:
+diff --git a/testing/test_pluginmanager.py b/testing/test_pluginmanager.py
+index 65b322d..6e077dc 100644
+--- a/testing/test_pluginmanager.py
++++ b/testing/test_pluginmanager.py
+@@ -958,6 +958,49 @@ def test_hook_tracing(he_pm: PluginManager) -> None:
+         undo()
+ 
+ 
++@pytest.mark.parametrize("firstresult", [False, True])
++def test_hook_tracing_unprintable(pm: PluginManager, firstresult: bool) -> None:
++    class Api:
++        @hookspec(firstresult=firstresult)
++        def hello(self, arg: object) -> object: ...
++
++    class Unprintable:
++        def __str__(self) -> str:
++            raise ValueError("broken str")
++
++        def __repr__(self) -> str:
++            raise RuntimeError("broken repr")
++
++    calls = []
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg: object) -> object:
++            calls.append(arg)
++            return arg
++
++    pm.add_hookspecs(Api)
++    pm.register(Plugin())
++    trace: list[str] = []
++    pm.trace.root.setwriter(trace.append)
++    undo = pm.enable_tracing()
++    try:
++        for value in (Unprintable(), "caf\u00e9 \u4e2d\u6587 \U0001f600\ud800\udfff"):
++            result = pm.hook.hello(arg=value)
++            assert (result if firstresult else result[0]) is value
++            assert calls[-1] is value
++            assert pm.trace.root.indent == 0
++        assert len(calls) == 2
++        assert len(trace) == 4
++        assert "unprintable" in trace[0]
++        assert "unprintable" in trace[1]
++        assert "caf\u00e9 \u4e2d\u6587 \U0001f600\\ud800\\udfff" in trace[2]
++        for message in trace:
++            message.encode("utf-8")
++    finally:
++        undo()
++
++
+ @pytest.mark.parametrize("historic", [False, True])
+ def test_register_while_calling(
+     pm: PluginManager,
+diff --git a/testing/test_tracer.py b/testing/test_tracer.py
+index 13b2972..3686941 100644
+--- a/testing/test_tracer.py
++++ b/testing/test_tracer.py
+@@ -1,3 +1,5 @@
++import io
++
+ import pytest
+ 
+ from pluggy import HookimplMarker
+@@ -64,6 +66,87 @@ def test_readable_output_dictargs(rootlogger: TagTracer) -> None:
+     assert out2 == "test [test]\n    a: 1\n"
+ 
+ 
++def test_unicode_output(rootlogger: TagTracer) -> None:
++    buffer = io.BytesIO()
++    stream = io.TextIOWrapper(
++        buffer, encoding="utf-8", newline="\n", write_through=True
++    )
++    rootlogger.setwriter(stream.write)
++    log = rootlogger.get("test\ud800")
++    text = "caf\u00e9 \u4e2d\u6587 \U0001f600"
++
++    log(text + "\ud800", {"key\udfff": text + "\udfff"})
++
++    assert buffer.getvalue().decode("utf-8") == (
++        f"{text}\\ud800 [test\\ud800]\n    key\\udfff: {text}\\udfff\n"
++    )
++
++
++def test_unprintable_output(rootlogger: TagTracer) -> None:
++    class Unprintable:
++        def __str__(self) -> str:
++            raise ValueError("broken str")
++
++        def __repr__(self) -> str:
++            raise RuntimeError("broken repr")
++
++    value = Unprintable()
++    details = {value: value}
++    out: list[str] = []
++    processed = []
++    rootlogger.setwriter(out.append)
++    rootlogger.setprocessor("test", lambda tags, args: processed.append(args))
++
++    rootlogger.get("test")(value, [value], details)
++
++    assert out == [
++        "<unprintable Unprintable object> <unprintable list object> [test]\n"
++        "    <unprintable Unprintable object>: <unprintable Unprintable object>\n"
++    ]
++    assert processed[0][0] is value
++    assert processed[0][1][0] is value
++    assert processed[0][2] is details
++
++
++@pytest.mark.parametrize("exception", [KeyboardInterrupt, SystemExit, GeneratorExit])
++@pytest.mark.parametrize("in_container", [False, True])
++@pytest.mark.parametrize("in_details", [False, True])
++def test_formatting_interrupts(
++    rootlogger: TagTracer, exception, in_container: bool, in_details: bool
++) -> None:
++    error = exception()
++
++    class Interrupted:
++        def __str__(self) -> str:
++            raise error
++
++        def __repr__(self) -> str:
++            raise error
++
++    value: object = Interrupted()
++    if in_container:
++        value = [value]
++    if in_details:
++        value = {"value": value}
++    rootlogger.setwriter(lambda message: None)
++
++    with pytest.raises(exception) as excinfo:
++        rootlogger.get("test")(value)
++    assert excinfo.value is error
++
++
++def test_writer_failure(rootlogger: TagTracer) -> None:
++    error = OSError("writer failed")
++
++    def writer(message: str) -> None:
++        raise error
++
++    rootlogger.setwriter(writer)
++    with pytest.raises(OSError) as excinfo:
++        rootlogger.get("test")("message")
++    assert excinfo.value is error
++
++
+ def test_setprocessor(rootlogger: TagTracer) -> None:
+     log = rootlogger.get("1")
+     log2 = log.get("2")

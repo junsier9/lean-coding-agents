@@ -1,0 +1,132 @@
+diff --git a/src/cachetools/_descriptor.py b/src/cachetools/_descriptor.py
+index e85d8fc..d3cc9da 100644
+--- a/src/cachetools/_descriptor.py
++++ b/src/cachetools/_descriptor.py
+@@ -99,11 +99,14 @@ class _MethodDescriptor:
+             descriptor = self
+ 
+             # As in the previous function wrapper, the receiver is named self.
+-            @functools.wraps(self.__wrapped__)  # type: ignore
+             def unbound(self, *args, **kwargs):
+                 return descriptor.__get__(self)(*args, **kwargs)
+ 
+-            self.__unbound = unbound  # type: ignore
++            # A callable object keeps autospec from treating the receiver
++            # as an argument of the mocked instance method.
++            self.__unbound = functools.update_wrapper(
++                functools.partial(unbound), self.__wrapped__  # type: ignore
++            )
+         return self.__unbound
+ 
+ 
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 4bbf2dc..7efcac5 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -770,6 +770,61 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(Cached.get_info(other, 1), 10)
+         self.assertEqual(cached.get_info(1), 0)
+ 
++    def test_class_call_keyword_self(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                cached = Cached(Cache(2))
++                method = getattr(Cached, name)
++                self.assertEqual(method(self=cached, value=1), 0)
++                self.assertEqual(getattr(cached, name)(value=1), 0)
++                self.assertEqual(method(cached, value=2), 1)
++                self.assertEqual(getattr(cached, name)(value=2), 1)
++                self.assertEqual(cached.count, 2)
++
++    def test_class_call_keywords(self):
++        class CachedKeywords:
++            def __init__(self):
++                self.cache = Cache(2)
++
++            @cachedmethod(lambda self: self.cache)
++            def get(self, **kwargs):
++                return kwargs
++
++        cached = CachedKeywords()
++        self.assertEqual(CachedKeywords.get(self=cached, _proxy=1), {"_proxy": 1})
++
++    def test_class_call_invalid_arguments(self):
++        cached = Cached(Cache(2))
++        with self.assertRaises(TypeError):
++            Cached.get()
++        with self.assertRaises(TypeError):
++            Cached.get(cached)
++        with self.assertRaises(TypeError):
++            Cached.get(cached, 1, 2)
++        with self.assertRaises(TypeError):
++            Cached.get(cached, 1, self=cached)
++        self.assertEqual(cached.count, 0)
++        self.assertEqual(len(cached.cache), 0)
++
++    def test_class_call_error(self):
++        cached = Cached(Cache(2))
++        for _ in range(2):
++            with self.assertRaisesRegex(ValueError, "test error"):
++                Cached.get_cond_error(self=cached, _value=0)
++        self.assertEqual(cached.cond.wait_count, 2)
++        self.assertEqual(cached.cond.notify_count, 2)
++        self.assertEqual(len(cached.cache), 0)
++
+     def test_base_class_call(self):
+         cached = Unhashable(Cache(2))
+         self.assertEqual(Cached.get(cached, 1), 0)
+@@ -783,10 +838,15 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertIsNot(Cached.get, Cached.get_info)
+ 
+     def test_wrapped_method(self):
++        import inspect
++
+         cached = Cached(Cache(2))
+         self.assertIs(Cached.get.__wrapped__, cached.get.__wrapped__)
+         self.assertEqual(Cached.get.__name__, "get")
+         self.assertEqual(Cached.get.__qualname__, "Cached.get")
++        self.assertEqual(
++            inspect.signature(Cached.get), inspect.signature(Cached.get.__wrapped__)
++        )
+         self.assertEqual(Cached.get.__wrapped__(cached, 1), 0)
+         self.assertEqual(Cached.get.__wrapped__(cached, 1), 1)
+         self.assertEqual(len(cached.cache), 0)
+@@ -798,3 +858,28 @@ class UnboundMethodTest(unittest.TestCase):
+             warnings.simplefilter("always")
+             unittest.mock.create_autospec(Cached, instance=True)
+         self.assertEqual(len(w), 0)
++
++    def test_autospec_method_calls(self):
++        import unittest.mock
++
++        for instance in (False, True):
++            mock = unittest.mock.create_autospec(Cached, instance=instance)
++            cached = mock if instance else mock(Cache(2))
++            for name in (
++                "get",
++                "get_typed",
++                "get_info",
++                "get_lock",
++                "get_lock_info",
++                "get_cond",
++                "get_cond_info",
++                "get_lock_cond",
++                "get_lock_cond_info",
++            ):
++                with self.subTest(instance=instance, method=name):
++                    method = getattr(cached, name)
++                    method.return_value = 42
++                    self.assertEqual(method(1), 42)
++                    method.assert_called_once_with(1)
++                    self.assertEqual(method(value=2), 42)
++                    method.assert_called_with(value=2)

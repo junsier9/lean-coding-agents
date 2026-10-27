@@ -1,0 +1,86 @@
+diff --git a/src/click/_utils.py b/src/click/_utils.py
+index 05ee2e9..b7054b1 100644
+--- a/src/click/_utils.py
++++ b/src/click/_utils.py
+@@ -18,6 +18,15 @@ class Sentinel(enum.Enum):
+     def __repr__(self) -> str:
+         return f"{self.__class__.__name__}.{self.name}"
+ 
++    def __reduce_ex__(
++        self, protocol: int
++    ) -> tuple[t.Callable[..., Sentinel], tuple[type[Sentinel], str]]:
++        return getattr, (self.__class__, self.name)
++
++    def __deepcopy__(self, memo: dict[int, t.Any]) -> Sentinel:
++        # Keep identity on Python versions that deepcopy Enum values.
++        return self
++
+ 
+ UNSET: t.Literal[Sentinel.UNSET] = Sentinel.UNSET
+ """Sentinel used to indicate that a value is not set."""
+diff --git a/tests/test_utils/test_sentinel.py b/tests/test_utils/test_sentinel.py
+index 1dd5b15..fa568e0 100644
+--- a/tests/test_utils/test_sentinel.py
++++ b/tests/test_utils/test_sentinel.py
+@@ -1,6 +1,12 @@
++import copy
++import pickle
+ from decimal import Decimal
+ from fractions import Fraction
+ 
++import pytest
++
++import click
++from click._utils import Sentinel
+ from click._utils import UNSET
+ 
+ 
+@@ -50,3 +56,48 @@ def test_unset_sentinel():
+         assert value is not real_value
+ 
+     assert value not in real_values
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++@pytest.mark.parametrize("copier", [copy.copy, copy.deepcopy])
++def test_sentinel_copy(sentinel, copier):
++    assert copier(sentinel) is sentinel
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++@pytest.mark.parametrize("protocol", range(pickle.HIGHEST_PROTOCOL + 1))
++def test_sentinel_pickle(sentinel, protocol):
++    assert pickle.loads(pickle.dumps(sentinel, protocol=protocol)) is sentinel
++
++
++@pytest.mark.parametrize(
++    "round_trip",
++    [
++        pytest.param(copy.copy, id="copy"),
++        pytest.param(copy.deepcopy, id="deepcopy"),
++        pytest.param(lambda value: pickle.loads(pickle.dumps(value)), id="pickle"),
++    ],
++)
++@pytest.mark.parametrize(
++    ("attrs", "expected"),
++    [
++        ({}, None),
++        ({"is_flag": True}, False),
++        ({"is_flag": True, "multiple": True}, ()),
++        ({"default": "default"}, "default"),
++    ],
++)
++def test_option_round_trip(round_trip, attrs, expected):
++    option = click.Option(["--value"], **attrs)
++    restored = round_trip(option)
++
++    assert restored is not option
++    assert restored.name == option.name == "value"
++    assert restored.opts == ["--value"]
++    assert restored.default == option.default
++    assert restored.flag_value is UNSET
++
++    command = click.Command("cli", params=[restored])
++
++    with command.make_context("cli", []) as ctx:
++        assert ctx.params == {"value": expected}

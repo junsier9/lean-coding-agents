@@ -1,0 +1,71 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 4d4853a..a953bb6 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -1329,8 +1329,9 @@ def pull_all_with(
+ 
+ def pull_at(array: t.List[T], *indexes: int) -> t.List[T]:
+     """
+-    Removes elements from `array` corresponding to the specified indexes and returns a list of the
+-    removed elements. Indexes may be specified as a list of indexes or as individual arguments.
++    Removes elements from `array` corresponding to the specified indexes. Indexes may be specified
++    as a list of indexes or as individual arguments. Negative indexes count from the end of the
++    original array. Duplicate and out-of-range indexes are ignored.
+ 
+     Args:
+         array: List to pull from.
+@@ -1349,7 +1350,12 @@ def pull_at(array: t.List[T], *indexes: int) -> t.List[T]:
+ 
+     .. versionadded:: 1.1.0
+     """
+-    flat_indexes = flatten(indexes)
++    length = len(array)
++    flat_indexes = {
++        index if index >= 0 else length + index
++        for index in flatten(indexes)
++        if -length <= index < length
++    }
+     for index in sorted(flat_indexes, reverse=True):
+         del array[index]
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index aea4d50..0dc1061 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -480,10 +480,35 @@ def test_pull_all_with(case, values, iteratee, expected):
+         (([1, 2, 3, 1, 2, 3], [2, 3]), [1, 2, 2, 3]),
+         (([1, 2, 3, 1, 2, 3], [3, 2]), [1, 2, 2, 3]),
+         (([1, 2, 3, 1, 2, 3], 3, 2), [1, 2, 2, 3]),
++        (([1, 2, 3],), [1, 2, 3]),
++        (([],), []),
++        (([], 0, -1), []),
++        (([1, 2, 3], 3), [1, 2, 3]),
++        (([1, 2, 3], -4), [1, 2, 3]),
++        (([1, 2, 3], 3, 1, -4), [1, 3]),
++        (([1, 2, 3], 1, 1), [1, 3]),
++        (([1, 2, 3], 2, 2), [1, 2]),
++        (([1, 1, 1], 1, 1), [1, 1]),
++        (([1, 2, 3], 2, 0, 1), []),
++        (([1, 2, 3], -1), [1, 2]),
++        (([1, 2, 3], -3), [2, 3]),
++        (([1, 2, 3], -1, -1), [1, 2]),
++        (([1, 2, 3, 4], -1, -2), [1, 2]),
++        (([1, 2, 3, 4], 1, -1), [1, 3]),
++        (([1, 2, 3, 4], 0, -4, 3, -1), [2, 3]),
++        (([1, 2, 3, 4], [1, 1], 1, [-1, 3, 4, -5]), [1, 3]),
+     ],
+ )
+ def test_pull_at(case, expected):
+-    assert _.pull_at(*case) == expected
++    result = _.pull_at(*case)
++    assert result == expected
++    assert result is case[0]
++
++
++@parametrize("index", [None, "1", 1.5])
++def test_pull_at_invalid_index(index):
++    with pytest.raises(TypeError):
++        _.pull_at([1, 2, 3], index)
+ 
+ 
+ @parametrize(

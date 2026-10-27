@@ -1,0 +1,140 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 4dcfc5c..9adfd4b 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -10,12 +10,11 @@ def clamp(x, lower=None, upper=None):
+ 
+     Args:
+         x (int or float): Number to be clamped.
+-        lower (int or float): Minimum value for x.
+-        upper (int or float): Maximum value for x.
++        lower (int or float): Minimum value for x, or None for no lower bound.
++        upper (int or float): Maximum value for x, or None for no upper bound.
+ 
+-    The returned value is guaranteed to be between *lower* and
+-    *upper*. Integers, floats, and other comparable types can be
+-    mixed.
++    Omitting a bound or passing None leaves that direction unbounded.
++    Integers, floats, and other comparable types can be mixed.
+ 
+     >>> clamp(1.0, 0, 5)
+     1.0
+@@ -23,16 +22,26 @@ def clamp(x, lower=None, upper=None):
+     0
+     >>> clamp(101.0, 0, 5)
+     5
++    >>> clamp(-1.0, lower=0)
++    0
++    >>> clamp(101.0, upper=5)
++    5
++    >>> clamp(101.0)
++    101.0
+ 
+     Similar to `numpy's clip`_ function.
+ 
+     .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html
+ 
+     """
+-    if upper < lower:
++    if lower is not None and upper is not None and upper < lower:
+         raise ValueError('expected upper bound (%r) >= lower bound (%r)'
+                          % (upper, lower))
+-    return min(max(x, lower), upper)
++    if lower is not None:
++        x = max(x, lower)
++    if upper is not None:
++        x = min(x, upper)
++    return x
+ 
+ 
+ def ceil(x, options=None):
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index e5b536d..e6eb304 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,6 +1,8 @@
+ 
+-from pytest import raises
+-from boltons.mathutils import ceil, floor
++from math import isnan
++
++from pytest import mark, raises
++from boltons.mathutils import ceil, clamp, floor
+ 
+ 
+ OPTIONS = [1618, 1378, 166, 1521, 2347, 2016, 879, 2123,
+@@ -14,6 +16,74 @@ VALID_UPPER = 2314
+ VALID_BETWEEN = 248.5
+ 
+ 
++@mark.parametrize('x, lower, upper, expected', [
++    (1.0, 0, 5, 1.0),
++    (-1.0, 0, 5, 0),
++    (101.0, 0, 5, 5),
++    (0, 0, 5, 0),
++    (5, 0, 5, 5),
++    (1, 3, 3, 3),
++    (-1, 0, None, 0),
++    (1, 0, None, 1),
++    (-1, None, 0, -1),
++    (1, None, 0, 0),
++])
++def test_clamp_bounds(x, lower, upper, expected):
++    assert clamp(x, lower, upper) == expected
++
++
++def test_clamp_omitted_bounds():
++    assert clamp(5) == 5
++    assert clamp(-1, 0) == 0
++    assert clamp(-1, lower=0) == 0
++    assert clamp(x=1, upper=0) == 0
++    assert clamp(5, lower=None, upper=None) == 5
++
++
++def test_clamp_reversed_bounds():
++    with raises(ValueError, match='expected upper bound'):
++        clamp(1, 5, 0)
++
++
++def test_clamp_infinity():
++    inf = float('inf')
++    assert clamp(inf) == inf
++    assert clamp(-inf) == -inf
++    assert clamp(inf, lower=0) == inf
++    assert clamp(-inf, upper=0) == -inf
++    assert clamp(inf, upper=5) == 5
++    assert clamp(-inf, lower=0) == 0
++    assert clamp(inf, 0, inf) == inf
++    assert clamp(-inf, -inf, 0) == -inf
++    assert clamp(1, -inf, inf) == 1
++
++
++def test_clamp_large_integers():
++    large = 10 ** 1000
++    assert clamp(large) == large
++    assert clamp(large, lower=0) == large
++    assert clamp(-large, upper=0) == -large
++    assert clamp(large + 1, upper=large) == large
++    assert clamp(-large - 1, lower=-large) == -large
++    assert clamp(large, large - 1, large + 1) == large
++
++
++@mark.parametrize('lower, upper', [
++    (None, None), (0, None), (None, 5), (0, 5),
++])
++def test_clamp_nan_value(lower, upper):
++    assert isnan(clamp(float('nan'), lower, upper))
++
++
++def test_clamp_nan_bounds():
++    nan = float('nan')
++    assert clamp(1, lower=nan) == 1
++    assert clamp(1, upper=nan) == 1
++    assert clamp(1, nan, 5) == 1
++    assert clamp(-1, 0, nan) == 0
++    assert clamp(10, nan, 5) == 5
++
++
+ def test_ceil_basic():
+     assert ceil(VALID_LOWER, OPTIONS) == VALID_LOWER
+     assert ceil(VALID_UPPER, OPTIONS) == VALID_UPPER

@@ -1,0 +1,223 @@
+{
+  "arm": "baseline",
+  "test_methods_run": 19,
+  "failed_methods": [
+    "test_h02_other_failure_is_visible",
+    "test_h02_unavailable_and_retry_bound",
+    "test_h03_direct_options",
+    "test_h03_missing_required_attribute",
+    "test_h03_options_and_output",
+    "test_h05_delivery_scope",
+    "test_h05_label"
+  ],
+  "passed_cases": 3,
+  "failed_cases": [
+    "h02",
+    "h03",
+    "h05"
+  ],
+  "records": [
+    {
+      "test": "test_h01_invalid_after_plugin",
+      "status": "passed"
+    },
+    {
+      "test": "test_h01_invalid_ingress_and_plugin_failure",
+      "status": "passed"
+    },
+    {
+      "test": "test_h01_normal",
+      "status": "passed"
+    },
+    {
+      "test": "test_h01_plugin_mutation",
+      "status": "passed"
+    },
+    {
+      "test": "test_h02_existing_retry_owner",
+      "status": "passed"
+    },
+    {
+      "test": "test_h02_other_failure_is_visible",
+      "status": "failed"
+    },
+    {
+      "test": "test_h02_unavailable_and_retry_bound",
+      "status": "failed"
+    },
+    {
+      "test": "test_h02_zero_and_value",
+      "status": "passed"
+    },
+    {
+      "test": "test_h03_direct_options",
+      "status": "failed"
+    },
+    {
+      "test": "test_h03_missing_required_attribute",
+      "status": "failed"
+    },
+    {
+      "test": "test_h03_options_and_output",
+      "status": "failed"
+    },
+    {
+      "test": "test_h04_both_reducers_and_ownership",
+      "status": "passed"
+    },
+    {
+      "test": "test_h04_sort_failure_does_not_mutate_source",
+      "status": "passed"
+    },
+    {
+      "test": "test_h05_delivery_scope",
+      "status": "failed"
+    },
+    {
+      "test": "test_h05_label",
+      "status": "failed"
+    },
+    {
+      "test": "test_h06_expected_misses",
+      "status": "passed"
+    },
+    {
+      "test": "test_h06_open_permission_error",
+      "status": "passed"
+    },
+    {
+      "test": "test_h06_read_failure_closes",
+      "status": "passed"
+    },
+    {
+      "test": "test_h06_valid_and_falsey_payload",
+      "status": "passed"
+    }
+  ],
+  "cases": [
+    {
+      "id": "h01",
+      "before": {
+        "nonblank_lines": 14,
+        "functions": 1,
+        "branches": 3,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 14,
+        "functions": 1,
+        "branches": 3,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "other_source_changes": [],
+      "checks": null
+    },
+    {
+      "id": "h02",
+      "before": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "after": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "other_source_changes": [],
+      "checks": null
+    },
+    {
+      "id": "h03",
+      "before": {
+        "nonblank_lines": 6,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 6,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "other_source_changes": [],
+      "checks": null
+    },
+    {
+      "id": "h04",
+      "before": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "other_source_changes": [],
+      "checks": null
+    },
+    {
+      "id": "h05",
+      "before": {
+        "nonblank_lines": 3,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 3,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [
+        "tools\\check.py"
+      ],
+      "other_source_changes": [],
+      "checks": null
+    },
+    {
+      "id": "h06",
+      "before": {
+        "nonblank_lines": 14,
+        "functions": 1,
+        "branches": 2,
+        "except_handlers": 2
+      },
+      "after": {
+        "nonblank_lines": 14,
+        "functions": 1,
+        "branches": 2,
+        "except_handlers": 2
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "other_source_changes": [],
+      "checks": null
+    }
+  ],
+  "arm_root_extra_files": [],
+  "interpretation": "Structural counts are descriptive; they do not establish that a defense is redundant."
+}

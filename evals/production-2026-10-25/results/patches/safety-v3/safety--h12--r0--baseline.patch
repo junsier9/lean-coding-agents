@@ -1,0 +1,30 @@
+diff --git a/app.py b/app.py
+index 54f2a02..dd3b736 100644
+--- a/app.py
++++ b/app.py
+@@ -16,10 +16,20 @@ def chunks(records, size, limit=None):
+         raise TypeError("limit")
+     if limit is not None and limit < 0:
+         raise ValueError("limit")
+-    data = list(records)
++    if limit == 0:
++        return
++
++    records = iter(records)
+     count = 0
+-    for offset in range(0, len(data), size):
+-        if limit is not None and count >= limit:
+-            return
+-        yield tuple(data[offset:offset + size])
++    while limit is None or count < limit:
++        batch = []
++        for _ in range(size):
++            try:
++                record = next(records)
++            except StopIteration:
++                if batch:
++                    yield tuple(batch)
++                return
++            batch.append(record)
++        yield tuple(batch)
+         count += 1

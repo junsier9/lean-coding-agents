@@ -1,0 +1,95 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 5a7bde2..24330f0 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.0
+ 
+ Unreleased
+ 
++-   Subcommands inherit the ``show_default`` setting from the parent
++    context unless they explicitly override it.
+ -   Drop support for Python 2 and 3.5.
+ -   Adds a repr to Command, showing the command name for friendlier
+     debugging. :issue:`1267`, :pr:`1295`
+diff --git a/src/click/core.py b/src/click/core.py
+index e62059e..f4a3ad7 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -188,6 +188,10 @@ class Context:
+     .. versionadded:: 7.1
+        Added the `show_default` parameter.
+ 
++    .. versionchanged:: 8.0
++       The `show_default` parameter defaults to the value from the
++       parent context.
++
+     :param command: the command class for this context.
+     :param parent: the parent context.
+     :param info_name: the info name for this invocation.  Generally this
+@@ -243,8 +247,10 @@ class Context:
+                   default not the case.  This for instance would affect
+                   help output.
+     :param show_default: if True, shows defaults for all options.
+-                    Even if an option is later created with show_default=False,
+-                    this command-level setting overrides it.
++                         The default is to inherit from the parent context.
++                         Even if an option is created with
++                         ``show_default=False``, this command-level
++                         setting overrides it.
+     """
+ 
+     #: The formatter class to create with :meth:`make_formatter`.
+@@ -398,6 +404,9 @@ class Context:
+         #: Controls if styling output is wanted or not.
+         self.color = color
+ 
++        if show_default is None and parent is not None:
++            show_default = parent.show_default
++
+         self.show_default = show_default
+ 
+         self._close_callbacks = []
+diff --git a/tests/test_context.py b/tests/test_context.py
+index c1be8f3..1de3458 100644
+--- a/tests/test_context.py
++++ b/tests/test_context.py
+@@ -6,6 +6,39 @@ import click
+ from click.core import ParameterSource
+ 
+ 
++@pytest.mark.parametrize(
++    "parent_show_default, child_show_default, expected",
++    [
++        (None, None, False),
++        (False, None, False),
++        (True, None, True),
++        (True, False, False),
++        (False, True, True),
++    ],
++)
++@pytest.mark.parametrize("args", [["sub", "--help"], ["sub", "cmd", "--help"]])
++def test_show_default_inheritance(
++    runner, parent_show_default, child_show_default, expected, args
++):
++    @click.group(context_settings={"show_default": parent_show_default})
++    def cli():
++        pass
++
++    @cli.group(context_settings={"show_default": child_show_default})
++    @click.option("--value", default="example")
++    def sub(value):
++        pass
++
++    @sub.command()
++    @click.option("--value", default="example")
++    def cmd(value):
++        pass
++
++    result = runner.invoke(cli, args)
++    assert result.exit_code == 0
++    assert ("[default: example]" in result.output) is expected
++
++
+ def test_ensure_context_objects(runner):
+     class Foo:
+         def __init__(self):

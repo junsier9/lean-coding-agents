@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "phase": "pilot",
+  "task_count": 10,
+  "bootstrap": {
+    "unit": "paired_complete_task_cluster",
+    "draws": 20000,
+    "seed": 20261024,
+    "repeats_per_arm": 3,
+    "task_ids_in_sampling_order": [
+      "b-06-click-2417",
+      "b-12-itsdangerous-296",
+      "b-14-itsdangerous-154",
+      "b-15-itsdangerous-133",
+      "b-16-pluggy-545",
+      "b-32-click-994",
+      "boltons-404",
+      "boltons-474",
+      "mi-1193",
+      "mi-1305"
+    ],
+    "both_arms_and_all_repeats_kept_together": true,
+    "undefined_draws_dropped": false,
+    "method": "percentile; inverted empirical CDF; undefined draws invalidate CI"
+  },
+  "integrity": {
+    "ok": true,
+    "structure_ok": true,
+    "input_record_count": 298,
+    "selected_record_count": 60,
+    "other_phase_record_counts": {
+      "formal": 120,
+      "replication": 118
+    },
+    "task_count": 10,
+    "complete_task_count": 10,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 60,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "observed_totals": {
+    "baseline": {
+      "record_count": 30,
+      "accepted": 30,
+      "completed": 30,
+      "unfinished": 0,
+      "rejected": 0,
+      "reported_token_total": 12610000.0,
+      "reported_token_count": 30,
+      "reported_token_total_is_partial": false,
+      "exact_usage_count": 30,
+      "reported_wall_seconds": 5995.692,
+      "reported_wall_count": 30,
+      "reported_wall_total_is_partial": false
+    },
+    "with-skill": {
+      "record_count": 30,
+      "accepted": 30,
+      "completed": 30,
+      "unfinished": 0,
+      "rejected": 0,
+      "reported_token_total": 10627970.0,
+      "reported_token_count": 30,
+      "reported_token_total_is_partial": false,
+      "exact_usage_count": 30,
+      "reported_wall_seconds": 5750.0,
+      "reported_wall_count": 30,
+      "reported_wall_total_is_partial": false
+    }
+  },
+  "quality": {
+    "available": true,
+    "baseline_success_rate": 1.0,
+    "skill_success_rate": 1.0,
+    "success_rate_difference_skill_minus_baseline": 0.0,
+    "observed_gate_pass": true,
+    "success_rate_difference_ci95": {
+      "level": 0.95,
+      "quantile_method": "inverted_cdf",
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "negative_infinite_draws": 0,
+      "finite_draws": 20000,
+      "draws": 20000,
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "available": true
+    },
+    "degraded_tasks": [],
+    "worsened_repeat_pairs": [],
+    "interpretation": "Observed batch gate only; not a universal safety or noninferiority guarantee.",
+    "degraded_task_count": 0,
+    "worsened_repeat_pair_count": 0
+  },
+  "metrics": {
+    "token": {
+      "available": true,
+      "ratio": 0.8428207771609835,
+      "ratio_status": "finite",
+      "gain": 0.15717922283901653,
+      "ratio_ci95": {
+        "level": 0.95,
+        "quantile_method": "inverted_cdf",
+        "undefined_draws": 0,
+        "positive_infinite_draws": 0,
+        "negative_infinite_draws": 0,
+        "finite_draws": 20000,
+        "draws": 20000,
+        "interval": [
+          0.7744066414399571,
+          0.9186382467935067
+        ],
+        "available": true
+      },
+      "gain_ci95": [
+        0.0813617532064933,
+        0.22559335856004292
+      ],
+      "upper_one_sided_97_5": 0.9186382467935067,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": true,
+      "batch_criterion_met": false,
+      "cost_total": {
+        "baseline": 12610000.0,
+        "with-skill": 10627970.0
+      },
+      "accepted_total": {
+        "baseline": 30,
+        "with-skill": 30
+      },
+      "cost_per_accepted": {
+        "baseline": 420333.3333333333,
+        "with-skill": 354265.6666666667
+      }
+    },
+    "time": {
+      "available": true,
+      "ratio": 0.959021911065478,
+      "ratio_status": "finite",
+      "gain": 0.04097808893452204,
+      "ratio_ci95": {
+        "level": 0.95,
+        "quantile_method": "inverted_cdf",
+        "undefined_draws": 0,
+        "positive_infinite_draws": 0,
+        "negative_infinite_draws": 0,
+        "finite_draws": 20000,
+        "draws": 20000,
+        "interval": [
+          0.886101796312647,
+          1.0376685210260828
+        ],
+        "available": true
+      },
+      "gain_ci95": [
+        -0.03766852102608276,
+        0.11389820368735304
+      ],
+      "upper_one_sided_97_5": 1.0376685210260828,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": true,
+      "batch_criterion_met": false,
+      "cost_total": {
+        "baseline": 5995.692000000001,
+        "with-skill": 5749.999999999999
+      },
+      "accepted_total": {
+        "baseline": 30,
+        "with-skill": 30
+      },
+      "cost_per_accepted": {
+        "baseline": 199.85640000000004,
+        "with-skill": 191.66666666666663
+      }
+    }
+  },
+  "minimum_confirmatory_task_count_satisfied": false,
+  "pilot_planned_task_count_match": "Parent controller must check the frozen pilot-derived batch size.",
+  "final_stability_claim": "Not decided here; require same metric and quality gate in both formal and replication.",
+  "interpretation": [
+    "All failed and unfinished attempts contribute recorded costs; no task is removed for poor outcomes.",
+    "Only the selected phase is analyzed. Duplicate/incomplete clusters block batch evidence.",
+    "Missing usage blocks token evidence independently; valid wall-time evidence remains reportable.",
+    "Quality intervals are descriptive; the observed gate is not a statistical no-regression guarantee.",
+    "Percentile coverage and pilot-based power are approximations on this curated task corpus."
+  ]
+}

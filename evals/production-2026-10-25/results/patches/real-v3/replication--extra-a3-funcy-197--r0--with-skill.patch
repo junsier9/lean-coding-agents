@@ -1,0 +1,108 @@
+diff --git a/funcy/objects.py b/funcy/objects.py
+index d0ddefd..385bd75 100644
+--- a/funcy/objects.py
++++ b/funcy/objects.py
+@@ -56,10 +56,10 @@ def wrap_prop(ctx):
+                     with ctx:
+                         return prop.__set__(name, value)
+ 
+-            if hasattr(prop, '__del__'):
+-                def __del__(self, name):
++            if hasattr(prop, '__delete__'):
++                def __delete__(self, instance):
+                     with ctx:
+-                        return prop.__del__(name)
++                        return prop.__delete__(instance)
+ 
+         return WrapperProp()
+     return decorator
+diff --git a/tests/test_objects.py b/tests/test_objects.py
+index 606690c..5d310b1 100644
+--- a/tests/test_objects.py
++++ b/tests/test_objects.py
+@@ -86,7 +86,7 @@ def test_wrap_prop():
+         @wrap_prop(Manager('cp'))
+         @cached_property
+         def cached_prop(self):
+-            return 1
++            return object()
+ 
+     a = A()
+     assert a.prop and calls == ['p']
+@@ -94,6 +94,12 @@ def test_wrap_prop():
+     assert a.cached_prop and calls == ['p', 'p', 'cp']
+     assert a.cached_prop and calls == ['p', 'p', 'cp']
+ 
++    cached = a.cached_prop
++    del a.cached_prop
++    assert calls == ['p', 'p', 'cp']
++    assert a.cached_prop is not cached
++    assert calls == ['p', 'p', 'cp', 'cp']
++
+     # Wrap __set__ for data props
+     a = A()
+     calls[:] = []
+@@ -106,6 +112,63 @@ def test_wrap_prop():
+     assert calls == ['p']
+ 
+ 
++def test_wrap_prop_delete():
++    calls = []
++
++    class Manager:
++        def __enter__(self):
++            calls.append('enter')
++
++        def __exit__(self, exc_type, exc_value, traceback):
++            calls.append(('exit', exc_value))
++
++    class A:
++        def __init__(self):
++            self.value = 1
++
++        @property
++        def prop(self):
++            return self.value
++
++        @prop.deleter
++        def prop(self):
++            calls.append('delete')
++            del self.value
++
++        prop = wrap_prop(Manager())(prop)
++
++    a = A()
++    del a.prop
++    assert not hasattr(a, 'value')
++    assert calls == ['enter', 'delete', ('exit', None)]
++
++
++@pytest.mark.parametrize('has_deleter', [False, True])
++def test_wrap_prop_delete_error(has_deleter):
++    calls = []
++    error = RuntimeError('delete failed')
++
++    class Manager:
++        def __enter__(self):
++            calls.append('enter')
++
++        def __exit__(self, exc_type, exc_value, traceback):
++            calls.append(('exit', exc_value))
++
++    class A:
++        def delete_prop(self):
++            raise error
++
++        prop = wrap_prop(Manager())(property(
++            lambda self: 1, fdel=delete_prop if has_deleter else None))
++
++    with pytest.raises(RuntimeError if has_deleter else AttributeError) as exc:
++        del A().prop
++    assert calls == ['enter', ('exit', exc.value)]
++    if has_deleter:
++        assert exc.value is error
++
++
+ ### Monkey tests
+ 
+ def test_monkey():

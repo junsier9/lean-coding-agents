@@ -1,0 +1,63 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index d985d12..1c06e55 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -948,6 +948,8 @@ def invoke_map(
+ 
+     .. versionadded:: 4.0.0
+     """
++    if callable(path):
++        return map_(collection, lambda item: path(item, *args, **kwargs))
+     return map_(collection, lambda item: pyd.invoke(item, path, *args, **kwargs))
+ 
+ 
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 8cb8822..8236341 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -284,6 +284,20 @@ def test_includes(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([1, 2, 3], lambda value: value * 2), [2, 4, 6]),
++        (([1, 2, 3], lambda value, offset: value + offset, 4), [5, 6, 7]),
++        ((["10", "11"], int, 2), [2, 3]),
++        ((["abc", "def"], str.upper), ["ABC", "DEF"]),
++        (([["a", "b"], ["c", "d"]], "-".join), ["a-b", "c-d"]),
++        (([1, 2, 3], helpers.Filter(lambda value: value > 1)), [False, True, True]),
++        (({"a": 1, "b": 2}, lambda value, offset: value + offset, 4), [5, 6]),
++        (
++            ((value for value in [1, 2]), lambda value, *args: (value, args), 3, 4),
++            [(1, (3, 4)), (2, (3, 4))],
++        ),
++        (([], lambda value: value), []),
++        (([{}, {}], "missing"), [None, None]),
++        (([[1, 1], [1, 2]], "count", 1), [2, 1]),
+         (([{"a": {"b": 2}}, {"a": {"c": 3}}], "a.items"), [{"b": 2}.items(), {"c": 3}.items()]),
+         (
+             ([{"a": {"b": {"c": 2}}}, {"a": {"b": {"c": 3}}}], "a.b.items"),
+@@ -295,6 +309,24 @@ def test_invoke_map(case, expected):
+     assert _.invoke_map(*case) == expected
+ 
+ 
++@parametrize("path", [str.split, "split"])
++def test_invoke_map_arguments(path):
++    assert _.invoke_map(["a-b-c", "d-e-f"], path, "-", maxsplit=1) == [
++        ["a", "b-c"],
++        ["d", "e-f"],
++    ]
++
++
++def test_invoke_map_callable_error():
++    with pytest.raises(ZeroDivisionError):
++        _.invoke_map([1, 0, 2], lambda value: 1 / value)
++
++
++def test_invoke_map_callable_extra_argument_error():
++    with pytest.raises(TypeError):
++        _.invoke_map([1], lambda value: value, 2)
++
++
+ @parametrize(
+     "case,expected",
+     [

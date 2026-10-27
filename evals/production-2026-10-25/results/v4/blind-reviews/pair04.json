@@ -1,0 +1,1197 @@
+{
+  "pair": "04",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "xor_by 或 xor_with 处理三个及以上数组时，不再一致使用传入的比较规则，导致相同比较键的元素残留。请修复多数组的对称差结果。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair04.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B"
+    ],
+    "rubric": [
+      "保留题面与现有源码的公开调用和错误路径",
+      "guard/copy/wrapper/retry 须有当前需求",
+      "不按源码行数或测试数量评分",
+      "以源码与隔离探针区分确认行为、问题及未知边界"
+    ],
+    "not_accessed_for_this_review": [
+      "私有标签和分组",
+      "成本或计时",
+      "skill 正文",
+      "隐藏 grader",
+      "参考修复或固定生产解",
+      "其他生产结果或第一轮揭盲",
+      "原生模型记录"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false
+  },
+  "comparison": "A/B 的目标生产文件 src/pydash/arrays.py 字节相同。两侧都在递归处理剩余数组时继续传入原 iteratee/comparator，修复多数组比较规则丢失；在所列正常、公开调用、可选结果、错误和所有权路径中行为相同，未发现本次引入的确认缺陷或无当前需求机制。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整目标生产文件字节比较",
+    "equal": true
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "04-A-rule-retention",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2555,
+          "title": "递归处理剩余数组时保留当前比较规则，有直接题面依据",
+          "evidence": "xor_by 递归调用自身并以 iteratee 关键字传入已解析规则；xor_with 保留递归调用并新增 comparator=comp。这样第三、第四数组继续按相同键/比较规则抵消，而非降级为对象本身相等。所需变化直接对应题面失效路径，没有额外 wrapper、复制、重试、缓存或通用参数归一化。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2564
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2612
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2621
+            }
+          ],
+          "probe_ids": [
+            "callable_iteratee_three_four_arrays_positional_keyword",
+            "comparator_three_four_arrays_positional_keyword",
+            "property_path_shorthand_and_unhashable_keys",
+            "parity_empty_arrays_original_representative"
+          ]
+        },
+        {
+          "id": "04-A-public-options",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2553,
+          "title": "位置/关键字规则、默认或 None 比较、可选回调结果保持可用",
+          "evidence": "保留 parse_iteratee 的公开解析方式，支持位置或关键字 callable、属性字符串及受支持的关键字单元素列表简写。未提供规则或显式 None 仍走 identity/is_equal；键函数返回 None、返回不可哈希 list、比较器返回真值 list/假值空 list 均未被新 guard 拒绝或强制转换。普通 xor 与旧双数组（含既有非对称 <= 用例）的结果保持。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2610
+            }
+          ],
+          "probe_ids": [
+            "property_path_shorthand_and_unhashable_keys",
+            "omitted_none_default_comparison_and_plain_xor",
+            "two_array_documented_and_asymmetric_contract",
+            "none_iteratee_result_truthy_comparator_result"
+          ]
+        },
+        {
+          "id": "04-A-ownership",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2558,
+          "title": "输入数组不被改写，结果继续引用原输入的幸存对象",
+          "evidence": "探针核对输入结构与深拷贝快照相同、返回 list 不是输入 list、本次幸存三个对象分别与原数组中的对象为同一引用。回调收到的也均是原输入对象。修改返回 list 的成员不改动输入 list；没有为内部已建立的数据路径新增防御拷贝。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2615
+            }
+          ],
+          "probe_ids": [
+            "input_preservation_result_identity_callback_objects",
+            "parity_empty_arrays_original_representative"
+          ]
+        },
+        {
+          "id": "04-A-failure-propagation",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2564,
+          "title": "后续数组中的规则异常正常传播，未伪造空结果或吞错",
+          "evidence": "只在遇到第三数组元素时抛 RuntimeError 的 iteratee/comparator，现在确实在后续比较阶段运行并传播同一异常对象；抛错点只触发一次，输入仍未变化。base 丢失回调的路径原本不会触发该错误；这次增加的传播符合持续使用传入比较规则，而非无需求的额外校验。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+              "line": 2621
+            }
+          ],
+          "probe_ids": [
+            "later_callback_exception_identity_no_retry_no_mutation"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "04-A-single-array-positional-rule",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2550,
+          "title": "原有单数组加位置回调路径仍抛 IndexError，需求范围需明确",
+          "evidence": "base/A/B 的 xor_by(values,rule) 与 xor_with(values,rule) 都在 parse_iteratee 消费唯一额外参数后访问 lists[0] 而抛 IndexError。相同规则作为关键字且没有其他数组时三份都返回浅拷贝。此行为未被本次新增；题面仅明确三个及以上数组，不能把它记作一侧回归或已修复的完整公开 API。",
+          "defect_claimed": "已确认继承行为；是否纳入本任务修复范围未定义，不作为本次新增缺陷。",
+          "original_source": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base\\src\\pydash\\arrays.py",
+            "line": 2558
+          },
+          "probe_ids": [
+            "inherited_edge_behavior_observation"
+          ]
+        },
+        {
+          "id": "04-A-within-array-equivalent-objects",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\A\\src\\pydash\\arrays.py",
+          "line": 2556,
+          "title": "同一数组内内容不同但比较键相同的对象仍可同时保留",
+          "evidence": "base/A/B 均对首数组 [{id:1,tag:a},{id:1,tag:b}]、第二数组 [{id:2}]、第三空数组保留两个 id=1 对象。当前代码沿用 uniq 的原对象相等去重，而不是 uniq_by/uniq_with。题面明确的跨数组比较规则丢失已修复；是否要同步重定义单数组内按比较键去重并不明确，且旧双数组也有相同行为。",
+          "defect_claimed": "记录为继承的 API 语义范围，未无依据要求变更或据此区分两侧。",
+          "original_source": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base\\src\\pydash\\arrays.py",
+            "line": 2556
+          },
+          "probe_ids": [
+            "inherited_edge_behavior_observation"
+          ]
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "04-B-rule-retention",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2555,
+          "title": "递归处理剩余数组时保留当前比较规则，有直接题面依据",
+          "evidence": "xor_by 递归调用自身并以 iteratee 关键字传入已解析规则；xor_with 保留递归调用并新增 comparator=comp。这样第三、第四数组继续按相同键/比较规则抵消，而非降级为对象本身相等。所需变化直接对应题面失效路径，没有额外 wrapper、复制、重试、缓存或通用参数归一化。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2564
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2612
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2621
+            }
+          ],
+          "probe_ids": [
+            "callable_iteratee_three_four_arrays_positional_keyword",
+            "comparator_three_four_arrays_positional_keyword",
+            "property_path_shorthand_and_unhashable_keys",
+            "parity_empty_arrays_original_representative"
+          ]
+        },
+        {
+          "id": "04-B-public-options",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2553,
+          "title": "位置/关键字规则、默认或 None 比较、可选回调结果保持可用",
+          "evidence": "保留 parse_iteratee 的公开解析方式，支持位置或关键字 callable、属性字符串及受支持的关键字单元素列表简写。未提供规则或显式 None 仍走 identity/is_equal；键函数返回 None、返回不可哈希 list、比较器返回真值 list/假值空 list 均未被新 guard 拒绝或强制转换。普通 xor 与旧双数组（含既有非对称 <= 用例）的结果保持。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2610
+            }
+          ],
+          "probe_ids": [
+            "property_path_shorthand_and_unhashable_keys",
+            "omitted_none_default_comparison_and_plain_xor",
+            "two_array_documented_and_asymmetric_contract",
+            "none_iteratee_result_truthy_comparator_result"
+          ]
+        },
+        {
+          "id": "04-B-ownership",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2558,
+          "title": "输入数组不被改写，结果继续引用原输入的幸存对象",
+          "evidence": "探针核对输入结构与深拷贝快照相同、返回 list 不是输入 list、本次幸存三个对象分别与原数组中的对象为同一引用。回调收到的也均是原输入对象。修改返回 list 的成员不改动输入 list；没有为内部已建立的数据路径新增防御拷贝。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2615
+            }
+          ],
+          "probe_ids": [
+            "input_preservation_result_identity_callback_objects",
+            "parity_empty_arrays_original_representative"
+          ]
+        },
+        {
+          "id": "04-B-failure-propagation",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2564,
+          "title": "后续数组中的规则异常正常传播，未伪造空结果或吞错",
+          "evidence": "只在遇到第三数组元素时抛 RuntimeError 的 iteratee/comparator，现在确实在后续比较阶段运行并传播同一异常对象；抛错点只触发一次，输入仍未变化。base 丢失回调的路径原本不会触发该错误；这次增加的传播符合持续使用传入比较规则，而非无需求的额外校验。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+              "line": 2621
+            }
+          ],
+          "probe_ids": [
+            "later_callback_exception_identity_no_retry_no_mutation"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "04-B-single-array-positional-rule",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2550,
+          "title": "原有单数组加位置回调路径仍抛 IndexError，需求范围需明确",
+          "evidence": "base/A/B 的 xor_by(values,rule) 与 xor_with(values,rule) 都在 parse_iteratee 消费唯一额外参数后访问 lists[0] 而抛 IndexError。相同规则作为关键字且没有其他数组时三份都返回浅拷贝。此行为未被本次新增；题面仅明确三个及以上数组，不能把它记作一侧回归或已修复的完整公开 API。",
+          "defect_claimed": "已确认继承行为；是否纳入本任务修复范围未定义，不作为本次新增缺陷。",
+          "original_source": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base\\src\\pydash\\arrays.py",
+            "line": 2558
+          },
+          "probe_ids": [
+            "inherited_edge_behavior_observation"
+          ]
+        },
+        {
+          "id": "04-B-within-array-equivalent-objects",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\B\\src\\pydash\\arrays.py",
+          "line": 2556,
+          "title": "同一数组内内容不同但比较键相同的对象仍可同时保留",
+          "evidence": "base/A/B 均对首数组 [{id:1,tag:a},{id:1,tag:b}]、第二数组 [{id:2}]、第三空数组保留两个 id=1 对象。当前代码沿用 uniq 的原对象相等去重，而不是 uniq_by/uniq_with。题面明确的跨数组比较规则丢失已修复；是否要同步重定义单数组内按比较键去重并不明确，且旧双数组也有相同行为。",
+          "defect_claimed": "记录为继承的 API 语义范围，未无依据要求变更或据此区分两侧。",
+          "original_source": {
+            "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base\\src\\pydash\\arrays.py",
+            "line": 2556
+          },
+          "probe_ids": [
+            "inherited_edge_behavior_observation"
+          ]
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "各 base/A/B 的 src/pydash 包分别复制到本审查员临时目录；以独立 python -B 子进程、PYTHONPATH 和 PROBE_COPY 导入，并断言实际导入来自对应副本。设置 PYTHONDONTWRITEBYTECODE=1；输入对象和回调均由本地探针构建，没有真实项目源码修改。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "import copy\nimport json\nimport os\nfrom pathlib import Path\nimport pydash as pyd\nfrom pydash import arrays as module\n\nassert Path(module.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nresults = []\n\n\ndef eq(actual, expected):\n    assert actual == expected, (repr(actual), repr(expected))\n\n\ndef raises(expected, function, same=None):\n    try:\n        function()\n    except expected as exc:\n        if same is not None:\n            assert exc is same\n        return exc\n    else:\n        raise AssertionError(f'{expected.__name__} not raised')\n\n\ndef check(name, function):\n    try:\n        detail = function()\n        results.append({'id':name, 'status':'pass', 'detail':detail})\n    except Exception as exc:\n        results.append({'id':name, 'status':'fail', 'error':type(exc).__name__, 'message':str(exc)})\n\n\ndef object_arrays():\n    return ([{'meta':{'id':7},'tag':'first-seven'}, {'meta':{'id':13},'tag':'thirteen'}],\n            [{'meta':{'id':19},'tag':'first-nineteen'}],\n            [{'meta':{'id':7},'tag':'last-seven'}, {'meta':{'id':23},'tag':'twenty-three'}],\n            [{'meta':{'id':19},'tag':'last-nineteen'}, {'meta':{'id':29},'tag':'twenty-nine'}])\n\n\ndef callable_iteratee_multiarray():\n    arrays = object_arrays()\n    rule = lambda item:item['meta']['id']\n    for keyword in (False,True):\n        result = pyd.xor_by(*arrays[:3], **{'iteratee':rule}) if keyword else pyd.xor_by(*arrays[:3],rule)\n        eq([item['tag'] for item in result], ['thirteen','first-nineteen','twenty-three'])\n        result = pyd.xor_by(*arrays, **{'iteratee':rule}) if keyword else pyd.xor_by(*arrays,rule)\n        eq([item['tag'] for item in result], ['thirteen','twenty-three','twenty-nine'])\n\n\ndef comparator_multiarray():\n    arrays = object_arrays()\n    rule = lambda left,right:left['meta']['id']==right['meta']['id']\n    for keyword in (False,True):\n        result = pyd.xor_with(*arrays[:3], **{'comparator':rule}) if keyword else pyd.xor_with(*arrays[:3],rule)\n        eq([item['tag'] for item in result], ['thirteen','first-nineteen','twenty-three'])\n        result = pyd.xor_with(*arrays, **{'comparator':rule}) if keyword else pyd.xor_with(*arrays,rule)\n        eq([item['tag'] for item in result], ['thirteen','twenty-three','twenty-nine'])\n\n\ndef property_path_and_unhashable_key():\n    arrays = object_arrays()\n    for result in (pyd.xor_by(*arrays,'meta.id'),pyd.xor_by(*arrays,iteratee='meta.id'),\n                   pyd.xor_by(*arrays,iteratee=lambda item:[item['meta']['id']])):\n        eq([item['tag'] for item in result], ['thirteen','twenty-three','twenty-nine'])\n    # The documented one-item-list shorthand means a literal property key.\n    # It does not mean the dotted deep path used by the string form above.\n    literal_arrays = tuple([{'meta.id':item['meta']['id'],'tag':item['tag']} for item in source] for source in arrays)\n    result = pyd.xor_by(*literal_arrays,iteratee=['meta.id'])\n    eq([item['tag'] for item in result], ['thirteen','twenty-three','twenty-nine'])\n\n\ndef parity_empty_arrays_and_representatives():\n    # A comparison class appears in three arrays: the third occurrence remains.\n    a,b,c = {'id':1,'tag':'a'},{'id':1,'tag':'b'},{'id':1,'tag':'c'}\n    for function, keyword, rule in ((pyd.xor_by,'iteratee',lambda item:item['id']),\n                                     (pyd.xor_with,'comparator',lambda left,right:left['id']==right['id'])):\n        eq(function([a],[],[b],[],[c],**{keyword:rule}),[c])\n        eq(function([],[],[],**{keyword:rule}),[])\n        eq(function([a],[b],[],**{keyword:rule}),[])\n        result = function([a],**{keyword:rule})\n        eq(result,[a])\n        assert result[0] is a\n        eq(function([a],[b],**{keyword:rule}),[])\n\n\ndef default_and_none_comparison():\n    arrays = ([1,2,5],[2,3,5],[3,4,5])\n    expected = [1,4,5]\n    eq(pyd.xor(*arrays),expected)\n    for function,keyword in ((pyd.xor_by,'iteratee'),(pyd.xor_with,'comparator')):\n        eq(function(*arrays),expected)\n        eq(function(*arrays,None),expected)\n        eq(function(*arrays,**{keyword:None}),expected)\n        eq(function([1,1]),[1,1])\n\n\ndef two_array_and_asymmetric_contract():\n    eq(pyd.xor_by([2.1,1.2],[2.3,3.4],round),[1.2,3.4])\n    eq(pyd.xor_by([1,2,3],[5,4],lambda value:value%3),[3])\n    eq(pyd.xor_with([1,2,3],[5,4],lambda left,right:left<=right),[5,4])\n\n\ndef optional_callback_results():\n    values = ([1],[2],[3],[4])\n    eq(pyd.xor_by(*values,iteratee=lambda item:None),[])\n    # Comparator results use normal truth testing, not strict True identity.\n    eq(pyd.xor_with([1],[4],[7],[10],comparator=lambda left,right:[1] if left%3==right%3 else []),[])\n\n\ndef ownership_and_callback_arguments():\n    values = object_arrays()\n    snapshot = copy.deepcopy(values)\n    allowed_ids = {id(item) for source in values for item in source}\n    seen = []\n    def iteratee(item):\n        assert id(item) in allowed_ids\n        seen.append(item['tag'])\n        return item['meta']['id']\n    result = pyd.xor_by(*values,iteratee=iteratee)\n    eq([item['tag'] for item in result],['thirteen','twenty-three','twenty-nine'])\n    assert result[0] is values[0][1]\n    assert result[1] is values[2][1]\n    assert result[2] is values[3][1]\n    eq(values,snapshot)\n    assert all(result is not source for source in values)\n    result.append({'extra':'export only'})\n    eq(values,snapshot)\n    assert 'last-seven' in seen and 'last-nineteen' in seen\n    pairs = []\n    def comparator(left,right):\n        assert id(left) in allowed_ids and id(right) in allowed_ids\n        pairs.append((left['tag'],right['tag']))\n        return left['meta']['id']==right['meta']['id']\n    result = pyd.xor_with(*values,comparator=comparator)\n    eq([item['tag'] for item in result],['thirteen','twenty-three','twenty-nine'])\n    assert result[0] is values[0][1] and result[1] is values[2][1] and result[2] is values[3][1]\n    eq(values,snapshot)\n    assert any('last-seven' in pair for pair in pairs)\n    assert any('last-nineteen' in pair for pair in pairs)\n    return {'iteratee_invocations':len(seen),'comparator_invocations':len(pairs),'exact_counts_are_not_contract_assertions':True}\n\n\ndef later_callback_failure_propagates():\n    failure = RuntimeError('third-array callback failure')\n    values = ([{'id':1}],[{'id':2}],[{'id':3}])\n    snapshot = copy.deepcopy(values)\n    calls = []\n    def iteratee(item):\n        calls.append(item['id'])\n        if item['id']==3:\n            raise failure\n        return item['id']\n    raises(RuntimeError,lambda:pyd.xor_by(*values,iteratee=iteratee),failure)\n    eq(calls.count(3),1)\n    eq(values,snapshot)\n    calls.clear()\n    def comparator(left,right):\n        calls.append((left['id'],right['id']))\n        if left['id']==3 or right['id']==3:\n            raise failure\n        return left['id']==right['id']\n    raises(RuntimeError,lambda:pyd.xor_with(*values,comparator=comparator),failure)\n    eq(sum(3 in pair for pair in calls),1)\n    eq(values,snapshot)\n\n\ndef inherited_edge_observations():\n    observed = {}\n    for name,function,keyword,rule in [('by',pyd.xor_by,'iteratee',lambda item:item['id']),\n                                     ('with',pyd.xor_with,'comparator',lambda left,right:left['id']==right['id'])]:\n        values = [{'id':1,'tag':'a'},{'id':1,'tag':'b'}]\n        for label,call in [('single_array_positional_rule',lambda:function(values,rule)),\n                           ('single_array_keyword_rule',lambda:function(values,**{keyword:rule})),\n                           ('same_key_within_one_array',lambda:function(values,[{'id':2}],[],**{keyword:rule}))]:\n            try:\n                observed[name+'_'+label] = {'result':call()}\n            except Exception as exc:\n                observed[name+'_'+label] = {'error':type(exc).__name__}\n    return observed\n\n\ncheck('callable_iteratee_three_four_arrays_positional_keyword',callable_iteratee_multiarray)\ncheck('comparator_three_four_arrays_positional_keyword',comparator_multiarray)\ncheck('property_path_shorthand_and_unhashable_keys',property_path_and_unhashable_key)\ncheck('parity_empty_arrays_original_representative',parity_empty_arrays_and_representatives)\ncheck('omitted_none_default_comparison_and_plain_xor',default_and_none_comparison)\ncheck('two_array_documented_and_asymmetric_contract',two_array_and_asymmetric_contract)\ncheck('none_iteratee_result_truthy_comparator_result',optional_callback_results)\ncheck('input_preservation_result_identity_callback_objects',ownership_and_callback_arguments)\ncheck('later_callback_exception_identity_no_retry_no_mutation',later_callback_failure_propagates)\ncheck('inherited_edge_behavior_observation',inherited_edge_observations)\nprint(json.dumps({'module':module.__file__,'results':results},ensure_ascii=True))\n",
+    "source_sha256": "29f29c62d26ae6cc8b6327cb28f6504986988e60075d7bb02e58ee16016202fa",
+    "reproduction": "将 source 存为 probe.py，将目标 src/pydash 包复制到独立目录；设置 PYTHONPATH、PROBE_COPY 为该目录后，用 Python 3.12 -B 运行。无需联网、模型或额外安装。",
+    "probe_development_corrections": [
+      {
+        "description": "首版自制探针错误地把单元素列表 [\"meta.id\"] 当作深层属性路径。可见 utilities.iteratee 文档第 448-449 行说明它是字面属性名形式，字符串 \"meta.id\" 才是深层路径；对只有嵌套 meta/id 的对象，它正确产生缺失值 None，所有键相同故返回空列表。没有把该首版错误预期计为候选缺陷。",
+        "source_contract": {
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\04\\base\\src\\pydash\\utilities.py",
+          "line": 448
+        },
+        "correction": "保留深层字符串路径与不可哈希 list 键检查；另构建具有字面 \"meta.id\" 键的独立输入验证单元素列表简写。修正依据在看到结果前已存在于公开源码文档，没有参考隐藏 oracle。",
+        "initial_affected_group_results": {
+          "A": {
+            "id": "property_path_shorthand_and_unhashable_keys",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('[]', \"['thirteen', 'twenty-three', 'twenty-nine']\")"
+          },
+          "B": {
+            "id": "property_path_shorthand_and_unhashable_keys",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('[]', \"['thirteen', 'twenty-three', 'twenty-nine']\")"
+          }
+        }
+      }
+    ]
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\base\\pydash\\arrays.py",
+        "results": [
+          {
+            "id": "callable_iteratee_three_four_arrays_positional_keyword",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"['first-seven', 'thirteen', 'first-nineteen', 'last-seven', 'twenty-three']\", \"['thirteen', 'first-nineteen', 'twenty-three']\")"
+          },
+          {
+            "id": "comparator_three_four_arrays_positional_keyword",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"['first-seven', 'thirteen', 'first-nineteen', 'last-seven', 'twenty-three']\", \"['thirteen', 'first-nineteen', 'twenty-three']\")"
+          },
+          {
+            "id": "property_path_shorthand_and_unhashable_keys",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"['first-seven', 'thirteen', 'first-nineteen', 'last-seven', 'twenty-three', 'last-nineteen', 'twenty-nine']\", \"['thirteen', 'twenty-three', 'twenty-nine']\")"
+          },
+          {
+            "id": "parity_empty_arrays_original_representative",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"[{'id': 1, 'tag': 'a'}, {'id': 1, 'tag': 'b'}, {'id': 1, 'tag': 'c'}]\", \"[{'id': 1, 'tag': 'c'}]\")"
+          },
+          {
+            "id": "omitted_none_default_comparison_and_plain_xor",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "two_array_documented_and_asymmetric_contract",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "none_iteratee_result_truthy_comparator_result",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "('[3, 4]', '[]')"
+          },
+          {
+            "id": "input_preservation_result_identity_callback_objects",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "(\"['first-seven', 'thirteen', 'first-nineteen', 'last-seven', 'twenty-three', 'last-nineteen', 'twenty-nine']\", \"['thirteen', 'twenty-three', 'twenty-nine']\")"
+          },
+          {
+            "id": "later_callback_exception_identity_no_retry_no_mutation",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "RuntimeError not raised"
+          },
+          {
+            "id": "inherited_edge_behavior_observation",
+            "status": "pass",
+            "detail": {
+              "by_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "by_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "by_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              },
+              "with_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "with_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "with_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\A\\pydash\\arrays.py",
+        "results": [
+          {
+            "id": "callable_iteratee_three_four_arrays_positional_keyword",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "comparator_three_four_arrays_positional_keyword",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "property_path_shorthand_and_unhashable_keys",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "parity_empty_arrays_original_representative",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "omitted_none_default_comparison_and_plain_xor",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "two_array_documented_and_asymmetric_contract",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "none_iteratee_result_truthy_comparator_result",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "input_preservation_result_identity_callback_objects",
+            "status": "pass",
+            "detail": {
+              "iteratee_invocations": 40,
+              "comparator_invocations": 22,
+              "exact_counts_are_not_contract_assertions": true
+            }
+          },
+          {
+            "id": "later_callback_exception_identity_no_retry_no_mutation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "inherited_edge_behavior_observation",
+            "status": "pass",
+            "detail": {
+              "by_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "by_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "by_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              },
+              "with_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "with_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "with_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair04-review-sja_7z86\\B\\pydash\\arrays.py",
+        "results": [
+          {
+            "id": "callable_iteratee_three_four_arrays_positional_keyword",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "comparator_three_four_arrays_positional_keyword",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "property_path_shorthand_and_unhashable_keys",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "parity_empty_arrays_original_representative",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "omitted_none_default_comparison_and_plain_xor",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "two_array_documented_and_asymmetric_contract",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "none_iteratee_result_truthy_comparator_result",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "input_preservation_result_identity_callback_objects",
+            "status": "pass",
+            "detail": {
+              "iteratee_invocations": 40,
+              "comparator_invocations": 22,
+              "exact_counts_are_not_contract_assertions": true
+            }
+          },
+          {
+            "id": "later_callback_exception_identity_no_retry_no_mutation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "inherited_edge_behavior_observation",
+            "status": "pass",
+            "detail": {
+              "by_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "by_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "by_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              },
+              "with_single_array_positional_rule": {
+                "error": "IndexError"
+              },
+              "with_single_array_keyword_rule": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  }
+                ]
+              },
+              "with_same_key_within_one_array": {
+                "result": [
+                  {
+                    "id": 1,
+                    "tag": "a"
+                  },
+                  {
+                    "id": 1,
+                    "tag": "b"
+                  },
+                  {
+                    "id": 2
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 9,
+    "observational_groups_per_variant": 1,
+    "A_functional_passed": 9,
+    "B_functional_passed": 9,
+    "base_functional_passed": 2,
+    "baseline_control": "base 在七组跨数组比较规则相关探针中复现同键残留或未调用后续回调；默认比较和已有双数组规则两组通过。两侧九组实际契约检查均通过。观察组仅记录继承边界，不用作通过要求或一侧评分。",
+    "callback_counts": "正常情况下记录 iteratee 40 次、comparator 22 次，仅作复现信息，未把精确调用次数当公开契约；对故意抛错的后续回调验证抛错后不再重复调用、不重试。",
+    "not_used_as_quality_score": "探针数与候选测试数都不是偏好证据；生产文件字节比较与可观察行为支持无偏好。"
+  },
+  "source_immutability": {
+    "files_verified": 232,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair04.json": "aa74efc315e1ffcbea4145db2629e7ced9eccd1453c3f52fd6f32ab0fabed85f",
+      "04\\task.json": "ce273968a12d065028cf22505a0941d1cb2e30e55ab3b3237376d81804be0f5e",
+      "04\\A.patch": "7d349006bb708e21eaf682ebd09c5a54884236f534295576fa18757569b4f269",
+      "04\\B.patch": "92c5a578332921717cd0ca31bf400fad459d5e4a60fb2729a73e4aaba2e865ed",
+      "04\\base\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\base\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\base\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\base\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\base\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\base\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\base\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\base\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\base\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\base\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\base\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\base\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\base\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\base\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\base\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\base\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\base\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\base\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\base\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\base\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\base\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\base\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\base\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\base\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\base\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\base\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\base\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\base\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\base\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\base\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\base\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\base\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\base\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\base\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\base\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\base\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\base\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\base\\tests\\test_arrays.py": "719392bde732a2f06120e7047aa668ffc58ff79728e673c677a08cf4776c108f",
+      "04\\base\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\base\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\base\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\base\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\base\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\base\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\base\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\base\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\base\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\src\\pydash\\arrays.py": "21c8ef7a342467724edb581882b9b2538d191c569c281a7c610d3b3195e5f71d",
+      "04\\base\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\base\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\base\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\base\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\base\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\base\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\base\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\base\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\base\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\base\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\base\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\base\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\base\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\base\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\base\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\base\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\base\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\base\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\base\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\base\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\base\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\base\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\base\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\base\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\base\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\A\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\A\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\A\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\A\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\A\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\A\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\A\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\A\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\A\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\A\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\A\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\A\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\A\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\A\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\A\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\A\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\A\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\A\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\A\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\A\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\A\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\A\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\A\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\A\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\A\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\A\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\A\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\A\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\A\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\A\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\A\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\A\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\A\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\A\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\A\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\A\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\A\\tests\\test_arrays.py": "218a7b995b0ff008ddb7cef03ce44f9fee2b54dc38eb972797baa60ae5c7d789",
+      "04\\A\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\A\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\A\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\A\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\A\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\A\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\A\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\A\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\A\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\src\\pydash\\arrays.py": "3fcce55cf7303027bb39532c2ef2a6f6de3c94994908d2286b5e36f4aaac5451",
+      "04\\A\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\A\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\A\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\A\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\A\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\A\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\A\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\A\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\A\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\A\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\A\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\A\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\A\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\A\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\A\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\A\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\A\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\A\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\A\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\A\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\A\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\A\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\A\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\A\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\A\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\B\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\B\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\B\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\B\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\B\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\B\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\B\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\B\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\B\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\B\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\B\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\B\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\B\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\B\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\B\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\B\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\B\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\B\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\B\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\B\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\B\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\B\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\B\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\B\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\B\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\B\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\B\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\B\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\B\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\B\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\B\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\B\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\B\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\B\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\B\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\B\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\B\\tests\\test_arrays.py": "e5cadff8244523cdd35c820a2882fd3f0bbd226b5f9fc73729df6fba9bcd7d04",
+      "04\\B\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\B\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\B\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\B\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\B\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\B\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\B\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\B\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\B\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\src\\pydash\\arrays.py": "3fcce55cf7303027bb39532c2ef2a6f6de3c94994908d2286b5e36f4aaac5451",
+      "04\\B\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\B\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\B\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\B\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\B\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\B\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\B\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\B\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\B\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\B\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\B\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\B\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\B\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\B\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\B\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\B\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\B\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\B\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\B\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\B\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\B\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\B\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\B\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\B\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\B\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source_hashes_after": {
+      "tasks-pair04.json": "aa74efc315e1ffcbea4145db2629e7ced9eccd1453c3f52fd6f32ab0fabed85f",
+      "04\\task.json": "ce273968a12d065028cf22505a0941d1cb2e30e55ab3b3237376d81804be0f5e",
+      "04\\A.patch": "7d349006bb708e21eaf682ebd09c5a54884236f534295576fa18757569b4f269",
+      "04\\B.patch": "92c5a578332921717cd0ca31bf400fad459d5e4a60fb2729a73e4aaba2e865ed",
+      "04\\base\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\base\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\base\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\base\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\base\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\base\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\base\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\base\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\base\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\base\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\base\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\base\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\base\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\base\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\base\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\base\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\base\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\base\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\base\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\base\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\base\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\base\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\base\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\base\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\base\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\base\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\base\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\base\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\base\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\base\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\base\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\base\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\base\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\base\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\base\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\base\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\base\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\base\\tests\\test_arrays.py": "719392bde732a2f06120e7047aa668ffc58ff79728e673c677a08cf4776c108f",
+      "04\\base\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\base\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\base\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\base\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\base\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\base\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\base\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\base\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\base\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\src\\pydash\\arrays.py": "21c8ef7a342467724edb581882b9b2538d191c569c281a7c610d3b3195e5f71d",
+      "04\\base\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\base\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\base\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\base\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\base\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\base\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\base\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\base\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\base\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\base\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\base\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\base\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\base\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\base\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\base\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\base\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\base\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\base\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\base\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\base\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\base\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\base\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\base\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\base\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\base\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\base\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\A\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\A\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\A\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\A\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\A\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\A\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\A\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\A\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\A\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\A\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\A\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\A\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\A\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\A\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\A\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\A\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\A\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\A\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\A\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\A\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\A\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\A\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\A\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\A\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\A\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\A\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\A\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\A\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\A\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\A\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\A\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\A\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\A\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\A\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\A\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\A\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\A\\tests\\test_arrays.py": "218a7b995b0ff008ddb7cef03ce44f9fee2b54dc38eb972797baa60ae5c7d789",
+      "04\\A\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\A\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\A\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\A\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\A\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\A\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\A\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\A\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\A\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\src\\pydash\\arrays.py": "3fcce55cf7303027bb39532c2ef2a6f6de3c94994908d2286b5e36f4aaac5451",
+      "04\\A\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\A\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\A\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\A\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\A\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\A\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\A\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\A\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\A\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\A\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\A\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\A\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\A\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\A\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\A\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\A\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\A\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\A\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\A\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\A\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\A\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\A\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\A\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\A\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\A\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\A\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\.gitignore": "cbe227262d23001c1b0f9c0b276c0018eaa232083840b4ddc342521813d05fb8",
+      "04\\B\\.readthedocs.yaml": "8b2f502a7a3a02133c0c26aae5b15ba8e72b54e5d31d95394992c3f70ed9ba38",
+      "04\\B\\AUTHORS.rst": "0ddb940afe6847f3b9fe4231cf35d8724befd0d7a636a1a403f90e5f9e871776",
+      "04\\B\\CHANGELOG.rst": "33db285f2d85270d40a56f54b75e2d99c9fd3b6e7619d5db424563a3d467895e",
+      "04\\B\\CONTRIBUTING.rst": "ed412e09da3066bafcc3e0b1a3014d02b638431dd352dae25a9462dd147e2d07",
+      "04\\B\\DEVGUIDE.rst": "cc782cdb6ee11791cfd6312b5681fb4ef42170fd7d43541e91083f57ac57dc21",
+      "04\\B\\LICENSE.rst": "1bba57c33cce44a00d2edf0794e14bd0c6dc1569a4e78d834c8f4103b8e9623f",
+      "04\\B\\MANIFEST.in": "f71f607a55cbfbfd265eec5f72fe4501a736e642f9fbffbe5b6f3b576c3b964e",
+      "04\\B\\pyproject.toml": "4b5febbdee40e30bd5d7514e6dd3ac867a69c04b0a8e50c1f69747d84ef26bd7",
+      "04\\B\\README.rst": "5a3f6aa696ddac7aba3a7c9fa56b71ceee9b55d27e3189dd5df40b1d43570c16",
+      "04\\B\\requirements.txt": "9d6d2c2e18451cd8eb86a739cbcb1664e4342ef4ae478266a3c333dd4f73674a",
+      "04\\B\\tasks.py": "cc9ca140bd694ef42961661773257d2d6e543bb24d540736ac8b8fb352879c89",
+      "04\\B\\tox.ini": "cb9f938dc655e9397de6ccd6483f44485ced3df585367f0b68b84e9ce3c9d44e",
+      "04\\B\\docs\\api.rst": "ea6cf83e76c9447336bc66031d662efb7098e89dee2fa0fce46139f5c6252e7b",
+      "04\\B\\docs\\authors.rst": "0ba8e9a403475ae12773cfce9fc7a32bce591e9801a1adde71927982f51d901b",
+      "04\\B\\docs\\callbacks.rst": "c3d5aa236ffa93bdc82ff4b8cc4726e4d810692c8f447e0cb1f02f817a8f00cf",
+      "04\\B\\docs\\chaining.rst": "f5d09622236c59921ede364234e2d7677747cf669d1eebd387b4148d9d3cae13",
+      "04\\B\\docs\\changelog.rst": "bd8b3e8b5551105b987eb3f26cc72889cf471457ed78d12d93870ab39e1ec311",
+      "04\\B\\docs\\conf.py": "81e6286b41c389ba3ee2f20cece4894abdb25af16c22f5b0a85b0429c5a2f1a2",
+      "04\\B\\docs\\contributing.rst": "87d5c7434971ff248a817426c2a84940b3c3ed51251ddcaed6bb8a7d85afad80",
+      "04\\B\\docs\\deeppath.rst": "6cbb572165b472a508adf08facc5af270177db6989a1223ae7a55826f1d97b93",
+      "04\\B\\docs\\devguide.rst": "9c08d89a25a29f5443b97db77393a7b675d8b6b33f21c67bbd439bc1b0b1c35a",
+      "04\\B\\docs\\differences.rst": "0cab0deaa5828bb8a602694b26cbbbd1a1a0c7816f26563064169c832a4dbde3",
+      "04\\B\\docs\\index.rst": "b405cbcec1e7f09b4f00a3199421d136005c2ca1a519cfa1f6d22922208de1fb",
+      "04\\B\\docs\\installation.rst": "66c398a3d2ade14265dabf8347ac9c802a03fd8b31153462f1f9f1086d232cd1",
+      "04\\B\\docs\\kudos.rst": "70c8908995dde66ed95cdcf04abec1a6f203fdb03ddc79df48b0dd38c0425920",
+      "04\\B\\docs\\license.rst": "7194660ac4f461fe947f725bc7910c16d901cf57d748925f36b7cc45607362bc",
+      "04\\B\\docs\\Makefile": "ad438f2abda8c9a084d9c367a1e11d428b3de493d1e11f9df1aafe4ed0aafd57",
+      "04\\B\\docs\\quickstart.rst": "89de5297c53260d6e82c453795b6886aed76be6feb77d4912da08996f98fb6ae",
+      "04\\B\\docs\\templating.rst": "a33d33ad2deb689f6bb95b57f2c28d64c36d4f3cdc97a057655a463faa56e6f6",
+      "04\\B\\docs\\upgrading.rst": "ba241716c3e7065508ff9f957507047772b9f2d63055d569e9a2a0b1a4d9f244",
+      "04\\B\\docs\\versioning.rst": "12148d0c19e3f13259e2c27d86a724e2b80ca63851f34e7e30463c32cce8a9f7",
+      "04\\B\\scripts\\chaining_type_generator.py": "1dbdcee54e3a764dee297e2e9755553a315683d8869bdbed641bf394f3a704c7",
+      "04\\B\\scripts\\mypy_doctests_generator.py": "9c00b897c6e267f3cf7552509e02c11892abd0aefda722c11d0bdd93ad7ff67a",
+      "04\\B\\tests\\conftest.py": "742d0d5951e069ec0efce6c54e0abe63d42274face5407740fdbb79a046d76c8",
+      "04\\B\\tests\\helpers.py": "f08c49163157308df2ef9c46dd3ec7f3622a9d19220ee7c5f087c837862a9678",
+      "04\\B\\tests\\test_annotations.py": "7d9b144f2de95f3e5d1d4e577216d46899da50a635541e6b7931a07e036b9738",
+      "04\\B\\tests\\test_arrays.py": "e5cadff8244523cdd35c820a2882fd3f0bbd226b5f9fc73729df6fba9bcd7d04",
+      "04\\B\\tests\\test_chaining.py": "c93b4542579ad999f5d2fe5ff58cd4422ca14e2638b5fdd633e4da3ec87cfa23",
+      "04\\B\\tests\\test_collections.py": "8d0f9fba53ae1e0e0d1f1e870bf73b03fe7867930568a3c3b95d516742387f63",
+      "04\\B\\tests\\test_functions.py": "4f9d8ee39bc110fd8d1af0f99aa371042aa523c788c65932c346d0fe7db7aebd",
+      "04\\B\\tests\\test_numerical.py": "5460d07617d506a604eb3e9443eeaf99573176ab4642788a8d958fb7bd0ecb34",
+      "04\\B\\tests\\test_objects.py": "7d5ab65769c311fb97cbc38c4707c51b7262343ede4c3cd0414cd449330a143a",
+      "04\\B\\tests\\test_predicates.py": "03c1e366375513356c188c96a081047bd76230ebd901dbc8a5c9b01088453e45",
+      "04\\B\\tests\\test_strings.py": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247",
+      "04\\B\\tests\\test_utilities.py": "b26ba4547bbfadb6970bf24055958fd2b9857b6f58135090a7a54117a06fc093",
+      "04\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\.github\\workflows\\main.yml": "5e6069f99624f06d70d86af5ec802d1457391c729b6dce863a2fb3228f6f7eb9",
+      "04\\B\\docs\\_templates\\.gitignore": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\src\\pydash\\arrays.py": "3fcce55cf7303027bb39532c2ef2a6f6de3c94994908d2286b5e36f4aaac5451",
+      "04\\B\\src\\pydash\\collections.py": "cfb1c23c3a0ad8c738e0e4cf7b3111e853b06ed219b6b7aefb300e3717be5ace",
+      "04\\B\\src\\pydash\\exceptions.py": "133f30bb7fbdc1eec48ffc6fd476c6060b90339a766664bdc12ec54a79afab8c",
+      "04\\B\\src\\pydash\\functions.py": "01705303533c265ffa684bef9269a2c8619a506fcab98819702de474cee4892e",
+      "04\\B\\src\\pydash\\helpers.py": "df241626bb4bfd40fd26ca5be7ca90340aa4ecadd06cb95f9285bdeb78955bfa",
+      "04\\B\\src\\pydash\\numerical.py": "8912f28cc1b5af3c7d2b7afffacf1e30aa8e7c84c3ede9a4b943578ea6748a12",
+      "04\\B\\src\\pydash\\objects.py": "43a2988e689e5f713cd5a389d1c33c0351ee4b679a95195ae2e7f07cbd0dcd57",
+      "04\\B\\src\\pydash\\predicates.py": "e228c7945c6afe7b8a804015e5476092293c7f0f9383d54090ca29e7cecbf8f0",
+      "04\\B\\src\\pydash\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "04\\B\\src\\pydash\\strings.py": "34dec5ca17d4cf7ed64f6b3f8ec519c4f672d7b004f7f8e910c606aa0ead2cf7",
+      "04\\B\\src\\pydash\\types.py": "ca64b1b6177869e7be1a255106e15fca527a9d3bfe0cfc0eca8abd9e4aff19d8",
+      "04\\B\\src\\pydash\\utilities.py": "854deb46f5d87129d0725427564fb09c1bef9cb5f17f69519450b0557d286fa5",
+      "04\\B\\src\\pydash\\__init__.py": "4ae71a4fbb6962cc727e34fb789fe2b81dafdbb5b4fa13a68c44ec2f68e6093a",
+      "04\\B\\src\\pydash\\chaining\\all_funcs.py": "f23488f8bf8426413417bafa25466301d1d8c37475b014f7fed19974826b8e73",
+      "04\\B\\src\\pydash\\chaining\\all_funcs.pyi": "394b1298d424f13390f3c9d597055d4dd5195842a4d2e7c86e344c69393b1fde",
+      "04\\B\\src\\pydash\\chaining\\chaining.py": "9a71cc08ee719c2d93e575a2a7acc9dff85c57b4a5e37fae5617b0d306b0ee16",
+      "04\\B\\src\\pydash\\chaining\\__init__.py": "3978f776e3ea8c12ea69ac8782f36ef61581d465c1bc9999ef084a389daa5f95",
+      "04\\B\\tests\\pytest_mypy_testing\\test_arrays.py": "1db87a58c7c9533a101ea84aee648cbaa73b264fe5737faf82411e19f7f9008b",
+      "04\\B\\tests\\pytest_mypy_testing\\test_chaining.py": "a082fa63433120fd9c34bc0f5e3df3dc10b1df366efa003f8e1746dc8be8b589",
+      "04\\B\\tests\\pytest_mypy_testing\\test_collections.py": "b08a59cfa3e3521dcd07293381bad381f4645eb62591f91481298962c82494f5",
+      "04\\B\\tests\\pytest_mypy_testing\\test_functions.py": "4842b0dd36f2f419a7a3d272f1ca1d4fd400dc954b18edb8bd7363849da705b7",
+      "04\\B\\tests\\pytest_mypy_testing\\test_numerical.py": "9e6935bd9f10a9dff62f610bbc6d88614523302ba29f9c9c9bed51e7222aad63",
+      "04\\B\\tests\\pytest_mypy_testing\\test_objects.py": "43d09e364c6e41848788e9bb5fa886d614fae926805f12f0c3f703125c2032cc",
+      "04\\B\\tests\\pytest_mypy_testing\\test_predicates.py": "200ae2ec53c1ab7ff326593674ee2695c8ba509fd930f8309830267f00fb6366",
+      "04\\B\\tests\\pytest_mypy_testing\\test_strings.py": "ca7ff3745d6e6e1ec1b6591d4fea414860d5d54a8cc090404adf0c56db53458d",
+      "04\\B\\tests\\pytest_mypy_testing\\test_utilities.py": "8a47e68c8ffe2ad2d3ba30ba40f188285c1b91899a641ae1322aef4b20109b6a",
+      "04\\B\\tests\\pytest_mypy_testing\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "includes": "仅此 pair 的 base/A/B 所有常规文件、task.json、A.patch、B.patch 与 tasks-pair04.json；全部文件枚举只用于字节校验。"
+  },
+  "limitations": [
+    "这是公开任务及源码的局部盲审，未运行候选测试套件、全项目检查或隐藏 grader，没有调用模型 CLI、网络或委派。",
+    "本轮只使用指定 pair 的公开输入和本审查员生成的探针，没有读取私有分组、其他生产结果或揭盲。审查员先前参与案例开发及其他匿名 pair 审阅，存在工作记忆，因此不声称完全从未接触项目背景；未据此推断 A/B。",
+    "只验证本报告记录的 Python 3.12.14、有限 list 数组与回调；未对无限迭代器、任意大数组或有状态且非等价的比较关系建立新的数学或性能保证。",
+    "任务范围是跨数组折叠时保留比较规则。继承的单数组位置回调边界、同一输入数组内不同对象同键去重策略记录为待明确范围，不能据本报告声称所有 xor API 历史边界已修复。"
+  ]
+}

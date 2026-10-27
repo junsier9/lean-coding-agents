@@ -1,0 +1,97 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 3cd42e8..28c17d2 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -283,7 +283,7 @@ def last(iterable, default=_marker):
+         if isinstance(iterable, Sequence):
+             return iterable[-1]
+         # Work around https://bugs.python.org/issue38525
+-        if hasattr(iterable, '__reversed__'):
++        if getattr(iterable, '__reversed__', None) is not None:
+             return next(reversed(iterable))
+         return deque(iterable, maxlen=1)[-1]
+     except (IndexError, TypeError, StopIteration):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b964312..5d73f9f 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5,7 +5,7 @@ import gc
+ import platform
+ import weakref
+ 
+-from collections import Counter, abc, deque
++from collections import Counter, UserDict, abc, deque
+ from collections.abc import Set
+ from datetime import datetime, timedelta
+ from decimal import Decimal
+@@ -148,6 +148,10 @@ class IterOnlyRange:
+         return iter(range(self.n))
+ 
+ 
++class NonReversibleRange(IterOnlyRange):
++    __reversed__ = None
++
++
+ class LastTests(TestCase):
+     def test_basic(self):
+         cases = [
+@@ -156,8 +160,12 @@ class LastTests(TestCase):
+             (range(1), 0),
+             (iter(range(1)), 0),
+             (IterOnlyRange(5), 4),
++            (NonReversibleRange(1), 0),
++            (NonReversibleRange(5), 4),
+             ({n: str(n) for n in range(5)}, 4),
+             ({0: '0', -1: '-1', 2: '-2'}, 2),
++            (UserDict({0: '0'}), 0),
++            (UserDict({0: '0', -1: '-1', 2: '-2'}), 2),
+         ]
+ 
+         for iterable, expected in cases:
+@@ -170,16 +178,45 @@ class LastTests(TestCase):
+             ([], None, None),
+             ({}, None, None),
+             (iter([]), None, None),
++            (NonReversibleRange(5), None, 4),
++            (NonReversibleRange(0), None, None),
++            (NonReversibleRange(0), 'empty', 'empty'),
++            (UserDict({0: '0', -1: '-1', 2: '-2'}), None, 2),
++            (UserDict(), None, None),
++            (UserDict(), 'empty', 'empty'),
+         ]:
+             with self.subTest(args=(iterable, default)):
+                 self.assertEqual(mi.last(iterable, default=default), expected)
+ 
+     def test_empty(self):
+-        for iterable in ([], iter(range(0))):
++        for iterable in (
++            [],
++            iter(range(0)),
++            NonReversibleRange(0),
++            UserDict(),
++        ):
+             with self.subTest(iterable=iterable):
+                 with self.assertRaises(ValueError):
+                     mi.last(iterable)
+ 
++    def test_reversed(self):
++        class ReversibleRange(IterOnlyRange):
++            def __iter__(self):
++                raise AssertionError('Forward iteration should not be used')
++
++            def __reversed__(self):
++                return reversed(range(self.n))
++
++        default = object()
++        for n in (1, 5):
++            with self.subTest(n=n):
++                self.assertEqual(mi.last(ReversibleRange(n)), n - 1)
++                self.assertEqual(mi.last(ReversibleRange(n), default), n - 1)
++
++        self.assertIs(mi.last(ReversibleRange(0), default), default)
++        with self.assertRaises(ValueError):
++            mi.last(ReversibleRange(0))
++
+ 
+ class NthOrLastTests(TestCase):
+     """Tests for ``nth_or_last()``"""

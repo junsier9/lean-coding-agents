@@ -1,0 +1,81 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 37c4569..430cfd5 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -208,12 +208,14 @@ def singularize(word):
+     'Activity'
+     >>> singularize('Glasses')
+     'Glass'
++    >>> singularize('Glass')
++    'Glass'
+     >>> singularize('FEET')
+     'FOOT'
+ 
+     """
+     orig_word, word = word, word.strip().lower()
+-    if not word or word in _IRR_S2P:
++    if not word or word.endswith('ss') or word in _IRR_S2P:
+         return orig_word
+ 
+     irr_singular = _IRR_P2S.get(word)
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index b46081e..08f3e71 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,56 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize('case', [str.lower, str.title, str.upper],
++                         ids=['lower', 'title', 'upper'])
++@pytest.mark.parametrize('word', [
++    'glass', 'boss', 'address', 'class', 'dress', 'process', 'business',
++    'grass', 'success', 'happiness', 'ss',
++])
++def test_singularize_double_s_singulars(word, case):
++    expected = case(word)
++    result = expected
++    for _ in range(3):
++        result = strutils.singularize(result)
++        assert result == expected
++
++
++@pytest.mark.parametrize('word', ['gLaSs', 'bOsS', 'aDdReSs',
++                                 ' glass ', '\tBoSs\n', ' ADDRESS '])
++def test_singularize_double_s_preserves_original(word):
++    assert strutils.singularize(word) == word
++
++
++@pytest.mark.parametrize('case', [str.lower, str.title, str.upper],
++                         ids=['lower', 'title', 'upper'])
++@pytest.mark.parametrize('plural, singular', [
++    ('glasses', 'glass'), ('bosses', 'boss'), ('addresses', 'address'),
++    ('classes', 'class'), ('dresses', 'dress'), ('processes', 'process'),
++    ('businesses', 'business'),
++])
++def test_singularize_double_s_plurals(plural, singular, case):
++    result = strutils.singularize(case(plural))
++    assert result == case(singular)
++    assert strutils.singularize(result) == result
++    assert strutils.pluralize(result) == case(plural)
++
++
++@pytest.mark.parametrize('word, expected', [
++    ('chances', 'chance'), ('Activities', 'Activity'), ('FEET', 'FOOT'),
++    ('friends', 'friend'), ('enemies', 'enemy'), ('boys', 'boy'),
++    ('analyses', 'analysis'), ('axes', 'axis'), ('Sheep', 'Sheep'),
++    ('series', 'series'), ('friend', 'friend'), ('', ''), ('  ', '  '),
++    ('s', ''), ('as', 'a'),
++])
++def test_singularize_existing_behavior(word, expected):
++    assert strutils.singularize(word) == expected
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

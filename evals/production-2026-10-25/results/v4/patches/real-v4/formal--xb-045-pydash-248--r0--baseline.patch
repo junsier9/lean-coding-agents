@@ -1,0 +1,78 @@
+diff --git a/src/pydash/helpers.py b/src/pydash/helpers.py
+index cd137c7..1966ef9 100644
+--- a/src/pydash/helpers.py
++++ b/src/pydash/helpers.py
+@@ -61,6 +61,12 @@ def getargcount(iteratee, maxargs):
+     if isinstance(iteratee, type) or pyd.is_builtin(iteratee):
+         # Only pass single argument to type iteratees or builtins.
+         argcount = 1
++    elif maxargs is not None and any(
++        iteratee is func for func in (pyd.ceil, pyd.floor, pyd.round_)
++    ):
++        # Use default precision for rounding iteratees, but keep the full argument
++        # count when function wrappers inspect them without a callback argument limit.
++        argcount = 1
+     else:
+         argcount = 1
+ 
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index cbdabcd..5390547 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -37,6 +37,27 @@ def test_count_by(case, expected):
+     assert _.count_by(*case) == expected
+ 
+ 
++@parametrize(
++    "collection",
++    [
++        [4.3, 6.1, 6.4, -1.2],
++        {0: 4.3, 1: 6.1, 2: 6.4, 3: -1.2},
++        {"a": 4.3, "b": 6.1, "c": 6.4, "d": -1.2},
++    ],
++)
++@parametrize(
++    "iteratee,expected_counts,expected_values",
++    [
++        (_.floor, {4: 1, 6: 2, -2: 1}, [4, 6, 6, -2]),
++        (_.ceil, {5: 1, 7: 2, -1: 1}, [5, 7, 7, -1]),
++        (_.round_, {4: 1, 6: 2, -1: 1}, [4, 6, 6, -1]),
++    ],
++)
++def test_rounding_iteratee(collection, iteratee, expected_counts, expected_values):
++    assert _.count_by(collection, iteratee) == expected_counts
++    assert _.map_(collection, iteratee) == expected_values
++
++
+ @parametrize(
+     "case,expected",
+     [
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index f7b4144..ddad503 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -241,6 +241,24 @@ def test_round_(case, expected):
+     assert _.round_(*case) == expected
+ 
+ 
++@parametrize(
++    "round_func,value,precision,expected",
++    [
++        (_.floor, 6.126, 2, 6.12),
++        (_.ceil, 6.126, 2, 6.13),
++        (_.round_, 6.126, 2, 6.13),
++        (_.floor, 6040, -2, 6000),
++        (_.ceil, 6040, -2, 6100),
++        (_.round_, 6040, -2, 6000),
++    ],
++)
++def test_rounding_explicit_precision(round_func, value, precision, expected):
++    assert round_func(value, precision) == expected
++    assert round_func(value, precision=precision) == expected
++    assert _.map_([value, value], _.partial(round_func, precision=precision)) == [expected, expected]
++    assert _.map_([value, value], _.partial_right(round_func, precision)) == [expected, expected]
++
++
+ @parametrize(
+     "case,expected",
+     [

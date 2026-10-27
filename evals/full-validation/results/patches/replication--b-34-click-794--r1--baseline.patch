@@ -1,0 +1,66 @@
+diff --git a/click/core.py b/click/core.py
+index 7456451..f5ea56c 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1548,8 +1548,9 @@ class Option(Parameter):
+                     opts.append(decl)
+ 
+         if name is None and possible_names:
+-            possible_names.sort(key=lambda x: len(x[0]))
+-            name = possible_names[-1][1].replace('-', '_').lower()
++            # Prefer long options, preserving declaration order for ties.
++            possible_names.sort(key=lambda x: -len(x[0]))
++            name = possible_names[0][1].replace('-', '_').lower()
+             if not isidentifier(name):
+                 name = None
+ 
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d196fe2..a8fe972 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -7,6 +7,45 @@ import pytest
+ from click._compat import text_type
+ 
+ 
++@pytest.mark.parametrize('decls, expected_name', [
++    (['--foo-bar', '--other'], 'foo_bar'),
++    (['--other', '--foo-bar'], 'other'),
++    (['-f', '--foo-bar', '--other'], 'foo_bar'),
++    (['--foo-bar', '-f', '--other'], 'foo_bar'),
++    (['--foo-bar', '--other', '-f'], 'foo_bar'),
++    (['-f', '--other', '--foo-bar'], 'other'),
++    (['--other', '-f', '--foo-bar'], 'other'),
++    (['--other', '--foo-bar', '-f'], 'other'),
++    (['-f', '-o'], 'f'),
++    (['-o', '-f'], 'o'),
++    (['--FOO-BAR', '--other'], 'foo_bar'),
++    (['--foo-bar', '--other', 'destination'], 'destination'),
++    (['destination', '-f', '--foo-bar', '--other'], 'destination'),
++    (['-f', '++foo-bar', '++other'], 'foo_bar'),
++])
++def test_option_name_from_aliases(decls, expected_name):
++    assert click.Option(decls).name == expected_name
++
++
++@pytest.mark.parametrize('decls', [
++    ['--foo-bar', '--other'],
++    ['-f', '--foo-bar', '--other'],
++    ['--foo-bar', '-f', '--other'],
++    ['--foo-bar', '--other', '-f'],
++])
++def test_option_aliases_callback(runner, decls):
++    @click.command()
++    @click.option(*decls)
++    def cli(foo_bar):
++        click.echo(foo_bar)
++
++    for alias in decls:
++        result = runner.invoke(cli, [alias, 'value'])
++        assert not result.exception
++        assert result.exit_code == 0
++        assert result.output == 'value\n'
++
++
+ def test_prefixes(runner):
+     @click.command()
+     @click.option('++foo', is_flag=True, help='das foo')

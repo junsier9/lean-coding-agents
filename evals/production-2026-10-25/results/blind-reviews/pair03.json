@@ -1,0 +1,2419 @@
+{
+  "pair": "03",
+  "review_type": "independent arm-label-blinded code and behavior review",
+  "task": "Sentinel 成员以及持有默认 UNSET 的Option，在复制或pickle往返时可能失败，某些Python版本还无法deepcopy参数对象。请保留哨兵的单例身份，使参数对象的复制和序列化保持有效默认值及名称。",
+  "comparison": "same",
+  "preferred_arm": null,
+  "production_ast_equal": true,
+  "summary": "A/B 的生产代码仅注释不同，执行 AST 相同。两侧均用标准序列化协议按 Enum 类和成员名称恢复原哨兵，保留参数对象正常复制及默认值解析。两个本地 Python 版本上观察结果相同；未确认不安全修改或无当前需求的机制。",
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "A-J01",
+          "file": "A/src/click/_utils.py",
+          "line": 21,
+          "title": "序列化按名称恢复现有 Enum 成员，保留单例身份",
+          "evidence": "成员的值是各自 object()，新 hook 不尝试用往返后新建的 object 值查找 Enum，而是通过类与成员名找回规范实例。两个哨兵在 copy/copy.deepcopy 及 pickle 0..HIGHEST_PROTOCOL 往返后均保持 is 身份、名称和 repr，包含嵌套结构和字典键。",
+          "additional_locations": [
+            "A/src/click/_utils.py:15",
+            "A/src/click/_utils.py:16",
+            "A/src/click/_utils.py:25"
+          ],
+          "probe_ids": [
+            "sentinel_copy_identity",
+            "sentinel_pickle_all_protocols",
+            "shared_graph_and_dictionary_keys"
+          ]
+        },
+        {
+          "id": "A-J02",
+          "file": "A/src/click/_utils.py",
+          "line": 25,
+          "title": "修复根部协议而不改变 Parameter/Option 的公开默认语义",
+          "evidence": "没有在 Option 外包一层复制器，也没有把未设置默认值强行改成 None/False。源码原本用 is UNSET 区分用户未提供的值，布尔及多值 flag 默认值延迟解析；新协议保持这些身份检查。探针确认复制后的外层参数是新对象，名称/选项声明、普通 None、布尔 False、多值 ()、显式 falsy/default、flag_value 和 count 默认均保持。",
+          "additional_locations": [
+            "A/src/click/core.py:2352",
+            "A/src/click/core.py:2379",
+            "A/src/click/core.py:3011",
+            "A/src/click/core.py:3138"
+          ],
+          "probe_ids": [
+            "unset_option_defaults_and_names",
+            "argument_defaults_and_names",
+            "explicit_falsy_and_derived_defaults"
+          ]
+        },
+        {
+          "id": "A-J03",
+          "file": "A/src/click/_utils.py",
+          "line": 21,
+          "title": "标准复制所有权和现有错误行为未被吞掉",
+          "evidence": "只为单例哨兵提供还原协议，未将参数对象的 copy/deepcopy 直接返回原对象，也未捕获复制或解析错误后假装成功。浅拷贝保留其普通列表别名语义，deepcopy/pickle 的列表默认值与选项列表可独立变更；必填参数及非法整数值仍分别抛 MissingParameter 和 BadParameter。",
+          "probe_ids": [
+            "copy_ownership_semantics",
+            "missing_and_invalid_value_errors"
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "B-J01",
+          "file": "B/src/click/_utils.py",
+          "line": 21,
+          "title": "相同的名称恢复协议解决哨兵值身份问题",
+          "evidence": "__reduce_ex__ 的执行逻辑与 A 相同；它返回对实际类成员的查找，而不是创建新的哨兵或增加自有注册表。两个 Python 版本和所有本地 pickle 协议均保持 UNSET、FLAG_NEEDS_VALUE 的规范实例身份。",
+          "additional_locations": [
+            "B/src/click/_utils.py:15",
+            "B/src/click/_utils.py:16",
+            "B/src/click/_utils.py:25"
+          ],
+          "probe_ids": [
+            "sentinel_copy_identity",
+            "sentinel_pickle_all_protocols",
+            "shared_graph_and_dictionary_keys"
+          ]
+        },
+        {
+          "id": "B-J02",
+          "file": "B/src/click/_utils.py",
+          "line": 25,
+          "title": "保留 raw UNSET 与延迟默认值解析的公共契约",
+          "evidence": "Parameter 与 Option 构造/解析没有改动；raw default 和 flag_value 保持 UNSET，不等于 CLI 中最终暴露的 None、False 或 ()。局部探针同时检查标准 Option、Argument、显式名称、别名及显式/推导默认值，结果与 A 一致。",
+          "additional_locations": [
+            "B/src/click/core.py:2352",
+            "B/src/click/core.py:2379",
+            "B/src/click/core.py:3011",
+            "B/src/click/core.py:3138"
+          ],
+          "probe_ids": [
+            "unset_option_defaults_and_names",
+            "argument_defaults_and_names",
+            "explicit_falsy_and_derived_defaults"
+          ]
+        },
+        {
+          "id": "B-J03",
+          "file": "B/src/click/_utils.py",
+          "line": 21,
+          "title": "没有新增无依据的包装、复制或错误兜底",
+          "evidence": "该协议 hook 是本题实际序列化失败所需的机制。参数仍按普通浅拷贝、深拷贝和 pickle 规则生成新外层对象；深层列表所有权及 MissingParameter/BadParameter 失败路径与 A 相同。测试组织不同未被当作选优依据。",
+          "probe_ids": [
+            "copy_ownership_semantics",
+            "missing_and_invalid_value_errors"
+          ]
+        }
+      ],
+      "unresolved": []
+    }
+  },
+  "probe_method": {
+    "environments": [
+      "Bundled Python 3.12.14",
+      "Existing local Python 3.13.0"
+    ],
+    "isolation": "Only permitted src/click packages were copied to a newly created reviewer temporary directory. Each variant/runtime was imported in its own local subprocess, with -B and PYTHONDONTWRITEBYTECODE=1.",
+    "model_calls": 0,
+    "network_calls": 0,
+    "packages_installed": false,
+    "candidate_tests_executed": false,
+    "groups": [
+      "Both Sentinel members retain identity through shallow/deep copy",
+      "Both members retain identity and representation through every available pickle protocol",
+      "Nested shared graphs and dictionary sentinel keys retain canonical members",
+      "Unset ordinary/boolean/multiple Option defaults, declarations and explicit names survive each copy mode",
+      "Optional Argument defaults and normalized names survive each copy mode",
+      "Ordinary shallow aliases remain shallow; deepcopy/pickle produce independently mutable default and option lists",
+      "Required and invalid typed value errors preserve their public classes and parameter names",
+      "Explicit None/zero/False/empty string, non-boolean flag activation and derived count defaults remain distinct from UNSET"
+    ],
+    "counting_limit": "Eight overlapping probe groups per variant/runtime, not independent quality samples. Several base failures share the same underlying Enum pickle failure.",
+    "source_sha256": "409852487D00B2D64B7AB988780FFD20CBCF3DFFC55AC9D13150436B44068B8F",
+    "source": "import copy\nimport json\nfrom pathlib import Path\nimport pickle\nimport sys\n\nsys.dont_write_bytecode = True\nsys.path.insert(0, str(Path(sys.argv[1]).resolve()))\nimport click\nfrom click._utils import Sentinel, UNSET, FLAG_NEEDS_VALUE\n\n\ndef require(condition, message):\n    if not condition:\n        raise AssertionError(message)\n\n\ndef roundtrip(value):\n    return pickle.loads(pickle.dumps(value))\n\n\nMODES = [('copy', copy.copy), ('deepcopy', copy.deepcopy), ('pickle', roundtrip)]\n\n\ndef parse(parameter, args=()):\n    command = click.Command('review', params=[parameter])\n    with command.make_context('review', list(args)) as context:\n        return dict(context.params)\n\n\ndef same_parameter_fields(original, restored):\n    require(restored is not original, 'parameter object was not copied')\n    require(restored.name == original.name and restored.opts == original.opts, 'parameter name/declarations changed')\n    require(restored._default_explicit == original._default_explicit, 'explicit default marker changed')\n    if original.default is UNSET:\n        require(restored.default is UNSET, 'raw missing default lost singleton identity')\n    else:\n        require(type(restored.default) is type(original.default) and restored.default == original.default, 'explicit default changed')\n    if isinstance(original, click.Option):\n        require(restored.secondary_opts == original.secondary_opts, 'secondary declarations changed')\n        if original.flag_value is UNSET:\n            require(restored.flag_value is UNSET, 'raw missing flag_value lost identity')\n        else:\n            require(restored.flag_value == original.flag_value, 'explicit flag value changed')\n\n\ndef sentinel_copy_identity():\n    observed = []\n    for member in Sentinel:\n        for name, operation in MODES[:2]:\n            restored = operation(member)\n            require(restored is member, 'sentinel copy identity changed')\n            observed.append([member.name, name, True])\n    return observed\n\n\ndef sentinel_pickle_all_protocols():\n    observed = []\n    for member in Sentinel:\n        for protocol in range(pickle.HIGHEST_PROTOCOL + 1):\n            restored = pickle.loads(pickle.dumps(member, protocol=protocol))\n            require(restored is member, 'sentinel pickle identity changed')\n            require(restored.name == member.name and repr(restored) == repr(member), 'sentinel representation changed')\n            observed.append([member.name, protocol, True])\n    return observed\n\n\ndef shared_graph_and_dictionary_keys():\n    graph = {UNSET: [UNSET, {'flag': FLAG_NEEDS_VALUE}], FLAG_NEEDS_VALUE: UNSET}\n    observed = []\n    for name, operation in MODES[1:]:\n        restored = operation(graph)\n        require(restored is not graph and set(restored) == {UNSET, FLAG_NEEDS_VALUE}, 'sentinel mapping keys changed')\n        require(restored[UNSET][0] is UNSET and restored[UNSET][1]['flag'] is FLAG_NEEDS_VALUE, 'nested sentinel identity changed')\n        require(restored[FLAG_NEEDS_VALUE] is UNSET, 'shared sentinel graph changed')\n        observed.append([name, True])\n    return observed\n\n\ndef unset_option_defaults_and_names():\n    observed = []\n    for kwargs, expected in [({}, None), ({'is_flag': True}, False), ({'is_flag': True, 'multiple': True}, ())]:\n        original = click.Option(['-v', '--example-value', 'value'], **kwargs)\n        require(original.default is UNSET and original.flag_value is UNSET, 'unexpected source raw-default contract')\n        require(parse(original) == {'value': expected}, 'unexpected source effective default')\n        for name, operation in MODES:\n            restored = operation(original)\n            same_parameter_fields(original, restored)\n            require(restored.name == 'value' and restored.opts == ['-v', '--example-value'], 'explicit option name changed')\n            require(parse(restored) == {'value': expected}, 'restored option effective default changed')\n            require(restored.to_info_dict()['default'] == expected, 'introspection default changed')\n            observed.append({'mode': name, 'kwargs': kwargs, 'value': expected})\n    return observed\n\n\ndef argument_defaults_and_names():\n    observed = []\n    for kwargs, expected in [({'required': False}, None), ({'required': False, 'default': 0, 'type': int}, 0)]:\n        original = click.Argument(['example-value'], **kwargs)\n        require(original.name == 'example_value', 'unexpected source argument normalization')\n        for name, operation in MODES:\n            restored = operation(original)\n            same_parameter_fields(original, restored)\n            require(parse(restored) == {'example_value': expected}, 'restored argument default changed')\n            observed.append({'mode': name, 'expected': expected, 'name': restored.name})\n    return observed\n\n\ndef copy_ownership_semantics():\n    observed = []\n    for name, operation in MODES:\n        original = click.Option(['--value'], multiple=True, type=int, default=[1, 2])\n        restored = operation(original)\n        same_parameter_fields(original, restored)\n        if name == 'copy':\n            require(restored.opts is original.opts and restored.default is original.default, 'ordinary shallow copy semantics changed')\n            ownership = 'shallow aliases retained'\n        else:\n            require(restored.opts is not original.opts and restored.default is not original.default, 'deep/serialized ownership was not independent')\n            restored.opts.append('--other')\n            restored.default.append(3)\n            require(original.opts == ['--value'] and original.default == [1, 2], 'restored mutation leaked to original')\n            ownership = 'independent nested lists'\n        observed.append({'mode': name, 'ownership': ownership, 'name': restored.name})\n    return observed\n\n\ndef missing_and_invalid_value_errors():\n    observed = []\n    for name, operation in MODES:\n        required = operation(click.Option(['--value'], required=True))\n        caught = None\n        try:\n            parse(required)\n        except BaseException as error:\n            caught = error\n        require(isinstance(caught, click.MissingParameter) and caught.param.name == 'value', 'required parameter failure changed')\n        integer = operation(click.Option(['--value'], type=int))\n        caught = None\n        try:\n            parse(integer, ['--value', 'bad-int'])\n        except BaseException as error:\n            caught = error\n        require(isinstance(caught, click.BadParameter) and caught.param.name == 'value', 'invalid typed value failure changed')\n        observed.append({'mode': name, 'missing': 'MissingParameter', 'invalid_value': 'BadParameter'})\n    return observed\n\n\ndef explicit_falsy_and_derived_defaults():\n    observed = []\n    for kwargs, expected in [({'default': None}, None), ({'default': 0}, 0), ({'default': False}, False),\n                             ({'default': ''}, ''), ({'flag_value': 'fast', 'default': True}, 'fast'),\n                             ({'count': True}, 0)]:\n        original = click.Option(['--value'], **kwargs)\n        require(parse(original) == {'value': expected}, 'unexpected source explicit/derived default')\n        for name, operation in MODES:\n            restored = operation(original)\n            same_parameter_fields(original, restored)\n            require(parse(restored) == {'value': expected}, 'restored explicit/derived default changed')\n            observed.append({'mode': name, 'kwargs': kwargs, 'value': expected,\n                             'default_explicit': restored._default_explicit})\n    return observed\n\n\nresults = {}\nfor function in [sentinel_copy_identity, sentinel_pickle_all_protocols, shared_graph_and_dictionary_keys,\n                 unset_option_defaults_and_names, argument_defaults_and_names, copy_ownership_semantics,\n                 missing_and_invalid_value_errors, explicit_falsy_and_derived_defaults]:\n    try:\n        results[function.__name__] = {'passed': True, 'observed': function()}\n    except BaseException as error:\n        results[function.__name__] = {'passed': False, 'exception': type(error).__name__, 'message': str(error)}\nprint(json.dumps({'module_file': str(Path(click.__file__).resolve()),\n                  'python_version': sys.version, 'highest_pickle_protocol': pickle.HIGHEST_PROTOCOL,\n                  'passed': sum(result['passed'] for result in results.values()),\n                  'total': len(results), 'results': results}))\n",
+    "temporary_work_directory_removed": true
+  },
+  "probe_results": {
+    "3.12.14": {
+      "base": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\base\\click\\__init__.py",
+        "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 1,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D50> is not a valid Sentinel"
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D70> is not a valid Sentinel"
+          },
+          "unset_option_defaults_and_names": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D70> is not a valid Sentinel"
+          },
+          "argument_defaults_and_names": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D60> is not a valid Sentinel"
+          },
+          "copy_ownership_semantics": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D70> is not a valid Sentinel"
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D70> is not a valid Sentinel"
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x0000025E732F8D10> is not a valid Sentinel"
+          }
+        }
+      },
+      "A": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\A\\click\\__init__.py",
+        "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 8,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                0,
+                true
+              ],
+              [
+                "UNSET",
+                1,
+                true
+              ],
+              [
+                "UNSET",
+                2,
+                true
+              ],
+              [
+                "UNSET",
+                3,
+                true
+              ],
+              [
+                "UNSET",
+                4,
+                true
+              ],
+              [
+                "UNSET",
+                5,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                0,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                1,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                2,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                3,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                4,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                5,
+                true
+              ]
+            ]
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": true,
+            "observed": [
+              [
+                "deepcopy",
+                true
+              ],
+              [
+                "pickle",
+                true
+              ]
+            ]
+          },
+          "unset_option_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              }
+            ]
+          },
+          "argument_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "copy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": 0,
+                "name": "example_value"
+              }
+            ]
+          },
+          "copy_ownership_semantics": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "ownership": "shallow aliases retained",
+                "name": "value"
+              },
+              {
+                "mode": "deepcopy",
+                "ownership": "independent nested lists",
+                "name": "value"
+              },
+              {
+                "mode": "pickle",
+                "ownership": "independent nested lists",
+                "name": "value"
+              }
+            ]
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "deepcopy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "pickle",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              }
+            ]
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              }
+            ]
+          }
+        }
+      },
+      "B": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\B\\click\\__init__.py",
+        "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 8,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                0,
+                true
+              ],
+              [
+                "UNSET",
+                1,
+                true
+              ],
+              [
+                "UNSET",
+                2,
+                true
+              ],
+              [
+                "UNSET",
+                3,
+                true
+              ],
+              [
+                "UNSET",
+                4,
+                true
+              ],
+              [
+                "UNSET",
+                5,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                0,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                1,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                2,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                3,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                4,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                5,
+                true
+              ]
+            ]
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": true,
+            "observed": [
+              [
+                "deepcopy",
+                true
+              ],
+              [
+                "pickle",
+                true
+              ]
+            ]
+          },
+          "unset_option_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              }
+            ]
+          },
+          "argument_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "copy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": 0,
+                "name": "example_value"
+              }
+            ]
+          },
+          "copy_ownership_semantics": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "ownership": "shallow aliases retained",
+                "name": "value"
+              },
+              {
+                "mode": "deepcopy",
+                "ownership": "independent nested lists",
+                "name": "value"
+              },
+              {
+                "mode": "pickle",
+                "ownership": "independent nested lists",
+                "name": "value"
+              }
+            ]
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "deepcopy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "pickle",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              }
+            ]
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              }
+            ]
+          }
+        }
+      }
+    },
+    "3.13.0": {
+      "base": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\base\\click\\__init__.py",
+        "python_version": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 1,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0CD0> is not a valid Sentinel"
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0CF0> is not a valid Sentinel"
+          },
+          "unset_option_defaults_and_names": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0CC0> is not a valid Sentinel"
+          },
+          "argument_defaults_and_names": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0C90> is not a valid Sentinel"
+          },
+          "copy_ownership_semantics": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0CE0> is not a valid Sentinel"
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0D00> is not a valid Sentinel"
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": false,
+            "exception": "ValueError",
+            "message": "<object object at 0x000002A47CAD0CC0> is not a valid Sentinel"
+          }
+        }
+      },
+      "A": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\A\\click\\__init__.py",
+        "python_version": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 8,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                0,
+                true
+              ],
+              [
+                "UNSET",
+                1,
+                true
+              ],
+              [
+                "UNSET",
+                2,
+                true
+              ],
+              [
+                "UNSET",
+                3,
+                true
+              ],
+              [
+                "UNSET",
+                4,
+                true
+              ],
+              [
+                "UNSET",
+                5,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                0,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                1,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                2,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                3,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                4,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                5,
+                true
+              ]
+            ]
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": true,
+            "observed": [
+              [
+                "deepcopy",
+                true
+              ],
+              [
+                "pickle",
+                true
+              ]
+            ]
+          },
+          "unset_option_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              }
+            ]
+          },
+          "argument_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "copy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": 0,
+                "name": "example_value"
+              }
+            ]
+          },
+          "copy_ownership_semantics": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "ownership": "shallow aliases retained",
+                "name": "value"
+              },
+              {
+                "mode": "deepcopy",
+                "ownership": "independent nested lists",
+                "name": "value"
+              },
+              {
+                "mode": "pickle",
+                "ownership": "independent nested lists",
+                "name": "value"
+              }
+            ]
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "deepcopy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "pickle",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              }
+            ]
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              }
+            ]
+          }
+        }
+      },
+      "B": {
+        "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair03-review-xojpgpu4\\B\\click\\__init__.py",
+        "python_version": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+        "highest_pickle_protocol": 5,
+        "passed": 8,
+        "total": 8,
+        "results": {
+          "sentinel_copy_identity": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                "copy",
+                true
+              ],
+              [
+                "UNSET",
+                "deepcopy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "copy",
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                "deepcopy",
+                true
+              ]
+            ]
+          },
+          "sentinel_pickle_all_protocols": {
+            "passed": true,
+            "observed": [
+              [
+                "UNSET",
+                0,
+                true
+              ],
+              [
+                "UNSET",
+                1,
+                true
+              ],
+              [
+                "UNSET",
+                2,
+                true
+              ],
+              [
+                "UNSET",
+                3,
+                true
+              ],
+              [
+                "UNSET",
+                4,
+                true
+              ],
+              [
+                "UNSET",
+                5,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                0,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                1,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                2,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                3,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                4,
+                true
+              ],
+              [
+                "FLAG_NEEDS_VALUE",
+                5,
+                true
+              ]
+            ]
+          },
+          "shared_graph_and_dictionary_keys": {
+            "passed": true,
+            "observed": [
+              [
+                "deepcopy",
+                true
+              ],
+              [
+                "pickle",
+                true
+              ]
+            ]
+          },
+          "unset_option_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {},
+                "value": null
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true
+                },
+                "value": false
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "is_flag": true,
+                  "multiple": true
+                },
+                "value": []
+              }
+            ]
+          },
+          "argument_defaults_and_names": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": null,
+                "name": "example_value"
+              },
+              {
+                "mode": "copy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "deepcopy",
+                "expected": 0,
+                "name": "example_value"
+              },
+              {
+                "mode": "pickle",
+                "expected": 0,
+                "name": "example_value"
+              }
+            ]
+          },
+          "copy_ownership_semantics": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "ownership": "shallow aliases retained",
+                "name": "value"
+              },
+              {
+                "mode": "deepcopy",
+                "ownership": "independent nested lists",
+                "name": "value"
+              },
+              {
+                "mode": "pickle",
+                "ownership": "independent nested lists",
+                "name": "value"
+              }
+            ]
+          },
+          "missing_and_invalid_value_errors": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "deepcopy",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              },
+              {
+                "mode": "pickle",
+                "missing": "MissingParameter",
+                "invalid_value": "BadParameter"
+              }
+            ]
+          },
+          "explicit_falsy_and_derived_defaults": {
+            "passed": true,
+            "observed": [
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": null
+                },
+                "value": null,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": 0
+                },
+                "value": 0,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": false
+                },
+                "value": false,
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "default": ""
+                },
+                "value": "",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "flag_value": "fast",
+                  "default": true
+                },
+                "value": "fast",
+                "default_explicit": true
+              },
+              {
+                "mode": "copy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "deepcopy",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              },
+              {
+                "mode": "pickle",
+                "kwargs": {
+                  "count": true
+                },
+                "value": 0,
+                "default_explicit": false
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "source_immutability": {
+    "files_verified": 501,
+    "all_audited_bytes_unchanged": true,
+    "source_hashes": {
+      "base/.editorconfig": "F45C88DC00E3E9F273CC30B2F139EE880EF27A6A404CA4D2FD7F0E96F9EC0F9C",
+      "base/.gitignore": "720CAB9A19B491829EC512B17A4E134E193E622E56F5D0271AE0895E8224EB40",
+      "base/.pre-commit-config.yaml": "32F781C5F5555301804F5D42916C7D8AFB62871CA362B93DBE80033EB5E78DC4",
+      "base/.readthedocs.yaml": "0A21349AD847B7EA4975C46804314DAF5A45DC57D40A3C61A42129EA476B9D4B",
+      "base/CHANGES.md": "73DDB9996DFC8C9DCF9367A4839FFC5B06AC2F8CE552BBA5E3269CC3A2239C0E",
+      "base/LICENSE.txt": "9A8AD106A394E853BFE21F42F4E72D592819A22805D991B5F3275029292B658D",
+      "base/pyproject.toml": "6CCA567EEF4004426C3A42A94DE7EF6B971992F1D7292FAEA3A17DD322D92717",
+      "base/README.md": "4C3DE4AA0918DEAC2F712FACACD1DC30A8CC4627D0118DD290292AB0AF65CA0B",
+      "base/uv.lock": "CCC151DF44B77B6D2A3C4ED36BADDE2E1210BCFCDDAE7A4A6FF28A6AFE3092CF",
+      "base/.devcontainer/devcontainer.json": "BCD781152FE5729C83A612F3186C011F217082BB68D07F73FC4D49F53C6C369F",
+      "base/.devcontainer/on-create-command.sh": "B863A4CB17DDDA2276B26CA97949E480A04FDD89000D8B3A292A95907CD0DAFA",
+      "base/.github/pull_request_template.md": "F92D7FA6366D19DFED8F7B49E753C506C39BB17E23F0908DA9DEA408F0F07800",
+      "base/docs/advanced.md": "D612344BE039FD087598AAFE911DE85C779B6147C357C710014CCBADE323CC51",
+      "base/docs/api.md": "DA52DF0D42A914B8C63964CC571360539B47C6231DE0D2A1D55F14BF88B5035A",
+      "base/docs/arguments.md": "54844BF17DF1CFD1F98EB506C5C456B27AEF46C578E1B40D6E5C2075A6CAC39D",
+      "base/docs/changes.md": "8F159BBF660B0168199F13A8FCBCB6C61446560FA938C4626E3ACFD1FFEE0225",
+      "base/docs/click-concepts.md": "E2343798EFF45F60CCCB621FE61808A5F04C297CFB7D52E76E07193C268DEA65",
+      "base/docs/command-line-reference.md": "2DAE95CF440164461CE224DD3571DA48E6619655B866AA993A17619CC73F3988",
+      "base/docs/commands-and-groups.md": "4A40E68A392572CF62F2EB677E3C4229D2B3B2577F7B2CB9F065D3F9F6ED5EAA",
+      "base/docs/commands.md": "63D4A95A1CA6F6F2D9976A9CF8F8A55B0697115526A2C1E98AF8151CEBE922E1",
+      "base/docs/complex.md": "B2DAC49397833850A0BB28EFAB45964646A897EB7321CECC915B687F7371BE3A",
+      "base/docs/conf.py": "23C516899B6C0994A305FE05699BCBE50F819872C6B1E2E75C0044199A9CDB9D",
+      "base/docs/contrib.md": "B06443BA789A6F17D98D82473FC44FA7381412480A15C02E00F412E169C8B674",
+      "base/docs/contributing.md": "1D9C25130401B3A20C33F36261A2F8742EE61876E05ADEA7B116EAE7A58FADD6",
+      "base/docs/design-opinions.md": "1336BBEC4E0D5E29A2B0E67D8662E7A5BB35C325F8C739D3C287F65BF44547ED",
+      "base/docs/documentation.md": "A62C8C22905724D2D931ED0234A032B0309AC976D1F8D294BECB4E658A7ACD15",
+      "base/docs/entry-points.md": "4D044227E4073D6F94E28F24A6D3CFDADB167A83BE50E5FB22A3BF9A846B7CD1",
+      "base/docs/exceptions.md": "A8D8CA99AA5B2A1C310E4D88D5B5A2B779D9EE9C7775994CF65C409AE2577B86",
+      "base/docs/extending-click.md": "E3723877D1805D4785E736C86A05B330BEDA91BE442BD93F1ABEA109786AA12F",
+      "base/docs/faqs.md": "4609083BEFA5C361E6BD03FBF3492C03F73A651D9C30077ABBD20210EF749D09",
+      "base/docs/handling-files.md": "CBA0A5E575813A50B5AD2C4AF26482DA39055BBA198C737DC3388A579C5C7690",
+      "base/docs/index.md": "F1D69B566D5560BC7F121B207773BA4D1BCBF52A1BED0245E8467A2201D72ECC",
+      "base/docs/license.md": "B4AA3A8B0DFD4C8CEA97EA65B3F19EF54BD280665533478F35C0A5D205A7D341",
+      "base/docs/option-decorators.md": "5C719C04B4A17BEE3C4DC59BCB06E26DEF026F2F38D69309DC070512332BEAE6",
+      "base/docs/options.md": "59B68F20F2C6EB85530C6F45CEFD0FB28AE9E6292FE388F96B381F9E87B848A5",
+      "base/docs/parameter-types.md": "E0CC2F73D578E0057754E8DD2B16D59B9570A28DDAC681F19F023D1384088AEC",
+      "base/docs/parameters.md": "4A7C64F5E9A967491D4F289CA6845B524C8495C5D53FA56AE58269993CF0E060",
+      "base/docs/prompts.md": "409509E5ABA1FB846C24BA716E89FE44EC4E064BE5ADADBE9D254F227A1A0BF8",
+      "base/docs/quickstart.md": "4918F3664F0C2F13654200C03537745FBD0CEFCFF0C87CC7452EE4ED14586A37",
+      "base/docs/setuptools.md": "52397A6999ED2BE086A807068C691F9C55B6897E578C405C05911860F1AED55F",
+      "base/docs/shell-completion.md": "B9FA613000583AD0E2846BBAA67BF497B8F829821342275A6E3FA1D188F03125",
+      "base/docs/standalone-apps.md": "6B761B72344EBD2D2FF10192D79F3C55A0DA0ACF44DC75F58B35CF160A66A8FA",
+      "base/docs/support-multiple-versions.md": "25DF76413ACED1B34EC6592888553AB0143BA03A2A2388EF154AC28E1EF8B8FE",
+      "base/docs/testing.md": "61C905C17ECACD1661478B018D4B4607BEDCECD22A340C7A61CF0F684ABD33BB",
+      "base/docs/unicode-support.md": "063F0A6127BDB220994780093454942CDAE90CB350C8D5AD3DDC93B36435ADF8",
+      "base/docs/upgrade-guides.md": "B491070DB38161113D177A26C32D2103E6A49398F3EEAD8A4A817E29CD5A8790",
+      "base/docs/utils.md": "54CFFD20CD7ACBCFBD316A449D9B66C923008A12AC23A0B479BFE32A8FF7FFB3",
+      "base/docs/virtualenv.md": "CFA6BF88DC769B65A4CDD8A697AC96E062692C3D741D52BB6F74D7A95A194F0C",
+      "base/docs/why.md": "F351B5D4DC3C81145BEC405C9C8353C6ED239AF28E8315DC7B356B4E920CCAD6",
+      "base/docs/wincmd.md": "80286E18FC53E09F98D07D184E1D9412E5C188BE268379305C51201F3DC5E1E3",
+      "base/examples/README": "8643885584197D9D76DC8332F9C6F5CCA2AF59584DBF53CA600CF3EBF8278E58",
+      "base/tests/conftest.py": "192BE82444D6048FD222E2D73CD5C3BEC768D65C6E10C0FFC230F307F363590B",
+      "base/tests/test_arguments.py": "F3D859A511AB161F2BDB8F404E3E8C2EEC7626D7EBB9E7DBF1A0366CC4A60559",
+      "base/tests/test_basic.py": "AF3E91D16BEBB42750737F297DA9825DCE6ECC516DB9295B3B0C6D6D62A1337D",
+      "base/tests/test_chain.py": "32247D8A208C84E571A89E87CBCE389CC9AAC08E98ECE741C7D53FCA0C63D881",
+      "base/tests/test_commands.py": "5B1ABF5578E03627B3171E7486C377CD5953EBAB2F82D9EACF8F44C305278D3E",
+      "base/tests/test_command_decorators.py": "234EDE359DA2839923AF2436056680BAB68BDBA622BF596452BBFBE1E1CFD6FA",
+      "base/tests/test_compat.py": "6F697F0112A67A62D2D6DAF038F9A4934210BD583881FBA773ED83FDBDB10C19",
+      "base/tests/test_context.py": "187B7B8F9B1E666AF21629C93D69702239B06A8ECD4840B83EDE37E7CC32ADCF",
+      "base/tests/test_custom_classes.py": "9D403C3B960CA927170645DCB144DB33EB42C705208B6FA3B235C54889EEE8E0",
+      "base/tests/test_defaults.py": "8E424EA80AC72EC614855B7B51E8AF149FB8275E0E3D4DE2F81F428DD0E71B88",
+      "base/tests/test_deprecations.py": "1B384F420F17B274E9552386DA4E2B94643349B79219F84FA0B0FE5C0D842A0A",
+      "base/tests/test_formatting.py": "EBCA0FE3B8CC26E4C8F52A785E44ABC0A3604906D6DEDC2F158E4E85DB4E94E0",
+      "base/tests/test_imports.py": "77357638CB04FDA1E89ABD7C4D3CAF54194982270938FED8CA9029965ED5477B",
+      "base/tests/test_info_dict.py": "00DECAA4770E915F954FC4513AE9909EA0AF6293566C9495AC3F197E34E7251E",
+      "base/tests/test_normalization.py": "5619FB315C33B79976693893DDE41E84CD5E806E0C3E5BEA15346F0FAFA934E0",
+      "base/tests/test_options.py": "6B9D80E2449E6A9CDD3186EEE305C6249464FE31298336566CBEF2FF4E962E1E",
+      "base/tests/test_parser.py": "9E3A95FB896166E23BB8070DE55A7D81A72A95C0B4909DA659E54274B1615069",
+      "base/tests/test_shell_completion.py": "D45F0B1B42850463A3A07273989518D477F8B19C4CA0D8EF74DC29C309276BD8",
+      "base/tests/test_stream_lifecycle.py": "A2471FBD9C222213380AEF823A537521C8DCC8224709814708149217FC932524",
+      "base/tests/test_termui.py": "D082866744A75B4732536CFA991260754C56B237D7A7BDC7D18FCBE04786057C",
+      "base/tests/test_testing.py": "4AF5187E3F6EB22E2D4CD3F9EDFFE5D162103043E4E0D33A5734E74EDEBABA1C",
+      "base/tests/test_types.py": "C3C9E627576ACEEA5F22B75E2AABD1167D26C6AED224A4A220E93D76EBBFA863",
+      "base/.github/ISSUE_TEMPLATE/bug-report.md": "B21EFD841C0F91179CAF8366D97EE897BD4322EE948329FC5BD9A937B17B543A",
+      "base/.github/ISSUE_TEMPLATE/config.yml": "EC732B9892BEA1FE1B9B00DFDA018E219AB9D256120205BA8C0AD5591F6BD126",
+      "base/.github/ISSUE_TEMPLATE/feature-request.md": "FBFA2D2287F86D437E8A4F2AD8A5FBD69C58B6ADC27F053DA7757E943FB6BF3C",
+      "base/.github/workflows/lock.yaml": "E05F221702CB1F6EB8548C2C9C7E7A296228F5EABB7BB3D5E7C9E34F766936A6",
+      "base/.github/workflows/nightly.yaml": "40CD70BD796D109DC67428BEA07DC2CC87E935ECF2F34539E732AEE5DBF277EF",
+      "base/.github/workflows/pre-commit.yaml": "90B2FB1FD39721CED99346539A52C8DE364A6E8D5BD39FF59E6EB0895CB578B2",
+      "base/.github/workflows/publish.yaml": "0D5E80C05CC86D380C76FA63744A16E5CEA002A7E22A9B120F255CF3295B8BE9",
+      "base/.github/workflows/tests.yaml": "B3FDC93C050DAA1340F36B585FD87FCFC00E4E5CD3C0A7DCFD5BCCA3585063D4",
+      "base/.github/workflows/zizmor.yaml": "64DE91FF3CB5BEA40A64737DC1B4944D38849735E2F3CF0B93DFFC78065786D9",
+      "base/docs/_static/click-icon.svg": "20C9F54B71A2958E8391B7DB36B509FA1B90FD77536F6DCD5BF5A8A21A84CAE8",
+      "base/docs/_static/click-logo.svg": "B37F0C46A2C3A41989E3BB219C632D30F108B8B7A2EC55B5B2A089A252700EC2",
+      "base/docs/_static/click-name.svg": "311F6C120EAA6F5F710CF0DA7A29698FA98A698201E66DFE6595D9E579BA59E8",
+      "base/examples/aliases/aliases.ini": "64369C475FBF5404B40FA74E05147003C746B4EF51017CF115623A04BBCB45AB",
+      "base/examples/aliases/aliases.py": "CE8E75F58D7A61C9390C5E8734B24CAA83E37447D283CE121DC07A61F4801340",
+      "base/examples/aliases/pyproject.toml": "413AB0BD185393B340373AFD839D19C1C0BF85123ED241946D311FB5EEB60331",
+      "base/examples/aliases/README": "20AC19EE5FE14683191CC25F20F9C161C37B53AE3BEA31637BA6F25D91488242",
+      "base/examples/colors/colors.py": "674B6442B8CD39319A9448FE67C9BADBCBE512DA7280985065AA51B8839E9614",
+      "base/examples/colors/pyproject.toml": "7D5AA5C4BA2C8223BEEAD363223A54688A01093B4771AC50FD329E5BF1FA66C3",
+      "base/examples/colors/README": "7E4290DFBC2AD61264BD825F916A793BEAD2D6123F1F0CE35D2D182DA1E03E05",
+      "base/examples/completion/completion.py": "CEEB4F35FA92D4ABCC537E0759624CB404E5B1600690467A099C8552A4B7BFF2",
+      "base/examples/completion/pyproject.toml": "80AEFD652EE7DF03457208EAE0FEF567C9423D014FC1E60ADB1C6D666950CC1D",
+      "base/examples/completion/README": "CFA5F48113E8838E249639C9A458AC70B6E933FCED0A808267934F707F8F9B0E",
+      "base/examples/complex/pyproject.toml": "D7E12FCC656A46F56FA68874987D355C09C0C3A43D7DED4404D0F34BD3715841",
+      "base/examples/complex/README": "7AB227EC7DE296EA1A6D4E9B3EE6B74C72E05FF696115DBC8033460DCA9C36BA",
+      "base/examples/imagepipe/.gitignore": "2259EBAFE9B7FCCD958FC09608B02D2D630FA69BE9348454A88076583464C439",
+      "base/examples/imagepipe/example01.jpg": "128E4E0F813010E6A0B5E4F51F5CC9C03A48507E0F67546AD298187114F69210",
+      "base/examples/imagepipe/example02.jpg": "6D314402631C2CE8A3C19505570308F5F1557FBAC346062EDBA23861DED0A09C",
+      "base/examples/imagepipe/imagepipe.py": "EAF679FC90B988C938B2A32FF4D716D25127FE63A8C3804222628FFE8EC46DC2",
+      "base/examples/imagepipe/pyproject.toml": "437435A60F616DA84629BF838F43D999830246276E327CB4856C7229244DCD01",
+      "base/examples/imagepipe/README": "896408521C4395A488727FB857D42D4D9821AC047B56110AABDAA9FF1F24066E",
+      "base/examples/inout/inout.py": "F0A15C4C3D331111841605298951DD281F5B8DF116119E331094880704159E35",
+      "base/examples/inout/pyproject.toml": "198672121CDB99F76BA2CD3FDC7CF2466B4B99CFE3FB6723FFD19EF668CD8E2E",
+      "base/examples/inout/README": "FCAFEE766484F079ED5D2E4A36143F23074D3842FB47CE88B5E018E9DA08FA78",
+      "base/examples/naval/naval.py": "A8D3748EEAA204012B1794EA77BE6DD23DFDB141C2D5940332C06C73B266A0C1",
+      "base/examples/naval/pyproject.toml": "04FBD3515C198FEA621D8E0AB25C0D2CBC75D6A725B8F09801C92487664BAC05",
+      "base/examples/naval/README": "4A9876E6F33247905E0A714DD4F34E07FC9DD21AE297AA920269B3B00FBBF284",
+      "base/examples/repo/pyproject.toml": "5C749725E190DC0DE9237F79DF37519551036105E365EDEFBFD3BE673B1458B1",
+      "base/examples/repo/README": "1BD41A77284420EB92FEE285705A2189232148F383825E9768E5ADE7263CD647",
+      "base/examples/repo/repo.py": "CEF5766BC59330FF9342F7C6A7EABFE89716AB46A7F719D84A7B97D3B12F5F09",
+      "base/examples/termui/pyproject.toml": "6FD8CB6BE9BD49CACE3F9216861993DA62AA6A7F513F3762CEDE7BC66828807E",
+      "base/examples/termui/README": "06B845269DE7A573EAAE8196667E3DE11B684F2875B602DF0D13FF13B2052611",
+      "base/examples/termui/termui.py": "CC79721D0E7250C9AA23CFAFB4F897CD1FD25711371AE58AAB616760BE47381D",
+      "base/examples/validation/pyproject.toml": "1961631B9FBF0D82F1C66F86B3ABF66251577626A59B01E7AEC60EF9C521D4C4",
+      "base/examples/validation/README": "BFE27C7DB860A086B52B1F8C23844755DA14B088ADD3BE709F309E9CB32FA676",
+      "base/examples/validation/validation.py": "246C4962FFF19BBF12CF620E141A904AC9059698F0002C11833BB882F492786F",
+      "base/examples/complex/complex/cli.py": "2042FFDB1E77F0F937036F3F0A33C67BACBAD90477873D7576CC297674A55DE7",
+      "base/examples/complex/complex/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/examples/complex/complex/commands/cmd_init.py": "6068F21B5874685D6E4D467F24BC45DDF2CC28457CD27B1B2DC2AADEF24DDDE4",
+      "base/examples/complex/complex/commands/cmd_status.py": "22BBE1F58B41C89B12CE6B74A3B95932BF607C73CDEC9D0EF82E9F948A06803D",
+      "base/examples/complex/complex/commands/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/src/click/core.py": "4C65A613C1C407DCE907A4E123B12CEC5FE0F62088A8B9F86FABD4B60C4B6D78",
+      "base/src/click/decorators.py": "16069357615691FCDFC9C794BB515F6009EB35AAD6F7A76C017BDCE06DAE8D55",
+      "base/src/click/exceptions.py": "1EF498DF81B86AE8FF6D8451F3E4FC094F09C2AFF5F8E72C454E1ECDFA337849",
+      "base/src/click/formatting.py": "F125B628692F8DFCFD43535B7A88CC1EE64137471F9D0243B389AA0CFEA85E6B",
+      "base/src/click/globals.py": "80CF8D87A0383341C1FD2824685E4CE2770618C0C773F7E51D7BBDFE88781845",
+      "base/src/click/parser.py": "A09F9F53FDE6BF1BA022E36D1DA0804D9E7A9601261D18208C9892A84818AE30",
+      "base/src/click/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/src/click/shell_completion.py": "18522F75DDFFE655E943978D1953255C447842867D3FD67FBDC1543D3DF7DA09",
+      "base/src/click/termui.py": "16F6546B36D647D191788FC912E32D93E8B64289517F004E6D9604F4896AD1CA",
+      "base/src/click/testing.py": "76F4E649BC53000D667C8C0DEFF1591970FA034B0F085A207165839B2301019A",
+      "base/src/click/types.py": "1E988904A7A7F68ABAD630C7FB9C038A4345FA2E6701C976A6E51F10BDFB52DD",
+      "base/src/click/utils.py": "F43D5743DC07240E612FEEFA0A69D2B1697B6900149F8F809FFCD97ECB482DBF",
+      "base/src/click/_compat.py": "8DB1DA2965CF3E5DC66C6C53833CBC613EA1CD2440B9D0EB6AA8360EB46D4913",
+      "base/src/click/_termui_impl.py": "88B97D9B7A5B947B10A16D8AB269837BC84C7E55C28BA72EA5F2FB339112336A",
+      "base/src/click/_textwrap.py": "ED9D0DED59A7FBAE933524D4C29E8E5C96DC5174666044FD87D736B9C0FCA104",
+      "base/src/click/_utils.py": "782642B7026DB180F941892435627C318FFC001223CBC31CCE030CC95637DAB4",
+      "base/src/click/_winconsole.py": "292C5F35B3256116BA18E26E08B82C8363DBDDD56480934FA8B24F69EF8F6B5D",
+      "base/src/click/__init__.py": "5ABFC54D37D47CC788B7E7A05E9514787F8C5A0B7DB429D0F24D748AC89964CA",
+      "base/tests/test_utils/test_confirm.py": "0B4CAD2A99A48421342F65C313E0D21A00ECBE14401C559C8F381E9E4AE99C2B",
+      "base/tests/test_utils/test_echo.py": "90A4554E7F377DA24A88A8C748849EB23BA7E2DE9D96F15AD617200475FB6453",
+      "base/tests/test_utils/test_echo_via_pager.py": "13B80D29D87F210D7CE235C54C178C90C8ED25ECE419DC18D508E4E68D69DEDF",
+      "base/tests/test_utils/test_format_filename.py": "D961C6FA256AB170DC6939B059AB63AD91AC8AE545459130780B2B15FBD1498F",
+      "base/tests/test_utils/test_KeepOpenFile.py": "CF78133881A317725A200EA7175FC6EA2E10553114F4647C7C00D0EF44E257DB",
+      "base/tests/test_utils/test_LazyFile.py": "D279F5F2C835167C0AF587AC0399F7248E6A4887152701F6463278F46BCA5F96",
+      "base/tests/test_utils/test_make_default_short_help.py": "98D79C0E96752D593C76862A23F7ED6E250C3D368FB668E70266F23C542A1785",
+      "base/tests/test_utils/test_open_file.py": "D42A97682952291CD20D73A1F54F8B5500F63675B643C7DB82E8BC4265F3DE5D",
+      "base/tests/test_utils/test_prompt.py": "E62105B28AB4537EE2F3F9873F30A4994F4F799EE8F7A4177201F046BAB6E716",
+      "base/tests/test_utils/test_sentinel.py": "72F56290175EB0B5F8FA839FE6441C50703CDDE9F56ADC3793378B370C1DAB1C",
+      "base/tests/test_utils/test_style.py": "CC3D9A7CF24BBC28F54405CED99380F1AF677745683778D3CDB91767C5E4CEE9",
+      "base/tests/test_utils/test__detect_program_name.py": "A1576FEAC3CB21C61871B22D25D3A14D9C4AEBB84558347AA5D195B965053F46",
+      "base/tests/test_utils/test__expand_args.py": "053964B08E615ADBBD22EB0D9F380A71D3EA3124AC8E284635790F459DF9EE94",
+      "base/tests/test_utils/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/tests/typing/typing_aliased_group.py": "CA86E8AC186216908648A53B971BA5F0BAA0D532B9CBA10640C12FF8A332CCD5",
+      "base/tests/typing/typing_confirmation_option.py": "CBEB42B982A93992B7529A54820AC09FF8B35F053DA334490B7FE85B96B7E66C",
+      "base/tests/typing/typing_edit.py": "ECCFF854A4DAE04EA28EB7A01D70873A478CC6C6BFFD9A5FF5FA30DF92854A85",
+      "base/tests/typing/typing_group_kw_options.py": "53CB7EF7D78A9BBB1CD82E2E841A2B43EFD1BF6B235AE002398EAF3272ECC87E",
+      "base/tests/typing/typing_help_option.py": "5DC1E21F7D8F4328F9C050294E1FC5964DD6B5EC01964B0F371FC2750721E545",
+      "base/tests/typing/typing_options.py": "A6E0F3A662F55B059A179FB2D2D2E6E7011BF705CFCF546070F621103B08149A",
+      "base/tests/typing/typing_password_option.py": "71B7AE0E53BDDE145628CBCB5F7A06A21E88AE58B438ABFE99A8F0685549F4B6",
+      "base/tests/typing/typing_progressbar.py": "BA0529F20AA25016FFE36176DB14437030B1FC7805A083B11742C5E03B3BA59C",
+      "base/tests/typing/typing_prompt.py": "25775F3FE85092DA5C7C298F82564FCB6970769AF332A139D883B9047F3BD0FC",
+      "base/tests/typing/typing_simple_example.py": "82C6A9D71DAD51AF7CE9F3C3CBA5A9F9FC89184592D17D9385C14F330B81C64F",
+      "base/tests/typing/typing_version_option.py": "F02ED457B05868B4639FE7CB70546E0141D3D60C915C5955A53B3ABE5137B719",
+      "A/.editorconfig": "F45C88DC00E3E9F273CC30B2F139EE880EF27A6A404CA4D2FD7F0E96F9EC0F9C",
+      "A/.gitignore": "720CAB9A19B491829EC512B17A4E134E193E622E56F5D0271AE0895E8224EB40",
+      "A/.pre-commit-config.yaml": "32F781C5F5555301804F5D42916C7D8AFB62871CA362B93DBE80033EB5E78DC4",
+      "A/.readthedocs.yaml": "0A21349AD847B7EA4975C46804314DAF5A45DC57D40A3C61A42129EA476B9D4B",
+      "A/CHANGES.md": "73DDB9996DFC8C9DCF9367A4839FFC5B06AC2F8CE552BBA5E3269CC3A2239C0E",
+      "A/LICENSE.txt": "9A8AD106A394E853BFE21F42F4E72D592819A22805D991B5F3275029292B658D",
+      "A/pyproject.toml": "6CCA567EEF4004426C3A42A94DE7EF6B971992F1D7292FAEA3A17DD322D92717",
+      "A/README.md": "4C3DE4AA0918DEAC2F712FACACD1DC30A8CC4627D0118DD290292AB0AF65CA0B",
+      "A/uv.lock": "CCC151DF44B77B6D2A3C4ED36BADDE2E1210BCFCDDAE7A4A6FF28A6AFE3092CF",
+      "A/.devcontainer/devcontainer.json": "BCD781152FE5729C83A612F3186C011F217082BB68D07F73FC4D49F53C6C369F",
+      "A/.devcontainer/on-create-command.sh": "B863A4CB17DDDA2276B26CA97949E480A04FDD89000D8B3A292A95907CD0DAFA",
+      "A/.github/pull_request_template.md": "F92D7FA6366D19DFED8F7B49E753C506C39BB17E23F0908DA9DEA408F0F07800",
+      "A/docs/advanced.md": "D612344BE039FD087598AAFE911DE85C779B6147C357C710014CCBADE323CC51",
+      "A/docs/api.md": "DA52DF0D42A914B8C63964CC571360539B47C6231DE0D2A1D55F14BF88B5035A",
+      "A/docs/arguments.md": "54844BF17DF1CFD1F98EB506C5C456B27AEF46C578E1B40D6E5C2075A6CAC39D",
+      "A/docs/changes.md": "8F159BBF660B0168199F13A8FCBCB6C61446560FA938C4626E3ACFD1FFEE0225",
+      "A/docs/click-concepts.md": "E2343798EFF45F60CCCB621FE61808A5F04C297CFB7D52E76E07193C268DEA65",
+      "A/docs/command-line-reference.md": "2DAE95CF440164461CE224DD3571DA48E6619655B866AA993A17619CC73F3988",
+      "A/docs/commands-and-groups.md": "4A40E68A392572CF62F2EB677E3C4229D2B3B2577F7B2CB9F065D3F9F6ED5EAA",
+      "A/docs/commands.md": "63D4A95A1CA6F6F2D9976A9CF8F8A55B0697115526A2C1E98AF8151CEBE922E1",
+      "A/docs/complex.md": "B2DAC49397833850A0BB28EFAB45964646A897EB7321CECC915B687F7371BE3A",
+      "A/docs/conf.py": "23C516899B6C0994A305FE05699BCBE50F819872C6B1E2E75C0044199A9CDB9D",
+      "A/docs/contrib.md": "B06443BA789A6F17D98D82473FC44FA7381412480A15C02E00F412E169C8B674",
+      "A/docs/contributing.md": "1D9C25130401B3A20C33F36261A2F8742EE61876E05ADEA7B116EAE7A58FADD6",
+      "A/docs/design-opinions.md": "1336BBEC4E0D5E29A2B0E67D8662E7A5BB35C325F8C739D3C287F65BF44547ED",
+      "A/docs/documentation.md": "A62C8C22905724D2D931ED0234A032B0309AC976D1F8D294BECB4E658A7ACD15",
+      "A/docs/entry-points.md": "4D044227E4073D6F94E28F24A6D3CFDADB167A83BE50E5FB22A3BF9A846B7CD1",
+      "A/docs/exceptions.md": "A8D8CA99AA5B2A1C310E4D88D5B5A2B779D9EE9C7775994CF65C409AE2577B86",
+      "A/docs/extending-click.md": "E3723877D1805D4785E736C86A05B330BEDA91BE442BD93F1ABEA109786AA12F",
+      "A/docs/faqs.md": "4609083BEFA5C361E6BD03FBF3492C03F73A651D9C30077ABBD20210EF749D09",
+      "A/docs/handling-files.md": "CBA0A5E575813A50B5AD2C4AF26482DA39055BBA198C737DC3388A579C5C7690",
+      "A/docs/index.md": "F1D69B566D5560BC7F121B207773BA4D1BCBF52A1BED0245E8467A2201D72ECC",
+      "A/docs/license.md": "B4AA3A8B0DFD4C8CEA97EA65B3F19EF54BD280665533478F35C0A5D205A7D341",
+      "A/docs/option-decorators.md": "5C719C04B4A17BEE3C4DC59BCB06E26DEF026F2F38D69309DC070512332BEAE6",
+      "A/docs/options.md": "59B68F20F2C6EB85530C6F45CEFD0FB28AE9E6292FE388F96B381F9E87B848A5",
+      "A/docs/parameter-types.md": "E0CC2F73D578E0057754E8DD2B16D59B9570A28DDAC681F19F023D1384088AEC",
+      "A/docs/parameters.md": "4A7C64F5E9A967491D4F289CA6845B524C8495C5D53FA56AE58269993CF0E060",
+      "A/docs/prompts.md": "409509E5ABA1FB846C24BA716E89FE44EC4E064BE5ADADBE9D254F227A1A0BF8",
+      "A/docs/quickstart.md": "4918F3664F0C2F13654200C03537745FBD0CEFCFF0C87CC7452EE4ED14586A37",
+      "A/docs/setuptools.md": "52397A6999ED2BE086A807068C691F9C55B6897E578C405C05911860F1AED55F",
+      "A/docs/shell-completion.md": "B9FA613000583AD0E2846BBAA67BF497B8F829821342275A6E3FA1D188F03125",
+      "A/docs/standalone-apps.md": "6B761B72344EBD2D2FF10192D79F3C55A0DA0ACF44DC75F58B35CF160A66A8FA",
+      "A/docs/support-multiple-versions.md": "25DF76413ACED1B34EC6592888553AB0143BA03A2A2388EF154AC28E1EF8B8FE",
+      "A/docs/testing.md": "61C905C17ECACD1661478B018D4B4607BEDCECD22A340C7A61CF0F684ABD33BB",
+      "A/docs/unicode-support.md": "063F0A6127BDB220994780093454942CDAE90CB350C8D5AD3DDC93B36435ADF8",
+      "A/docs/upgrade-guides.md": "B491070DB38161113D177A26C32D2103E6A49398F3EEAD8A4A817E29CD5A8790",
+      "A/docs/utils.md": "54CFFD20CD7ACBCFBD316A449D9B66C923008A12AC23A0B479BFE32A8FF7FFB3",
+      "A/docs/virtualenv.md": "CFA6BF88DC769B65A4CDD8A697AC96E062692C3D741D52BB6F74D7A95A194F0C",
+      "A/docs/why.md": "F351B5D4DC3C81145BEC405C9C8353C6ED239AF28E8315DC7B356B4E920CCAD6",
+      "A/docs/wincmd.md": "80286E18FC53E09F98D07D184E1D9412E5C188BE268379305C51201F3DC5E1E3",
+      "A/examples/README": "8643885584197D9D76DC8332F9C6F5CCA2AF59584DBF53CA600CF3EBF8278E58",
+      "A/tests/conftest.py": "192BE82444D6048FD222E2D73CD5C3BEC768D65C6E10C0FFC230F307F363590B",
+      "A/tests/test_arguments.py": "F3D859A511AB161F2BDB8F404E3E8C2EEC7626D7EBB9E7DBF1A0366CC4A60559",
+      "A/tests/test_basic.py": "AF3E91D16BEBB42750737F297DA9825DCE6ECC516DB9295B3B0C6D6D62A1337D",
+      "A/tests/test_chain.py": "32247D8A208C84E571A89E87CBCE389CC9AAC08E98ECE741C7D53FCA0C63D881",
+      "A/tests/test_commands.py": "5B1ABF5578E03627B3171E7486C377CD5953EBAB2F82D9EACF8F44C305278D3E",
+      "A/tests/test_command_decorators.py": "234EDE359DA2839923AF2436056680BAB68BDBA622BF596452BBFBE1E1CFD6FA",
+      "A/tests/test_compat.py": "6F697F0112A67A62D2D6DAF038F9A4934210BD583881FBA773ED83FDBDB10C19",
+      "A/tests/test_context.py": "187B7B8F9B1E666AF21629C93D69702239B06A8ECD4840B83EDE37E7CC32ADCF",
+      "A/tests/test_custom_classes.py": "9D403C3B960CA927170645DCB144DB33EB42C705208B6FA3B235C54889EEE8E0",
+      "A/tests/test_defaults.py": "8E424EA80AC72EC614855B7B51E8AF149FB8275E0E3D4DE2F81F428DD0E71B88",
+      "A/tests/test_deprecations.py": "1B384F420F17B274E9552386DA4E2B94643349B79219F84FA0B0FE5C0D842A0A",
+      "A/tests/test_formatting.py": "EBCA0FE3B8CC26E4C8F52A785E44ABC0A3604906D6DEDC2F158E4E85DB4E94E0",
+      "A/tests/test_imports.py": "77357638CB04FDA1E89ABD7C4D3CAF54194982270938FED8CA9029965ED5477B",
+      "A/tests/test_info_dict.py": "00DECAA4770E915F954FC4513AE9909EA0AF6293566C9495AC3F197E34E7251E",
+      "A/tests/test_normalization.py": "5619FB315C33B79976693893DDE41E84CD5E806E0C3E5BEA15346F0FAFA934E0",
+      "A/tests/test_options.py": "6B9D80E2449E6A9CDD3186EEE305C6249464FE31298336566CBEF2FF4E962E1E",
+      "A/tests/test_parser.py": "9E3A95FB896166E23BB8070DE55A7D81A72A95C0B4909DA659E54274B1615069",
+      "A/tests/test_shell_completion.py": "D45F0B1B42850463A3A07273989518D477F8B19C4CA0D8EF74DC29C309276BD8",
+      "A/tests/test_stream_lifecycle.py": "A2471FBD9C222213380AEF823A537521C8DCC8224709814708149217FC932524",
+      "A/tests/test_termui.py": "D082866744A75B4732536CFA991260754C56B237D7A7BDC7D18FCBE04786057C",
+      "A/tests/test_testing.py": "4AF5187E3F6EB22E2D4CD3F9EDFFE5D162103043E4E0D33A5734E74EDEBABA1C",
+      "A/tests/test_types.py": "C3C9E627576ACEEA5F22B75E2AABD1167D26C6AED224A4A220E93D76EBBFA863",
+      "A/.github/ISSUE_TEMPLATE/bug-report.md": "B21EFD841C0F91179CAF8366D97EE897BD4322EE948329FC5BD9A937B17B543A",
+      "A/.github/ISSUE_TEMPLATE/config.yml": "EC732B9892BEA1FE1B9B00DFDA018E219AB9D256120205BA8C0AD5591F6BD126",
+      "A/.github/ISSUE_TEMPLATE/feature-request.md": "FBFA2D2287F86D437E8A4F2AD8A5FBD69C58B6ADC27F053DA7757E943FB6BF3C",
+      "A/.github/workflows/lock.yaml": "E05F221702CB1F6EB8548C2C9C7E7A296228F5EABB7BB3D5E7C9E34F766936A6",
+      "A/.github/workflows/nightly.yaml": "40CD70BD796D109DC67428BEA07DC2CC87E935ECF2F34539E732AEE5DBF277EF",
+      "A/.github/workflows/pre-commit.yaml": "90B2FB1FD39721CED99346539A52C8DE364A6E8D5BD39FF59E6EB0895CB578B2",
+      "A/.github/workflows/publish.yaml": "0D5E80C05CC86D380C76FA63744A16E5CEA002A7E22A9B120F255CF3295B8BE9",
+      "A/.github/workflows/tests.yaml": "B3FDC93C050DAA1340F36B585FD87FCFC00E4E5CD3C0A7DCFD5BCCA3585063D4",
+      "A/.github/workflows/zizmor.yaml": "64DE91FF3CB5BEA40A64737DC1B4944D38849735E2F3CF0B93DFFC78065786D9",
+      "A/docs/_static/click-icon.svg": "20C9F54B71A2958E8391B7DB36B509FA1B90FD77536F6DCD5BF5A8A21A84CAE8",
+      "A/docs/_static/click-logo.svg": "B37F0C46A2C3A41989E3BB219C632D30F108B8B7A2EC55B5B2A089A252700EC2",
+      "A/docs/_static/click-name.svg": "311F6C120EAA6F5F710CF0DA7A29698FA98A698201E66DFE6595D9E579BA59E8",
+      "A/examples/aliases/aliases.ini": "64369C475FBF5404B40FA74E05147003C746B4EF51017CF115623A04BBCB45AB",
+      "A/examples/aliases/aliases.py": "CE8E75F58D7A61C9390C5E8734B24CAA83E37447D283CE121DC07A61F4801340",
+      "A/examples/aliases/pyproject.toml": "413AB0BD185393B340373AFD839D19C1C0BF85123ED241946D311FB5EEB60331",
+      "A/examples/aliases/README": "20AC19EE5FE14683191CC25F20F9C161C37B53AE3BEA31637BA6F25D91488242",
+      "A/examples/colors/colors.py": "674B6442B8CD39319A9448FE67C9BADBCBE512DA7280985065AA51B8839E9614",
+      "A/examples/colors/pyproject.toml": "7D5AA5C4BA2C8223BEEAD363223A54688A01093B4771AC50FD329E5BF1FA66C3",
+      "A/examples/colors/README": "7E4290DFBC2AD61264BD825F916A793BEAD2D6123F1F0CE35D2D182DA1E03E05",
+      "A/examples/completion/completion.py": "CEEB4F35FA92D4ABCC537E0759624CB404E5B1600690467A099C8552A4B7BFF2",
+      "A/examples/completion/pyproject.toml": "80AEFD652EE7DF03457208EAE0FEF567C9423D014FC1E60ADB1C6D666950CC1D",
+      "A/examples/completion/README": "CFA5F48113E8838E249639C9A458AC70B6E933FCED0A808267934F707F8F9B0E",
+      "A/examples/complex/pyproject.toml": "D7E12FCC656A46F56FA68874987D355C09C0C3A43D7DED4404D0F34BD3715841",
+      "A/examples/complex/README": "7AB227EC7DE296EA1A6D4E9B3EE6B74C72E05FF696115DBC8033460DCA9C36BA",
+      "A/examples/imagepipe/.gitignore": "2259EBAFE9B7FCCD958FC09608B02D2D630FA69BE9348454A88076583464C439",
+      "A/examples/imagepipe/example01.jpg": "128E4E0F813010E6A0B5E4F51F5CC9C03A48507E0F67546AD298187114F69210",
+      "A/examples/imagepipe/example02.jpg": "6D314402631C2CE8A3C19505570308F5F1557FBAC346062EDBA23861DED0A09C",
+      "A/examples/imagepipe/imagepipe.py": "EAF679FC90B988C938B2A32FF4D716D25127FE63A8C3804222628FFE8EC46DC2",
+      "A/examples/imagepipe/pyproject.toml": "437435A60F616DA84629BF838F43D999830246276E327CB4856C7229244DCD01",
+      "A/examples/imagepipe/README": "896408521C4395A488727FB857D42D4D9821AC047B56110AABDAA9FF1F24066E",
+      "A/examples/inout/inout.py": "F0A15C4C3D331111841605298951DD281F5B8DF116119E331094880704159E35",
+      "A/examples/inout/pyproject.toml": "198672121CDB99F76BA2CD3FDC7CF2466B4B99CFE3FB6723FFD19EF668CD8E2E",
+      "A/examples/inout/README": "FCAFEE766484F079ED5D2E4A36143F23074D3842FB47CE88B5E018E9DA08FA78",
+      "A/examples/naval/naval.py": "A8D3748EEAA204012B1794EA77BE6DD23DFDB141C2D5940332C06C73B266A0C1",
+      "A/examples/naval/pyproject.toml": "04FBD3515C198FEA621D8E0AB25C0D2CBC75D6A725B8F09801C92487664BAC05",
+      "A/examples/naval/README": "4A9876E6F33247905E0A714DD4F34E07FC9DD21AE297AA920269B3B00FBBF284",
+      "A/examples/repo/pyproject.toml": "5C749725E190DC0DE9237F79DF37519551036105E365EDEFBFD3BE673B1458B1",
+      "A/examples/repo/README": "1BD41A77284420EB92FEE285705A2189232148F383825E9768E5ADE7263CD647",
+      "A/examples/repo/repo.py": "CEF5766BC59330FF9342F7C6A7EABFE89716AB46A7F719D84A7B97D3B12F5F09",
+      "A/examples/termui/pyproject.toml": "6FD8CB6BE9BD49CACE3F9216861993DA62AA6A7F513F3762CEDE7BC66828807E",
+      "A/examples/termui/README": "06B845269DE7A573EAAE8196667E3DE11B684F2875B602DF0D13FF13B2052611",
+      "A/examples/termui/termui.py": "CC79721D0E7250C9AA23CFAFB4F897CD1FD25711371AE58AAB616760BE47381D",
+      "A/examples/validation/pyproject.toml": "1961631B9FBF0D82F1C66F86B3ABF66251577626A59B01E7AEC60EF9C521D4C4",
+      "A/examples/validation/README": "BFE27C7DB860A086B52B1F8C23844755DA14B088ADD3BE709F309E9CB32FA676",
+      "A/examples/validation/validation.py": "246C4962FFF19BBF12CF620E141A904AC9059698F0002C11833BB882F492786F",
+      "A/examples/complex/complex/cli.py": "2042FFDB1E77F0F937036F3F0A33C67BACBAD90477873D7576CC297674A55DE7",
+      "A/examples/complex/complex/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/examples/complex/complex/commands/cmd_init.py": "6068F21B5874685D6E4D467F24BC45DDF2CC28457CD27B1B2DC2AADEF24DDDE4",
+      "A/examples/complex/complex/commands/cmd_status.py": "22BBE1F58B41C89B12CE6B74A3B95932BF607C73CDEC9D0EF82E9F948A06803D",
+      "A/examples/complex/complex/commands/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/src/click/core.py": "4C65A613C1C407DCE907A4E123B12CEC5FE0F62088A8B9F86FABD4B60C4B6D78",
+      "A/src/click/decorators.py": "16069357615691FCDFC9C794BB515F6009EB35AAD6F7A76C017BDCE06DAE8D55",
+      "A/src/click/exceptions.py": "1EF498DF81B86AE8FF6D8451F3E4FC094F09C2AFF5F8E72C454E1ECDFA337849",
+      "A/src/click/formatting.py": "F125B628692F8DFCFD43535B7A88CC1EE64137471F9D0243B389AA0CFEA85E6B",
+      "A/src/click/globals.py": "80CF8D87A0383341C1FD2824685E4CE2770618C0C773F7E51D7BBDFE88781845",
+      "A/src/click/parser.py": "A09F9F53FDE6BF1BA022E36D1DA0804D9E7A9601261D18208C9892A84818AE30",
+      "A/src/click/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/src/click/shell_completion.py": "18522F75DDFFE655E943978D1953255C447842867D3FD67FBDC1543D3DF7DA09",
+      "A/src/click/termui.py": "16F6546B36D647D191788FC912E32D93E8B64289517F004E6D9604F4896AD1CA",
+      "A/src/click/testing.py": "76F4E649BC53000D667C8C0DEFF1591970FA034B0F085A207165839B2301019A",
+      "A/src/click/types.py": "1E988904A7A7F68ABAD630C7FB9C038A4345FA2E6701C976A6E51F10BDFB52DD",
+      "A/src/click/utils.py": "F43D5743DC07240E612FEEFA0A69D2B1697B6900149F8F809FFCD97ECB482DBF",
+      "A/src/click/_compat.py": "8DB1DA2965CF3E5DC66C6C53833CBC613EA1CD2440B9D0EB6AA8360EB46D4913",
+      "A/src/click/_termui_impl.py": "88B97D9B7A5B947B10A16D8AB269837BC84C7E55C28BA72EA5F2FB339112336A",
+      "A/src/click/_textwrap.py": "ED9D0DED59A7FBAE933524D4C29E8E5C96DC5174666044FD87D736B9C0FCA104",
+      "A/src/click/_utils.py": "A67EDC9AABBCEBE9F13AE828AFA3D0C57E4031E1DC3E8FB90884759252FB358F",
+      "A/src/click/_winconsole.py": "292C5F35B3256116BA18E26E08B82C8363DBDDD56480934FA8B24F69EF8F6B5D",
+      "A/src/click/__init__.py": "5ABFC54D37D47CC788B7E7A05E9514787F8C5A0B7DB429D0F24D748AC89964CA",
+      "A/tests/test_utils/test_confirm.py": "0B4CAD2A99A48421342F65C313E0D21A00ECBE14401C559C8F381E9E4AE99C2B",
+      "A/tests/test_utils/test_echo.py": "90A4554E7F377DA24A88A8C748849EB23BA7E2DE9D96F15AD617200475FB6453",
+      "A/tests/test_utils/test_echo_via_pager.py": "13B80D29D87F210D7CE235C54C178C90C8ED25ECE419DC18D508E4E68D69DEDF",
+      "A/tests/test_utils/test_format_filename.py": "D961C6FA256AB170DC6939B059AB63AD91AC8AE545459130780B2B15FBD1498F",
+      "A/tests/test_utils/test_KeepOpenFile.py": "CF78133881A317725A200EA7175FC6EA2E10553114F4647C7C00D0EF44E257DB",
+      "A/tests/test_utils/test_LazyFile.py": "D279F5F2C835167C0AF587AC0399F7248E6A4887152701F6463278F46BCA5F96",
+      "A/tests/test_utils/test_make_default_short_help.py": "98D79C0E96752D593C76862A23F7ED6E250C3D368FB668E70266F23C542A1785",
+      "A/tests/test_utils/test_open_file.py": "D42A97682952291CD20D73A1F54F8B5500F63675B643C7DB82E8BC4265F3DE5D",
+      "A/tests/test_utils/test_prompt.py": "E62105B28AB4537EE2F3F9873F30A4994F4F799EE8F7A4177201F046BAB6E716",
+      "A/tests/test_utils/test_sentinel.py": "2A88C9EBE9015833C2510399A8F2C5EC66F1214DD8DB25A51A345B320758632B",
+      "A/tests/test_utils/test_style.py": "CC3D9A7CF24BBC28F54405CED99380F1AF677745683778D3CDB91767C5E4CEE9",
+      "A/tests/test_utils/test__detect_program_name.py": "A1576FEAC3CB21C61871B22D25D3A14D9C4AEBB84558347AA5D195B965053F46",
+      "A/tests/test_utils/test__expand_args.py": "053964B08E615ADBBD22EB0D9F380A71D3EA3124AC8E284635790F459DF9EE94",
+      "A/tests/test_utils/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/tests/typing/typing_aliased_group.py": "CA86E8AC186216908648A53B971BA5F0BAA0D532B9CBA10640C12FF8A332CCD5",
+      "A/tests/typing/typing_confirmation_option.py": "CBEB42B982A93992B7529A54820AC09FF8B35F053DA334490B7FE85B96B7E66C",
+      "A/tests/typing/typing_edit.py": "ECCFF854A4DAE04EA28EB7A01D70873A478CC6C6BFFD9A5FF5FA30DF92854A85",
+      "A/tests/typing/typing_group_kw_options.py": "53CB7EF7D78A9BBB1CD82E2E841A2B43EFD1BF6B235AE002398EAF3272ECC87E",
+      "A/tests/typing/typing_help_option.py": "5DC1E21F7D8F4328F9C050294E1FC5964DD6B5EC01964B0F371FC2750721E545",
+      "A/tests/typing/typing_options.py": "A6E0F3A662F55B059A179FB2D2D2E6E7011BF705CFCF546070F621103B08149A",
+      "A/tests/typing/typing_password_option.py": "71B7AE0E53BDDE145628CBCB5F7A06A21E88AE58B438ABFE99A8F0685549F4B6",
+      "A/tests/typing/typing_progressbar.py": "BA0529F20AA25016FFE36176DB14437030B1FC7805A083B11742C5E03B3BA59C",
+      "A/tests/typing/typing_prompt.py": "25775F3FE85092DA5C7C298F82564FCB6970769AF332A139D883B9047F3BD0FC",
+      "A/tests/typing/typing_simple_example.py": "82C6A9D71DAD51AF7CE9F3C3CBA5A9F9FC89184592D17D9385C14F330B81C64F",
+      "A/tests/typing/typing_version_option.py": "F02ED457B05868B4639FE7CB70546E0141D3D60C915C5955A53B3ABE5137B719",
+      "B/.editorconfig": "F45C88DC00E3E9F273CC30B2F139EE880EF27A6A404CA4D2FD7F0E96F9EC0F9C",
+      "B/.gitignore": "720CAB9A19B491829EC512B17A4E134E193E622E56F5D0271AE0895E8224EB40",
+      "B/.pre-commit-config.yaml": "32F781C5F5555301804F5D42916C7D8AFB62871CA362B93DBE80033EB5E78DC4",
+      "B/.readthedocs.yaml": "0A21349AD847B7EA4975C46804314DAF5A45DC57D40A3C61A42129EA476B9D4B",
+      "B/CHANGES.md": "73DDB9996DFC8C9DCF9367A4839FFC5B06AC2F8CE552BBA5E3269CC3A2239C0E",
+      "B/LICENSE.txt": "9A8AD106A394E853BFE21F42F4E72D592819A22805D991B5F3275029292B658D",
+      "B/pyproject.toml": "6CCA567EEF4004426C3A42A94DE7EF6B971992F1D7292FAEA3A17DD322D92717",
+      "B/README.md": "4C3DE4AA0918DEAC2F712FACACD1DC30A8CC4627D0118DD290292AB0AF65CA0B",
+      "B/uv.lock": "CCC151DF44B77B6D2A3C4ED36BADDE2E1210BCFCDDAE7A4A6FF28A6AFE3092CF",
+      "B/.devcontainer/devcontainer.json": "BCD781152FE5729C83A612F3186C011F217082BB68D07F73FC4D49F53C6C369F",
+      "B/.devcontainer/on-create-command.sh": "B863A4CB17DDDA2276B26CA97949E480A04FDD89000D8B3A292A95907CD0DAFA",
+      "B/.github/pull_request_template.md": "F92D7FA6366D19DFED8F7B49E753C506C39BB17E23F0908DA9DEA408F0F07800",
+      "B/docs/advanced.md": "D612344BE039FD087598AAFE911DE85C779B6147C357C710014CCBADE323CC51",
+      "B/docs/api.md": "DA52DF0D42A914B8C63964CC571360539B47C6231DE0D2A1D55F14BF88B5035A",
+      "B/docs/arguments.md": "54844BF17DF1CFD1F98EB506C5C456B27AEF46C578E1B40D6E5C2075A6CAC39D",
+      "B/docs/changes.md": "8F159BBF660B0168199F13A8FCBCB6C61446560FA938C4626E3ACFD1FFEE0225",
+      "B/docs/click-concepts.md": "E2343798EFF45F60CCCB621FE61808A5F04C297CFB7D52E76E07193C268DEA65",
+      "B/docs/command-line-reference.md": "2DAE95CF440164461CE224DD3571DA48E6619655B866AA993A17619CC73F3988",
+      "B/docs/commands-and-groups.md": "4A40E68A392572CF62F2EB677E3C4229D2B3B2577F7B2CB9F065D3F9F6ED5EAA",
+      "B/docs/commands.md": "63D4A95A1CA6F6F2D9976A9CF8F8A55B0697115526A2C1E98AF8151CEBE922E1",
+      "B/docs/complex.md": "B2DAC49397833850A0BB28EFAB45964646A897EB7321CECC915B687F7371BE3A",
+      "B/docs/conf.py": "23C516899B6C0994A305FE05699BCBE50F819872C6B1E2E75C0044199A9CDB9D",
+      "B/docs/contrib.md": "B06443BA789A6F17D98D82473FC44FA7381412480A15C02E00F412E169C8B674",
+      "B/docs/contributing.md": "1D9C25130401B3A20C33F36261A2F8742EE61876E05ADEA7B116EAE7A58FADD6",
+      "B/docs/design-opinions.md": "1336BBEC4E0D5E29A2B0E67D8662E7A5BB35C325F8C739D3C287F65BF44547ED",
+      "B/docs/documentation.md": "A62C8C22905724D2D931ED0234A032B0309AC976D1F8D294BECB4E658A7ACD15",
+      "B/docs/entry-points.md": "4D044227E4073D6F94E28F24A6D3CFDADB167A83BE50E5FB22A3BF9A846B7CD1",
+      "B/docs/exceptions.md": "A8D8CA99AA5B2A1C310E4D88D5B5A2B779D9EE9C7775994CF65C409AE2577B86",
+      "B/docs/extending-click.md": "E3723877D1805D4785E736C86A05B330BEDA91BE442BD93F1ABEA109786AA12F",
+      "B/docs/faqs.md": "4609083BEFA5C361E6BD03FBF3492C03F73A651D9C30077ABBD20210EF749D09",
+      "B/docs/handling-files.md": "CBA0A5E575813A50B5AD2C4AF26482DA39055BBA198C737DC3388A579C5C7690",
+      "B/docs/index.md": "F1D69B566D5560BC7F121B207773BA4D1BCBF52A1BED0245E8467A2201D72ECC",
+      "B/docs/license.md": "B4AA3A8B0DFD4C8CEA97EA65B3F19EF54BD280665533478F35C0A5D205A7D341",
+      "B/docs/option-decorators.md": "5C719C04B4A17BEE3C4DC59BCB06E26DEF026F2F38D69309DC070512332BEAE6",
+      "B/docs/options.md": "59B68F20F2C6EB85530C6F45CEFD0FB28AE9E6292FE388F96B381F9E87B848A5",
+      "B/docs/parameter-types.md": "E0CC2F73D578E0057754E8DD2B16D59B9570A28DDAC681F19F023D1384088AEC",
+      "B/docs/parameters.md": "4A7C64F5E9A967491D4F289CA6845B524C8495C5D53FA56AE58269993CF0E060",
+      "B/docs/prompts.md": "409509E5ABA1FB846C24BA716E89FE44EC4E064BE5ADADBE9D254F227A1A0BF8",
+      "B/docs/quickstart.md": "4918F3664F0C2F13654200C03537745FBD0CEFCFF0C87CC7452EE4ED14586A37",
+      "B/docs/setuptools.md": "52397A6999ED2BE086A807068C691F9C55B6897E578C405C05911860F1AED55F",
+      "B/docs/shell-completion.md": "B9FA613000583AD0E2846BBAA67BF497B8F829821342275A6E3FA1D188F03125",
+      "B/docs/standalone-apps.md": "6B761B72344EBD2D2FF10192D79F3C55A0DA0ACF44DC75F58B35CF160A66A8FA",
+      "B/docs/support-multiple-versions.md": "25DF76413ACED1B34EC6592888553AB0143BA03A2A2388EF154AC28E1EF8B8FE",
+      "B/docs/testing.md": "61C905C17ECACD1661478B018D4B4607BEDCECD22A340C7A61CF0F684ABD33BB",
+      "B/docs/unicode-support.md": "063F0A6127BDB220994780093454942CDAE90CB350C8D5AD3DDC93B36435ADF8",
+      "B/docs/upgrade-guides.md": "B491070DB38161113D177A26C32D2103E6A49398F3EEAD8A4A817E29CD5A8790",
+      "B/docs/utils.md": "54CFFD20CD7ACBCFBD316A449D9B66C923008A12AC23A0B479BFE32A8FF7FFB3",
+      "B/docs/virtualenv.md": "CFA6BF88DC769B65A4CDD8A697AC96E062692C3D741D52BB6F74D7A95A194F0C",
+      "B/docs/why.md": "F351B5D4DC3C81145BEC405C9C8353C6ED239AF28E8315DC7B356B4E920CCAD6",
+      "B/docs/wincmd.md": "80286E18FC53E09F98D07D184E1D9412E5C188BE268379305C51201F3DC5E1E3",
+      "B/examples/README": "8643885584197D9D76DC8332F9C6F5CCA2AF59584DBF53CA600CF3EBF8278E58",
+      "B/tests/conftest.py": "192BE82444D6048FD222E2D73CD5C3BEC768D65C6E10C0FFC230F307F363590B",
+      "B/tests/test_arguments.py": "F3D859A511AB161F2BDB8F404E3E8C2EEC7626D7EBB9E7DBF1A0366CC4A60559",
+      "B/tests/test_basic.py": "AF3E91D16BEBB42750737F297DA9825DCE6ECC516DB9295B3B0C6D6D62A1337D",
+      "B/tests/test_chain.py": "32247D8A208C84E571A89E87CBCE389CC9AAC08E98ECE741C7D53FCA0C63D881",
+      "B/tests/test_commands.py": "5B1ABF5578E03627B3171E7486C377CD5953EBAB2F82D9EACF8F44C305278D3E",
+      "B/tests/test_command_decorators.py": "234EDE359DA2839923AF2436056680BAB68BDBA622BF596452BBFBE1E1CFD6FA",
+      "B/tests/test_compat.py": "6F697F0112A67A62D2D6DAF038F9A4934210BD583881FBA773ED83FDBDB10C19",
+      "B/tests/test_context.py": "187B7B8F9B1E666AF21629C93D69702239B06A8ECD4840B83EDE37E7CC32ADCF",
+      "B/tests/test_custom_classes.py": "9D403C3B960CA927170645DCB144DB33EB42C705208B6FA3B235C54889EEE8E0",
+      "B/tests/test_defaults.py": "8E424EA80AC72EC614855B7B51E8AF149FB8275E0E3D4DE2F81F428DD0E71B88",
+      "B/tests/test_deprecations.py": "1B384F420F17B274E9552386DA4E2B94643349B79219F84FA0B0FE5C0D842A0A",
+      "B/tests/test_formatting.py": "EBCA0FE3B8CC26E4C8F52A785E44ABC0A3604906D6DEDC2F158E4E85DB4E94E0",
+      "B/tests/test_imports.py": "77357638CB04FDA1E89ABD7C4D3CAF54194982270938FED8CA9029965ED5477B",
+      "B/tests/test_info_dict.py": "00DECAA4770E915F954FC4513AE9909EA0AF6293566C9495AC3F197E34E7251E",
+      "B/tests/test_normalization.py": "5619FB315C33B79976693893DDE41E84CD5E806E0C3E5BEA15346F0FAFA934E0",
+      "B/tests/test_options.py": "6B9D80E2449E6A9CDD3186EEE305C6249464FE31298336566CBEF2FF4E962E1E",
+      "B/tests/test_parser.py": "9E3A95FB896166E23BB8070DE55A7D81A72A95C0B4909DA659E54274B1615069",
+      "B/tests/test_shell_completion.py": "D45F0B1B42850463A3A07273989518D477F8B19C4CA0D8EF74DC29C309276BD8",
+      "B/tests/test_stream_lifecycle.py": "A2471FBD9C222213380AEF823A537521C8DCC8224709814708149217FC932524",
+      "B/tests/test_termui.py": "D082866744A75B4732536CFA991260754C56B237D7A7BDC7D18FCBE04786057C",
+      "B/tests/test_testing.py": "4AF5187E3F6EB22E2D4CD3F9EDFFE5D162103043E4E0D33A5734E74EDEBABA1C",
+      "B/tests/test_types.py": "C3C9E627576ACEEA5F22B75E2AABD1167D26C6AED224A4A220E93D76EBBFA863",
+      "B/.github/ISSUE_TEMPLATE/bug-report.md": "B21EFD841C0F91179CAF8366D97EE897BD4322EE948329FC5BD9A937B17B543A",
+      "B/.github/ISSUE_TEMPLATE/config.yml": "EC732B9892BEA1FE1B9B00DFDA018E219AB9D256120205BA8C0AD5591F6BD126",
+      "B/.github/ISSUE_TEMPLATE/feature-request.md": "FBFA2D2287F86D437E8A4F2AD8A5FBD69C58B6ADC27F053DA7757E943FB6BF3C",
+      "B/.github/workflows/lock.yaml": "E05F221702CB1F6EB8548C2C9C7E7A296228F5EABB7BB3D5E7C9E34F766936A6",
+      "B/.github/workflows/nightly.yaml": "40CD70BD796D109DC67428BEA07DC2CC87E935ECF2F34539E732AEE5DBF277EF",
+      "B/.github/workflows/pre-commit.yaml": "90B2FB1FD39721CED99346539A52C8DE364A6E8D5BD39FF59E6EB0895CB578B2",
+      "B/.github/workflows/publish.yaml": "0D5E80C05CC86D380C76FA63744A16E5CEA002A7E22A9B120F255CF3295B8BE9",
+      "B/.github/workflows/tests.yaml": "B3FDC93C050DAA1340F36B585FD87FCFC00E4E5CD3C0A7DCFD5BCCA3585063D4",
+      "B/.github/workflows/zizmor.yaml": "64DE91FF3CB5BEA40A64737DC1B4944D38849735E2F3CF0B93DFFC78065786D9",
+      "B/docs/_static/click-icon.svg": "20C9F54B71A2958E8391B7DB36B509FA1B90FD77536F6DCD5BF5A8A21A84CAE8",
+      "B/docs/_static/click-logo.svg": "B37F0C46A2C3A41989E3BB219C632D30F108B8B7A2EC55B5B2A089A252700EC2",
+      "B/docs/_static/click-name.svg": "311F6C120EAA6F5F710CF0DA7A29698FA98A698201E66DFE6595D9E579BA59E8",
+      "B/examples/aliases/aliases.ini": "64369C475FBF5404B40FA74E05147003C746B4EF51017CF115623A04BBCB45AB",
+      "B/examples/aliases/aliases.py": "CE8E75F58D7A61C9390C5E8734B24CAA83E37447D283CE121DC07A61F4801340",
+      "B/examples/aliases/pyproject.toml": "413AB0BD185393B340373AFD839D19C1C0BF85123ED241946D311FB5EEB60331",
+      "B/examples/aliases/README": "20AC19EE5FE14683191CC25F20F9C161C37B53AE3BEA31637BA6F25D91488242",
+      "B/examples/colors/colors.py": "674B6442B8CD39319A9448FE67C9BADBCBE512DA7280985065AA51B8839E9614",
+      "B/examples/colors/pyproject.toml": "7D5AA5C4BA2C8223BEEAD363223A54688A01093B4771AC50FD329E5BF1FA66C3",
+      "B/examples/colors/README": "7E4290DFBC2AD61264BD825F916A793BEAD2D6123F1F0CE35D2D182DA1E03E05",
+      "B/examples/completion/completion.py": "CEEB4F35FA92D4ABCC537E0759624CB404E5B1600690467A099C8552A4B7BFF2",
+      "B/examples/completion/pyproject.toml": "80AEFD652EE7DF03457208EAE0FEF567C9423D014FC1E60ADB1C6D666950CC1D",
+      "B/examples/completion/README": "CFA5F48113E8838E249639C9A458AC70B6E933FCED0A808267934F707F8F9B0E",
+      "B/examples/complex/pyproject.toml": "D7E12FCC656A46F56FA68874987D355C09C0C3A43D7DED4404D0F34BD3715841",
+      "B/examples/complex/README": "7AB227EC7DE296EA1A6D4E9B3EE6B74C72E05FF696115DBC8033460DCA9C36BA",
+      "B/examples/imagepipe/.gitignore": "2259EBAFE9B7FCCD958FC09608B02D2D630FA69BE9348454A88076583464C439",
+      "B/examples/imagepipe/example01.jpg": "128E4E0F813010E6A0B5E4F51F5CC9C03A48507E0F67546AD298187114F69210",
+      "B/examples/imagepipe/example02.jpg": "6D314402631C2CE8A3C19505570308F5F1557FBAC346062EDBA23861DED0A09C",
+      "B/examples/imagepipe/imagepipe.py": "EAF679FC90B988C938B2A32FF4D716D25127FE63A8C3804222628FFE8EC46DC2",
+      "B/examples/imagepipe/pyproject.toml": "437435A60F616DA84629BF838F43D999830246276E327CB4856C7229244DCD01",
+      "B/examples/imagepipe/README": "896408521C4395A488727FB857D42D4D9821AC047B56110AABDAA9FF1F24066E",
+      "B/examples/inout/inout.py": "F0A15C4C3D331111841605298951DD281F5B8DF116119E331094880704159E35",
+      "B/examples/inout/pyproject.toml": "198672121CDB99F76BA2CD3FDC7CF2466B4B99CFE3FB6723FFD19EF668CD8E2E",
+      "B/examples/inout/README": "FCAFEE766484F079ED5D2E4A36143F23074D3842FB47CE88B5E018E9DA08FA78",
+      "B/examples/naval/naval.py": "A8D3748EEAA204012B1794EA77BE6DD23DFDB141C2D5940332C06C73B266A0C1",
+      "B/examples/naval/pyproject.toml": "04FBD3515C198FEA621D8E0AB25C0D2CBC75D6A725B8F09801C92487664BAC05",
+      "B/examples/naval/README": "4A9876E6F33247905E0A714DD4F34E07FC9DD21AE297AA920269B3B00FBBF284",
+      "B/examples/repo/pyproject.toml": "5C749725E190DC0DE9237F79DF37519551036105E365EDEFBFD3BE673B1458B1",
+      "B/examples/repo/README": "1BD41A77284420EB92FEE285705A2189232148F383825E9768E5ADE7263CD647",
+      "B/examples/repo/repo.py": "CEF5766BC59330FF9342F7C6A7EABFE89716AB46A7F719D84A7B97D3B12F5F09",
+      "B/examples/termui/pyproject.toml": "6FD8CB6BE9BD49CACE3F9216861993DA62AA6A7F513F3762CEDE7BC66828807E",
+      "B/examples/termui/README": "06B845269DE7A573EAAE8196667E3DE11B684F2875B602DF0D13FF13B2052611",
+      "B/examples/termui/termui.py": "CC79721D0E7250C9AA23CFAFB4F897CD1FD25711371AE58AAB616760BE47381D",
+      "B/examples/validation/pyproject.toml": "1961631B9FBF0D82F1C66F86B3ABF66251577626A59B01E7AEC60EF9C521D4C4",
+      "B/examples/validation/README": "BFE27C7DB860A086B52B1F8C23844755DA14B088ADD3BE709F309E9CB32FA676",
+      "B/examples/validation/validation.py": "246C4962FFF19BBF12CF620E141A904AC9059698F0002C11833BB882F492786F",
+      "B/examples/complex/complex/cli.py": "2042FFDB1E77F0F937036F3F0A33C67BACBAD90477873D7576CC297674A55DE7",
+      "B/examples/complex/complex/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/examples/complex/complex/commands/cmd_init.py": "6068F21B5874685D6E4D467F24BC45DDF2CC28457CD27B1B2DC2AADEF24DDDE4",
+      "B/examples/complex/complex/commands/cmd_status.py": "22BBE1F58B41C89B12CE6B74A3B95932BF607C73CDEC9D0EF82E9F948A06803D",
+      "B/examples/complex/complex/commands/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/src/click/core.py": "4C65A613C1C407DCE907A4E123B12CEC5FE0F62088A8B9F86FABD4B60C4B6D78",
+      "B/src/click/decorators.py": "16069357615691FCDFC9C794BB515F6009EB35AAD6F7A76C017BDCE06DAE8D55",
+      "B/src/click/exceptions.py": "1EF498DF81B86AE8FF6D8451F3E4FC094F09C2AFF5F8E72C454E1ECDFA337849",
+      "B/src/click/formatting.py": "F125B628692F8DFCFD43535B7A88CC1EE64137471F9D0243B389AA0CFEA85E6B",
+      "B/src/click/globals.py": "80CF8D87A0383341C1FD2824685E4CE2770618C0C773F7E51D7BBDFE88781845",
+      "B/src/click/parser.py": "A09F9F53FDE6BF1BA022E36D1DA0804D9E7A9601261D18208C9892A84818AE30",
+      "B/src/click/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/src/click/shell_completion.py": "18522F75DDFFE655E943978D1953255C447842867D3FD67FBDC1543D3DF7DA09",
+      "B/src/click/termui.py": "16F6546B36D647D191788FC912E32D93E8B64289517F004E6D9604F4896AD1CA",
+      "B/src/click/testing.py": "76F4E649BC53000D667C8C0DEFF1591970FA034B0F085A207165839B2301019A",
+      "B/src/click/types.py": "1E988904A7A7F68ABAD630C7FB9C038A4345FA2E6701C976A6E51F10BDFB52DD",
+      "B/src/click/utils.py": "F43D5743DC07240E612FEEFA0A69D2B1697B6900149F8F809FFCD97ECB482DBF",
+      "B/src/click/_compat.py": "8DB1DA2965CF3E5DC66C6C53833CBC613EA1CD2440B9D0EB6AA8360EB46D4913",
+      "B/src/click/_termui_impl.py": "88B97D9B7A5B947B10A16D8AB269837BC84C7E55C28BA72EA5F2FB339112336A",
+      "B/src/click/_textwrap.py": "ED9D0DED59A7FBAE933524D4C29E8E5C96DC5174666044FD87D736B9C0FCA104",
+      "B/src/click/_utils.py": "827976A49650A004A4A514B741C9AB9123333C9B838126DD0AB7A615761E5537",
+      "B/src/click/_winconsole.py": "292C5F35B3256116BA18E26E08B82C8363DBDDD56480934FA8B24F69EF8F6B5D",
+      "B/src/click/__init__.py": "5ABFC54D37D47CC788B7E7A05E9514787F8C5A0B7DB429D0F24D748AC89964CA",
+      "B/tests/test_utils/test_confirm.py": "0B4CAD2A99A48421342F65C313E0D21A00ECBE14401C559C8F381E9E4AE99C2B",
+      "B/tests/test_utils/test_echo.py": "90A4554E7F377DA24A88A8C748849EB23BA7E2DE9D96F15AD617200475FB6453",
+      "B/tests/test_utils/test_echo_via_pager.py": "13B80D29D87F210D7CE235C54C178C90C8ED25ECE419DC18D508E4E68D69DEDF",
+      "B/tests/test_utils/test_format_filename.py": "D961C6FA256AB170DC6939B059AB63AD91AC8AE545459130780B2B15FBD1498F",
+      "B/tests/test_utils/test_KeepOpenFile.py": "CF78133881A317725A200EA7175FC6EA2E10553114F4647C7C00D0EF44E257DB",
+      "B/tests/test_utils/test_LazyFile.py": "D279F5F2C835167C0AF587AC0399F7248E6A4887152701F6463278F46BCA5F96",
+      "B/tests/test_utils/test_make_default_short_help.py": "98D79C0E96752D593C76862A23F7ED6E250C3D368FB668E70266F23C542A1785",
+      "B/tests/test_utils/test_open_file.py": "D42A97682952291CD20D73A1F54F8B5500F63675B643C7DB82E8BC4265F3DE5D",
+      "B/tests/test_utils/test_prompt.py": "E62105B28AB4537EE2F3F9873F30A4994F4F799EE8F7A4177201F046BAB6E716",
+      "B/tests/test_utils/test_sentinel.py": "9AB17D4AAA5A1B3899DF0FF505BE3E9BB6C9C84DE65BE34F21A5D7F218385A59",
+      "B/tests/test_utils/test_style.py": "CC3D9A7CF24BBC28F54405CED99380F1AF677745683778D3CDB91767C5E4CEE9",
+      "B/tests/test_utils/test__detect_program_name.py": "A1576FEAC3CB21C61871B22D25D3A14D9C4AEBB84558347AA5D195B965053F46",
+      "B/tests/test_utils/test__expand_args.py": "053964B08E615ADBBD22EB0D9F380A71D3EA3124AC8E284635790F459DF9EE94",
+      "B/tests/test_utils/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/tests/typing/typing_aliased_group.py": "CA86E8AC186216908648A53B971BA5F0BAA0D532B9CBA10640C12FF8A332CCD5",
+      "B/tests/typing/typing_confirmation_option.py": "CBEB42B982A93992B7529A54820AC09FF8B35F053DA334490B7FE85B96B7E66C",
+      "B/tests/typing/typing_edit.py": "ECCFF854A4DAE04EA28EB7A01D70873A478CC6C6BFFD9A5FF5FA30DF92854A85",
+      "B/tests/typing/typing_group_kw_options.py": "53CB7EF7D78A9BBB1CD82E2E841A2B43EFD1BF6B235AE002398EAF3272ECC87E",
+      "B/tests/typing/typing_help_option.py": "5DC1E21F7D8F4328F9C050294E1FC5964DD6B5EC01964B0F371FC2750721E545",
+      "B/tests/typing/typing_options.py": "A6E0F3A662F55B059A179FB2D2D2E6E7011BF705CFCF546070F621103B08149A",
+      "B/tests/typing/typing_password_option.py": "71B7AE0E53BDDE145628CBCB5F7A06A21E88AE58B438ABFE99A8F0685549F4B6",
+      "B/tests/typing/typing_progressbar.py": "BA0529F20AA25016FFE36176DB14437030B1FC7805A083B11742C5E03B3BA59C",
+      "B/tests/typing/typing_prompt.py": "25775F3FE85092DA5C7C298F82564FCB6970769AF332A139D883B9047F3BD0FC",
+      "B/tests/typing/typing_simple_example.py": "82C6A9D71DAD51AF7CE9F3C3CBA5A9F9FC89184592D17D9385C14F330B81C64F",
+      "B/tests/typing/typing_version_option.py": "F02ED457B05868B4639FE7CB70546E0141D3D60C915C5955A53B3ABE5137B719",
+      "task.json": "E0FB497EE5430388E2FA5728086FB572C011D41DD8F73A959B090BC49A8C0005",
+      "A.patch": "F5E85BD8E7AED5EEDE1A0289E795E4A44EB74BF415F4311688B34A1EE8277250",
+      "B.patch": "202C804300586C9FA4E931CE69CF9722D667C7102E4CA84109019DF18DF6A366"
+    },
+    "production_python_modules_AST_compared": 17
+  },
+  "limitations": [
+    "Local descriptive behavioral review, not an efficiency trial or a complete Click test suite.",
+    "Only the permitted task/base/A/B/patch artifacts were used. No current skill, label mapping, costs, reference fix, hidden grader or other pair result was opened during this review.",
+    "This agent has prior context from unrelated synthetic development fixture/oracle work; it is not a fresh reviewer with zero background. This Click serialization task was not one of those authored fixtures.",
+    "Runtime checks cover local Python 3.12.14 and 3.13.0 only, not every version implicated by the task or all operating systems.",
+    "The tests use standard serializable parameter state. They do not assert that arbitrary user callbacks, handles or other inherently unpicklable objects become serializable.",
+    "No assumption is made that labels correspond to the same experimental arm across different pairs; code length and test volume were not used to choose an arm."
+  ],
+  "reviewed_at": "2026-10-24T22:43:20.198767+00:00"
+}

@@ -1,0 +1,87 @@
+diff --git a/funcy/calc.py b/funcy/calc.py
+index 2c98382..54af297 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -123,7 +123,7 @@ def cache(timeout, key_func=None):
+             return result
+ 
+         def invalidate(*args, **kwargs):
+-            cache.pop(key_func(*args, **kwargs))
++            cache.pop(key_func(*args, **kwargs), None)
+         wrapper.invalidate = invalidate
+ 
+         def invalidate_all():
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index fa1b1fe..5176be9 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -127,6 +127,69 @@ def test_cache():
+     assert calls == [0, 1, 0]
+ 
+ 
++@pytest.mark.parametrize('key_func, args, kwargs', [
++    (None, (1, 2), {}),
++    (None, (1,), {'y': 2}),
++    (None, (), {'x': 1, 'y': 2}),
++    (lambda x, y: x + y, (1,), {'y': 2}),
++])
++def test_cache_invalidate_idempotent(key_func, args, kwargs):
++    calls = []
++
++    @cache(timeout=60, key_func=key_func)
++    def add(x, y):
++        calls.append((x, y))
++        return x + y
++
++    assert add.invalidate(*args, **kwargs) is None
++    assert add.invalidate(*args, **kwargs) is None
++    assert calls == []
++
++    assert add(*args, **kwargs) == 3
++    assert add(*args, **kwargs) == 3
++    assert add(4, 5) == 9
++    assert calls == [(1, 2), (4, 5)]
++
++    assert add.invalidate(*args, **kwargs) is None
++    assert add.invalidate(*args, **kwargs) is None
++    assert add(4, 5) == 9
++    assert add(*args, **kwargs) == 3
++    assert add(*args, **kwargs) == 3
++    assert calls == [(1, 2), (4, 5), (1, 2)]
++
++
++def test_cache_invalidate_after_invalidate_all():
++    calls = []
++
++    @cache(timeout=60)
++    def inc(x):
++        calls.append(x)
++        return x + 1
++
++    assert inc(0) == 1
++    assert inc(1) == 2
++    inc.invalidate_all()
++    inc.invalidate_all()
++    assert inc.invalidate(0) is None
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert calls == [0, 1, 0, 1]
++
++
++@pytest.mark.parametrize('error', [KeyError('invalid key'), TypeError('invalid key')])
++def test_cache_invalidate_key_func_error(error):
++    def key_func(x):
++        raise error
++
++    @cache(timeout=60, key_func=key_func)
++    def inc(x):
++        return x + 1
++
++    with pytest.raises(type(error)) as exc:
++        inc.invalidate(0)
++    assert exc.value is error
++
++
+ def test_cache_mixed_args():
+     @cache(timeout=60)
+     def add(x, y):

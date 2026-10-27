@@ -1,0 +1,126 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index df4e5c7..39de395 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Automatic help options, including custom ``help_option_names``, follow
++    command-line order relative to other eager options.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index c623764..a87df63 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1223,6 +1223,7 @@ class Command(BaseCommand):
+         self.options_metavar = options_metavar
+         self.short_help = short_help
+         self.add_help_option = add_help_option
++        self._help_option: t.Optional[Option] = None
+         self.no_args_is_help = no_args_is_help
+         self.hidden = hidden
+         self.deprecated = deprecated
+@@ -1288,16 +1289,23 @@ class Command(BaseCommand):
+         """Returns the help option object.
+ 
+         Unless ``add_help_option`` is ``False``.
++
++        .. versionchanged:: 8.1.8
++            The help option is cached to preserve its identity between
++            parsing and callback execution.
+         """
+         help_options = self.get_help_option_names(ctx)
+ 
+         if not help_options or not self.add_help_option:
+             return None
+ 
+-        # Avoid circular import.
+-        from .decorators import HelpOption
++        if self._help_option is None or set(self._help_option.opts) != set(help_options):
++            # Avoid circular import.
++            from .decorators import HelpOption
++
++            self._help_option = HelpOption(help_options)
+ 
+-        return HelpOption(help_options)
++        return self._help_option
+ 
+     def make_parser(self, ctx: Context) -> OptionParser:
+         """Creates the underlying option parser for this command."""
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ed9d96f..f53543f 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -105,6 +105,69 @@ def test_no_args_is_help(runner):
+     assert "Show this message and exit." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("help_option_names", "help_arg"),
++    [
++        (None, "--help"),
++        (["-h", "--help"], "-h"),
++        (["-h", "--help"], "--help"),
++        (["-?", "--how-to"], "-?"),
++        (["-?", "--how-to"], "--how-to"),
++    ],
++)
++@pytest.mark.parametrize("eager_first", [False, True])
++def test_help_option_eager_order(runner, help_option_names, help_arg, eager_first):
++    called = []
++
++    def eager_callback(ctx, param, value):
++        if value:
++            called.append(param.name)
++            click.echo("eager callback")
++            ctx.exit(42)
++
++    @click.command(context_settings={"help_option_names": help_option_names})
++    @click.option(
++        "--eager",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=eager_callback,
++    )
++    @click.option("--required", required=True)
++    def cli(required):
++        pytest.fail("The command callback should not run.")
++
++    args = ["--eager", help_arg] if eager_first else [help_arg, "--eager"]
++    result = runner.invoke(cli, args)
++
++    if eager_first:
++        assert result.exit_code == 42
++        assert result.output == "eager callback\n"
++        assert called == ["eager"]
++    else:
++        assert result.exit_code == 0
++        assert result.output.startswith("Usage: cli ")
++        assert "Show this message and exit." in result.output
++        assert called == []
++
++
++def test_help_option_names_per_invocation(runner):
++    @click.command()
++    @click.version_option("1.0")
++    def cli():
++        pytest.fail("The command callback should not run.")
++
++    for help_option_names in (["-h", "--help"], ["--man"], ["--help"]):
++        help_arg = help_option_names[0]
++        result = runner.invoke(
++            cli, [help_arg, "--version"], help_option_names=help_option_names
++        )
++        assert result.exit_code == 0
++        assert result.output.startswith("Usage: cli ")
++        assert "Show this message and exit." in result.output
++        assert help_arg in result.output
++
++
+ def test_default_maps(runner):
+     @click.group()
+     def cli():

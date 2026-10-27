@@ -1,0 +1,66 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 37b4440..96068c7 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -363,7 +363,7 @@ class IndexedSet(MutableSet):
+         elif len(others) == 1:
+             other = others[0]
+         else:
+-            other = chain(others)
++            other = chain(*others)
+         for o in other:
+             self.add(o)
+ 
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b78fd6c..5686019 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -21,6 +21,42 @@ def test_indexed_set_basic():
+     assert x[2:4:-1] == IndexedSet([8, 7])
+ 
+ 
++@mark.parametrize('iterable_type', [list, tuple, iter])
++def test_indexed_set_update(iterable_type):
++    iset = IndexedSet([2, 1])
++    assert iset.update(iterable_type([1, 3, 3])) is None
++    assert list(iset) == [2, 1, 3]
++
++    assert iset.update(iterable_type([2, 4, 4]),
++                       iterable_type([3, 5]),
++                       iterable_type([5, 6])) is None
++    assert list(iset) == [2, 1, 3, 4, 5, 6]
++
++
++def test_indexed_set_update_empty():
++    iset = IndexedSet([2, 1])
++    assert iset.update() is None
++    assert iset.update([]) is None
++    assert iset.update([], (), iter(())) is None
++    assert list(iset) == [2, 1]
++
++    iset.update([], (1, 3), iter(()), [3, 4], ())
++    assert list(iset) == [2, 1, 3, 4]
++
++
++def test_indexed_set_update_tuple_elements():
++    iset = IndexedSet([(1, 2)])
++    iset.update([(1, 2), (2, 3)], ((3, 4),), iter([(2, 3), (4, 5)]))
++    assert list(iset) == [(1, 2), (2, 3), (3, 4), (4, 5)]
++
++
++@mark.parametrize('others', [(1,), ([1], 2), ([1], [[]])])
++def test_indexed_set_update_invalid_input(others):
++    iset = IndexedSet()
++    with raises(TypeError):
++        iset.update(*others)
++
++
+ def test_indexed_set_rsub():
+     "From #252"
+     assert (set('abc') - IndexedSet('bcd')) == {'a'}

@@ -1,0 +1,74 @@
+diff --git a/tests/test_url.py b/tests/test_url.py
+index 2b45282..2bde4a3 100644
+--- a/tests/test_url.py
++++ b/tests/test_url.py
+@@ -390,7 +390,6 @@ KNOWN_SAFE_URL_STRING_URL_ISSUES = {
+     "https://%80.example",  # Invalid domain name (non-visible character)
+     "http://192.168.0.256",  # Invalid IP address
+     "http://192.168.0.0.0",  # Invalid IP address / domain name
+-    "http://[2a01:5cc0:1:2::4]",  # https://github.com/scrapy/w3lib/issues/193
+     "https://example.com:",  # Removes the :
+     # Does not convert \ to /
+     "https://example.com\\a",
+@@ -445,6 +444,47 @@ def test_safe_url_string_url(url: str | bytes, output: str | type[Exception]) ->
+     _test_safe_url_string(url, output=output)
+ 
+ 
++@pytest.mark.parametrize("as_bytes", [False, True])
++@pytest.mark.parametrize(
++    ("url", "output"),
++    [
++        ("http://[::1]", "http://[::1]"),
++        ("http://[::]/", "http://[::]/"),
++        ("http://[2001:db8::1]:8080", "http://[2001:db8::1]:8080"),
++        (
++            "http://[2001:db8:0:0:0:0:0:1]/path",
++            "http://[2001:db8:0:0:0:0:0:1]/path",
++        ),
++        (
++            "http://[::ffff:192.0.2.1]:80/path?key=value#fragment",
++            "http://[::ffff:192.0.2.1]:80/path?key=value#fragment",
++        ),
++        (
++            "//[2001:db8::1]:8080/path?key=value",
++            "//[2001:db8::1]:8080/path?key=value",
++        ),
++        (
++            "http://user:pass@[2001:db8::1]:8080/path?key=value",
++            "http://user:pass@[2001:db8::1]:8080/path?key=value",
++        ),
++        (
++            "http://[fe80::1%25eth0]:8080/path?key=value",
++            "http://[fe80::1%25eth0]:8080/path?key=value",
++        ),
++        (
++            "https://[2001:db8::1]:443/résumé?unit=µ#café",
++            "https://[2001:db8::1]:443/r%C3%A9sum%C3%A9?unit=%C2%B5#caf%C3%A9",
++        ),
++        (
++            "http://[2001:db8::1]/a[b]?q=[c]#d[e]",
++            "http://[2001:db8::1]/a%5Bb%5D?q=%5Bc%5D#d%5Be%5D",
++        ),
++    ],
++)
++def test_safe_url_string_ipv6(url: str, output: str, as_bytes: bool) -> None:
++    _test_safe_url_string(url.encode() if as_bytes else url, output=output)
++
++
+ class TestUrl:
+     def test_safe_url_string(self):
+         # Motoko Kusanagi (Cyborg from Ghost in the Shell)
+diff --git a/w3lib/url.py b/w3lib/url.py
+index bbefbbd..d5ccd33 100644
+--- a/w3lib/url.py
++++ b/w3lib/url.py
+@@ -156,6 +156,9 @@ def safe_url_string(  # pylint: disable=too-many-locals
+             netloc_bytes += safe_password.encode(encoding)
+         netloc_bytes += b"@"
+     if hostname is not None:
++        if ":" in hostname:
++            # Restore the IPv6 brackets removed by urlsplit().hostname.
++            hostname = f"[{hostname}]"
+         try:
+             netloc_bytes += hostname.encode("idna")
+         except UnicodeError:

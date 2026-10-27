@@ -1,0 +1,125 @@
+diff --git a/boltons/ioutils.py b/boltons/ioutils.py
+index 47f2b6a..3719fc8 100644
+--- a/boltons/ioutils.py
++++ b/boltons/ioutils.py
+@@ -116,7 +116,12 @@ class SpooledIOBase(object):
+         return self.buffer.isatty()
+ 
+     def next(self):
+-        return self.readline()
++        line = self.readline()
++        if not line:
++            raise StopIteration
++        return line
++
++    __next__ = next
+ 
+     @property
+     def closed(self):
+@@ -165,7 +170,7 @@ class SpooledIOBase(object):
+         return self.len
+ 
+     def __iter__(self):
+-        yield self.readline()
++        return self
+ 
+     def __enter__(self):
+         return self
+diff --git a/tests/test_ioutils.py b/tests/test_ioutils.py
+index a798dcb..5510ffe 100644
+--- a/tests/test_ioutils.py
++++ b/tests/test_ioutils.py
+@@ -5,6 +5,8 @@ import codecs
+ import random
+ import string
+ 
++import pytest
++
+ try:
+     from StringIO import StringIO
+ except:
+@@ -146,8 +148,8 @@ class BaseTestMixin(object):
+         """Make sure iter works as expected"""
+         self.spooled_flo.write(self.test_str)
+         self.spooled_flo.seek(0)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.test_str)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.data_type())
++        self.assertEqual([x for x in self.spooled_flo], [self.test_str])
++        self.assertEqual([x for x in self.spooled_flo], [])
+ 
+     def test_buf_property(self):
+         """'buf' property returns the same value as getvalue()"""
+@@ -406,6 +408,73 @@ class TestSpooledStringIO(TestCase, BaseTestMixin, AssertionsMixin):
+         self.assertEqual(self.spooled_flo.read(3), test_str)
+ 
+ 
++@pytest.mark.parametrize('spooled_type', [ioutils.SpooledBytesIO,
++                                        ioutils.SpooledStringIO])
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('text', [u'', u'\n', u'\u2014first\n\nlast',
++                                 u'\u2014first\n\nlast\n'])
++def test_spooled_iteration(spooled_type, rolled, text):
++    content = (text.encode('utf-8')
++               if spooled_type is ioutils.SpooledBytesIO else text)
++    expected = content.splitlines(True)
++    with spooled_type() as stream:
++        stream.write(content)
++        if rolled:
++            stream.rollover()
++        stream.seek(0)
++
++        assert iter(stream) is stream
++        assert list(stream) == expected
++        assert list(stream) == []
++        for advance in (stream.__next__, stream.next):
++            stream.seek(0)
++            for line in expected:
++                assert advance() == line
++            for _ in range(2):
++                with pytest.raises(StopIteration):
++                    advance()
++            assert next(stream, None) is None
++            assert stream.read() == content[:0]
++
++
++@pytest.mark.parametrize('spooled_type', [ioutils.SpooledBytesIO,
++                                        ioutils.SpooledStringIO])
++@pytest.mark.parametrize('rolled', [False, True])
++def test_spooled_iteration_read_seek_and_close(spooled_type, rolled):
++    text = u'\u2014first\n\nlast'
++    content = (text.encode('utf-8')
++               if spooled_type is ioutils.SpooledBytesIO else text)
++    first, blank, last = content.splitlines(True)
++    with spooled_type() as stream:
++        stream.write(content)
++        if rolled:
++            stream.rollover()
++        stream.seek(0)
++
++        iterator = iter(stream)
++        assert stream.read(1) == content[:1]
++        assert next(iterator) == first[1:]
++        assert stream.tell() == len(first)
++        assert stream.readline() == blank
++        assert stream.next() == last
++        assert stream.tell() == len(content)
++        with pytest.raises(StopIteration):
++            next(iterator)
++        stream.seek(0)
++        assert next(iterator) == first
++        stream.seek(0)
++        assert spooled_type.next(self=stream) == first
++        stream.seek(0)
++        assert spooled_type.__next__(self=stream) == first
++        stream.seek(0)
++
++    assert stream.closed
++    with pytest.raises(ValueError):
++        next(stream)
++    with pytest.raises(ValueError):
++        stream.next()
++
++
+ class TestMultiFileReader(TestCase):
+     def test_read_seek_bytes(self):
+         r = ioutils.MultiFileReader(io.BytesIO(b'narf'), io.BytesIO(b'troz'))

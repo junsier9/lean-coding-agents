@@ -1,0 +1,274 @@
+{
+  "interpreter": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "case_count": 12,
+  "results": [
+    {
+      "id": "h01",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 0,
+          "elapsed_seconds": 0.14,
+          "log_sha256": "d2569e65e63e7054d45c85041224a61136ab458d3660a2a7039cdfe8b60f6127"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "07015dc0e29855f2a6db1ca177261f6de655d07b75fab8247db810472c7215b6"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h02",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 8,
+          "errors": 1,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "d76741b9ba483cdd4d591f8004a796fc7a4cb9d40e16f4b337247af7384ba4c8"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "85915e289095318a32eba29d4d9101d47dd9b4cc83aa4363bb5989fdf8ede411"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h03",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 1,
+          "elapsed_seconds": 0.14,
+          "log_sha256": "2a1d7f74eab7969726fba4f57d212839213eed70177f0120010cee870f09b658"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "ff055aee8b0816fda596dae2dd1828baf04ad6933b009d6422bbb3b89f3bf10b"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h04",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "2bf50ab2633f1f86fb12b1f99edb3201dffe149140d385c2036b774c9e4d4c06"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.141,
+          "log_sha256": "dbfb4646230d75c02cef887286bf371e8f020d3b4574aa8367e3403b5b2e5a2d"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h05",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 3,
+          "errors": 0,
+          "elapsed_seconds": 0.141,
+          "log_sha256": "2c90a12816155293e6eda63b962fb16d478c5b35c3d504684aa67274ced1b2d1"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "8d415c498d390cb2b43286f88f4ee1c61dab2a8992a32a5f2993f98d1469a872"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h06",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 11,
+          "failures": 4,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "08057b5525043a77ab62dde2254b2032b83b14b133cd0254a2806047c40bbb30"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "9b2a860cfdd58b8824ced56044e6e74029392b195c154aa558e836d32716c904"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h07",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "15d7b9e396204b14a81b2613e6b9a054f99c16f01a4190df751843e14f7e731c"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "01c8ec97af44cad3e141775684236e196709226025e8a81ab2ca135797e60130"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h08",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 6,
+          "errors": 0,
+          "elapsed_seconds": 0.187,
+          "log_sha256": "de5a45a4ffb810edbcd52c96185da45e217ef907f247cae2b25ac3303d01a587"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.188,
+          "log_sha256": "ad915ec2fdc0e33bb0a813dd499538aea120948c40148b02a567ea62f0cdff6d"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h09",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 1,
+          "elapsed_seconds": 0.312,
+          "log_sha256": "3e7cc756ba96144dbb0658a453b6a5a8a7691d3a1e014da5ab96d334bbcddea5"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.266,
+          "log_sha256": "df0fbe9d21264689bb577cfb481998e2d7466101afea8d08e74cf7d57eb72a93"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h10",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 7,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "6af325e932c230ca001f4c934d7b5ab92010ed549246630a1a53a1be31c6c3e3"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.141,
+          "log_sha256": "0d26f7b41af70427dd24a39a0fc1596d7dd7069983fe7afe994c8e575635ba95"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h11",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "16ac4b2383fb03b5d00fb9a9024f3778cee4b145e383fe7798a9e54455fc6a20"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "91ae862a665c183d1c6ab05f5aa392fae03e453c4e9b4f22ccf4b9c4af25dc67"
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h12",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 2,
+          "errors": 2,
+          "elapsed_seconds": 0.125,
+          "log_sha256": "90aa7aad8af87721fdb4dd92e73021be24d8c0c395a1683011546a8f3aa046e1"
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "elapsed_seconds": 0.109,
+          "log_sha256": "8bd138c6c1d3769320b46c42bbe3c0b6f1e6b9195ce703ff8847fe7dca6d5eb2"
+        }
+      },
+      "eligible": true
+    }
+  ],
+  "reference_tests": 121,
+  "all_eligible": true,
+  "model_calls": 0,
+  "network_calls": 0
+}

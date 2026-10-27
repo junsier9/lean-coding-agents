@@ -1,0 +1,57 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..9f0ff17 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -77,6 +77,8 @@ class _DescriptorBase:
+ 
+     def __get__(self, obj, objtype=None):
+         wrapper = self.Wrapper(obj)
++        if obj is None:
++            return wrapper
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..01f6ff4 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,5 +1,6 @@
+ import unittest
+ import warnings
++from unittest.mock import create_autospec
+ 
+ 
+ from cachetools import Cache, cachedmethod, keys
+@@ -514,6 +515,32 @@ class MethodDecoratorTestMixin:
+             cached.bar()
+ 
+ 
++class AutospecMethodTest(unittest.TestCase):
++
++    def test_autospec(self):
++        for instance in (False, True):
++            with self.subTest(instance=instance), warnings.catch_warnings():
++                warnings.simplefilter("error")
++                spec = create_autospec(Cached, instance=instance)
++                cached = spec if instance else spec({})
++                for name in (
++                    "get",
++                    "get_typed",
++                    "get_info",
++                    "get_lock",
++                    "get_lock_info",
++                    "get_cond",
++                    "get_cond_error",
++                    "get_cond_info",
++                    "get_lock_cond",
++                    "get_lock_cond_info",
++                ):
++                    with self.subTest(method=name):
++                        method = getattr(cached, name)
++                        method(42)
++                        method.assert_called_once_with(42)
++
++
+ class CacheMethodTest(unittest.TestCase, MethodDecoratorTestMixin):
+ 
+     def cache(self, minsize, **kwargs):

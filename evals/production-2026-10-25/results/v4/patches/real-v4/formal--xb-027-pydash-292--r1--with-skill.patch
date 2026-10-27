@@ -1,0 +1,63 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 8208426..0a3cebe 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -896,9 +896,8 @@ def number_format(
+         int_part = num_parts[0]
+         dec_part = (num_parts + [""])[1]
+ 
+-        # Reverse the integer part, chop it into groups of 3, join on `order_separator`, and then
+-        # un-reverse the string.
+-        int_part = order_separator.join(chop(int_part[::-1], 3))[::-1]
++        sign = "-" if int_part.startswith("-") else ""
++        int_part = sign + order_separator.join(chop_right(int_part[len(sign) :], 3))
+ 
+         text = decimal_separator.join(pyd.compact([int_part, dec_part]))
+ 
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 0fe8985..26ad898 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal
+ import re
+ from urllib.parse import parse_qsl, urlsplit
+ 
+@@ -440,13 +441,37 @@ def test_lower_first(case, expected):
+         ((1234, 2), "1,234.00"),
+         ((1234, 1), "1,234.0"),
+         ((1234, 2, ",", "."), "1.234,00"),
++        ((1234.5678, 2), "1,234.57"),
++        ((-99,), "-99"),
++        ((-100,), "-100"),
++        ((-999,), "-999"),
++        ((-1000,), "-1,000"),
++        ((-999999,), "-999,999"),
++        ((-1000000,), "-1,000,000"),
++        ((-999.125, 2), "-999.12"),
++        ((-999.999, 2), "-1,000.00"),
++        ((-1234.5678, 2, ",", "."), "-1.234,57"),
++        ((-123456.75, 2, "::", "<>"), "-123<>456::75"),
++        ((-999999, 0, ".", ""), "-999999"),
++        ((Decimal("-999.125"), 2), "-999.12"),
++        ((Decimal("-0"), 2), "-0.00"),
++        ((-0.0, 2), "-0.00"),
++        ((-0.001, 2), "-0.00"),
+         (("1234",), ""),
++        ((1234, -1), ""),
+     ],
+ )
+ def test_number_format(case, expected):
+     assert _.number_format(*case) == expected
+ 
+ 
++def test_number_format_keyword_arguments():
++    assert (
++        _.number_format(number=-999999.125, scale=2, decimal_separator=",", order_separator=".")
++        == "-999.999,12"
++    )
++
++
+ @parametrize(
+     "case,expected",
+     [

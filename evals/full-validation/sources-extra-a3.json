@@ -1,0 +1,1458 @@
+{
+  "cases": [
+    {
+      "id": "extra-a3-toolz-635",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/635",
+      "task": "interpose 在空输入上直接抛 StopIteration，不能像其他迭代工具一样返回空迭代结果。请使空输入正常结束，保留非空输入在相邻元素之间插入分隔值的行为。",
+      "fix_sha": "d2eba0374a452c2b18fe188b04527e22bda3548c",
+      "base_sha": "55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+      "production_files": [
+        "toolz/itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_itertoolz.py。新增test_interpose_empty，直接检查空序列结果；原test_interpose保留正常路径。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix interpose([]) raising StopIteration",
+        "merged_at": "2026-09-18T16:40:29Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/d2eba0374a452c2b18fe188b04527e22bda3548c",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/635",
+          "https://github.com/pytoolz/toolz/commit/d2eba0374a452c2b18fe188b04527e22bda3548c",
+          "https://api.github.com/repos/pytoolz/toolz/commits/d2eba0374a452c2b18fe188b04527e22bda3548c",
+          "https://github.com/pytoolz/toolz/blob/d2eba0374a452c2b18fe188b04527e22bda3548c/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "新增test_interpose_empty，直接检查空序列结果；原test_interpose保留正常路径。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-603",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/603",
+      "task": "partition_all 对提供了错误 __len__ 的 iterable 会静默产出错误尾块，而不是暴露长度与实际内容不一致。请检测这种无效输入并给出 LookupError，同时保持正确长度序列及无长度迭代器的正常分块行为。",
+      "fix_sha": "5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+      "base_sha": "1fb2b9f1b69ab664a264944f4eafc290acce127d",
+      "production_files": [
+        "toolz/itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_itertoolz.py。修改test_partition_all，加入长度偏大与偏小的list子类，均应抛LookupError。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Raise `LookupError` in partition_all when length is invalid",
+        "merged_at": "2025-10-16T22:54:43Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/603",
+          "https://github.com/pytoolz/toolz/commit/5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+          "https://api.github.com/repos/pytoolz/toolz/commits/5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+          "https://github.com/pytoolz/toolz/blob/5a7e078c941c990dcaca53ac6920e5d5c0b1475f/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "修改test_partition_all，加入长度偏大与偏小的list子类，均应抛LookupError。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-410",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/410",
+      "task": "accumulate 对空输入且未显式提供初始值时，在Python生成器语义下会抛 RuntimeError。请让这种输入产生空结果，并保留显式初始值及普通累计运算。",
+      "fix_sha": "2bf9e8b7a3ce9e0e9e376bee0795ca194c6fcf95",
+      "base_sha": "c789e3cff7887f64a259d1364c589e827f59a654",
+      "production_files": [
+        "toolz/itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_itertoolz.py。在test_accumulate中新增无初始值空输入结果为[]的断言；回归不依赖特定操作系统。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix accumulate for Python 3.7",
+        "merged_at": "2018-08-14T14:38:34Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/2bf9e8b7a3ce9e0e9e376bee0795ca194c6fcf95",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 8,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/410",
+          "https://github.com/pytoolz/toolz/commit/2bf9e8b7a3ce9e0e9e376bee0795ca194c6fcf95",
+          "https://api.github.com/repos/pytoolz/toolz/commits/2bf9e8b7a3ce9e0e9e376bee0795ca194c6fcf95",
+          "https://github.com/pytoolz/toolz/blob/2bf9e8b7a3ce9e0e9e376bee0795ca194c6fcf95/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "在test_accumulate中新增无初始值空输入结果为[]的断言；回归不依赖特定操作系统。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-399",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/399",
+      "task": "partition_all 处理尾块时会把用户对象与内部填充值做相等比较，导致合法但拒绝异类比较的对象抛异常。请让这些对象正常分块，序列与一次性迭代器结果应一致，保留不满一块的尾部内容。",
+      "fix_sha": "2bd9139d0d0e17d3426cb467b5f58b1fb6d8a439",
+      "base_sha": "e052d819b2d8dcf50f0147b5659b9a530204d05f",
+      "production_files": [
+        "toolz/itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_itertoolz.py。test_partition_all新增NoCompare对象，覆盖列表和iter两种输入的7项、块大小4场景。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Avoid using .index() in partition_all",
+        "merged_at": "2018-06-13T15:23:00Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/2bd9139d0d0e17d3426cb467b5f58b1fb6d8a439",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 18,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/399",
+          "https://github.com/pytoolz/toolz/commit/2bd9139d0d0e17d3426cb467b5f58b1fb6d8a439",
+          "https://api.github.com/repos/pytoolz/toolz/commits/2bd9139d0d0e17d3426cb467b5f58b1fb6d8a439",
+          "https://github.com/pytoolz/toolz/blob/2bd9139d0d0e17d3426cb467b5f58b1fb6d8a439/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "test_partition_all新增NoCompare对象，覆盖列表和iter两种输入的7项、块大小4场景。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-308",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/308",
+      "task": "参数检查工具遇到 __signature__ 或 __wrapped__ 为property的可调用类型时，可能无视已登记的签名并给出错误的参数数量判断。请使已登记的类型仍能正确接受检查，保持可调用实例自身签名与未登记对象的行为。",
+      "fix_sha": "2fc057dcbc8db23a700b469aebe7e6982d507cb0",
+      "base_sha": "2faca0efdcedfcb31d7242f0903a43cb454e0b2d",
+      "production_files": [
+        "toolz/compatibility.py",
+        "toolz/functoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_functoolz.py",
+        "toolz/tests/test_inspect_args.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_functoolz.py toolz/tests/test_inspect_args.py。新增test_inspect_signature_property、test_inspect_wrapped_property；使用纯Python描述符类型和签名注册表。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Use our introspection registry when `inspect.signature` fails due to inspecting properties",
+        "merged_at": "2016-05-30T18:32:00Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/2fc057dcbc8db23a700b469aebe7e6982d507cb0",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 21,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/308",
+          "https://github.com/pytoolz/toolz/commit/2fc057dcbc8db23a700b469aebe7e6982d507cb0",
+          "https://api.github.com/repos/pytoolz/toolz/commits/2fc057dcbc8db23a700b469aebe7e6982d507cb0",
+          "https://github.com/pytoolz/toolz/blob/2fc057dcbc8db23a700b469aebe7e6982d507cb0/toolz/tests/test_functoolz.py",
+          "https://github.com/pytoolz/toolz/blob/2fc057dcbc8db23a700b469aebe7e6982d507cb0/toolz/tests/test_inspect_args.py"
+        ],
+        "regression_evidence": "新增test_inspect_signature_property、test_inspect_wrapped_property；使用纯Python描述符类型和签名注册表。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-326",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/326",
+      "task": "模块级被 curry 包装的函数以及其部分应用对象不能正常pickle往返，因为原函数已无法通过模块属性定位。请使这些对象可序列化并恢复相同行为，保留全局对象身份和多阶段部分应用结果。",
+      "fix_sha": "13111cddea6fba28c64794b3ae4d9680418c2f1f",
+      "base_sha": "01a025c41ea92dd204f59f2cb25be9d13d0a7d75",
+      "production_files": [
+        "toolz/_signatures.py",
+        "toolz/compatibility.py",
+        "toolz/functoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_serialization.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_serialization.py。新增test_flip，覆盖全局flip身份、flip(f)及继续部分应用后的pickle结果。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "serialize global curried objects.",
+        "merged_at": "2016-10-05T14:23:28Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/13111cddea6fba28c64794b3ae4d9680418c2f1f",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 52,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/326",
+          "https://github.com/pytoolz/toolz/commit/13111cddea6fba28c64794b3ae4d9680418c2f1f",
+          "https://api.github.com/repos/pytoolz/toolz/commits/13111cddea6fba28c64794b3ae4d9680418c2f1f",
+          "https://github.com/pytoolz/toolz/blob/13111cddea6fba28c64794b3ae4d9680418c2f1f/toolz/tests/test_serialization.py"
+        ],
+        "regression_evidence": "新增test_flip，覆盖全局flip身份、flip(f)及继续部分应用后的pickle结果。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-355",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/355",
+      "task": "定义在 toolz.functoolz 之外的全局 curry 对象仍可能无法pickle，嵌套类和方法的限定名称也不能正确恢复。请让这些可定位对象往返后保留身份或相同调用行为，并保持可写元数据属性。",
+      "fix_sha": "be3ce86c058112658fa4421a87c6b10b4304975d",
+      "base_sha": "7fb83c8d3ef057cdaef22a80b7bc610d66661e19",
+      "production_files": [
+        "toolz/functoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_functoolz.py",
+        "toolz/tests/test_serialization.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_functoolz.py toolz/tests/test_serialization.py。新增test_curried_exceptions、test_curried_qualname等，使用标准库pickle；覆盖全局、嵌套和部分应用对象。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Set `__module__` on curried objects.  This can fix pickling global curried objects",
+        "merged_at": "2016-12-10T20:34:52Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/be3ce86c058112658fa4421a87c6b10b4304975d",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 46,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/355",
+          "https://github.com/pytoolz/toolz/commit/be3ce86c058112658fa4421a87c6b10b4304975d",
+          "https://api.github.com/repos/pytoolz/toolz/commits/be3ce86c058112658fa4421a87c6b10b4304975d",
+          "https://github.com/pytoolz/toolz/blob/be3ce86c058112658fa4421a87c6b10b4304975d/toolz/tests/test_functoolz.py",
+          "https://github.com/pytoolz/toolz/blob/be3ce86c058112658fa4421a87c6b10b4304975d/toolz/tests/test_serialization.py"
+        ],
+        "regression_evidence": "新增test_curried_exceptions、test_curried_qualname等，使用标准库pickle；覆盖全局、嵌套和部分应用对象。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-310",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/310",
+      "task": "默认值哨兵经过序列化后，内容相同但对象身份变化，导致 get、accumulate、reduceby、pluck、join 和 fold 等接口把未提供的默认值当作真实数据。请使这些调用与原始未给默认值的行为一致，同时保留真实默认值。",
+      "fix_sha": "61981582b9191c1a8c2b4e68fcad9d4ef46d7840",
+      "base_sha": "2fc057dcbc8db23a700b469aebe7e6982d507cb0",
+      "production_files": [
+        "toolz/itertoolz.py",
+        "toolz/sandbox/parallel.py"
+      ],
+      "regression_test_files": [
+        "toolz/sandbox/tests/test_parallel.py",
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/sandbox/tests/test_parallel.py toolz/tests/test_itertoolz.py。修改两个测试文件，使用pickle往返的no_default字符串验证查找、累计、分组、联接及sandbox.fold。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Use `==` instead of `is` to check for no_default",
+        "merged_at": "2016-06-02T22:31:49Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/61981582b9191c1a8c2b4e68fcad9d4ef46d7840",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 24,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/310",
+          "https://github.com/pytoolz/toolz/commit/61981582b9191c1a8c2b4e68fcad9d4ef46d7840",
+          "https://api.github.com/repos/pytoolz/toolz/commits/61981582b9191c1a8c2b4e68fcad9d4ef46d7840",
+          "https://github.com/pytoolz/toolz/blob/61981582b9191c1a8c2b4e68fcad9d4ef46d7840/toolz/sandbox/tests/test_parallel.py",
+          "https://github.com/pytoolz/toolz/blob/61981582b9191c1a8c2b4e68fcad9d4ef46d7840/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "修改两个测试文件，使用pickle往返的no_default字符串验证查找、累计、分组、联接及sandbox.fold。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-toolz-272",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/272",
+      "task": "topk 的 key=0 本应按每项的第一个分量排序，却被当作没有可调用key而失败。请使零索引键与其他字段索引一样工作，保留 callable key、无key与稳定排序行为。",
+      "fix_sha": "d1e3041ab14a962b5de57f379b3707950a3c7838",
+      "base_sha": "ee785666c0d9550f01894bad010316bce8a4667e",
+      "production_files": [
+        "toolz/itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q toolz/tests/test_itertoolz.py。test_topk新增按tuple第0项取前两项的明确预期。 上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix topk to work with 0 for key",
+        "merged_at": "2015-08-19T18:57:24Z",
+        "commit_url": "https://github.com/pytoolz/toolz/commit/d1e3041ab14a962b5de57f379b3707950a3c7838",
+        "sha_basis": "历史PR merge_commit_sha不可解析；使用仓库中可解析且message明确Merge pull request #272的合并提交。其双父与PR base/head一致，生产和测试patch与PR一致；base_sha为该实际合并提交第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/pytoolz/toolz/pull/272",
+          "https://github.com/pytoolz/toolz/commit/d1e3041ab14a962b5de57f379b3707950a3c7838",
+          "https://api.github.com/repos/pytoolz/toolz/commits/d1e3041ab14a962b5de57f379b3707950a3c7838",
+          "https://github.com/pytoolz/toolz/blob/d1e3041ab14a962b5de57f379b3707950a3c7838/toolz/tests/test_itertoolz.py"
+        ],
+        "regression_evidence": "test_topk新增按tuple第0项取前两项的明确预期。",
+        "runtime_notes": "纯Python迭代/函数工具；历史快照需依其Python支持范围准备测试环境。",
+        "test_layout_note": "上游测试位于生产包内部；冻结覆盖必须仅限toolz/**/tests及测试fixture，不能覆盖整个toolz目录。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-07T04:15:32Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-211",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/211",
+      "task": "Funcy装饰器包装已绑定实例方法或类方法时，按参数名读取调用值会多计已经绑定的receiver，导致AttributeError或读错参数。请使这些方法的命名参数、默认值、关键字、可变参数和仅位置参数访问正确。",
+      "fix_sha": "fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24",
+      "base_sha": "dfa2b3aa7662e5c594c64f4c152240aaed506db2",
+      "production_files": [
+        "funcy/decorators.py"
+      ],
+      "regression_test_files": [
+        "tests/test_decorators.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_decorators.py。新增test_decorator_access_bound_method_args和test_arggetter_bound_method_positional_only。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Resolve bound method arguments in decorators",
+        "merged_at": "2026-10-12T06:44:40Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 10,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/211",
+          "https://github.com/Suor/funcy/commit/fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24",
+          "https://api.github.com/repos/Suor/funcy/commits/fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24",
+          "https://github.com/Suor/funcy/blob/fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24/tests/test_decorators.py"
+        ],
+        "regression_evidence": "新增test_decorator_access_bound_method_args和test_arggetter_bound_method_positional_only。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-204",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/204",
+      "task": "cache 的TTL依赖系统墙上时钟，时钟向前或向后调整会让缓存过早过期或超时仍保留。请使过期时间取决于实际经过的时间，并让显式清理与同键重填后的过期行为一致。",
+      "fix_sha": "355accecf779425fbcfa59134d7ea7b46e1f22df",
+      "base_sha": "e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+      "production_files": [
+        "funcy/calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_calc.py。新增确定性mock-clock回归test_cache_expiration_ignores_wall_clock_jumps；同时保留重填键过期测试，不需等待真实时间。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Use monotonic time for cache expiration",
+        "merged_at": "2026-10-12T05:06:34Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/355accecf779425fbcfa59134d7ea7b46e1f22df",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/204",
+          "https://github.com/Suor/funcy/commit/355accecf779425fbcfa59134d7ea7b46e1f22df",
+          "https://api.github.com/repos/Suor/funcy/commits/355accecf779425fbcfa59134d7ea7b46e1f22df",
+          "https://github.com/Suor/funcy/blob/355accecf779425fbcfa59134d7ea7b46e1f22df/tests/test_calc.py"
+        ],
+        "regression_evidence": "新增确定性mock-clock回归test_cache_expiration_ignores_wall_clock_jumps；同时保留重填键过期测试，不需等待真实时间。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-203",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/203",
+      "task": "once_per_args 忽略关键字专用参数、*args 和 **kwargs 的差异，导致本应执行的新调用被错误跳过。请按完整有效参数区分调用，保持默认值、等价调用方式及不可哈希参数的去重行为。",
+      "fix_sha": "c1d56484226b365c84184ac01eb1bc069c175ead",
+      "base_sha": "29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+      "production_files": [
+        "funcy/decorators.py"
+      ],
+      "regression_test_files": [
+        "tests/test_flow.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_flow.py。新增keyword_only、variadic、mixed_parameters三组once_per_args回归。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Include all argument kinds in once_per_args",
+        "merged_at": "2026-10-12T05:06:45Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/c1d56484226b365c84184ac01eb1bc069c175ead",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/203",
+          "https://github.com/Suor/funcy/commit/c1d56484226b365c84184ac01eb1bc069c175ead",
+          "https://api.github.com/repos/Suor/funcy/commits/c1d56484226b365c84184ac01eb1bc069c175ead",
+          "https://github.com/Suor/funcy/blob/c1d56484226b365c84184ac01eb1bc069c175ead/tests/test_flow.py"
+        ],
+        "regression_evidence": "新增keyword_only、variadic、mixed_parameters三组once_per_args回归。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-200",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/200",
+      "task": "walk_values 等映射变换对 Counter 输入会把(key,value)对当作待计数元素，损坏键和值。请使Counter及其子类保留映射含义和计数，覆盖零/负计数、空输入、投影及筛选，并保持原输入不变。",
+      "fix_sha": "7e5f8a2284ec1562135bba3497a2c54ab3f64056",
+      "base_sha": "d3d1463753cafaa83c5b083df8c01ca46e2a91eb",
+      "production_files": [
+        "funcy/colls.py"
+      ],
+      "regression_test_files": [
+        "tests/test_colls.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_colls.py。新增test_counter_mapping_operations，直接断言键值变换、投影、剔除和子类保留。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Preserve Counter keys and counts in mapping transformations",
+        "merged_at": "2026-10-12T09:31:24Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/7e5f8a2284ec1562135bba3497a2c54ab3f64056",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 8,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/200",
+          "https://github.com/Suor/funcy/commit/7e5f8a2284ec1562135bba3497a2c54ab3f64056",
+          "https://api.github.com/repos/Suor/funcy/commits/7e5f8a2284ec1562135bba3497a2c54ab3f64056",
+          "https://github.com/Suor/funcy/blob/7e5f8a2284ec1562135bba3497a2c54ab3f64056/tests/test_colls.py"
+        ],
+        "regression_evidence": "新增test_counter_mapping_operations，直接断言键值变换、投影、剔除和子类保留。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-197",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/197",
+      "task": "wrap_prop 包装带deleter的property后，del instance.prop 会抛AttributeError，而且上下文管理器不会执行。请恢复合法删除与异常传播，并保留已缓存属性删除后可重新计算的行为。",
+      "fix_sha": "e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+      "base_sha": "40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7",
+      "production_files": [
+        "funcy/objects.py"
+      ],
+      "regression_test_files": [
+        "tests/test_objects.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_objects.py。新增test_wrap_prop_delete和test_wrap_prop_delete_cached_property，检查context entry/exit及deleter异常。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix deletion of wrapped properties",
+        "merged_at": "2026-10-12T04:48:51Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/197",
+          "https://github.com/Suor/funcy/commit/e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+          "https://api.github.com/repos/Suor/funcy/commits/e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+          "https://github.com/Suor/funcy/blob/e0ecd3a5927051e1a90514eac64763aeeb6b5a35/tests/test_objects.py"
+        ],
+        "regression_evidence": "新增test_wrap_prop_delete和test_wrap_prop_delete_cached_property，检查context entry/exit及deleter异常。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-192",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/192",
+      "task": "empty 对 str 和 bytes 输入抛 TypeError，无法创建同类型的空集合。请让空或非空文本、字节串都返回相同类型的空值，保留列表、映射和迭代器等原有行为。",
+      "fix_sha": "7cfb9465fe7535fac3617475b84987f500d235c0",
+      "base_sha": "b56cac0d240bd946ebae1f75aa654b98a551a209",
+      "production_files": [
+        "funcy/colls.py"
+      ],
+      "regression_test_files": [
+        "tests/test_colls.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_colls.py。新增参数化test_empty_text，覆盖空/非空str与bytes。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Handle strings and bytes in empty",
+        "merged_at": "2026-09-27T09:19:24Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/7cfb9465fe7535fac3617475b84987f500d235c0",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/192",
+          "https://github.com/Suor/funcy/commit/7cfb9465fe7535fac3617475b84987f500d235c0",
+          "https://api.github.com/repos/Suor/funcy/commits/7cfb9465fe7535fac3617475b84987f500d235c0",
+          "https://github.com/Suor/funcy/blob/7cfb9465fe7535fac3617475b84987f500d235c0/tests/test_colls.py"
+        ],
+        "regression_evidence": "新增参数化test_empty_text，覆盖空/非空str与bytes。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-190",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/190",
+      "task": "make_lookuper/silent_lookuper 的初始化构建器第一次失败后，后续调用不再重试；生成器中途失败还会残留部分键值。请在失败后保持可重试且没有残留数据，仍让成功的空查找表只初始化一次。",
+      "fix_sha": "91098f4ea6eb54ffabfdac886baefa5260866091",
+      "base_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+      "production_files": [
+        "funcy/calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_calc.py。新增test_lookuper_retries_failed_initialization、test_lookuper_caches_empty_table，含生成器部分产出和KeyboardInterrupt清理。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Retry lookup initialization after builder failures",
+        "merged_at": "2026-09-19T03:34:20Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/91098f4ea6eb54ffabfdac886baefa5260866091",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 6,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/190",
+          "https://github.com/Suor/funcy/commit/91098f4ea6eb54ffabfdac886baefa5260866091",
+          "https://api.github.com/repos/Suor/funcy/commits/91098f4ea6eb54ffabfdac886baefa5260866091",
+          "https://github.com/Suor/funcy/blob/91098f4ea6eb54ffabfdac886baefa5260866091/tests/test_calc.py"
+        ],
+        "regression_evidence": "新增test_lookuper_retries_failed_initialization、test_lookuper_caches_empty_table，含生成器部分产出和KeyboardInterrupt清理。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-187",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/187",
+      "task": "limit_error_rate 使用0.5秒等小数timeout时，在首次被拦截的调用上抛TypeError，而不是预期的ErrorRateExceeded。请使浮点秒数与等价timedelta的阻止和到期恢复行为一致，保留整数秒支持。",
+      "fix_sha": "980f0279a094e1a12e28313dbee3117a068ac65a",
+      "base_sha": "26b1650f233de922bb664de56e9a4cf3bcdec25f",
+      "production_files": [
+        "funcy/flow.py"
+      ],
+      "regression_test_files": [
+        "tests/test_flow.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_flow.py。新增test_limit_error_rate_fractional_timeout，使用受控时钟验证0.5秒和timedelta，不需sleep。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Handle fractional-second error rate timeouts",
+        "merged_at": "2026-09-19T03:46:05Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/980f0279a094e1a12e28313dbee3117a068ac65a",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/187",
+          "https://github.com/Suor/funcy/commit/980f0279a094e1a12e28313dbee3117a068ac65a",
+          "https://api.github.com/repos/Suor/funcy/commits/980f0279a094e1a12e28313dbee3117a068ac65a",
+          "https://github.com/Suor/funcy/blob/980f0279a094e1a12e28313dbee3117a068ac65a/tests/test_flow.py"
+        ],
+        "regression_evidence": "新增test_limit_error_rate_fractional_timeout，使用受控时钟验证0.5秒和timedelta，不需sleep。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-182",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/182",
+      "task": "复用同一个配置好的 cache 或 memoize 装饰器包装不同函数，会让函数互相读到对方的缓存结果。请使各函数的结果与invalidate操作独立，同时保留同一函数的缓存命中。",
+      "fix_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+      "base_sha": "cdf432835a57260ec703d468e9e8ea01e0f15663",
+      "production_files": [
+        "funcy/calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_calc.py。新增参数化test_reused_memory_decorator，分别覆盖cache/memoize及单键/全部失效。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Keep reused cache decorators independent",
+        "merged_at": "2026-09-19T03:32:02Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/0eab928c371264cb85fb022bf13b4e9d86037f5f",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 8,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/182",
+          "https://github.com/Suor/funcy/commit/0eab928c371264cb85fb022bf13b4e9d86037f5f",
+          "https://api.github.com/repos/Suor/funcy/commits/0eab928c371264cb85fb022bf13b4e9d86037f5f",
+          "https://github.com/Suor/funcy/blob/0eab928c371264cb85fb022bf13b4e9d86037f5f/tests/test_calc.py"
+        ],
+        "regression_evidence": "新增参数化test_reused_memory_decorator，分别覆盖cache/memoize及单键/全部失效。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-178",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/178",
+      "task": "once_per 和 once_per_args 遇到list、dict、set或含不可哈希值的tuple时，尚未调用目标函数就抛TypeError。请支持这些原本应走等值比较的参数，保持相同值只调用一次的契约。",
+      "fix_sha": "c72bfae84581458ac17fa3da3d9b92a8962ba682",
+      "base_sha": "19e9617383cd48dfbc4074dab11df9157ece98b0",
+      "production_files": [
+        "funcy/flow.py"
+      ],
+      "regression_test_files": [
+        "tests/test_flow.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_flow.py。新增test_once_per_unhashable_arguments，覆盖两种装饰器与多种不可哈希参数。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix once_per handling of unhashable arguments",
+        "merged_at": "2026-09-09T03:22:42Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/c72bfae84581458ac17fa3da3d9b92a8962ba682",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 9,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/178",
+          "https://github.com/Suor/funcy/commit/c72bfae84581458ac17fa3da3d9b92a8962ba682",
+          "https://api.github.com/repos/Suor/funcy/commits/c72bfae84581458ac17fa3da3d9b92a8962ba682",
+          "https://github.com/Suor/funcy/blob/c72bfae84581458ac17fa3da3d9b92a8962ba682/tests/test_flow.py"
+        ],
+        "regression_evidence": "新增test_once_per_unhashable_arguments，覆盖两种装饰器与多种不可哈希参数。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-93",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/93",
+      "task": "cache.invalidate 对不存在或已经失效的键抛KeyError，重复调用不是幂等操作。请让重复失效安全完成，仍能使已缓存的键在下次访问时重新计算，并保留全部清理行为。",
+      "fix_sha": "d79eaec8976402ccdee03b56283d123397f4fa61",
+      "base_sha": "c33f69dc7cf811f524a791a477775228ce7025cc",
+      "production_files": [
+        "funcy/calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_calc.py。新增test_cache_invalidate，最后连续两次invalidate同一键应不抛错。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Make `@cache.invalidate()` idempotent",
+        "merged_at": "2020-07-23T15:46:38Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/d79eaec8976402ccdee03b56283d123397f4fa61",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/93",
+          "https://github.com/Suor/funcy/commit/d79eaec8976402ccdee03b56283d123397f4fa61",
+          "https://api.github.com/repos/Suor/funcy/commits/d79eaec8976402ccdee03b56283d123397f4fa61",
+          "https://github.com/Suor/funcy/blob/d79eaec8976402ccdee03b56283d123397f4fa61/tests/test_calc.py"
+        ],
+        "regression_evidence": "新增test_cache_invalidate，最后连续两次invalidate同一键应不抛错。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-55",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/55",
+      "task": "where/iwhere 在映射集合里按条件筛选时，只要某一项缺少条件键就抛KeyError，而不是将其视为不匹配。请使缺键项被正常跳过，并保留多个条件及匹配项的原有顺序。",
+      "fix_sha": "dc144306466b70d4b7b36ba52b6c5b9eec4c55ba",
+      "base_sha": "ff699f1a3e0b1d418690209e26c9b01e25104e1d",
+      "production_files": [
+        "funcy/colls.py"
+      ],
+      "regression_test_files": [
+        "tests/test_colls.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_colls.py。新增test_where_nonexistent_key，两个映射分别缺少a或b，按每个条件返回相应项。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Don't crash in `where` on nonexistent keys from conditions",
+        "merged_at": "2017-09-28T00:27:14Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/dc144306466b70d4b7b36ba52b6c5b9eec4c55ba",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/55",
+          "https://github.com/Suor/funcy/commit/dc144306466b70d4b7b36ba52b6c5b9eec4c55ba",
+          "https://api.github.com/repos/Suor/funcy/commits/dc144306466b70d4b7b36ba52b6c5b9eec4c55ba",
+          "https://github.com/Suor/funcy/blob/dc144306466b70d4b7b36ba52b6c5b9eec4c55ba/tests/test_colls.py"
+        ],
+        "regression_evidence": "新增test_where_nonexistent_key，两个映射分别缺少a或b，按每个条件返回相应项。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-207",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/207",
+      "task": "throttle 的间隔依赖系统墙上时钟，时钟跳变可绕过限流或让函数长期被阻止。请使准入取决于经过的时间，并保证初次调用、精确到期边界及timedelta周期都正常。",
+      "fix_sha": "29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+      "base_sha": "355accecf779425fbcfa59134d7ea7b46e1f22df",
+      "production_files": [
+        "funcy/flow.py"
+      ],
+      "regression_test_files": [
+        "tests/test_flow.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_flow.py。新增test_throttle_ignores_wall_clock_jumps和test_throttle_negative_monotonic_origin；时钟完全mock，无真实延时。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Use monotonic deadlines for throttle periods",
+        "merged_at": "2026-10-12T05:06:40Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/207",
+          "https://github.com/Suor/funcy/commit/29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+          "https://api.github.com/repos/Suor/funcy/commits/29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+          "https://github.com/Suor/funcy/blob/29053ffbd29d331b742e1e54ba1beaf917f2e7ba/tests/test_flow.py"
+        ],
+        "regression_evidence": "新增test_throttle_ignores_wall_clock_jumps和test_throttle_negative_monotonic_origin；时钟完全mock，无真实延时。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-209",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/209",
+      "task": "curry/rcurry/autocurry 对已绑定方法重复计算self或cls，需要多传一层参数才能得到结果。请使绑定实例方法和类方法按实际剩余参数完成调用，保留未绑定方法、默认值、可变参数及标准/Funcy包装组合。",
+      "fix_sha": "1e623d6f7ddc8fb84cbfcc7c6a89bcbca9a76136",
+      "base_sha": "c1d56484226b365c84184ac01eb1bc069c175ead",
+      "production_files": [
+        "funcy/_inspect.py"
+      ],
+      "regression_test_files": [
+        "tests/test_funcs.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_funcs.py。新增test_curry_bound_methods参数矩阵和多个default/variadic/staticmethod控制测试。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Exclude bound method receivers from curry argument counts",
+        "merged_at": "2026-10-12T05:06:51Z",
+        "commit_url": "https://github.com/Suor/funcy/commit/1e623d6f7ddc8fb84cbfcc7c6a89bcbca9a76136",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 12,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/pull/209",
+          "https://github.com/Suor/funcy/commit/1e623d6f7ddc8fb84cbfcc7c6a89bcbca9a76136",
+          "https://api.github.com/repos/Suor/funcy/commits/1e623d6f7ddc8fb84cbfcc7c6a89bcbca9a76136",
+          "https://github.com/Suor/funcy/blob/1e623d6f7ddc8fb84cbfcc7c6a89bcbca9a76136/tests/test_funcs.py"
+        ],
+        "regression_evidence": "新增test_curry_bound_methods参数矩阵和多个default/variadic/staticmethod控制测试。",
+        "runtime_notes": "库为纯Python；上游测试使用pytest及whatever辅助库，相关时钟回归是确定性的mock，不需网络服务。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-714",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/714",
+      "task": "find_dotenv('~/.env') 无法定位用户主目录内已存在的.env文件，而直接绝对路径可以找到。请使这种路径支持与其他dotenv入口一致，并保留向上查找和普通相对路径行为。",
+      "fix_sha": "0b2880591780a426b0551436f47a17e7a76d954f",
+      "base_sha": "791414804eff08a23f0b7970968e1717e3b28e66",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。仅采用tests/test_main.py的test_find_dotenv_expands_user，HOME和USERPROFILE均受控；本案例不采用IPython集成测试。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix: expand ~ in find_dotenv and the %dotenv magic",
+        "merged_at": "2026-10-01T07:34:34Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/0b2880591780a426b0551436f47a17e7a76d954f",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 4,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/714",
+          "https://github.com/theskumar/python-dotenv/commit/0b2880591780a426b0551436f47a17e7a76d954f",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/0b2880591780a426b0551436f47a17e7a76d954f",
+          "https://github.com/theskumar/python-dotenv/blob/0b2880591780a426b0551436f47a17e7a76d954f/tests/test_main.py"
+        ],
+        "regression_evidence": "仅采用tests/test_main.py的test_find_dotenv_expands_user，HOME和USERPROFILE均受控；本案例不采用IPython集成测试。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-680",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/680",
+      "task": "set_key 写入包含反斜杠的值后，读取会丢失字符；以反斜杠结尾的引号值还可能吞掉下一条绑定。请使路径、正则表达式及引号内容可正确写读往返，并保持相邻变量和换行边界。",
+      "fix_sha": "f7b18d9c72d1abcc2ad4023424b84f5bee30d266",
+      "base_sha": "751f8c148222e58aa173c83c4e5e6cfccb2cc124",
+      "production_files": [
+        "src/dotenv/main.py",
+        "src/dotenv/parser.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py",
+        "tests/test_parser.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py tests/test_parser.py。新增main写读往返及parser引号/反斜杠参数回归；路径仅作为字符串数据，不依赖Windows。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix: make values containing backslashes round-trip through set_key",
+        "merged_at": "2026-08-16T15:23:35Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/f7b18d9c72d1abcc2ad4023424b84f5bee30d266",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 13,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/680",
+          "https://github.com/theskumar/python-dotenv/commit/f7b18d9c72d1abcc2ad4023424b84f5bee30d266",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/f7b18d9c72d1abcc2ad4023424b84f5bee30d266",
+          "https://github.com/theskumar/python-dotenv/blob/f7b18d9c72d1abcc2ad4023424b84f5bee30d266/tests/test_main.py",
+          "https://github.com/theskumar/python-dotenv/blob/f7b18d9c72d1abcc2ad4023424b84f5bee30d266/tests/test_parser.py"
+        ],
+        "regression_evidence": "新增main写读往返及parser引号/反斜杠参数回归；路径仅作为字符串数据，不依赖Windows。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-640",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/640",
+      "task": "含UTF-8 BOM的.env文件把BOM混入第一个变量名，导致调用方按正常名称取不到值。请使BOM前缀不损坏第一条绑定，保留多变量及普通无BOM文件的解析行为。",
+      "fix_sha": "bca6644d9aedbe287b792b756b3ae3d650cd0d3a",
+      "base_sha": "68ea2d10dd8e97e6dea67c32742085f27729e3fe",
+      "production_files": [
+        "src/dotenv/parser.py"
+      ],
+      "regression_test_files": [
+        "tests/test_parser.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_parser.py。tests/test_parser.py新增BOM单变量、多变量及流边界回归。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix: strip UTF-8 BOM from .env files",
+        "merged_at": "2026-04-19T19:39:11Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/bca6644d9aedbe287b792b756b3ae3d650cd0d3a",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/640",
+          "https://github.com/theskumar/python-dotenv/commit/bca6644d9aedbe287b792b756b3ae3d650cd0d3a",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/bca6644d9aedbe287b792b756b3ae3d650cd0d3a",
+          "https://github.com/theskumar/python-dotenv/blob/bca6644d9aedbe287b792b756b3ae3d650cd0d3a/tests/test_parser.py"
+        ],
+        "regression_evidence": "tests/test_parser.py新增BOM单变量、多变量及流边界回归。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-638",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/638",
+      "task": "DotEnv 对空文件虽已解析成空字典，第二次dict()仍重新读取和解析，没有正常复用缓存。请使空解析结果也得到缓存，保留非空结果和显式新对象的行为。",
+      "fix_sha": "3f0e3e0b461cf7127e2753efbdf896bdff31db2e",
+      "base_sha": "bca6644d9aedbe287b792b756b3ae3d650cd0d3a",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。新增test_empty_dotenv_dict_is_cached，mock parse并检查两次dict()仅解析一次。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix caching for empty dotenv files",
+        "merged_at": "2026-05-08T14:27:37Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/3f0e3e0b461cf7127e2753efbdf896bdff31db2e",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/638",
+          "https://github.com/theskumar/python-dotenv/commit/3f0e3e0b461cf7127e2753efbdf896bdff31db2e",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/3f0e3e0b461cf7127e2753efbdf896bdff31db2e",
+          "https://github.com/theskumar/python-dotenv/blob/3f0e3e0b461cf7127e2753efbdf896bdff31db2e/tests/test_main.py"
+        ],
+        "regression_evidence": "新增test_empty_dotenv_dict_is_cached，mock parse并检查两次dict()仅解析一次。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-615",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/615",
+      "task": "load_dotenv、dotenv_values、get_key、set_key和unset_key直接接收含~的路径时，不能正常访问主目录文件。请使字符串及Path输入都支持主目录展开，保留原路径类型、None和普通相对路径。",
+      "fix_sha": "791414804eff08a23f0b7970968e1717e3b28e66",
+      "base_sha": "6bdf86adb2b8e3d9e3031b3a81f24851c8bfca0e",
+      "production_files": [
+        "src/dotenv/cli.py",
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。仅采用tests/test_main.py的新库API回归；同时设置HOME/USERPROFILE，覆盖读写与类型保留，不运行CLI或外部命令。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix: apply expanduser to dotenv_path",
+        "merged_at": "2026-10-01T06:56:43Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/791414804eff08a23f0b7970968e1717e3b28e66",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 20,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/615",
+          "https://github.com/theskumar/python-dotenv/commit/791414804eff08a23f0b7970968e1717e3b28e66",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/791414804eff08a23f0b7970968e1717e3b28e66",
+          "https://github.com/theskumar/python-dotenv/blob/791414804eff08a23f0b7970968e1717e3b28e66/tests/test_main.py"
+        ],
+        "regression_evidence": "仅采用tests/test_main.py的新库API回归；同时设置HOME/USERPROFILE，覆盖读写与类型保留，不运行CLI或外部命令。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-563",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/563",
+      "task": "find_dotenv 在有sys.ps1或sys.ps2的交互环境中仍可能按脚本路径查找，找不到当前工作目录中的.env。请正确识别这些交互场景，并保持普通脚本、缺失__main__信息与usecwd覆盖的行为。",
+      "fix_sha": "8411987b9301f716245074872afa30646e9b9eb7",
+      "base_sha": "01f899733de664cda0550207067eb36a1795062f",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_is_interactive.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_is_interactive.py。新增tests/test_is_interactive.py，使用mock和临时目录模拟交互/脚本状态，无需真实REPL。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix: ensure find_dotenv work reliably on python 3.13",
+        "merged_at": "2025-05-30T16:53:02Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/8411987b9301f716245074872afa30646e9b9eb7",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/563",
+          "https://github.com/theskumar/python-dotenv/commit/8411987b9301f716245074872afa30646e9b9eb7",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/8411987b9301f716245074872afa30646e9b9eb7",
+          "https://github.com/theskumar/python-dotenv/blob/8411987b9301f716245074872afa30646e9b9eb7/tests/test_is_interactive.py"
+        ],
+        "regression_evidence": "新增tests/test_is_interactive.py，使用mock和临时目录模拟交互/脚本状态，无需真实REPL。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-287",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/287",
+      "task": "load_dotenv(override=False) 虽保留已有环境变量本身，却仍用.env中的同名值展开其他变量，得到相互矛盾的环境结果。请让展开时的优先级与override保持一致，并保留override=True的文件优先行为。",
+      "fix_sha": "26ff5b74c676dbed391eb535ad2a591ecf98d3c6",
+      "base_sha": "17dba65244c1d4d10f591fe37c924bd2c6fd1cfc",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。新增no_override/with_override两个测试，环境变量通过mock.patch.dict隔离。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix variable expansion order with override=False",
+        "merged_at": "2020-12-05T13:46:07Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/26ff5b74c676dbed391eb535ad2a591ecf98d3c6",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 30,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/287",
+          "https://github.com/theskumar/python-dotenv/commit/26ff5b74c676dbed391eb535ad2a591ecf98d3c6",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/26ff5b74c676dbed391eb535ad2a591ecf98d3c6",
+          "https://github.com/theskumar/python-dotenv/blob/26ff5b74c676dbed391eb535ad2a591ecf98d3c6/tests/test_main.py"
+        ],
+        "regression_evidence": "新增no_override/with_override两个测试，环境变量通过mock.patch.dict隔离。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-277",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/277",
+      "task": "未加引号的.env值包含连续空格或制表符时会被误判为格式错误。请保留值内部的这些空白，正确区分尾部空白及行尾注释，同时保持引号内空白。",
+      "fix_sha": "7b172fe24830bb8fd8cd943b73570e8cd6515ba1",
+      "base_sha": "6ca2e2ab399c7e41be276bc830f21af3092f5d28",
+      "production_files": [
+        "src/dotenv/parser.py"
+      ],
+      "regression_test_files": [
+        "tests/test_parser.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_parser.py。扩展test_parse_stream参数矩阵，覆盖双空格、tab、不换行空格、尾空白和注释。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix parsing of unquoted values with two spaces",
+        "merged_at": "2020-09-23T21:10:39Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/7b172fe24830bb8fd8cd943b73570e8cd6515ba1",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 12,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/277",
+          "https://github.com/theskumar/python-dotenv/commit/7b172fe24830bb8fd8cd943b73570e8cd6515ba1",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/7b172fe24830bb8fd8cd943b73570e8cd6515ba1",
+          "https://github.com/theskumar/python-dotenv/blob/7b172fe24830bb8fd8cd943b73570e8cd6515ba1/tests/test_parser.py"
+        ],
+        "regression_evidence": "扩展test_parse_stream参数矩阵，覆盖双空格、tab、不换行空格、尾空白和注释。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-260",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/260",
+      "task": "同一.env键被重复定义且第二次引用较晚出现的变量时，展开结果可能错误变成空串。请按绑定出现顺序处理重定义和引用，保持最后一次定义成为最终结果以及interpolate=False行为。",
+      "fix_sha": "4b434362e1832771fd08c14b8af67a8fd562b854",
+      "base_sha": "e4bbb8a2aa881409af6fb92933c18e2af6609da8",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。tests/test_main.py的stream参数矩阵新增重复键/引用次序两例。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix empty expanded value for duplicate key",
+        "merged_at": "2020-07-16T19:45:40Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/4b434362e1832771fd08c14b8af67a8fd562b854",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 16,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/260",
+          "https://github.com/theskumar/python-dotenv/commit/4b434362e1832771fd08c14b8af67a8fd562b854",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/4b434362e1832771fd08c14b8af67a8fd562b854",
+          "https://github.com/theskumar/python-dotenv/blob/4b434362e1832771fd08c14b8af67a8fd562b854/tests/test_main.py"
+        ],
+        "regression_evidence": "tests/test_main.py的stream参数矩阵新增重复键/引用次序两例。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-258",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/258",
+      "task": "同名变量已在.env中重新定义后，dotenv_values 对后续引用仍使用进程环境里的旧值。请让文件内已生效的定义用于后续展开，并保留未在文件定义的环境变量及默认值回退。",
+      "fix_sha": "6712bc8a12db1e8d3f09b7bf7d3c25338992e422",
+      "base_sha": "d83c1b65ceab5cf1223c41649a25a142755fe703",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。test_dotenv_values_stream新增环境b=c、文件b=d且a=${b}的预期。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "fix interpolation order",
+        "merged_at": "2020-07-03T08:56:44Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/6712bc8a12db1e8d3f09b7bf7d3c25338992e422",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/258",
+          "https://github.com/theskumar/python-dotenv/commit/6712bc8a12db1e8d3f09b7bf7d3c25338992e422",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/6712bc8a12db1e8d3f09b7bf7d3c25338992e422",
+          "https://github.com/theskumar/python-dotenv/blob/6712bc8a12db1e8d3f09b7bf7d3c25338992e422/tests/test_main.py"
+        ],
+        "regression_evidence": "test_dotenv_values_stream新增环境b=c、文件b=d且a=${b}的预期。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-236",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/236",
+      "task": "set_key 写入包含双引号的值时没有生成可正确解析的引用形式，内容往返后会损坏。请正确写入这类值，同时保留空串、普通值、单引号及既有quote_mode行为。",
+      "fix_sha": "b5b8ae20d0bc0852b22e428d138ce7346c7a11bc",
+      "base_sha": "ba5a16e0e349a6a1f26927c5f833a95c4c645647",
+      "production_files": [
+        "src/dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_main.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_main.py。将test_set_key_new改为参数矩阵，明确检查文件文本及函数返回值，覆盖内嵌双引号。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix escaping of quoted values written by `set_key`",
+        "merged_at": "2020-02-15T02:30:57Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/b5b8ae20d0bc0852b22e428d138ce7346c7a11bc",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 7,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/236",
+          "https://github.com/theskumar/python-dotenv/commit/b5b8ae20d0bc0852b22e428d138ce7346c7a11bc",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/b5b8ae20d0bc0852b22e428d138ce7346c7a11bc",
+          "https://github.com/theskumar/python-dotenv/blob/b5b8ae20d0bc0852b22e428d138ce7346c7a11bc/tests/test_main.py"
+        ],
+        "regression_evidence": "将test_set_key_new改为参数矩阵，明确检查文件文本及函数返回值，覆盖内嵌双引号。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-222",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/222",
+      "task": ".env中的无值键会被当作解析错误，而类似'a: b'的非法行又可能被错误接受。请区分合法无值键和真正格式错误，保留正常绑定、空白与行结束处理。",
+      "fix_sha": "c68e78fe8dddbe7453f5e14251097f7d0be3beee",
+      "base_sha": "ae1f1a906feddb23f4fa05c968c52df99c487ead",
+      "production_files": [
+        "src/dotenv/main.py",
+        "src/dotenv/parser.py"
+      ],
+      "regression_test_files": [
+        "tests/test_parser.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_parser.py。tests/test_parser.py新增'a: b'应产生无有效键的绑定断言；Binding构造接口在该提交未变更。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix handling of no-value and malformed lines",
+        "merged_at": "2020-01-18T18:55:44Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/c68e78fe8dddbe7453f5e14251097f7d0be3beee",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 19,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/222",
+          "https://github.com/theskumar/python-dotenv/commit/c68e78fe8dddbe7453f5e14251097f7d0be3beee",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/c68e78fe8dddbe7453f5e14251097f7d0be3beee",
+          "https://github.com/theskumar/python-dotenv/blob/c68e78fe8dddbe7453f5e14251097f7d0be3beee/tests/test_parser.py"
+        ],
+        "regression_evidence": "tests/test_parser.py新增'a: b'应产生无有效键的绑定断言；Binding构造接口在该提交未变更。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-135",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/135",
+      "task": "空的自引用变量如some_path='${some_path}:a/b/c'会把自身未展开的文本再次当作来源，无法得到预期内容。请让未在环境中定义的自引用使用空值，已有环境值仍可作为自引用来源。",
+      "fix_sha": "40ed1b1bd09321286062ba20ae38535a224167ee",
+      "base_sha": "c5f5a8f9c3bbe72bcdb1f3e236037393fadff365",
+      "production_files": [
+        "dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_core.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_core.py。新增empty/nonempty_selfreferential_interpolation两个测试，使用StringIO；不需要文件服务。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix empty self-referential variable issue",
+        "merged_at": "2018-09-25T14:24:51Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/40ed1b1bd09321286062ba20ae38535a224167ee",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 8,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/135",
+          "https://github.com/theskumar/python-dotenv/commit/40ed1b1bd09321286062ba20ae38535a224167ee",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/40ed1b1bd09321286062ba20ae38535a224167ee",
+          "https://github.com/theskumar/python-dotenv/blob/40ed1b1bd09321286062ba20ae38535a224167ee/tests/test_core.py"
+        ],
+        "regression_evidence": "新增empty/nonempty_selfreferential_interpolation两个测试，使用StringIO；不需要文件服务。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-dotenv-125",
+      "repo": "theskumar/python-dotenv",
+      "issue_or_pr_url": "https://github.com/theskumar/python-dotenv/pull/125",
+      "task": "解析export前缀时，会把变量名开头属于export字符集合的字符一并删掉，例如export port=8000被误读成其他键。请只处理真实的export前缀，保留变量名本身及正常空白处理。",
+      "fix_sha": "4b1686fcef0f54b424a68e9386f3f5377b1df796",
+      "base_sha": "d143c897d61ba75cf49454b8174aaaf6c5580272",
+      "production_files": [
+        "dotenv/main.py"
+      ],
+      "regression_test_files": [
+        "tests/test_core.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_core.py。test_parse_line新增export export_spam=1与export port=8000两个回归。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Bugfix: parse_line incorrectly strips \"export \" prefix",
+        "merged_at": "2018-08-05T18:33:50Z",
+        "commit_url": "https://github.com/theskumar/python-dotenv/commit/4b1686fcef0f54b424a68e9386f3f5377b1df796",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/theskumar/python-dotenv/pull/125",
+          "https://github.com/theskumar/python-dotenv/commit/4b1686fcef0f54b424a68e9386f3f5377b1df796",
+          "https://api.github.com/repos/theskumar/python-dotenv/commits/4b1686fcef0f54b424a68e9386f3f5377b1df796",
+          "https://github.com/theskumar/python-dotenv/blob/4b1686fcef0f54b424a68e9386f3f5377b1df796/tests/test_core.py"
+        ],
+        "regression_evidence": "test_parse_line新增export export_spam=1与export port=8000两个回归。",
+        "runtime_notes": "选择库API/解析器的可移植回归，未选择CLI-only、printenv、目录权限或Windows特有限制案例；旧tests/test_core.py可能需要IPython测试依赖。",
+        "test_layout_note": "",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-01T07:34:37Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-humanize-392",
+      "repo": "python-humanize/humanize",
+      "issue_or_pr_url": "https://github.com/python-humanize/humanize/pull/392",
+      "task": "intcomma 对超出float范围的大Python整数抛OverflowError，虽然这些整数本身可正常按千位分组。请使默认精度下的正负大整数保留全部数字并正确分组，保留非有限浮点及显式小数位行为。",
+      "fix_sha": "984526c02448110a8392dde3f5e26096dfd7c729",
+      "base_sha": "14965a74953eb5119859975e7c452a04b481cdae",
+      "production_files": [
+        "src/humanize/number.py"
+      ],
+      "regression_test_files": [
+        "tests/test_number.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_number.py。新增test_intcomma_large_integer，检查±(10**400+123)的完整输出。 完整测试文件还含上游翻译/benchmark测试，测试环境需遵守项目自身配置；所述新回归本身是纯Python数值格式检查。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix intcomma overflow for large Python integers",
+        "merged_at": "2026-09-16T15:46:34Z",
+        "commit_url": "https://github.com/python-humanize/humanize/commit/984526c02448110a8392dde3f5e26096dfd7c729",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 2,
+        "evidence_urls": [
+          "https://github.com/python-humanize/humanize/pull/392",
+          "https://github.com/python-humanize/humanize/commit/984526c02448110a8392dde3f5e26096dfd7c729",
+          "https://api.github.com/repos/python-humanize/humanize/commits/984526c02448110a8392dde3f5e26096dfd7c729",
+          "https://github.com/python-humanize/humanize/blob/984526c02448110a8392dde3f5e26096dfd7c729/tests/test_number.py"
+        ],
+        "regression_evidence": "新增test_intcomma_large_integer，检查±(10**400+123)的完整输出。",
+        "runtime_notes": "纯Python数字格式工具；目标回归不依赖操作系统区域设置或网络服务。",
+        "test_layout_note": "完整测试文件还含上游翻译/benchmark测试，测试环境需遵守项目自身配置；所述新回归本身是纯Python数值格式检查。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-22T12:37:27Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-humanize-359",
+      "repo": "python-humanize/humanize",
+      "issue_or_pr_url": "https://github.com/python-humanize/humanize/pull/359",
+      "task": "metric 在舍入使尾数跨到10或100时多显示一个有效数字，例如默认精度3却把9999显示成10.00 k。请让这些进位边界遵守precision，保留正负值、单位、相邻普通值及跨SI前缀的行为。",
+      "fix_sha": "e46732ed235019682b7bfc6c44443e247b332e95",
+      "base_sha": "984526c02448110a8392dde3f5e26096dfd7c729",
+      "production_files": [
+        "src/humanize/number.py"
+      ],
+      "regression_test_files": [
+        "tests/test_number.py"
+      ],
+      "verification_hint": "仅把对应上游测试变更覆盖到独立base-test，核对base的实际测试调用失败、fix通过和非零收集；完整保护文件命令：python -m pytest -q tests/test_number.py。在test_metric参数矩阵增加9999、99999、9.99999、负数与precision=2等进位控制。 完整测试文件还含上游翻译/benchmark测试，测试环境需遵守项目自身配置；所述新回归本身是纯Python数值格式检查。 本次未执行测试、solver或模型。",
+      "source_notes": {
+        "pr_title": "Fix `metric()` showing an extra significant digit on rounding carry",
+        "merged_at": "2026-09-16T15:55:13Z",
+        "commit_url": "https://github.com/python-humanize/humanize/commit/e46732ed235019682b7bfc6c44443e247b332e95",
+        "sha_basis": "GitHub原始PR merged=true；fix_sha来自merge_commit_sha；base_sha来自该commit对象的第一父。",
+        "production_diff_lines": 5,
+        "evidence_urls": [
+          "https://github.com/python-humanize/humanize/pull/359",
+          "https://github.com/python-humanize/humanize/commit/e46732ed235019682b7bfc6c44443e247b332e95",
+          "https://api.github.com/repos/python-humanize/humanize/commits/e46732ed235019682b7bfc6c44443e247b332e95",
+          "https://github.com/python-humanize/humanize/blob/e46732ed235019682b7bfc6c44443e247b332e95/tests/test_number.py"
+        ],
+        "regression_evidence": "在test_metric参数矩阵增加9999、99999、9.99999、负数与precision=2等进位控制。",
+        "runtime_notes": "纯Python数字格式工具；目标回归不依赖操作系统区域设置或网络服务。",
+        "test_layout_note": "完整测试文件还含上游翻译/benchmark测试，测试环境需遵守项目自身配置；所述新回归本身是纯Python数值格式检查。",
+        "verification_status": "仅核实公开来源、固定可解析提交、首父、生产diff和上游测试；未读records或模型输出，未跑测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-22T12:37:27Z"
+        }
+      }
+    },
+    {
+      "id": "extra-a3-funcy-cut-step",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/commit/848dd6dd2b13f86a6c414d8834c781185f398450",
+      "task": "partition/chunks 对iterator输入且step大于块大小n时，会返回错误长度和内容的分块，而同内容序列输入正常。请使两条路径一致，正确跳过块间间隔，并分别保留丢弃尾部与保留不完整尾块的契约。",
+      "fix_sha": "848dd6dd2b13f86a6c414d8834c781185f398450",
+      "base_sha": "46a1fc44da97eae8d6382427c59508dcb88c52ae",
+      "production_files": [
+        "funcy/seqs.py"
+      ],
+      "regression_test_files": [
+        "tests/test_seqs.py"
+      ],
+      "verification_hint": "仅移植上游tests/test_seqs.py变更到独立base-test，先运行test_partition_step_gt_n和test_chunks_step_gt_n验证F2P，再运行完整文件：python -m pytest -q tests/test_seqs.py。上游明确对照list与iter的n=2、step=3结果。本次未执行测试/solver。",
+      "source_notes": {
+        "commit_url": "https://github.com/Suor/funcy/commit/848dd6dd2b13f86a6c414d8834c781185f398450",
+        "pr_title": "fix: _cut_iter yields wrong-length parts when step > n (#177)",
+        "merged_at": null,
+        "sha_basis": "主分支直接修复提交；GitHub compare fix...master返回ahead、behind_by=0，merge_base_commit.sha等于fix_sha，确认已进入维护分支；base为其直接父提交。",
+        "production_diff_lines": 8,
+        "evidence_urls": [
+          "https://github.com/Suor/funcy/commit/848dd6dd2b13f86a6c414d8834c781185f398450",
+          "https://api.github.com/repos/Suor/funcy/commits/848dd6dd2b13f86a6c414d8834c781185f398450",
+          "https://github.com/Suor/funcy/compare/848dd6dd2b13f86a6c414d8834c781185f398450...master",
+          "https://github.com/Suor/funcy/blob/848dd6dd2b13f86a6c414d8834c781185f398450/tests/test_seqs.py"
+        ],
+        "regression_evidence": "提交新增test_partition_step_gt_n、test_chunks_step_gt_n，明确断言块内容、长度及尾部差异。",
+        "runtime_notes": "纯Python序列与迭代器处理；无需网络服务、外部命令或平台专用接口。",
+        "verification_status": "来源核实；未读取records/模型输出，未运行测试/solver。",
+        "repository_status": {
+          "archived": false,
+          "pushed_at": "2026-10-13T06:41:26Z"
+        }
+      }
+    }
+  ]
+}

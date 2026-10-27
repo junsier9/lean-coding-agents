@@ -1,0 +1,112 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index df4e5c7..685b2d7 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Preserve command-line callback order between the help option and other
++    eager options, including when using custom ``help_option_names``.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index c623764..ed30208 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1223,6 +1223,8 @@ class Command(BaseCommand):
+         self.options_metavar = options_metavar
+         self.short_help = short_help
+         self.add_help_option = add_help_option
++        self._help_option: t.Optional[Option] = None
++        self._help_option_names: t.List[str] = []
+         self.no_args_is_help = no_args_is_help
+         self.hidden = hidden
+         self.deprecated = deprecated
+@@ -1288,6 +1290,10 @@ class Command(BaseCommand):
+         """Returns the help option object.
+ 
+         Unless ``add_help_option`` is ``False``.
++
++        .. versionchanged:: 8.1.8
++            The help option is cached while its names are unchanged to
++            preserve its position in the callback evaluation order.
+         """
+         help_options = self.get_help_option_names(ctx)
+ 
+@@ -1297,7 +1303,11 @@ class Command(BaseCommand):
+         # Avoid circular import.
+         from .decorators import HelpOption
+ 
+-        return HelpOption(help_options)
++        if self._help_option is None or self._help_option_names != help_options:
++            self._help_option = HelpOption(help_options)
++            self._help_option_names = help_options
++
++        return self._help_option
+ 
+     def make_parser(self, ctx: Context) -> OptionParser:
+         """Creates the underlying option parser for this command."""
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ed9d96f..6bd5786 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -105,6 +105,57 @@ def test_no_args_is_help(runner):
+     assert "Show this message and exit." in result.output
+ 
+ 
++@pytest.mark.parametrize("help_name", ["--help", "-h", "--custom-help", "/?"])
++@pytest.mark.parametrize("help_first", [True, False])
++@pytest.mark.parametrize("eager_exit", [True, False])
++def test_help_option_eager_order(runner, help_name, help_first, eager_exit):
++    called = []
++
++    def eager_callback(ctx, param, value):
++        if value:
++            called.append("eager")
++            if eager_exit:
++                ctx.exit()
++
++    @click.command(context_settings={"help_option_names": [help_name]})
++    @click.option(
++        "--eager",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=eager_callback,
++    )
++    def cli():
++        pytest.fail("The command should not run when help is requested.")
++
++    args = [help_name, "--eager"] if help_first else ["--eager", help_name]
++    result = runner.invoke(cli, args)
++    assert result.exit_code == 0
++    assert called == ([] if help_first else ["eager"])
++    if help_first or not eager_exit:
++        assert result.output.startswith("Usage: cli [OPTIONS]\n")
++    else:
++        assert result.output == ""
++
++
++def test_help_option_names_context_changes(runner):
++    @click.command()
++    def cli():
++        click.echo("command")
++
++    for help_names in (["--help"], ["--custom-help", "-h"], ["/?"], ["--help"]):
++        for help_name in help_names:
++            result = runner.invoke(cli, [help_name], help_option_names=help_names)
++            assert result.exit_code == 0
++            assert result.output.startswith("Usage: cli [OPTIONS]\n")
++            for name in help_names:
++                assert name in result.output
++
++    result = runner.invoke(cli, ["--help"], help_option_names=[])
++    assert result.exit_code == 2
++    assert "No such option: --help" in result.output
++
++
+ def test_default_maps(runner):
+     @click.group()
+     def cli():

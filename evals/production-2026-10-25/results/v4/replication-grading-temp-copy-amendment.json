@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-10-25T06:00:51.946121+00:00",
+  "study": "v4",
+  "observed_key": "replication--xb-012-click-3152--r2--baseline",
+  "only_additional_copy_exclusion": ".task-pytest-tmp",
+  "workspace_original_tracked_sources_below_any_same_named_directory": false,
+  "not_a_symlink_or_junction": true,
+  "native_client_completed": true,
+  "usage_complete": true,
+  "checkpoint_sha256_before_recovery": "0F6D5F283AB0456E74DBAEED9F2AA0402D234F665FA15D2DF3BC02494C1CA69A",
+  "failed_grading_seconds_retained": 0.14000000001396984,
+  "new_model_calls_for_recovery": 0,
+  "recovery_status": "pending until native queue idle and controller releases locks",
+  "grader_source_or_hidden_guard_changes": false,
+  "setup_commands": [
+    {
+      "command": "\"{USER_HOME}\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '$env:PYTHONPATH = \"$PWD'\"\\\\src;\"'$PWD'\"\\\\.benchmark-deps\\\"; \"'$env:PYTHONDONTWRITEBYTECODE = '\"'1'; \"'$testTemp = Join-Path $PWD '\"'.task-pytest-tmp'; if (Test-Path -LiteralPath \"'$testTemp) { throw '\"'测试临时目录已存在，停止以免覆盖。' }; New-Item -ItemType Directory -Path \"'$testTemp | Out-Null; $env:TEMP = $testTemp; $env:TMP = $testTemp; & '\"'{PYTHON_RUNTIME}\\\\python.exe' -m pytest -q -o addopts= -p no:cacheprovider -p pytest_timeout --timeout=60 --basetemp \\\"\"'$testTemp'\"\\\\pytest\\\" --tb=short -ra\"",
+      "raw_command_sha256": "D8FA85CE0460B6A177D9D99179359D4B59C897C4F3C875928E14BA376D6A4F19"
+    }
+  ],
+  "rule": "Only this observed untracked pytest output directory may be excluded in a recovery-only process; no completed record is regraded and no paid model call repeated."
+}

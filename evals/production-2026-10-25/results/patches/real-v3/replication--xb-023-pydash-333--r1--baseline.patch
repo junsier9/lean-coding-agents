@@ -1,0 +1,78 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index df7a81e..222686e 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -492,8 +492,7 @@ def duplicates(
+     .. versionadded:: 3.0.0
+     """
+     if iteratee is not None:
+-        cbk = pyd.iteratee(iteratee)
+-        computed = [cbk(item) for item in array]
++        computed = [value for value, _, _, _ in iteriteratee(array, iteratee)]
+     else:
+         computed = array  # type: ignore
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index f2f0761..f45d7c4 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -223,6 +223,59 @@ def test_duplicates_falsey_iteratee_controls_and_empty_input():
+     assert _.duplicates(records, lambda value: value % 2) == [3, 4, 5]
+ 
+ 
++@parametrize(
++    "iteratee,expected",
++    [
++        (lambda: 0, [2, -3, 4, -5]),
++        (lambda value: value % 2, [-3, 4, -5]),
++        (lambda value, index: abs(value) - index, [2, -3, 4, -5]),
++        (lambda value, index=0: abs(value) - index, [2, -3, 4, -5]),
++        (
++            lambda value, index=None, collection=None: abs(collection[index]) - index,
++            [2, -3, 4, -5],
++        ),
++        (lambda *args: abs(args[2][args[1]]) - args[1], [2, -3, 4, -5]),
++        (abs, []),
++    ],
++)
++def test_duplicates_supports_iteratee_signatures(iteratee, expected):
++    assert _.duplicates([-1, 2, -3, 4, -5], iteratee) == expected
++
++
++@parametrize("sequence_type", [list, tuple])
++@parametrize("chained", [False, True])
++def test_duplicates_passes_original_values_indexes_and_collection(sequence_type, chained):
++    records = sequence_type(
++        [
++            {"id": "first-a"},
++            {"id": "first-b"},
++            {"id": "second-a"},
++            {"id": "second-b"},
++            {"id": "second-a"},
++            {"id": "second-b"},
++        ]
++    )
++    original = [record.copy() for record in records]
++    calls = []
++
++    def iteratee(value, index, collection):
++        assert collection is records
++        assert value is records[index]
++        calls.append(index)
++        return [index % 2]
++
++    if chained:
++        result = _.chain(records).duplicates(iteratee).value()
++    else:
++        result = _.duplicates(records, iteratee)
++
++    assert calls == list(range(len(records)))
++    assert result == [records[2], records[3]]
++    assert result[0] is records[2]
++    assert result[1] is records[3]
++    assert list(records) == original
++
++
+ @parametrize(
+     "case,expected",
+     [

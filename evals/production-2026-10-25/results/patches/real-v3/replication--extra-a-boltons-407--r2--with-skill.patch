@@ -1,0 +1,66 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 15b14a3..6899746 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -139,7 +139,9 @@ class BarrelList(list):
+         else:
+             list_idx, rel_idx = self._translate_index(index)
+             if list_idx is None:
+-                raise IndexError()
++                list_idx, rel_idx = 0, index
++            elif index >= len(self):
++                rel_idx = index
+             self.lists[list_idx].insert(rel_idx, item)
+             self._balance_list(list_idx)
+         return
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index b70977b..1be3b30 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -51,6 +53,38 @@ def test_barrel_list():
+     bl3[:20:2] = range(0, -10, -1)
+     assert bl3[6] == -3  # some truly tricky stepping/slicing works
+ 
++@pytest.mark.parametrize('index', [
++    -1000000, -100001, -100000, -99999, -1,
++    0, 1, 99999, 100000, 100001, 1000000,
++])
++def test_barrel_list_insert_bounds(index):
++    expected = list(range(100000))
++    bl = BarrelList(expected)
++    bl._balance_list(0)
++    assert len(bl.lists) > 1
++
++    item = object()
++    expected.insert(index, item)
++    assert bl.insert(index, item) is None
++
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++
++
++@pytest.mark.parametrize('index', [-1000000.0, 0.5, 100001.0])
++def test_barrel_list_insert_invalid_index(index):
++    expected = list(range(100000))
++    bl = BarrelList(expected)
++    bl._balance_list(0)
++    assert len(bl.lists) > 1
++
++    with pytest.raises(TypeError):
++        bl.insert(index, object())
++
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++
++
+ def test_sort_barrel_list():
+     bl = BarrelList(reversed(range(100000)))
+     bl.pop(50000)

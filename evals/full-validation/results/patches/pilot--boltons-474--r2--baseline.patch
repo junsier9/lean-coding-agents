@@ -1,0 +1,66 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 37b4440..c9a0281 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -363,7 +363,7 @@ class IndexedSet(MutableSet):
+         elif len(others) == 1:
+             other = others[0]
+         else:
+-            other = chain(others)
++            other = chain.from_iterable(others)
+         for o in other:
+             self.add(o)
+ 
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b78fd6c..090e620 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -21,6 +21,42 @@ def test_indexed_set_basic():
+     assert x[2:4:-1] == IndexedSet([8, 7])
+ 
+ 
++@mark.parametrize('iterable_type', [list, tuple, iter], ids=['list', 'tuple', 'iterator'])
++def test_indexed_set_update_multiple_iterables(iterable_type):
++    thing = IndexedSet([3, 1])
++    result = thing.update(iterable_type([1, 2, 2]),
++                          iterable_type([3, 0, 2]),
++                          iterable_type([0, 4]))
++
++    assert result is None
++    assert list(thing) == [3, 1, 2, 0, 4]
++
++
++@mark.parametrize('initial', [[], [2, 1]])
++def test_indexed_set_update_empty_iterables(initial):
++    thing = IndexedSet(initial)
++
++    assert thing.update() is None
++    assert list(thing) == initial
++    assert thing.update([]) is None
++    assert list(thing) == initial
++    assert thing.update([], (), iter([])) is None
++    assert list(thing) == initial
++    assert thing.update([], (3, 2), iter([]), [4, 3], ()) is None
++    assert list(thing) == list(dict.fromkeys(initial + [3, 2, 4]))
++
++
++def test_indexed_set_update_tuple_elements():
++    thing = IndexedSet([(1, 2)])
++    assert thing.update([(2, 3), ()]) is None
++    assert list(thing) == [(1, 2), (2, 3), ()]
++
++    assert thing.update([(1, 2), (3, 4)],
++                        ((4, 5), (2, 3)),
++                        (item for item in [(), (5, 6)])) is None
++    assert list(thing) == [(1, 2), (2, 3), (), (3, 4), (4, 5), (5, 6)]
++
++
+ def test_indexed_set_rsub():
+     "From #252"
+     assert (set('abc') - IndexedSet('bcd')) == {'a'}

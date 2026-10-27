@@ -1,0 +1,60 @@
+diff --git a/boltons/timeutils.py b/boltons/timeutils.py
+index 1ec31dd..949f474 100644
+--- a/boltons/timeutils.py
++++ b/boltons/timeutils.py
+@@ -382,6 +382,10 @@ def daterange(start, stop, step=1, inclusive=False):
+ 
+     if stop is None:
+         finished = lambda now, stop: False
++    elif start == stop:
++        if inclusive:
++            yield start
++        return
+     elif start < stop:
+         finished = operator.gt if inclusive else operator.ge
+     else:
+diff --git a/tests/test_timeutils.py b/tests/test_timeutils.py
+index 631435e..8c5fe40 100644
+--- a/tests/test_timeutils.py
++++ b/tests/test_timeutils.py
+@@ -1,5 +1,9 @@
+ 
+ from datetime import timedelta, date
++from itertools import islice
++
++import pytest
++
+ from boltons.timeutils import total_seconds, daterange
+ 
+ 
+@@ -62,6 +66,30 @@ def test_daterange_years_step():
+     assert dates == expected
+ 
+ 
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('step', [1, -1, timedelta(days=1), timedelta(days=-1),
++                                 (1, 0, 0), (-1, 0, 0),
++                                 (0, 1, 0), (0, -1, 0), 0])
++def test_daterange_equal_endpoints(step, inclusive):
++    day = date(2017, 5, 1)
++    dates = daterange(day, day, step=step, inclusive=inclusive)
++
++    assert list(islice(dates, 2)) == ([day] if inclusive else [])
++
++
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('step', [1, -1, 2, -2])
++def test_daterange_days(step, inclusive):
++    start = date(2017, 5, 1) if step > 0 else date(2017, 5, 4)
++    stop = date(2017, 5, 4) if step > 0 else date(2017, 5, 1)
++    offsets = list(range(0, 3 if step > 0 else -3, step))
++    expected = [start + timedelta(days=offset) for offset in offsets]
++    if inclusive and abs(step) == 1:
++        expected.append(stop)
++
++    assert list(daterange(start, stop, step=step, inclusive=inclusive)) == expected
++
++
+ def test_daterange_infinite():
+     today = date.today()
+     infinite_dates = daterange(today, None)

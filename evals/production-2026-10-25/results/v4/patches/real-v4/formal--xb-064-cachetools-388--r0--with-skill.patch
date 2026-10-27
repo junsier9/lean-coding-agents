@@ -1,0 +1,70 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..11e45e6 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -76,6 +76,8 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is None:
++            return self.__wrapped__
+         wrapper = self.Wrapper(obj)
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..d8ed8ae 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,5 +1,7 @@
++import inspect
+ import unittest
+ import warnings
++from unittest import mock
+ 
+ 
+ from cachetools import Cache, cachedmethod, keys
+@@ -77,6 +79,44 @@ class Unhashable(Cached):
+         raise TypeError("unhashable type")
+ 
+ 
++class CachedMethodInspectionTest(unittest.TestCase):
++    def test_autospec(self):
++        for instance in (False, True):
++            with self.subTest(instance=instance):
++                with warnings.catch_warnings():
++                    warnings.simplefilter("error")
++                    cached = mock.create_autospec(Cached, instance=instance)
++                    self.assertIsInstance(cached.get, mock.Mock)
++                    self.assertIsInstance(cached.get_info, mock.Mock)
++
++    def test_class_access(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                with warnings.catch_warnings():
++                    warnings.simplefilter("error")
++                    method = getattr(Cached, name)
++                    self.assertEqual(str(inspect.signature(method)), "(self, value)")
++                    self.assertEqual(method.__name__, name)
++                    self.assertEqual(method(Cached({}), 42), 0)
++                    self.assertEqual(method(self=Cached({}), value=42), 0)
++                    with self.assertRaises(TypeError):
++                        method(value=42)
++
++        self.assertEqual(Cached.get.__doc__.strip(), "docstring")
++        with self.assertRaisesRegex(ValueError, "test error"):
++            Cached.get_cond_error(self=Cached({}), _value=42)
++
++
+ class MethodDecoratorTestMixin:
+     def cache(self, _minsize):
+         raise NotImplementedError

@@ -1,0 +1,81 @@
+diff --git a/boltons/urlutils.py b/boltons/urlutils.py
+index 6016e8a..aa2f5af 100644
+--- a/boltons/urlutils.py
++++ b/boltons/urlutils.py
+@@ -647,7 +647,7 @@ class URL(object):
+ 
+         .. _Section 6.2.2 of RFC 3986: https://tools.ietf.org/html/rfc3986#section-6.2.2
+         """
+-        self.path_parts = resolve_path_parts(self.path_parts)
++        self.path_parts = tuple(resolve_path_parts(self.path_parts))
+ 
+         if with_case:
+             self.scheme = self.scheme.lower()
+@@ -683,11 +683,11 @@ class URL(object):
+ 
+         if dest.path:
+             if dest.path.startswith(u'/'):   # absolute path
+-                new_path_parts = list(dest.path_parts)
++                new_path_parts = dest.path_parts
+             else:  # relative path
+                 new_path_parts = self.path_parts[:-1] + dest.path_parts
+         else:
+-            new_path_parts = list(self.path_parts)
++            new_path_parts = self.path_parts
+             if not query_params:
+                 query_params = self.query_params
+ 
+diff --git a/tests/test_urlutils.py b/tests/test_urlutils.py
+index a8e1539..2e9b0fc 100644
+--- a/tests/test_urlutils.py
++++ b/tests/test_urlutils.py
+@@ -313,6 +313,49 @@ def test_navigate():
+     assert navd.to_text() == _dest_text
+ 
+ 
++@pytest.mark.parametrize('as_url', [False, True])
++@pytest.mark.parametrize('destinations, expected', [
++    (('g', 'h'), 'http://a/b/c/h'),
++    (('g/', 'h/'), 'http://a/b/c/g/h/'),
++    (('/g', 'h'), 'http://a/h'),
++    (('/g/', '../h'), 'http://a/h'),
++    (('/', 'h'), 'http://a/h'),
++    (('', 'h'), 'http://a/b/c/h'),
++    (('g?q=1#frag', ''), 'http://a/b/c/g?q=1'),
++    (('g/', '', 'h/'), 'http://a/b/c/g/h/'),
++    (('g/', './h/', '../i'), 'http://a/b/c/g/i'),
++    (('?r=1', '#frag', 'h'), 'http://a/b/c/h'),
++])
++def test_navigate_chain(destinations, expected, as_url):
++    base = URL(REL_URL_BASE)
++    chained = reconstructed = base
++    for text in destinations:
++        dest = URL(text) if as_url else text
++        chained = chained.navigate(dest)
++        reconstructed = URL(reconstructed.to_text()).navigate(dest)
++        assert chained == reconstructed
++        if as_url:
++            assert dest.to_text() == text
++
++    assert chained.to_text() == expected
++    assert base.to_text() == REL_URL_BASE
++
++
++@pytest.mark.parametrize('normalize_base', [False, True])
++@pytest.mark.parametrize('normalize_dest', [False, True])
++def test_navigate_normalized_urls(normalize_base, normalize_dest):
++    base = URL(REL_URL_BASE)
++    dest = URL('g/./h/../')
++    if normalize_base:
++        base.normalize()
++    if normalize_dest:
++        dest.normalize()
++
++    result = base.navigate(dest)
++    assert result.to_text() == 'http://a/b/c/g/'
++    assert result.path_parts == (u'', u'b', u'c', u'g', u'')
++
++
+ # TODO: RFC3986 6.2.3 (not just for query add, either)
+ # def test_add_query():
+ #     url = URL('http://www.example.com')

@@ -1,0 +1,66 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index d2db291..bf7560d 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3571,6 +3571,9 @@ class Argument(Parameter):
+         var = self.type.get_metavar(param=self, ctx=ctx)
+         if not var:
+             var = self.name.upper()
++        elif not self.required and var.startswith("[") and var.endswith("]"):
++            # The argument adds its own optional brackets below.
++            var = var[1:-1]
+         if self.deprecated:
+             var += "!"
+         if not self.required:
+diff --git a/tests/test_basic.py b/tests/test_basic.py
+index 3f73528..21927f1 100644
+--- a/tests/test_basic.py
++++ b/tests/test_basic.py
+@@ -483,6 +483,47 @@ def test_choice_argument(runner):
+     assert "{foo|bar|baz}" in result.output
+ 
+ 
++@pytest.mark.parametrize("nargs", [1, 2, -1])
++@pytest.mark.parametrize(
++    ("kwargs", "metavar"),
++    [
++        ({"type": click.Choice(["foo", "bar"])}, "[foo|bar]"),
++        (
++            {"type": click.DateTime()},
++            "[%Y-%m-%d|%Y-%m-%dT%H:%M:%S|%Y-%m-%d %H:%M:%S]",
++        ),
++        ({"type": click.DateTime(["%Y-%m-%d"])}, "[%Y-%m-%d]"),
++        ({"type": str}, "[VALUE]"),
++        ({"type": int}, "[VALUE]"),
++        (
++            {"type": click.Choice(["foo", "bar"]), "deprecated": True},
++            "[foo|bar!]",
++        ),
++        (
++            {"type": click.DateTime(["%Y-%m-%d"]), "deprecated": True},
++            "[%Y-%m-%d!]",
++        ),
++    ],
++)
++def test_optional_argument_metavar(runner, kwargs, metavar, nargs):
++    @click.command()
++    @click.argument("value", required=False, nargs=nargs, **kwargs)
++    def cli(value):
++        return value
++
++    if nargs != 1:
++        metavar += "..."
++
++    for args, exit_code in [(["--help"], 0), (["--unknown"], 2)]:
++        result = runner.invoke(cli, args)
++        assert result.exit_code == exit_code
++        assert result.output.splitlines()[0] == f"Usage: cli [OPTIONS] {metavar}"
++
++    result = runner.invoke(cli, [], standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == (() if nargs == -1 else None)
++
++
+ def test_choice_argument_enum(runner):
+     class MyEnum(str, enum.Enum):
+         FOO = "foo-value"

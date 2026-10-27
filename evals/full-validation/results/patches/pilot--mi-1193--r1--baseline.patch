@@ -1,0 +1,43 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 4f2cfa9..fa8bcea 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1337,6 +1337,8 @@ def interleave_evenly(iterables, lengths=None):
+         raise ValueError('Mismatching number of iterables and lengths.')
+ 
+     dims = len(lengths)
++    if dims == 0:
++        return
+ 
+     # sort iterables by length, descending
+     lengths_permute = sorted(
+diff --git a/tests/test_more.py b/tests/test_more.py
+index df45621..908bed4 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1132,6 +1132,12 @@ class InterleaveLongestTests(TestCase):
+ 
+ 
+ class InterleaveEvenlyTests(TestCase):
++    def test_no_iterables(self):
++        self.assertEqual(list(mi.interleave_evenly([])), [])
++
++    def test_no_iterables_manual_lengths(self):
++        self.assertEqual(list(mi.interleave_evenly([], lengths=[])), [])
++
+     def test_equal_lengths(self):
+         # when lengths are equal, the relative order shouldn't change
+         a = [1, 2, 3]
+@@ -1234,6 +1240,12 @@ class InterleaveEvenlyTests(TestCase):
+         with self.assertRaises(ValueError):
+             list(mi.interleave_evenly(iterables, lengths=lengths))
+ 
++    def test_empty_argument_mismatch_raises(self):
++        for iterables, lengths in (([], [0]), ([[]], [])):
++            with self.subTest(iterables=iterables, lengths=lengths):
++                with self.assertRaises(ValueError):
++                    list(mi.interleave_evenly(iterables, lengths=lengths))
++
+ 
+ class InterleaveRandomlyTests(TestCase):
+     def test_basic(self):

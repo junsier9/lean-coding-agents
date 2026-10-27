@@ -1,0 +1,55 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c414a7c..07fc076 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1530,10 +1530,16 @@ def sliced(seq, n, strict=False):
+     ``True``, then ``ValueError`` will be raised before the last
+     slice is yielded.
+ 
++    If *n* is negative, ``ValueError`` is raised. If *n* is zero, no slices
++    are yielded.
++
+     This function will only work for iterables that support slicing.
+     For non-sliceable iterables, see :func:`chunked`.
+ 
+     """
++    if n < 0:
++        raise ValueError('n must be >= 0')
++
+     iterator = takewhile(len, (seq[i : i + n] for i in count(0, n)))
+     if strict:
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1d2894b..0368a40 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1395,6 +1395,29 @@ class SlicedTests(TestCase):
+         seq = 'ABCDEFGHI'
+         self.assertEqual(list(mi.sliced(seq, 4)), ['ABCD', 'EFGH', 'I'])
+ 
++    def test_negative_size(self):
++        for seq, n, strict in product(
++            ('', 'ABCDEFG'), (-1, -2, -8), (False, True)
++        ):
++            with self.subTest(seq=seq, n=n, strict=strict):
++                with self.assertRaisesRegex(ValueError, 'n must be >= 0'):
++                    mi.sliced(seq, n, strict=strict)
++
++    def test_zero_size(self):
++        for seq, strict in product(('', 'ABCDEFG'), (False, True)):
++            with self.subTest(seq=seq, strict=strict):
++                self.assertEqual(list(mi.sliced(seq, 0, strict=strict)), [])
++
++    def test_empty(self):
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                self.assertEqual(list(mi.sliced('', 3, strict=strict)), [])
++
++    def test_even_and_strict(self):
++        self.assertEqual(
++            list(mi.sliced('ABCDEFGHI', 3, strict=True)), ['ABC', 'DEF', 'GHI']
++        )
++
+     def test_not_sliceable(self):
+         seq = (x for x in 'ABCDEFGHI')
+ 

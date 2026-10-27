@@ -1,0 +1,69 @@
+diff --git a/click/decorators.py b/click/decorators.py
+index 8e5a462..eac682d 100644
+--- a/click/decorators.py
++++ b/click/decorators.py
+@@ -163,10 +163,10 @@ def option(*param_decls, **attrs):
+     :param cls: the option class to instantiate.  This defaults to
+                 :class:`Option`.
+     """
++    OptionClass = attrs.pop('cls', Option)
+     def decorator(f):
+         if 'help' in attrs:
+             attrs['help'] = inspect.cleandoc(attrs['help'])
+-        OptionClass = attrs.pop('cls', Option)
+         _param_memo(f, OptionClass(param_decls, **attrs))
+         return f
+     return decorator
+diff --git a/tests/test_options.py b/tests/test_options.py
+index fcd755a..eb9e416 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -311,6 +311,48 @@ def test_option_custom_class(runner):
+     assert 'you wont see me' not in result.output
+ 
+ 
++@pytest.mark.parametrize('decorate_command', [False, True])
++def test_reuse_option_custom_class(runner, decorate_command):
++    class CustomOption(click.Option):
++        def get_help_record(self, ctx):
++            return ('--value INTEGER', 'Custom: ' + self.help)
++
++    shared_option = click.option('--value', cls=CustomOption, type=int,
++                                default=42, help='\n    Shared option.\n')
++    commands = []
++
++    for name in ('first', 'second'):
++        def cmd(value):
++            click.echo(value)
++
++        if decorate_command:
++            cmd = shared_option(click.command(name)(cmd))
++        else:
++            cmd = click.command(name)(shared_option(cmd))
++        commands.append(cmd)
++
++    assert commands[0].params[0] is not commands[1].params[0]
++
++    for cmd in commands:
++        assert isinstance(cmd.params[0], CustomOption)
++
++        result = runner.invoke(cmd, ['--help'])
++        assert result.exit_code == 0
++        assert 'Custom: Shared option.' in result.output
++
++        result = runner.invoke(cmd)
++        assert result.exit_code == 0
++        assert result.output == '42\n'
++
++        result = runner.invoke(cmd, ['--value', '7'])
++        assert result.exit_code == 0
++        assert result.output == '7\n'
++
++        result = runner.invoke(cmd, ['--value', 'invalid'])
++        assert result.exit_code == 2
++        assert 'Invalid value for "--value"' in result.output
++
++
+ def test_aliases_for_flags(runner):
+     @click.command()
+     @click.option('--warnings/--no-warnings', ' /-W', default=True)

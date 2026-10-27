@@ -1,0 +1,140 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 4dcfc5c..d479801 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -10,12 +10,13 @@ def clamp(x, lower=None, upper=None):
+ 
+     Args:
+         x (int or float): Number to be clamped.
+-        lower (int or float): Minimum value for x.
+-        upper (int or float): Maximum value for x.
++        lower (int or float): Minimum value for x, or None for no lower bound.
++        upper (int or float): Maximum value for x, or None for no upper bound.
+ 
+     The returned value is guaranteed to be between *lower* and
+-    *upper*. Integers, floats, and other comparable types can be
+-    mixed.
++    *upper* when provided. Omitted bounds default to None, leaving that
++    direction unrestricted. Integers, floats, and other comparable
++    types can be mixed.
+ 
+     >>> clamp(1.0, 0, 5)
+     1.0
+@@ -23,16 +24,26 @@ def clamp(x, lower=None, upper=None):
+     0
+     >>> clamp(101.0, 0, 5)
+     5
++    >>> clamp(-1.0, lower=0)
++    0
++    >>> clamp(101.0, upper=5)
++    5
++    >>> clamp(101.0)
++    101.0
+ 
+     Similar to `numpy's clip`_ function.
+ 
+     .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html
+ 
+     """
+-    if upper < lower:
++    if lower is not None and upper is not None and upper < lower:
+         raise ValueError('expected upper bound (%r) >= lower bound (%r)'
+                          % (upper, lower))
+-    return min(max(x, lower), upper)
++    if lower is not None:
++        x = max(x, lower)
++    if upper is not None:
++        x = min(x, upper)
++    return x
+ 
+ 
+ def ceil(x, options=None):
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index e5b536d..2b3375d 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,6 +1,82 @@
+ 
+-from pytest import raises
+-from boltons.mathutils import ceil, floor
++from math import isnan
++
++from pytest import mark, raises
++from boltons.mathutils import ceil, clamp, floor
++
++
++@mark.parametrize('value', [
++    -float('inf'), -10 ** 1000, -1.5, 0, 1.5, 10 ** 1000, float('inf'),
++])
++def test_clamp_unbounded(value):
++    assert clamp(value) is value
++    assert clamp(value, None, None) is value
++
++
++@mark.parametrize('value, expected_lower, expected_upper', [
++    (-float('inf'), 0, -float('inf')),
++    (-10 ** 1000, 0, -10 ** 1000),
++    (-1.5, 0, -1.5),
++    (0, 0, 0),
++    (1.5, 1.5, 0),
++    (10 ** 1000, 10 ** 1000, 0),
++    (float('inf'), float('inf'), 0),
++])
++def test_clamp_one_bound(value, expected_lower, expected_upper):
++    assert clamp(value, lower=0) == expected_lower
++    assert clamp(value, 0, None) == expected_lower
++    assert clamp(value, upper=0) == expected_upper
++    assert clamp(value, None, 0) == expected_upper
++
++
++@mark.parametrize('value, lower, upper, expected', [
++    (-1.0, 0, 5, 0),
++    (0, 0, 5, 0),
++    (1.0, 0, 5, 1.0),
++    (5, 0, 5, 5),
++    (101.0, 0, 5, 5),
++    (-1, 0, 0, 0),
++    (1, 0, 0, 0),
++    (-float('inf'), 0, 5, 0),
++    (float('inf'), 0, 5, 5),
++    (-float('inf'), -float('inf'), float('inf'), -float('inf')),
++    (float('inf'), -float('inf'), float('inf'), float('inf')),
++    (-10 ** 1000, -float('inf'), float('inf'), -10 ** 1000),
++    (10 ** 1000, -float('inf'), float('inf'), 10 ** 1000),
++    (-10 ** 1000, -10 ** 999, 10 ** 999, -10 ** 999),
++    (10 ** 1000, -10 ** 999, 10 ** 999, 10 ** 999),
++    (10 ** 1000, 10 ** 999, None, 10 ** 1000),
++    (-10 ** 1000, None, -10 ** 999, -10 ** 1000),
++    (-float('inf'), float('inf'), None, float('inf')),
++    (float('inf'), None, -float('inf'), -float('inf')),
++])
++def test_clamp_bounds(value, lower, upper, expected):
++    assert clamp(value, lower, upper) == expected
++
++
++@mark.parametrize('lower, upper', [(1, 0), (float('inf'), -float('inf'))])
++def test_clamp_reversed_bounds(lower, upper):
++    with raises(ValueError):
++        clamp(0, lower, upper)
++
++
++@mark.parametrize('lower, upper', [
++    (None, None), (0, None), (None, 5), (0, 5),
++    (-float('inf'), float('inf')),
++])
++def test_clamp_nan_value(lower, upper):
++    assert isnan(clamp(float('nan'), lower, upper))
++
++
++@mark.parametrize('lower, upper, expected', [
++    (float('nan'), None, 1),
++    (None, float('nan'), 1),
++    (float('nan'), 0, 0),
++    (2, float('nan'), 2),
++    (float('nan'), float('nan'), 1),
++])
++def test_clamp_nan_bounds(lower, upper, expected):
++    assert clamp(1, lower, upper) == expected
+ 
+ 
+ OPTIONS = [1618, 1378, 166, 1521, 2347, 2016, 879, 2123,

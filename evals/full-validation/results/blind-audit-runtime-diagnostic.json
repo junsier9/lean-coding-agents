@@ -1,0 +1,66 @@
+{
+  "case_id": "mi-1125",
+  "A_arm": "with-skill",
+  "B_arm": "baseline",
+  "diagnostic_only": true,
+  "frozen_scores_or_costs_changed": false,
+  "results": {
+    "base": {
+      "module_file": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\blind-audit\\01\\base\\more_itertools\\__init__.py",
+      "gray_result": [
+        []
+      ],
+      "gray_repeat_zero_consumed": [],
+      "partial_first": {
+        "kind": "value",
+        "value": [
+          "a",
+          "a"
+        ]
+      },
+      "partial_second": {
+        "kind": "exception",
+        "type": "RuntimeError",
+        "message": "tail"
+      }
+    },
+    "A": {
+      "module_file": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\blind-audit\\01\\A\\more_itertools\\__init__.py",
+      "gray_result": [
+        []
+      ],
+      "gray_repeat_zero_consumed": [],
+      "partial_first": {
+        "kind": "value",
+        "value": [
+          "a",
+          "a"
+        ]
+      },
+      "partial_second": {
+        "kind": "exception",
+        "type": "RuntimeError",
+        "message": "tail"
+      }
+    },
+    "B": {
+      "module_file": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\blind-audit\\01\\B\\more_itertools\\__init__.py",
+      "gray_result": [
+        []
+      ],
+      "gray_repeat_zero_consumed": [
+        1,
+        2
+      ],
+      "partial_first": {
+        "kind": "exception",
+        "type": "RuntimeError",
+        "message": "tail"
+      },
+      "partial_second": null
+    }
+  },
+  "interpretation": "Observed consumption and error-timing differences; original behavior is demonstrated, scope of public lazy-input guarantees should be read with the task/source documentation.",
+  "probe_script_sha256": "BCA3CA8DD635438D6B59109B745409BE03020B6003FF11DB95433E1FD2004161",
+  "all_variants_gray_repeat_zero_output_same": true
+}

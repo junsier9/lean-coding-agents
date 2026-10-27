@@ -1,0 +1,80 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index b56c0c1..87f5943 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -646,14 +646,16 @@ def nth_combination(iterable, r, index):
+         >>> nth_combination(range(5), 3, 5)
+         (0, 3, 4)
+ 
+-    ``ValueError`` will be raised If *r* is negative or greater than the length
+-    of *iterable*.
+-    ``IndexError`` will be raised if the given *index* is invalid.
++    ``ValueError`` will be raised if *r* is negative.
++    ``IndexError`` will be raised if the given *index* is invalid, including
++    when *r* is greater than the length of *iterable*.
+     """
+     pool = tuple(iterable)
+     n = len(pool)
+-    if (r < 0) or (r > n):
++    if r < 0:
+         raise ValueError
++    if r > n:
++        raise IndexError
+ 
+     c = 1
+     k = min(r, n - r)
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 8d5597c..3c0124e 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -693,14 +693,45 @@ class NthCombinationTests(TestCase):
+         expected = (2, 12, 35, 126)
+         self.assertEqual(actual, expected)
+ 
++    def test_negative_index(self):
++        iterable = 'abcdefg'
++        r = 4
++        expected_combinations = list(combinations(iterable, r))
++        for index, expected in enumerate(expected_combinations):
++            actual = mi.nth_combination(
++                iterable, r, index - len(expected_combinations)
++            )
++            self.assertEqual(actual, expected)
++
++    def test_zero_r(self):
++        for iterable in ('', 'abc'):
++            for index in (0, -1):
++                with self.subTest(iterable=iterable, index=index):
++                    self.assertEqual(mi.nth_combination(iterable, 0, index), ())
++
+     def test_invalid_r(self):
+-        for r in (-1, 3):
+-            with self.assertRaises(ValueError):
+-                mi.nth_combination([], r, 0)
++        for iterable in ('', 'abc'):
++            for r in (-1, -3):
++                with self.subTest(iterable=iterable, r=r):
++                    with self.assertRaises(ValueError):
++                        mi.nth_combination(iterable, r, 0)
++
++    def test_r_greater_than_length(self):
++        for iterable in ('', 'abc'):
++            for r in (len(iterable) + 1, len(iterable) + 3):
++                for index in (-10, -1, 0, 1, 10):
++                    with self.subTest(iterable=iterable, r=r, index=index):
++                        with self.assertRaises(IndexError):
++                            mi.nth_combination(iterable, r, index)
+ 
+     def test_invalid_index(self):
+-        with self.assertRaises(IndexError):
+-            mi.nth_combination('abcdefg', 3, -36)
++        iterable = 'abcdefg'
++        for r in (0, 3, len(iterable)):
++            n = len(list(combinations(iterable, r)))
++            for index in (-n - 1, n):
++                with self.subTest(r=r, index=index):
++                    with self.assertRaises(IndexError):
++                        mi.nth_combination(iterable, r, index)
+ 
+ 
+ class NthPermutationTests(TestCase):

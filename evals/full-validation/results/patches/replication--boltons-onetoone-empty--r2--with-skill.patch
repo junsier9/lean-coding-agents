@@ -1,0 +1,82 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index cc70d3c..fcb536e 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -893,12 +893,12 @@ class OneToOne(dict):
+         if isinstance(dict_or_iterable, dict):
+             for val in dict_or_iterable.values():
+                 hash(val)
+-                keys_vals = list(dict_or_iterable.items())
++            keys_vals = list(dict_or_iterable.items())
+         else:
+-            for key, val in dict_or_iterable:
++            keys_vals = list(dict_or_iterable)
++            for key, val in keys_vals:
+                 hash(key)
+                 hash(val)
+-                keys_vals = list(dict_or_iterable)
+         for val in kw.values():
+             hash(val)
+         keys_vals.extend(kw.items())
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index 20c431f..487dfa2 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -391,6 +391,57 @@ def test_one_to_one():
+     return
+ 
+ 
++@pytest.mark.parametrize('initial', [{}, {'a': 1}])
++@pytest.mark.parametrize('empty_factory', [dict, list, tuple,
++                                         lambda: iter(()),
++                                         lambda: (item for item in ())],
++                         ids=['dict', 'list', 'tuple', 'iterator', 'generator'])
++def test_one_to_one_update_empty(initial, empty_factory):
++    oto = OneToOne(initial)
++    inverse = oto.inv
++    expected_inverse = {val: key for key, val in initial.items()}
++
++    assert oto.update(empty_factory()) is None
++    assert inverse.update(empty_factory()) is None
++    assert oto == initial
++    assert inverse == expected_inverse
++    assert oto.inv is inverse
++    assert inverse.inv is oto
++
++    oto.update({'b': 2})
++    oto.update([('c', 3)])
++    assert oto.update(empty_factory(), a=2) is None
++    assert oto == {'a': 2, 'c': 3}
++    assert inverse == {2: 'a', 3: 'c'}
++
++    inverse.update({3: 'd'})
++    assert oto == {'a': 2, 'd': 3}
++    assert inverse == {2: 'a', 3: 'd'}
++
++
++@pytest.mark.parametrize('input_factory', [dict, list, tuple, iter,
++                                         lambda items: (item for item in items)],
++                         ids=['dict', 'list', 'tuple', 'iterator', 'generator'])
++def test_one_to_one_update_inputs(input_factory):
++    oto = OneToOne({'a': 1})
++    assert oto.update(input_factory([('a', 2), ('b', 3)]), b=4) is None
++    assert oto == {'a': 2, 'b': 4}
++    assert oto.inv == {2: 'a', 4: 'b'}
++
++
++@pytest.mark.parametrize('data, kwargs', [({'b': 2, 'c': []}, {}),
++                                        ([('b', 2), ([], 3)], {}),
++                                        ([('b', 2), ('c', [])], {}),
++                                        ({'b': 2}, {'c': []}),
++                                        ({}, {'c': []})])
++def test_one_to_one_update_unhashable(data, kwargs):
++    oto = OneToOne({'a': 1})
++    with pytest.raises(TypeError):
++        oto.update(data, **kwargs)
++    assert oto == {'a': 1}
++    assert oto.inv == {1: 'a'}
++
++
+ def test_many_to_many():
+     m2m = ManyToMany()
+     assert len(m2m) == 0

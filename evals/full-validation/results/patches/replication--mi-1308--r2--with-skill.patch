@@ -1,0 +1,51 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 940b800..7b42428 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1182,7 +1182,7 @@ class bucket:
+         self._it = iter(iterable)
+         self._key = key
+         self._cache = defaultdict(deque)
+-        self._validator = validator or (lambda x: True)
++        self._validator = (lambda x: True) if validator is None else validator
+ 
+     def __contains__(self, value):
+         if not self._validator(value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1fdf22a..4bb2631 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1091,6 +1091,33 @@ class BucketTests(TestCase):
+         self.assertNotIn(0, D._cache)  # Don't store non-valid entries
+         self.assertEqual(list(D[0]), [])
+ 
++    def test_falsey_validator(self):
++        class CallableSet(set):
++            __call__ = set.__contains__
++
++        validator = CallableSet()
++        for operation in ('getitem', 'contains', 'iter'):
++            with self.subTest(operation=operation):
++                iterable = iter([10, 20, 11, 21])
++                D = mi.bucket(
++                    iterable, key=lambda x: 10 * (x // 10), validator=validator
++                )
++                if operation == 'getitem':
++                    self.assertEqual(list(D[10]), [])
++                elif operation == 'contains':
++                    self.assertNotIn(10, D)
++                else:
++                    self.assertEqual(list(D), [])
++                    continue
++                self.assertEqual(list(iterable), [10, 20, 11, 21])
++
++    def test_none_validator(self):
++        D = mi.bucket([10, 20, 11, 21], key=lambda x: x // 10, validator=None)
++        self.assertIn(1, D)
++        self.assertEqual(set(D), {1, 2})
++        self.assertEqual(list(D[1]), [10, 11])
++        self.assertEqual(list(D[2]), [20, 21])
++
+     def test_list(self):
+         iterable = [10, 20, 30, 11, 21, 31, 12, 22, 23, 33]
+         D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))

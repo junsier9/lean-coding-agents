@@ -1,0 +1,132 @@
+{
+  "key": "recovery--d10-recovery--r0--with-skill",
+  "phase": "recovery",
+  "case_id": "d10-recovery",
+  "repo": "pallets/click",
+  "repeat": 0,
+  "arm": "with-skill",
+  "started_at": "2026-10-27T09:46:35.536593+00:00",
+  "finished_at": "2026-10-27T09:56:36.768634+00:00",
+  "skill_sha256": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
+  "case_sha256": "9CC246BA8DEA9BE2CF258A86429DB881250B171E5B40D850D5BD4298D27654D1",
+  "accepted": true,
+  "completed": true,
+  "cli_completed": true,
+  "cli_exit_code": 1,
+  "timeout": true,
+  "client_seconds": 600.375,
+  "grade_seconds": 0.625,
+  "wall_seconds": 601.0,
+  "usage_complete": false,
+  "usage": [],
+  "input_tokens": null,
+  "cached_input_tokens": null,
+  "output_tokens": null,
+  "total_tokens": null,
+  "command_items": 13,
+  "command_failures": 1,
+  "skill_body_read_observed": true,
+  "diff_stat": " click/parser.py | 26 ++++++++++++++++----------\n 1 file changed, 16 insertions(+), 10 deletions(-)\n",
+  "grade": {
+    "tests_collected": 32,
+    "tests_ran": 32,
+    "passed": 32,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.625,
+    "exit_code": 0,
+    "timeout": false,
+    "modes": {
+      "normal": {
+        "exit_code": 0,
+        "tests_collected": 16,
+        "tests_ran": 16,
+        "passed": 16,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "timeout": false,
+        "seconds": 0.34300000010989606,
+        "command": [
+          "{PYTHON_RUNTIME}\\python.exe",
+          "-I",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          ".",
+          "-p",
+          "test_contract.py",
+          "-v"
+        ]
+      },
+      "optimized": {
+        "exit_code": 0,
+        "tests_collected": 16,
+        "tests_ran": 16,
+        "passed": 16,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "timeout": false,
+        "seconds": 0.28199999989010394,
+        "command": [
+          "{PYTHON_RUNTIME}\\python.exe",
+          "-I",
+          "-B",
+          "-O",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          ".",
+          "-p",
+          "test_contract.py",
+          "-v"
+        ]
+      }
+    }
+  },
+  "grading_attempts": [
+    {
+      "started_at": "2026-10-27T09:56:36.084004+00:00",
+      "seconds": 0.625,
+      "status": "completed"
+    }
+  ],
+  "expected_load": null,
+  "operation_pass": null,
+  "routing_check_pass": null,
+  "changed_tracked_paths": null,
+  "skill_unchanged": null,
+  "skill_files_unchanged": true,
+  "full_body_observation": {
+    "body_visible": true,
+    "proof": [
+      {
+        "event_line": 18,
+        "item_id": "item_4",
+        "type": "command_execution"
+      }
+    ],
+    "thread_ids": [
+      "01a17cc1-2793-7cf0-8348-c800714ca99f"
+    ],
+    "malformed_lines": [],
+    "method": "completed-tool-result-full-body-v1"
+  },
+  "recovery_passed": false,
+  "original_development_gate_passed": false,
+  "raw_artifact_sha256": {
+    "cli-checkpoint.json": "AA48C4D615FC178F1F87DF727B7AA0AA391EC751CBB77B2AABCF44D1E76F2337",
+    "client-done.json": "C66D2840E38FE578EC8B5FCC6A0C3809C688E9D34E8D269569E9E91D226117A9",
+    "events.jsonl": "3667CFAC53676A13CF5C939D662E6CE94CED6D068291E6D7CA7D88949A02A5A4",
+    "prompt.txt": "60DE305CAECAADE98973AE60D79127B542E45BEABB61B7C6826659EF385F2BE2",
+    "record.json": "3C7FA91CF1FBA9C380D9E9CFD756578089EC74B0C3279C3A252219FA9FDA8410",
+    "started.json": "5DFDC25BDE04B0E459FB501E0603EAB043FA16405496C4F16B90F6109B11949A",
+    "stderr.txt": "66C7FBB2BF5A5F2C1F3AE456A2D5BBF19AEE6E27514A0F4FE97D30AB6E217261"
+  },
+  "no_replacement_or_fresh_generalization_claim": true
+}

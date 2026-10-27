@@ -1,0 +1,15 @@
+test_bad_labels_after_hook (test_contract.Contract.test_bad_labels_after_hook) ... ok
+test_bool_after_hook (test_contract.Contract.test_bool_after_hook) ... ok
+test_hook_error_propagates (test_contract.Contract.test_hook_error_propagates) ... ok
+test_hook_valid_changes (test_contract.Contract.test_hook_valid_changes) ... ok
+test_input_ownership (test_contract.Contract.test_input_ownership) ... ok
+test_invalid_after_hook (test_contract.Contract.test_invalid_after_hook) ... ok
+test_invalid_initial_skips_hook (test_contract.Contract.test_invalid_initial_skips_hook) ... ok
+test_normal (test_contract.Contract.test_normal) ... ok
+test_result_frozen (test_contract.Contract.test_result_frozen) ... ok
+test_stashed_hook_reference (test_contract.Contract.test_stashed_hook_reference) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK

@@ -1,0 +1,87 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index b430da7..fcfcf08 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2552,7 +2552,7 @@ def xor_by(array, *lists, **kwargs):
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor(
++    return xor_by(
+         uniq(
+             difference_by(
+                 array + lists[0],
+@@ -2561,6 +2561,7 @@ def xor_by(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        iteratee=iteratee,
+     )
+ 
+ 
+@@ -2617,6 +2618,7 @@ def xor_with(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        comparator=comp,
+     )
+ 
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index 73dd87d..8ba85da 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -945,11 +945,53 @@ def test_xor_by(case, expected):
+     assert _.xor_by(*case) == expected
+ 
+ 
++@parametrize("as_keyword", [False, True])
++@parametrize(
++    "arrays,iteratee,expected",
++    [
++        (([1.1, 2.1], [2.2, 3.1], [1.2, 4.1]), math.floor, [3.1, 4.1]),
++        (([1.1, 2.1], [2.2, 3.1], [1.2, 4.1], [3.2, 5.1]), math.floor, [4.1, 5.1]),
++        (
++            ([{"x": 1}, {"x": 2}], [{"x": 2, "y": 0}, {"x": 3}], [{"x": 1, "y": 1}, {"x": 4}]),
++            "x",
++            [{"x": 3}, {"x": 4}],
++        ),
++    ],
++)
++def test_xor_by_multiple_arrays(arrays, iteratee, expected, as_keyword):
++    if as_keyword:
++        actual = _.xor_by(*arrays, iteratee=iteratee)
++    else:
++        actual = _.xor_by(*arrays, iteratee)
++    assert actual == expected
++
++
+ @parametrize("case,expected", [(([1, 2, 3], [5, 4], lambda a, b: a <= b), [5, 4])])
+ def test_xor_with(case, expected):
+     assert _.xor_with(*case) == expected
+ 
+ 
++@parametrize("as_keyword", [False, True])
++@parametrize(
++    "arrays,comparator,expected",
++    [
++        (([11, 22], [32, 43], [51, 64]), lambda a, b: a % 10 == b % 10, [43, 64]),
++        (([11, 22], [32, 43], [51, 64], [73, 85]), lambda a, b: a % 10 == b % 10, [64, 85]),
++        (
++            ([{"x": 1}, {"x": 2}], [{"x": 2, "y": 0}, {"x": 3}], [{"x": 1, "y": 1}, {"x": 4}]),
++            lambda a, b: a["x"] == b["x"],
++            [{"x": 3}, {"x": 4}],
++        ),
++    ],
++)
++def test_xor_with_multiple_arrays(arrays, comparator, expected, as_keyword):
++    if as_keyword:
++        actual = _.xor_with(*arrays, comparator=comparator)
++    else:
++        actual = _.xor_with(*arrays, comparator)
++    assert actual == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

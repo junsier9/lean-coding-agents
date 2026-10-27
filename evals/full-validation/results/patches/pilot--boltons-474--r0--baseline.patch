@@ -1,0 +1,64 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 37b4440..c9a0281 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -363,7 +363,7 @@ class IndexedSet(MutableSet):
+         elif len(others) == 1:
+             other = others[0]
+         else:
+-            other = chain(others)
++            other = chain.from_iterable(others)
+         for o in other:
+             self.add(o)
+ 
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b78fd6c..efa5555 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -28,6 +28,40 @@ def test_indexed_set_rsub():
+     assert (frozenset('abc') - IndexedSet('bcd')) == frozenset(['a'])
+ 
+ 
++@mark.parametrize('iterable_type', [list, tuple, iter])
++def test_indexed_set_update_multiple_iterables(iterable_type):
++    iset = IndexedSet([2, 1])
++    result = iset.update(iterable_type([1, 3, 2, 3]),
++                         iterable_type([4, 3, 5, 4]))
++
++    assert result is None
++    assert list(iset) == [2, 1, 3, 4, 5]
++
++
++def test_indexed_set_update_mixed_iterables_and_tuple_elements():
++    first, second = (1, 2), (3, 4)
++    nested = (first, second)
++    iset = IndexedSet([first])
++
++    assert iset.update([second, first],
++                       (value for value in [nested, second]),
++                       ((), first)) is None
++    assert list(iset) == [first, second, nested, ()]
++
++    assert iset.update([(5, 6), first]) is None
++    assert list(iset) == [first, second, nested, (), (5, 6)]
++
++
++@mark.parametrize('initial', [[], [1, 2]])
++def test_indexed_set_update_empty_iterables(initial):
++    iset = IndexedSet(initial)
++
++    assert iset.update() is None
++    assert iset.update([]) is None
++    assert iset.update([], (), iter(())) is None
++    assert list(iset) == initial
++
++
+ def test_indexed_set_mutate():
+     thou = IndexedSet(range(1000))
+     assert (thou.pop(), thou.pop()) == (999, 998)

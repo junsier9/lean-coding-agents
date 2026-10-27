@@ -1,0 +1,26 @@
+{
+  "completed_at": "2026-10-25T19:59:49.459696+00:00",
+  "iteration": 2,
+  "evidence_class": "known_development_regression_only",
+  "skill_sha256": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+  "native_attempts": 6,
+  "contract_accepted": 6,
+  "body_reads_observed": 5,
+  "usage_complete": 6,
+  "cli_completed_without_timeout": 6,
+  "cases": {
+    "d09": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "d10": {
+      "attempts": 3,
+      "accepted": 3
+    }
+  },
+  "development_gate_pass": false,
+  "trace_integrity_issues": [],
+  "potential_trace_flags": 16,
+  "closed_v4_evidence_unchanged": true,
+  "not_a_v4_comparison_new_holdout_efficiency_or_production_claim": true
+}

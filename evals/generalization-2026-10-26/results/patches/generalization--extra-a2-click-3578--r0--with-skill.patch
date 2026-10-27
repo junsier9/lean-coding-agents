@@ -1,0 +1,80 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index d2db291..a200af1 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3571,6 +3571,8 @@ class Argument(Parameter):
+         var = self.type.get_metavar(param=self, ctx=ctx)
+         if not var:
+             var = self.name.upper()
++        elif not self.required and var.startswith("[") and var.endswith("]"):
++            var = var[1:-1]
+         if self.deprecated:
+             var += "!"
+         if not self.required:
+diff --git a/tests/test_basic.py b/tests/test_basic.py
+index 3f73528..9b84c5f 100644
+--- a/tests/test_basic.py
++++ b/tests/test_basic.py
+@@ -483,6 +483,62 @@ def test_choice_argument(runner):
+     assert "{foo|bar|baz}" in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("type", "metavar"),
++    [
++        (click.Choice(["foo", "bar"]), "[foo|bar]"),
++        (click.DateTime(formats=["%Y-%m-%d", "%Y"]), "[%Y-%m-%d|%Y]"),
++        (int, "[VALUE]"),
++    ],
++)
++@pytest.mark.parametrize(
++    ("kwargs", "suffix"),
++    [
++        ({"required": False}, ""),
++        ({"nargs": -1}, "..."),
++        ({"required": False, "nargs": 2}, "..."),
++    ],
++)
++def test_optional_argument_type_metavar(runner, type, metavar, kwargs, suffix):
++    @click.command()
++    @click.argument("value", type=type, **kwargs)
++    def cli(value):
++        pass
++
++    usage = f"Usage: cli [OPTIONS] {metavar}{suffix}"
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert result.output.splitlines()[0] == usage
++
++    result = runner.invoke(cli, [])
++    assert result.exit_code == 0
++    assert result.output == ""
++
++    args = ["invalid", "invalid"] if kwargs.get("nargs") == 2 else ["invalid"]
++    result = runner.invoke(cli, args)
++    assert result.exit_code == 2
++    assert result.output.splitlines()[0] == usage
++    assert "Error:" in result.output
++
++
++@pytest.mark.parametrize(
++    ("type", "metavar"),
++    [
++        (click.Choice(["foo", "bar"]), "[foo|bar!]"),
++        (click.DateTime(formats=["%Y-%m-%d"]), "[%Y-%m-%d!]"),
++    ],
++)
++def test_deprecated_optional_argument_type_metavar(runner, type, metavar):
++    @click.command()
++    @click.argument("value", type=type, required=False, deprecated=True)
++    def cli(value):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert result.output.splitlines()[0] == f"Usage: cli [OPTIONS] {metavar}"
++
++
+ def test_choice_argument_enum(runner):
+     class MyEnum(str, enum.Enum):
+         FOO = "foo-value"

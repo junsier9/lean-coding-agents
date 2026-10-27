@@ -1,0 +1,92 @@
+{
+  "review_kind": "v6-pre-freeze-B1-B3-fix-recheck",
+  "reviewed_at": "2026-10-27T09:56:05.750779+00:00",
+  "source_sha256": {
+    "run.py": "8DEEF18E0DF6BD713191CFC9B507AE9E9C84741C5C0AA193F5D9CB7851AB03D1",
+    "verify.py": "3A22B7B6F37498765B7703F54D2E07926ADE8A4DAF44FD6E658F864B929EF6C9",
+    "prepare_reviews.py": "AF89A650E5AD274A052644606B15489699557E11B93A6944B675EFD3FA92CCA6",
+    "incomplete.py": "83D13E13E8FD8AC4133BADD4F54B35C38A5FE611067B9B569378262BCB76944C"
+  },
+  "sources_unchanged_during_probes": {
+    "run.py": true,
+    "verify.py": true,
+    "prepare_reviews.py": true,
+    "incomplete.py": true
+  },
+  "native_model_calls": 0,
+  "real_new_fixture_metadata_development_skill_candidate_or_result_reads": 0,
+  "overall": "B1_B2_B3_original_counterexamples_repaired",
+  "B1": {
+    "negative_derivation_only": true,
+    "raw_files_unchanged": true,
+    "record_not_fabricated": true,
+    "launch_failure_status": "incomplete_attempt",
+    "derived_usage": null,
+    "derived_grade": null,
+    "not_attempted_preserved": "not_attempted",
+    "verdict_passed": false,
+    "fresh_denominator": 39,
+    "known_denominator": 12,
+    "threadless_nonzero_failure": {
+      "rejected": false,
+      "value": false
+    },
+    "threadless_zero_exit_rejected": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "A successful attempt requires a native thread"
+    },
+    "checkpoint_recovery": {
+      "rejected": false,
+      "calls": {
+        "launch": 0,
+        "prepare": 0,
+        "grade": 1
+      }
+    },
+    "evidence": [
+      "incomplete.py:6-38",
+      "verify.py:124-134,156-165",
+      "run.py:243-251",
+      "run.py:140"
+    ]
+  },
+  "B2": {
+    "all_eight_non_python_runtime_inputs_included_in_candidate_and_manifest": true,
+    "fixed_repeat": 0,
+    "evidence": [
+      "prepare_reviews.py:21-29,45-65"
+    ],
+    "scope_zh": "\u786e\u8ba4\u539fdanger.json\u9057\u6f0f\u53cd\u4f8b\u5df2\u4fee\u590d\uff1b\u4fdd\u7559\u65e2\u5b9aruntime/scratch\u6392\u9664\uff0c\u672a\u6269\u5927\u6d4b\u8bd5\u653b\u51fb\u9762\u3002"
+  },
+  "B3": {
+    "original_flat_case_and_fix_url_aliases_rejected": {
+      "same_case_flat": {
+        "rejected": true,
+        "error_type": "AssertionError",
+        "message": "Selected task has prior attempt metadata"
+      },
+      "fix_alias_flat": {
+        "rejected": true,
+        "error_type": "AssertionError",
+        "message": ""
+      },
+      "url_alias_flat": {
+        "rejected": true,
+        "error_type": "AssertionError",
+        "message": ""
+      }
+    },
+    "evidence": [
+      "run.py:79-92"
+    ]
+  },
+  "remaining_blockers_in_requested_B_scope": [],
+  "readiness_boundary_zh": "\u672a\u8bfb\u53d6\u6216\u8bc4\u4ef7\u5f00\u53d1readiness\u7ed3\u679c\uff1b\u539f\u5f00\u53d1\u5931\u8d25\u4e0e\u53e6\u884c\u6ce8\u518c\u6062\u590d\u4efb\u52a1\u5fc5\u987b\u6309\u7236\u4ee3\u7406\u8ba1\u5212\u5206\u522b\u4fdd\u7559\uff0c\u672c\u6b21\u4ec5\u590d\u6838B1-B3\u3002",
+  "scope_limits_zh": [
+    "\u53ea\u6267\u884c\u5df2\u5141\u8bb8\u4ee3\u7801\u7684AST\u6458\u53d6\u4e0e\u865a\u6784\u5939\u5177\u3002\u672a\u4fee\u6539\u4efb\u4f55\u5b9e\u73b0\u6216\u51bb\u7ed3\u6587\u4ef6\u3002",
+    "\u6240\u6709\u5199\u5165\u4ec5\u5728.local/v6-method-audit\u3002\u6e90\u7801\u5c1a\u672a\u51bb\u7ed3\uff0c\u7ed3\u8bba\u4ec5\u7ed1\u5b9a\u672c\u62a5\u544a\u7684\u6458\u8981\u3002",
+    "\u7f3a\u5931record\u65f6\u65b0\u8bbe\u8ba1\u660e\u786e\u6574\u6279false\uff0c\u5f3a\u4e8e\u5c06\u7f3a\u5931record\u8ba1\u666e\u901a\u5931\u8d25\uff1b\u672c\u62a5\u544a\u6ca1\u6709\u58f0\u79f0\u4e0d\u5b8c\u6574\u6279\u6b21\u53ef\u901a\u8fc7\u3002"
+  ],
+  "next_objective_zh": "\u5c06\u6700\u7ec8\u6e90\u7801\u3001\u8d1f\u5411\u8bf4\u660eschema\u53ca\u5206\u5f00\u4fdd\u7559\u7684\u5f00\u53d1readiness\u5951\u7ea6\u4e00\u5e76\u51bb\u7ed3\uff0c\u518d\u542f\u52a8\u56fa\u5b9a\u65b0\u9898\u8ba1\u5212\u3002"
+}

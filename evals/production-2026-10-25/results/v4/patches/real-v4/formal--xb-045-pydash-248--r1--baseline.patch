@@ -1,0 +1,32 @@
+diff --git a/src/pydash/helpers.py b/src/pydash/helpers.py
+index cd137c7..b6e4a79 100644
+--- a/src/pydash/helpers.py
++++ b/src/pydash/helpers.py
+@@ -49,6 +49,10 @@ def callit(iteratee, *args, **kwargs):
+ 
+ def getargcount(iteratee, maxargs):
+     """Return argument count of iteratee function."""
++    # Keep the full signature available to wrappers inspecting with maxargs=None.
++    if maxargs is not None and hasattr(iteratee, "_iteratee_argcount"):
++        return iteratee._iteratee_argcount
++
+     if hasattr(iteratee, "_argcount"):
+         # Optimization feature where argcount of iteratee is known and properly
+         # set by initiator.
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 711cab0..2da9bd1 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -1205,6 +1205,12 @@ def zscore(collection, iteratee=None):
+     return [(item - avg) / sig for item in array]
+ 
+ 
++# Rounding iteratees take only the value; precision must be provided explicitly.
++ceil._iteratee_argcount = 1  # type: ignore[attr-defined]
++floor._iteratee_argcount = 1  # type: ignore[attr-defined]
++round_._iteratee_argcount = 1  # type: ignore[attr-defined]
++
++
+ #
+ # Utility methods not a part of the main API
+ #

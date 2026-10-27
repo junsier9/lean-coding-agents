@@ -1,0 +1,46 @@
+test_audit_failure_propagates (test_contract.Contract.test_audit_failure_propagates) ... ok
+test_audit_once (test_contract.Contract.test_audit_once) ... FAIL
+test_does_not_mutate_input (test_contract.Contract.test_does_not_mutate_input) ... ok
+test_empty (test_contract.Contract.test_empty) ... ok
+test_empty_audit_once (test_contract.Contract.test_empty_audit_once) ... FAIL
+test_invalid_has_no_success_audit (test_contract.Contract.test_invalid_has_no_success_audit) ... ok
+test_non_integer_elements (test_contract.Contract.test_non_integer_elements) ... ok
+test_non_lists (test_contract.Contract.test_non_lists) ... ok
+test_original_list_iterated_once (test_contract.Contract.test_original_list_iterated_once) ... ok
+test_signed_total (test_contract.Contract.test_signed_total) ... ok
+test_snapshot_survives_callback_mutation (test_contract.Contract.test_snapshot_survives_callback_mutation) ... ok
+
+======================================================================
+FAIL: test_audit_once (test_contract.Contract.test_audit_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-ib0503__\test_contract.py", line 16, in test_audit_once
+    self.assertEqual(events, [("validated", 3)])
+AssertionError: Lists differ: [('validated', 3), ('validated', 3)] != [('validated', 3)]
+
+First list contains 1 additional elements.
+First extra element 1:
+('validated', 3)
+
+- [('validated', 3), ('validated', 3)]
++ [('validated', 3)]
+
+======================================================================
+FAIL: test_empty_audit_once (test_contract.Contract.test_empty_audit_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases-v2\fixture-ib0503__\test_contract.py", line 21, in test_empty_audit_once
+    self.assertEqual(events, [("validated", 0)])
+AssertionError: Lists differ: [('validated', 0), ('validated', 0)] != [('validated', 0)]
+
+First list contains 1 additional elements.
+First extra element 1:
+('validated', 0)
+
+- [('validated', 0), ('validated', 0)]
++ [('validated', 0)]
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.001s
+
+FAILED (failures=2)

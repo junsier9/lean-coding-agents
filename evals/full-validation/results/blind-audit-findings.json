@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "audit_root": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\blind-audit",
+  "method": "仅依据 tasks.json、各 pair 的 base/A/B 源码及 A.patch/B.patch 静态审查；下列证据路径相对 audit_root，行号为各快照的一基行号。",
+  "blinding": "只使用匿名 A/B 标签；未读取或推断组别映射、评分、records、日志、prompt 或统计结果。",
+  "execution": "未联网、未运行测试或模型、未委派、未修改输入。",
+  "interpretation": "这是描述性的契约与冗余审查，不是运行验证，不替代冻结成本统计。same 指未发现实质行为差异，并非所有文本或测试相同；选择不以行数或测试数量为依据。",
+  "comparison_counts": {"A": 1, "B": 0, "same": 7, "uncertain": 0},
+  "pairs": [
+    {
+      "pair": "01",
+      "task": "gray_product/partial_product 对一次性输入的 repeat 行为",
+      "A": {
+        "judgment": "符合有限输入题面，且保留 partial_product 按需产出与灰码产品零重复不消费输入的原有路径。",
+        "evidence": [
+          "01/A/more_itertools/more.py:4900-4906：只在 repeat>1 时先快照输入，原长度检查仍在。",
+          "01/A/more_itertools/more.py:4944-4959：tee 建立独立游标，zip/chain 按原维度顺序排列；先各取一个值，再逐维推进。",
+          "01/base/more_itertools/more.py:4942-4952：原路径同样先取首项并立即 yield，而不是耗尽输入。"
+        ],
+        "necessary_mechanisms": [
+          "重复维度需要重放一次性输入；gray_product 的快照有直接依据。",
+          "partial_product 的 tee 缓存有当前流式路径依据，不能仅因代码较长而视为多余抽象；初始 StopIteration 返回空结果的防护被保留。"
+        ],
+        "redundant_or_unjustified": [
+          "repeat>1 时，4902 的 map(tuple, ...) 再作用于已规范化的 tuple，是轻微重复归一化；它不是再次消耗原迭代器或深拷贝。"
+        ],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "有限且正常结束的题面示例可满足；新增提前耗尽输入的行为有可定位的副作用风险。",
+        "evidence": [
+          "01/B/more_itertools/more.py:4900：快照发生在乘以 repeat 之前，故 repeat=0 也会消费原输入；base 的 4900 先乘零，不消费。",
+          "01/B/more_itertools/more.py:4941-4947：repeat>1 时先耗尽全部输入，并在文档中声明这个新限制。",
+          "01/B/more_itertools/more.py:4949-4957：首个 yield 位于快照之后，改变了 base:4944-4952 的消费边界。"
+        ],
+        "necessary_mechanisms": [
+          "重放一次性输入所需的缓存有依据；repeat=1 的 partial_product 流式路径仍保留。"
+        ],
+        "redundant_or_unjustified": [
+          "gray_product 在 repeat=0 时消费输入，对空维度结果没有必要。",
+          "partial_product 为修复重复游标而提前耗尽全部输入并非必要；A 已给出保持流式边界的实现。"
+        ],
+        "material_contract_risks": [
+          "静态反例：输入生成器先 yield 'a'、随后抛 RuntimeError；repeat=2 时 A 可先产出 ('a','a')，B 在首个值前就抛错。无限输入也会使 B 的首个值无法到达，而原逐步推进路径可产出前缀。",
+          "gray_product 的零重复原本不会触发输入消费副作用，B 会触发；这是消费协议变化，而非单纯实现长度差异。"
+        ]
+      },
+      "comparison": "A",
+      "comparison_reason": "两者修复有限正常输入的重复结果；A 保持了可从 base 追踪的消费和异常时机。A 的轻微重复归一化不足以抵消 B 的实质消费边界变化。"
+    },
+    {
+      "pair": "02",
+      "task": "非 TTY 进度条标签输出与去重",
+      "A": {
+        "judgment": "符合题面；隐藏进度条分支输出标签，只在标签改变时再输出。",
+        "evidence": [
+          "02/A/src/click/_termui_impl.py:229-234：比较并更新 _last_line，再通过 echo 输出标签。",
+          "02/base/src/click/_termui_impl.py:76,103-109,115-119：label 归一化、非 TTY 判定以及 enter/iter 都调用 render_progress，说明去重状态确有调用路径依据。"
+        ],
+        "necessary_mechanisms": ["复用既有 _last_line 去重有依据；hidden 分支在快速进度限制前输出，空进度也在 enter 时输出一次。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的生产逻辑相同；额外文档和测试写法未改变运行机制。",
+        "evidence": [
+          "02/B/src/click/_termui_impl.py:229-234：与 A 相同的标签比较、状态更新、echo 和 return。",
+          "02/base/src/click/termui.py:384-385 已写明非终端只输出标签；02/base/src/click/utils.py:245-259 的 echo 处理颜色并 flush，故这里无需另加颜色 fallback 或 flush。"
+        ],
+        "necessary_mechanisms": ["标签改变才输出的 guard 对 enter、iter、update 的多次调用必要；保留原 TTY 渲染及结束路径。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "comparison": "same",
+      "comparison_reason": "可执行修改相同；没有新增 catches、defaults、copies 或 retries，也未删掉 TTY 的原防护。"
+    },
+    {
+      "pair": "03",
+      "task": "value_chain 传播消耗输入期间的 TypeError",
+      "A": {
+        "judgment": "符合题面；保留不可迭代标量行为，同时不再吞掉 next 阶段的 TypeError。",
+        "evidence": ["03/A/more_itertools/more.py:4411-4421：str/bytes 标量分支保留；try 只覆盖 iter(value)，yield from 位于 else。"],
+        "necessary_mechanisms": ["iter(value) 的窄 TypeError catch 是判定不可迭代标量所需的既有行为；把消耗过程移出 catch 是本题核心。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的执行逻辑相同；增加传播异常的文档说明。",
+        "evidence": ["03/B/more_itertools/more.py:4413-4423：同样先 iter、仅捕获迭代器获取错误，再在 else 中消耗。"],
+        "necessary_mechanisms": ["保留标量与字符串契约，没有把运行期迭代异常降级为普通值或默认值。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "comparison": "same",
+      "comparison_reason": "删除的是会静默吞错的过宽捕获范围，必要的标量处理仍在；两个匿名版本一致。"
+    },
+    {
+      "pair": "04",
+      "task": "backoff 在 factor=1.0 时的自动 count 与等端点行为",
+      "A": {
+        "judgment": "在既有合法端点范围内符合题面；只改 count=None 的推断分支。",
+        "evidence": ["04/A/boltons/iterutils.py:639-680：原参数检查保留；651-658 先处理相等端点，再拒绝无法推断的单位因子；显式 count 和 repeat 继续走原循环。"],
+        "necessary_mechanisms": ["等端点 count=1 是需求明确要求的默认；factor==1 的 ValueError 有对数底为一的实际失败路径依据，并非无根据 guard。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的执行分支相同，仅错误消息和文档措辞不同。",
+        "evidence": ["04/B/boltons/iterutils.py:650-658：相同的等端点、单位因子和常规推断三分支；659-680 保留 count、jitter 及产出逻辑。"],
+        "necessary_mechanisms": ["只对自动推断加条件，没有新增重试框架、兜底 count 或吞异常。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "shared_boundary": "base:645-646 与两版:646-647 的 stop==0 拒绝均未改；等端点的单值修复限于原本允许的正 stop。题面对 (0,0) 是否另有意图 uncertain，不能把既有拒绝算作某一版新增风险。",
+      "comparison": "same",
+      "comparison_reason": "除未要求固定文本的 ValueError 消息外，生产行为一致。"
+    },
+    {
+      "pair": "05",
+      "task": "singularize 保留双 s 结尾的单数词",
+      "A": {
+        "judgment": "符合题面；识别规范化后的 ss 后返回原字符串，保留大小写和空白。",
+        "evidence": ["05/A/boltons/strutils.py:217-234：不规则词表先处理；224-225 保护 ss；glasses 等 es 规则仍在 230-231。"],
+        "necessary_mechanisms": ["新增 ss guard 直接阻止 glass→glas，且对真实复数先去 es 后再次调用仍稳定；无需词表扩张或额外复制。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的可执行修改相同。",
+        "evidence": ["05/B/boltons/strutils.py:215-232：同样在原不规则规则之后、通用去 s 之前加入 word.endswith('ss')。"],
+        "necessary_mechanisms": ["返回 orig_word 与原早退契约一致；常规复数及不规则映射没有被绕过。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "comparison": "same",
+      "comparison_reason": "差别只在示例和测试组织；未见新增防御层、吞错或契约差异。"
+    },
+    {
+      "pair": "06",
+      "task": "combination_with_replacement_index 区分 None 数据与耗尽",
+      "A": {
+        "judgment": "符合题面；用 enumerate 的索引是否为 None 表示耗尽，不再以数据值 y=None 判断。",
+        "evidence": ["06/A/more_itertools/more.py:4518-4539：空组合先返回；4531-4535 的 k 只可能是整数索引或耗尽默认值；未匹配完成仍由 for/else 抛 ValueError。"],
+        "necessary_mechanisms": ["内层、外层两次 k is None 分别退出 while 和 pool 扫描，各有控制流用途；原 tuple 快照保留以支持一次性输入，并非新增冗余复制。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的生产修改完全相同。",
+        "evidence": ["06/B/more_itertools/more.py:4518-4555：耗尽判定、非法组合错误和后续排名计算均与 A 相同。"],
+        "necessary_mechanisms": ["用 k 替代 tmp 并删除 else 仍会在耗尽时更新状态；没有删除必要校验或新增 None 值过滤。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "comparison": "same",
+      "comparison_reason": "两份生产补丁一致；不同测试枚举范围不能在未运行时作为结果优劣依据。"
+    },
+    {
+      "pair": "07",
+      "task": "style 的 overline/italic 独立启用及关闭",
+      "A": {
+        "judgment": "符合题面；overline 使用自身真假选择 53/55，italic 使用自身真假选择 3/23。",
+        "evidence": ["07/A/src/click/termui.py:600-615：保留 is not None 条件、输出顺序、其他样式及 reset。"],
+        "necessary_mechanisms": ["is not None 区分省略与显式 False，是关闭样式所需的协议；修正的是条件变量与 ANSI 码，不需要额外 guard。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "B": {
+        "judgment": "与 A 的生产代码相同。",
+        "evidence": ["07/B/src/click/termui.py:600-615：相同的 53/55 与 3/23 分支和 reset 路径；584-594 的颜色错误处理也未删除。"],
+        "necessary_mechanisms": ["显式关闭仍生成关闭码，省略参数不生成该样式码；没有引入默认值掩盖错误。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": []
+      },
+      "comparison": "same",
+      "comparison_reason": "运行修复与文档相同；测试组合写法不同，不构成物质性差异。"
+    },
+    {
+      "pair": "08",
+      "task": "OrderedMultiDict 与 URL 查询容器的 addlist 一次性输入",
+      "A": {
+        "judgment": "在文档承诺的 iterable 输入范围内符合题面；一次快照同时用于链表插入与底层 values 列表。",
+        "evidence": [
+          "08/A/boltons/dictutils.py:228-236：先 list(v)，空列表在 setdefault 前退出，再分别更新两种表示。",
+          "08/A/boltons/urlutils.py:1126-1134：嵌入 OMD 同步修复；08/base/boltons/urlutils.py:1552-1561 表明独立使用时保留嵌入类，包内导入时可使用 dictutils 的类。"
+        ],
+        "necessary_mechanisms": ["快照有两次消费 v 的直接路径依据，不能视为无根据 defensive copy；空输入 guard 阻止幽灵键。两处修复覆盖真实导入分支，非无用重复代码。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": ["题面内未发现实质风险；非法非 iterable 假值的共同兼容边界见 shared_boundary，物质性 uncertain。"]
+      },
+      "B": {
+        "judgment": "与 A 的执行逻辑相同，少一条快照说明注释。",
+        "evidence": ["08/B/boltons/dictutils.py:228-235 与 08/B/boltons/urlutils.py:1126-1133：同样只快照一次，并在任何容器修改前完成消费。"],
+        "necessary_mechanisms": ["消费中抛错会在修改状态前传播，避免原链表与值列表半更新；没有新增 catch、默认空值或 retry。"],
+        "redundant_or_unjustified": [],
+        "material_contract_risks": ["题面内未发现实质风险；非法非 iterable 假值的共同兼容边界见 shared_boundary，物质性 uncertain。"]
+      },
+      "shared_boundary": "08/base/boltons/dictutils.py:228-229 与 08/base/boltons/urlutils.py:1126-1127 原先将 None、0、False 等非 iterable 假值静默视为空；两版先 list(v) 后这些输入改为 TypeError。文档明确承诺 iterable（08/base/boltons/dictutils.py:216-226），未见这些非法输入的保证，是否要求兼容 uncertain；这不是两版之间的差异。",
+      "comparison": "same",
+      "comparison_reason": "新增快照及两个现有实现的修复均相同且有当前消费路径依据；未以注释、测试数量或少一行选择优者。"
+    }
+  ]
+}

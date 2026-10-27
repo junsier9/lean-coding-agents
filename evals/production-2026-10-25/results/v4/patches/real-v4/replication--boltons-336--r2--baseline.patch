@@ -1,0 +1,58 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index e46cddc..9dff62b 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -215,6 +215,8 @@ def copy_function(orig, copy_dict=True):
+                        name=orig.__name__,
+                        argdefs=getattr(orig, "__defaults__", None),
+                        closure=getattr(orig, "__closure__", None))
++    if hasattr(orig, "__kwdefaults__"):
++        ret.__kwdefaults__ = orig.__kwdefaults__
+     if copy_dict:
+         ret.__dict__.update(orig.__dict__)
+     return ret
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 634ad7d..62947f4 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -5,10 +5,39 @@ from collections import defaultdict
+ 
+ import pytest
+ 
+-from boltons.funcutils import wraps, FunctionBuilder, update_wrapper
++from boltons.funcutils import copy_function, wraps, FunctionBuilder, update_wrapper
+ import boltons.funcutils as funcutils
+ 
+ 
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_kwonly_defaults(copy_dict):
++    func = lambda x, *, y=2: x * y
++    func_copy = copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy is not func
++    assert func_copy(21) == func(21) == 42
++    assert func_copy(21, y=3) == func(21, y=3) == 63
++    with pytest.raises(TypeError):
++        func_copy(21, 3)
++
++
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_mixed_defaults(copy_dict):
++    default_value = []
++
++    def func(x=21, *, required, y=2, value=default_value, optional=None):
++        return x * y, required, value, optional
++
++    func_copy = copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy(required='present') == func(required='present')
++    assert func_copy(required='present')[2] is default_value
++    assert func_copy(7, required='present', y=6, value='override', optional=0) == (
++        42, 'present', 'override', 0)
++    with pytest.raises(TypeError):
++        func_copy()
++
++
+ def wrappable_varkw_func(a, b, **kw):
+     return a, b
+ 

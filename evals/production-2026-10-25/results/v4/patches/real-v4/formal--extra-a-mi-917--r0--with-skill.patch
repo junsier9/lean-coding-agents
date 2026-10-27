@@ -1,0 +1,130 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index a6573f2..1d2d9f4 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -25,7 +25,7 @@ from itertools import (
+ from math import comb, e, exp, factorial, floor, fsum, log, log1p, perm, tau
+ from queue import Empty, Queue
+ from random import random, randrange, shuffle, uniform
+-from operator import itemgetter, mul, sub, gt, lt, le
++from operator import itemgetter, mul, sub, gt, lt
+ from sys import hexversion, maxsize
+ from time import monotonic
+ 
+@@ -3810,19 +3810,22 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     False
+ 
+     If *strict*, tests for strict sorting, that is, returns ``False`` if equal
+-    elements are found:
++    elements (or equal keys, if *key* is given) are found:
+ 
+     >>> is_sorted([1, 2, 2])
+     True
+     >>> is_sorted([1, 2, 2], strict=True)
+     False
+ 
++    Ordering is determined using ``<`` comparisons. In strict mode, equality
++    is checked as well.
++
+     The function returns ``False`` after encountering the first out-of-order
+     item, which means it may produce results that differ from the built-in
+     :func:`sorted` function for objects with unusual comparison dynamics.
+     If there are no out-of-order items, the iterable is exhausted.
+     """
+-    compare = le if strict else lt
++    compare = (lambda a, b: a < b or a == b) if strict else lt
+     it = iterable if (key is None) else map(key, iterable)
+     it_1, it_2 = tee(it)
+     next(it_2 if reverse else it_1, None)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b25343f..8602dfb 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4394,6 +4394,87 @@ class IsSortedTests(TestCase):
+                 self.assertEqual(mi_result, expected)
+                 self.assertEqual(mi_result, py_result)
+ 
++    def test_lt_only(self):
++        class LtOnly:
++            def __init__(self, value):
++                self.value = value
++
++            def __lt__(self, other):
++                return self.value < other.value
++
++        items = [LtOnly(value) for value in range(3)]
++        for values in ([], [0], [0, 1, 2], [2, 1, 0], [0, 2, 1], [0, 0, 1]):
++            for reverse, strict, use_key in product((False, True), repeat=3):
++                with self.subTest(
++                    values=values,
++                    reverse=reverse,
++                    strict=strict,
++                    use_key=use_key,
++                ):
++                    if use_key:
++                        iterable = iter(values)
++                        key = items.__getitem__
++                    else:
++                        iterable = (items[value] for value in values)
++                        key = None
++                    expected = values == sorted(values, reverse=reverse)
++                    if strict:
++                        expected = expected and len(values) == len(set(values))
++                    self.assertEqual(
++                        mi.is_sorted(
++                            iterable, key=key, reverse=reverse, strict=strict
++                        ),
++                        expected,
++                    )
++
++    def test_equal_keys(self):
++        for reverse, strict in product((False, True), repeat=2):
++            values = [1, -1, 2]
++            if reverse:
++                values.reverse()
++            with self.subTest(reverse=reverse, strict=strict):
++                self.assertEqual(
++                    mi.is_sorted(
++                        values, key=abs, reverse=reverse, strict=strict
++                    ),
++                    not strict,
++                )
++
++    def test_short_circuit(self):
++        for reverse, strict in product((False, True), repeat=2):
++
++            def values():
++                yield from ([0, 1] if reverse else [1, 0])
++                self.fail('consumed past the first out-of-order item')
++
++            with self.subTest(reverse=reverse, strict=strict):
++                self.assertFalse(
++                    mi.is_sorted(values(), reverse=reverse, strict=strict)
++                )
++
++    def test_comparison_error(self):
++        class BrokenOrder:
++            def __lt__(self, other):
++                raise RuntimeError('comparison failed')
++
++        for reverse, strict in product((False, True), repeat=2):
++            with self.subTest(reverse=reverse, strict=strict):
++                with self.assertRaisesRegex(RuntimeError, 'comparison failed'):
++                    mi.is_sorted(
++                        [BrokenOrder(), BrokenOrder()],
++                        reverse=reverse,
++                        strict=strict,
++                    )
++
++    def test_key_error(self):
++        def key(value):
++            raise ValueError('key failed')
++
++        for reverse, strict in product((False, True), repeat=2):
++            with self.subTest(reverse=reverse, strict=strict):
++                with self.assertRaisesRegex(ValueError, 'key failed'):
++                    mi.is_sorted([1, 2], key=key, reverse=reverse, strict=strict)
++
+ 
+ class CallbackIterTests(TestCase):
+     def _target(self, cb=None, exc=None, wait=0):

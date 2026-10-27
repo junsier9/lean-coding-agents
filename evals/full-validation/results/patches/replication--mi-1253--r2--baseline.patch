@@ -1,0 +1,100 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index eec094f..9af3065 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1618,7 +1618,9 @@ def split_before(iterable, pred, maxsplit=-1):
+         [[0, 1, 2], [3, 4, 5], [6, 7, 8, 9]]
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     buf = []
+@@ -1654,7 +1656,9 @@ def split_after(iterable, pred, maxsplit=-1):
+ 
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     buf = []
+@@ -1694,7 +1698,9 @@ def split_when(iterable, pred, maxsplit=-1):
+ 
+     """
+     if maxsplit == 0:
+-        yield list(iterable)
++        buf = list(iterable)
++        if buf:
++            yield buf
+         return
+ 
+     it = iter(iterable)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index dc7bf7b..88a4a47 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1745,6 +1745,58 @@ class SplitWhenTests(TestCase):
+             self.assertEqual(actual, expected, str(args))
+ 
+ 
++class SplitEdgeCaseTests(TestCase):
++    splitters = (mi.split_before, mi.split_after, mi.split_when)
++
++    def test_empty_iterables(self):
++        for splitter in self.splitters:
++            for maxsplit in (-2, -1, 0, 1, 2):
++                for iterable in ([], (), '', iter(()), (x for x in ())):
++                    with self.subTest(
++                        splitter=splitter.__name__,
++                        maxsplit=maxsplit,
++                        iterable=type(iterable).__name__,
++                    ):
++                        pred = mock.Mock(side_effect=AssertionError)
++                        actual = list(splitter(iterable, pred, maxsplit))
++                        self.assertEqual(actual, [])
++                        pred.assert_not_called()
++
++    def test_maxsplit_zero(self):
++        for splitter in self.splitters:
++            for values in ([None], [False], [0], [1, 2, 3]):
++                with self.subTest(splitter=splitter.__name__, values=values):
++                    consumed = []
++
++                    def source():
++                        for item in values:
++                            consumed.append(item)
++                            yield item
++
++                    pred = mock.Mock(side_effect=AssertionError)
++                    result = splitter(source(), pred, maxsplit=0)
++                    self.assertEqual(consumed, [])
++                    self.assertEqual(list(result), [values])
++                    self.assertEqual(consumed, values)
++                    pred.assert_not_called()
++
++    def test_split_at_empty_iterable(self):
++        for maxsplit in (-2, -1, 0, 1, 2):
++            for keep_separator in (False, True):
++                with self.subTest(
++                    maxsplit=maxsplit, keep_separator=keep_separator
++                ):
++                    actual = list(
++                        mi.split_at(
++                            iter(''),
++                            lambda c: c == ',',
++                            maxsplit=maxsplit,
++                            keep_separator=keep_separator,
++                        )
++                    )
++                    self.assertEqual(actual, [[]])
++
++
+ class SplitIntoTests(TestCase):
+     """Tests for ``split_into()``"""
+ 

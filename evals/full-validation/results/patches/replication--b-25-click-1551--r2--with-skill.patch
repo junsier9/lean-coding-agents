@@ -1,0 +1,131 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 4b70796..27801fe 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,9 @@ Version 8.0
+ 
+ Unreleased
+ 
++-   An empty or ``None`` ``options_metavar`` hides the options placeholder
++    without adding extra spaces or breaking usage formatting. Commands
++    without arguments still show their usage line.
+ -   Drop support for Python 2 and 3.5.
+ -   Adds a repr to Command, showing the command name for friendlier
+     debugging. :issue:`1267`, :pr:`1295`
+diff --git a/docs/documentation.rst b/docs/documentation.rst
+index 181c5b3..8167261 100644
+--- a/docs/documentation.rst
++++ b/docs/documentation.rst
+@@ -181,6 +181,10 @@ Example:
+ 
+     invoke(hello, args=['--help'])
+ 
++Set ``options_metavar`` to an empty string or ``None`` to hide the options
++placeholder in the usage line. Arguments and the options help section are
++still shown.
++
+ 
+ Command Short Help
+ ------------------
+diff --git a/src/click/core.py b/src/click/core.py
+index 403a282..c4bca71 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1033,7 +1033,8 @@ class Command(BaseCommand):
+     .. versionchanged:: 2.0
+        Added the `context_settings` parameter.
+     .. versionchanged:: 8.0
+-       Added repr showing the command name
++       Added repr showing the command name.
++       Empty or ``None`` ``options_metavar`` hides the options placeholder.
+     .. versionchanged:: 7.1
+        Added the `no_args_is_help` parameter.
+ 
+@@ -1048,6 +1049,8 @@ class Command(BaseCommand):
+                    help page after everything else.
+     :param short_help: the short help to use for this command.  This is
+                        shown on the command listing of the parent command.
++    :param options_metavar: the placeholder for options in the usage line.
++                           Set to an empty string or ``None`` to hide it.
+     :param add_help_option: by default each command registers a ``--help``
+                             option.  This can be disabled by this parameter.
+     :param no_args_is_help: this controls what happens if no arguments are
+@@ -1139,7 +1142,9 @@ class Command(BaseCommand):
+         """Returns all the pieces that go into the usage line and returns
+         it as a list of strings.
+         """
+-        rv = [self.options_metavar]
++        rv = []
++        if self.options_metavar:
++            rv.append(self.options_metavar)
+         for param in self.get_params(ctx):
+             rv.extend(param.get_usage_pieces(ctx))
+         return rv
+diff --git a/src/click/formatting.py b/src/click/formatting.py
+index a298c2e..aec326e 100644
+--- a/src/click/formatting.py
++++ b/src/click/formatting.py
+@@ -137,7 +137,9 @@ class HelpFormatter:
+         usage_prefix = f"{prefix:>{self.current_indent}}{prog} "
+         text_width = self.width - self.current_indent
+ 
+-        if text_width >= (term_len(usage_prefix) + 20):
++        if not args:
++            self.write(usage_prefix.rstrip())
++        elif text_width >= (term_len(usage_prefix) + 20):
+             # The arguments will fit to the right of the prefix.
+             indent = " " * term_len(usage_prefix)
+             self.write(
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 407f0aa..b2de6ef 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -162,6 +164,42 @@ def test_formatting_usage_error(runner):
+     ]
+ 
+ 
++@pytest.mark.parametrize("options_metavar", ["", None])
++@pytest.mark.parametrize("args, exit_code", [(["--help"], 0), ([], 2)])
++def test_formatting_usage_without_options_metavar(
++    runner, options_metavar, args, exit_code
++):
++    @click.command(options_metavar=options_metavar)
++    @click.argument("arg")
++    def cli(arg):
++        pass
++
++    result = runner.invoke(cli, args)
++    assert result.exit_code == exit_code
++    assert result.output.splitlines()[0] == "Usage: cli ARG"
++    if exit_code == 2:
++        assert result.output.splitlines()[-1] == "Error: Missing argument 'ARG'."
++
++
++@pytest.mark.parametrize("options_metavar", ["", None])
++@pytest.mark.parametrize("terminal_width", [30, 80])
++def test_formatting_usage_without_options_metavar_no_arguments(
++    runner, options_metavar, terminal_width
++):
++    @click.command(options_metavar=options_metavar)
++    def cli():
++        pass
++
++    result = runner.invoke(cli, ["--help"], terminal_width=terminal_width)
++    assert result.exit_code == 0
++    assert result.output.splitlines()[:3] == [
++        "Usage: cli",
++        "",
++        "Options:",
++    ]
++    assert "  --help  Show this message" in result.output
++
++
+ def test_formatting_usage_error_metavar_missing_arg(runner):
+     """
+     :author: @r-m-n

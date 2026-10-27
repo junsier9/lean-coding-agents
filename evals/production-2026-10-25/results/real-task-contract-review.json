@@ -1,0 +1,1982 @@
+{
+  "review_id": "production-oracle-blind-contract-review-2026-10-25",
+  "language": "zh-CN",
+  "packet": ".local/production-oracle/tasks.json",
+  "purpose": "逐题识别隐藏验收相对于题面及 base 公开契约的解释限制；不用于删题、改分或提高主分析通过率。",
+  "method": {
+    "outcome_blind": true,
+    "inputs_used": [
+      "packet 中的题面、源码位置和 guard 路径",
+      "base 中相关可见生产源码、文档、既有测试及项目指令",
+      "fix 中相关新增或修改的 guard 测试"
+    ],
+    "inputs_excluded": [
+      "solver 工作区与运行日志",
+      "records、成绩、分组和成本",
+      "候选 SKILL",
+      "固定参考解的生产实现"
+    ],
+    "actions": [
+      "静态阅读与 base/fix 测试差异对照",
+      "为证据记录文件行号及文件 SHA256"
+    ],
+    "native_model_calls": 0,
+    "network_calls": 0,
+    "source_or_score_changes": false,
+    "status_definitions": {
+      "adequate": "本次审查涉及的新增验收由题面或已有可见契约支持；不表示证明全部测试完美。",
+      "underspecified": "核心修复要求明确，但至少一个新增断言要求了未明确承诺的边界政策、文字或实现细节。",
+      "inconsistent": "至少一个新增断言与所引的可见契约有直接张力或冲突；其余核心验收可以仍有依据。",
+      "unresolved": "现有证据不足，未能完成契约归属判断。"
+    }
+  },
+  "limitations": [
+    "这是独立静态契约审查，没有读取候选实现或成绩，因此不能判断这些限制是否实际导致了任何一次失败，也不能据此归因 skill 效果。",
+    "packet 自带的实验标签未用于分组或判断；报告不携带 phase 或任何效果数据。",
+    "逐题审查相关新增 guard 及其 base 接口证据，不是对整个项目全部既有测试和公开文档的穷尽证明。",
+    "现有兼容性行为可由 base 源码、文档和既有测试共同支持；未在简短题面重述，不自动构成契约缺口。",
+    "发现的替代实现只作为契约不唯一的逻辑例子，未运行模型、修改任务或尝试调优解法。",
+    "adequate 判断只覆盖下列明确列出的范围。underspecified 或 inconsistent 也不等于整题不可用。",
+    "不重新执行固定参考解、不验证实验计时、依赖环境或全部旧测试；这些属于不同的有效性检查。",
+    "报告在实验冻结后生成，只支持解释限制与未来题目审查改进，不改变正在运行的冻结实验。"
+  ],
+  "reviews": [
+    {
+      "id": "extra-a-boltons-437",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "Bits 显式宽度的最大值、溢出边界及省略宽度行为。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "boltons/mathutils.py",
+          "lines": [
+            140,
+            167
+          ],
+          "note": "构造器已有宽度检查、ValueError 及同一诊断文字；边界比较漏掉恰好 2**len_。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-437\\base\\boltons\\mathutils.py",
+          "file_sha256": "298f80d272dd69510a3c6ed50e6ad76f28ac5e9f92aec0aab81322f7c88369a4"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_mathutils.py",
+          "lines": [
+            115,
+            124
+          ],
+          "note": "新增接受 Bits(3, 2)，拒绝 Bits(4, 2) 和 Bits(1, 0)；没有引入不同接口。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-437\\fix\\tests\\test_mathutils.py",
+          "file_sha256": "fbf22ea607aee4d54be679457f166ef243e0a1a13bfde1f4c52bf6fcec05e77f"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "36537ce94519abb7abd390fba0f1fe49b8d01015ce8be8466d753f3ef2345876",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-437\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-437\\fix",
+      "guard_paths": [
+        "tests/test_mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ]
+    },
+    {
+      "id": "extra-a-boltons-475",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "Unicode 行分隔、普通日期片段、首尾空行及 indent 输出。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "boltons/strutils.py",
+          "lines": [
+            669,
+            714
+          ],
+          "note": "iter_splitlines 文档示例保留边界空行；indent 约定默认换行为换行符且空行不缩进。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-475\\base\\boltons\\strutils.py",
+          "file_sha256": "942cf2e33492fa6eb48508d74cd96cf2545dec50c26a2ab361bbf81507317943"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_strutils.py",
+          "lines": [
+            55,
+            72
+          ],
+          "note": "新增 U+2028/U+2029 分行、日期不误拆以及缩进组合情形，均对应题面。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-475\\fix\\tests\\test_strutils.py",
+          "file_sha256": "573eddf6ae1d3e9c1b659ae3c2fda619fe5feaa1ff1611d39298c54ff3ca74ef"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "07bc24376fef485fff0df948314cc041d95f12ce78fd94ed62b025a28cf29b60",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-475\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-475\\fix",
+      "guard_paths": [
+        "tests/test_strutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strutils.py"
+      ]
+    },
+    {
+      "id": "extra-a-mi-1223",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "chunked 负大小异常、零大小、None 和 strict 兼容性。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "more_itertools/more.py",
+          "lines": [
+            214,
+            246
+          ],
+          "note": "公开 chunked 定义与现有 strict 分支体现既有接口；负值是本题新增明确校验。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1223\\base\\more_itertools\\more.py",
+          "file_sha256": "827609e371810d962a4284ee25269d204f50e2b3d35f4c8133207bc45a7d83df"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_more.py",
+          "lines": [
+            73,
+            80
+          ],
+          "note": "负值要求 ValueError 和 n must be at least 0；题面已明确给出该异常及文字。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1223\\fix\\tests\\test_more.py",
+          "file_sha256": "9f6f983edc05270656495964cab5031305a418008877f38e5ea7b9ca76a6b138"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "3f1a234c9872b7a5854cf3df1d1543cf56b61d96e35fed14e01a3a6985784b56",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1223\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1223\\fix",
+      "guard_paths": [
+        "tests/test_more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ]
+    },
+    {
+      "id": "extra-a-mi-944",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "sample 的 counts/weights/strict 分支及互斥参数。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "more_itertools/more.py",
+          "lines": [
+            3671,
+            3798
+          ],
+          "note": "weighted strict 已用 ValueError；sample 文档承诺 strict 不足时失败，counts 与 weights 的 TypeError 互斥已存在。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-944\\base\\more_itertools\\more.py",
+          "file_sha256": "daf4ffc89d1ebafdb47a1ed1376ce017c281547130f456e6821a5e74eabad1df"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_more.py",
+          "lines": [
+            4324,
+            4338
+          ],
+          "note": "新增 counted 严格不足、weighted 严格不足及互斥异常，未把内部抽样实现作为要求。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-944\\fix\\tests\\test_more.py",
+          "file_sha256": "fcad276607359aee04377fe60859de522effee4a1852c92c3e1799b1529828f7"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "2870e6914113972f23f10d7ed0629788c9d7aac695619b13980a11a227eada8b",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-944\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-944\\fix",
+      "guard_paths": [
+        "tests/test_more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ]
+    },
+    {
+      "id": "extra-a2-click-3805",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "Sentinel 复制、深复制、pickle 单例以及 Option 的 UNSET 默认值和名称。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/click/_utils.py",
+          "lines": [
+            7,
+            19
+          ],
+          "note": "Sentinel 是具名 Enum 哨兵，公开用途依赖成员身份。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3805\\base\\src\\click\\_utils.py",
+          "file_sha256": "782642b7026db180f941892435627c318ffc001223cbc31cce030cc95637dab4"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_utils/test_sentinel.py",
+          "lines": [
+            61,
+            97
+          ],
+          "note": "复制往返保持各哨兵身份及 Option 原有属性，均为题面要求。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3805\\fix\\tests\\test_utils\\test_sentinel.py",
+          "file_sha256": "7d37d0d6341d70972ad09d4178a3fd92f28de40e0ccd573230daaed2b6f31599"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "f6667e6c7c30d2a57ef4e22b1ddb1d41cc3bbffcd0395285dc28bc34c4d7a45a",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3805\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3805\\fix",
+      "guard_paths": [
+        "tests/test_utils/test_sentinel.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils/test_sentinel.py"
+      ]
+    },
+    {
+      "id": "extra-a3-funcy-178",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "once_per/once_per_args 对不可哈希值按相等性去重、重复调用返回行为。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "funcy/flow.py",
+          "lines": [
+            210,
+            239
+          ],
+          "note": "已有实现分开维护集合和列表，包装器重复值不返回原结果；以参数值决定首次执行的契约明确。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-178\\base\\funcy\\flow.py",
+          "file_sha256": "b233dbee9ee50591dac9c0e1ff9874b8e98dbb805293fcdfe5e6b863d0e7914a"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_flow.py",
+          "lines": [
+            244,
+            258
+          ],
+          "note": "覆盖 list/dict/set/含 list 的 tuple 相等值，重复时 None 与原接口一致。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-178\\fix\\tests\\test_flow.py",
+          "file_sha256": "2640e1a685a9b675fecdd38fab41f3ec03e67281ed536cfdad44a25102479f22"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "cd4b1adbfca343f0a65b05b0a4c55ad389dce5f27a3261472bd4e0141ede901f",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-178\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-178\\fix",
+      "guard_paths": [
+        "tests/test_flow.py"
+      ],
+      "regression_test_files": [
+        "tests/test_flow.py"
+      ]
+    },
+    {
+      "id": "extra-a3-funcy-190",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "lookup 初始化失败后的重试、部分数据清理及成功空初始化只执行一次。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "funcy/calc.py",
+          "lines": [
+            110,
+            145
+          ],
+          "note": "make_lookuper/silent_lookuper 承诺首次构建后复用；缺键分别抛 LookupError 或返回 None，初始化哨兵与更新在现有实现中分离。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-190\\base\\funcy\\calc.py",
+          "file_sha256": "db4bd7d98919f07b08e8c9f915b4a5a61fe089efd9e00a66df14d03f10b87054"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_calc.py",
+          "lines": [
+            148,
+            190
+          ],
+          "note": "ValueError、KeyboardInterrupt 的失败都不能留下已初始化状态或部分结果；成功空结果不重建，符合失败重试及中断清理的要求。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-190\\fix\\tests\\test_calc.py",
+          "file_sha256": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "7c8c623a4a3111e5add9eff426f83761b518b79dcf2c45e8d70e320e1763f8f5",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-190\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-190\\fix",
+      "guard_paths": [
+        "tests/test_calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ]
+    },
+    {
+      "id": "extra-a3-funcy-93",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "cache.invalidate 幂等、重算以及 invalidate_all。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "funcy/calc.py",
+          "lines": [
+            100,
+            134
+          ],
+          "note": "缓存失效 API 已存在，缺键时 pop 无默认值是所述问题；其余包装器行为公开可见。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-93\\base\\funcy\\calc.py",
+          "file_sha256": "0911369fb499a88acd335af632d5fdf57268254a41ce1043f8b67c89ee91ec13"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_calc.py",
+          "lines": [
+            149,
+            176
+          ],
+          "note": "缺键和重复失效不抛错，随后重新计算以及整体清除对应题面，没有附加私有状态断言。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-93\\fix\\tests\\test_calc.py",
+          "file_sha256": "675cfe3534d69bb08c48037999e5b32bd021b8bf2e0fcf0945d49c192cf183ca"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "8b62151144c9a63592d7edd5a8f644bcac705eab4fcbc74cff4e7f997bfc7512",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-93\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-93\\fix",
+      "guard_paths": [
+        "tests/test_calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ]
+    },
+    {
+      "id": "extra-a3-toolz-603",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "partition_all 对错误 __len__ 的明确失败以及正常序列/迭代器。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "toolz/itertoolz.py",
+          "lines": [
+            708,
+            750
+          ],
+          "note": "正常分组接口及序列长度优化可见；错误长度导致静默错误是题面指定修复。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-603\\base\\toolz\\itertoolz.py",
+          "file_sha256": "c67632e16d243e9d2020fe1b2db25176f7f164cade484b70352c54d28ac18e66"
+        },
+        {
+          "side": "fix",
+          "file": "toolz/tests/test_itertoolz.py",
+          "lines": [
+            358,
+            370
+          ],
+          "note": "错误长度正负偏差要求 LookupError；这一异常类别已在题面明示。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-603\\fix\\toolz\\tests\\test_itertoolz.py",
+          "file_sha256": "12bce5c50eb4e0b18bd9476d4cf4d62b69e9fcaf4e63c9bf03a594b8f48b299d"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "722b0ec7a53e61db205cb0b4bd1ba768f0ea735393c75ad52823e5b2a6a2b925",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-603\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-603\\fix",
+      "guard_paths": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ]
+    },
+    {
+      "id": "extra-a3-toolz-635",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "interpose 空输入的可迭代空结果。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "toolz/itertoolz.py",
+          "lines": [
+            520,
+            528
+          ],
+          "note": "定义是在相邻项间插入；首个 next 对空输入抛异常是现有问题。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-635\\base\\toolz\\itertoolz.py",
+          "file_sha256": "648edb0b45df62329a7745d87844de649447046b846819291e6cb3fd7cc8f0da"
+        },
+        {
+          "side": "fix",
+          "file": "toolz/tests/test_itertoolz.py",
+          "lines": [
+            259,
+            260
+          ],
+          "note": "只要求空输入得到空输出，没有额外执行机制限制。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-635\\fix\\toolz\\tests\\test_itertoolz.py",
+          "file_sha256": "08f9e2a205946918e053da0815a86abdca76863b6212a0a7e033c6174130e0b6"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "46c90aeaa8bc90deaf98c401598bfb38e81078ac3ae7b36e029669e75648a2a2",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-635\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-toolz-635\\fix",
+      "guard_paths": [
+        "toolz/tests/test_itertoolz.py"
+      ],
+      "regression_test_files": [
+        "toolz/tests/test_itertoolz.py"
+      ]
+    },
+    {
+      "id": "mi-1200",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "sliced 负值校验、零值及 strict 兼容性。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "more_itertools/more.py",
+          "lines": [
+            1517,
+            1548
+          ],
+          "note": "sliced 文档及 strict ValueError 已有，负大小清楚失败是题面要求。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\mi-1200\\base\\more_itertools\\more.py",
+          "file_sha256": "604b30ea3da8c8eab45037a5a9673502aceaf2935d6ba36e008f645705d07ece"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_more.py",
+          "lines": [
+            1410,
+            1417
+          ],
+          "note": "负值只要求 ValueError，没有偷偷限定错误消息。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\mi-1200\\fix\\tests\\test_more.py",
+          "file_sha256": "93b52a0827e7149f45927868867b1eb3a9c5d9fd5cdae372327066a4d37b91ae"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "c6760c68385e77f2bf1d744f726d6f7438e3c95c2630481f093b3e42c815f5ac",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\mi-1200\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\mi-1200\\fix",
+      "guard_paths": [
+        "tests/test_more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ]
+    },
+    {
+      "id": "xb-013-click-3079",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "共享存储名称的 flag 默认值、装饰器顺序以及显式参数优先级。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            2245,
+            2276
+          ],
+          "note": "get_default 定义了查找默认值的既有入口；多个共享名称选项竞争是题面明确场景。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-013-click-3079\\base\\src\\click\\core.py",
+          "file_sha256": "5e214de83e8c69349f93a8cd1fc1ce9a2c2c9b3fd5ca11988700c2fa47219cdb"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_defaults.py",
+          "lines": [
+            89,
+            112
+          ],
+          "note": "交换 red/green 装饰器次序后结果一致，显式选项覆盖默认值，不依赖固定参考实现。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-013-click-3079\\fix\\tests\\test_defaults.py",
+          "file_sha256": "3f360c3422a4b7712eb698ff60cdffc2a0a40fa1748a2e264afe01f231686589"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "09b10382e4a496ddf5e0aca8858677a96665b0b1f57bd0f4d2feef6cd3abdde7",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-013-click-3079\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-013-click-3079\\fix",
+      "guard_paths": [
+        "tests/test_defaults.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py"
+      ]
+    },
+    {
+      "id": "xb-034-pydash-263",
+      "status": "inconsistent",
+      "confidence": "high",
+      "scope": "truncate 小于省略标记和非正长度、各 separator 形式。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pydash/strings.py",
+          "lines": [
+            2020,
+            2076
+          ],
+          "note": "文档将 length 描述为 maximum string length；实现通过 length-len(omission) 切片，导致边界错误。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-034-pydash-263\\base\\src\\pydash\\strings.py",
+          "file_sha256": "2e7c284dbdebe78fef54cc413d72817e68d06bb66667c4be7796cbefcdd3504b"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_strings.py",
+          "lines": [
+            1095,
+            1098
+          ],
+          "note": "新断言对长度 -1、0、1、2、3 均要求完整三字符省略标记 ...，覆盖不同 separator。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-034-pydash-263\\fix\\tests\\test_strings.py",
+          "file_sha256": "3d7e2ba4fee35784b81bb068f447441a6b906bd659d043114b79aab59a4eb247"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "boundary_policy_conflicts_with_literal_maximum",
+          "requirement": "length 为 0、1、2 时仍返回完整的三字符省略标记。",
+          "gap": "题面要求正确处理很小或非正长度，但未宣布省略标记可以超过最大长度；base 的 maximum string length 描述与这些断言有直接张力。",
+          "supported_core": "避免负切片保留大段正文，以及不同 separator 的一致行为。",
+          "alternative_allowed_by_visible_contract": "对非负长度遵守最大长度并截短省略标记，或长度 0 返回空串，具有可见文档依据，却会被这些新断言拒绝。",
+          "interpretation_limit": "这是边界输出政策冲突，不表示正常长度和 separator 的验收没有依据。"
+        }
+      ],
+      "task_sha256": "851f67e0764f0f318ef850a58cc54f62be0a840f266f2016301877bd6a5a8bd3",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-034-pydash-263\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-034-pydash-263\\fix",
+      "guard_paths": [
+        "tests/test_strings.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strings.py"
+      ]
+    },
+    {
+      "id": "xb-041-pydash-253",
+      "status": "adequate",
+      "confidence": "medium",
+      "scope": "pull_at 越界和重复下标对原列表内容及返回值的影响。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pydash/arrays.py",
+          "lines": [
+            1330,
+            1356
+          ],
+          "note": "首句称返回移除元素，但 Returns、示例和实际 return 都是修改后的列表；本次以三者一致的既有行为解释返回值。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-041-pydash-253\\base\\src\\pydash\\arrays.py",
+          "file_sha256": "1c519fa9f1ef99508dc7387f3e3f8a479aa9f1a0c9c005dee4f2be5a91f8390d"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_arrays.py",
+          "lines": [
+            483,
+            485
+          ],
+          "note": "新增空列表、越界及重复下标情形，只要求安全并保留正确列表内容。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-041-pydash-253\\fix\\tests\\test_arrays.py",
+          "file_sha256": "41e2b121d668f728cd79594d76e6d1af9aa73b9d7b6ca32d3fa3128f49609e2a"
+        }
+      ],
+      "findings": [],
+      "scope_note": "base 原有一句文档与其 Returns/示例/实现不一致；新增 guard 沿用已有返回列表行为，没有发现额外的新窄接口。",
+      "task_sha256": "d15ed53360554356f38a1e950068ac165bf820bb2dd618fc7dce600f5adc50da",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-041-pydash-253\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-041-pydash-253\\fix",
+      "guard_paths": [
+        "tests/test_arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ]
+    },
+    {
+      "id": "xb-051-pluggy-731",
+      "status": "underspecified",
+      "confidence": "high",
+      "scope": "register(None) 的拒绝、注册表一致性及新增异常类别和消息。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pluggy/_manager.py",
+          "lines": [
+            186,
+            198
+          ],
+          "note": "register 文档描述返回名称、封禁返回 None 和重复注册的 ValueError；没有为 None 插件规定异常类别或消息。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-051-pluggy-731\\base\\src\\pluggy\\_manager.py",
+          "file_sha256": "b6a11dbc73e2c51b4adc7b7e73a7093126cc0f933fb0f04be7c27ce73664510e"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_pluginmanager.py",
+          "lines": [
+            32,
+            37
+          ],
+          "note": "新增要求 TypeError 并匹配 plugin must not be None。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-051-pluggy-731\\fix\\testing\\test_pluginmanager.py",
+          "file_sha256": "0763ec7c41df50860007cdabc46f5ffe16981fae08e02cef5a0ea8c7cc6ca3e3"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "new_exact_exception_policy",
+          "requirement": "拒绝 None 必须使用 TypeError，且消息含 plugin must not be None。",
+          "gap": "题面只要求拒绝无效插件且保持注册表正常；base 对该输入是待修缺陷，没有既有异常文字或类别可继承。项目指令也未规定此文字。",
+          "supported_core": "不能把 None 插入有效插件集合，失败后注册表保持一致。",
+          "alternative_allowed_by_visible_contract": "明确的 ValueError 或不同清楚文字的 TypeError，若在写入前拒绝 None，也能满足题面核心要求。"
+        }
+      ],
+      "task_sha256": "df8dbd4a87138e618ecc4497503cb1f7268f0b2704926682682d03371319cc67",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-051-pluggy-731\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-051-pluggy-731\\fix",
+      "guard_paths": [
+        "testing/test_pluginmanager.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py"
+      ]
+    },
+    {
+      "id": "xb-053-pluggy-646",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "get_hookcallers 去重及 unregister 移除 specname 的全部实现。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pluggy/_manager.py",
+          "lines": [
+            201,
+            231
+          ],
+          "note": "unregister 承诺移除全部实现；同一 hook 的多个实现不应妨碍完整卸载。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-053-pluggy-646\\base\\src\\pluggy\\_manager.py",
+          "file_sha256": "a9ef4101deb9fc3b9fa574613621a5bc5be2f374c92137142704a22180ae7104"
+        },
+        {
+          "side": "base",
+          "file": "src/pluggy/_manager.py",
+          "lines": [
+            434,
+            448
+          ],
+          "note": "get_hookcallers 逐实现追加导致重复，是题面直接修复对象。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-053-pluggy-646\\base\\src\\pluggy\\_manager.py",
+          "file_sha256": "a9ef4101deb9fc3b9fa574613621a5bc5be2f374c92137142704a22180ae7104"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_pluginmanager.py",
+          "lines": [
+            819,
+            889
+          ],
+          "note": "验证所有实现都卸载及唯一 hook 集；唯一性使用集合，不偷偷限定排序。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-053-pluggy-646\\fix\\testing\\test_pluginmanager.py",
+          "file_sha256": "16ea97fd1f324a77f08f2fd8b1781d5a8b522778420f09f6191518656e5138fe"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "f415e49934381c48a4186447198d622c9447ab16db30e13e5e92ad4d10cd6b43",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-053-pluggy-646\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-053-pluggy-646\\fix",
+      "guard_paths": [
+        "testing/test_pluginmanager.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py"
+      ]
+    },
+    {
+      "id": "xb-059-cachetools-436",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "cachedmethod 通过类显式传实例、绑定调用、每实例缓存/统计以及既有 __wrapped__。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/cachetools/_cachedmethod.py",
+          "lines": [
+            32,
+            43
+          ],
+          "note": "已有包装器通过 functools.update_wrapper 暴露原函数；底层原函数身份不是新设的任意机制。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\base\\src\\cachetools\\_cachedmethod.py",
+          "file_sha256": "d02cd5a8c33e8b244f78c6ce26580dbfb89ed521fb25b637d5cec6070e390ce0"
+        },
+        {
+          "side": "base",
+          "file": "docs/index.rst",
+          "lines": [
+            409,
+            411
+          ],
+          "note": "公开文档允许用 __wrapped__ 内省或绕过缓存。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\base\\docs\\index.rst",
+          "file_sha256": "3158547980de18c94a5dabcad2b2f94753d759cb8cff10104cccde51e5edab47"
+        },
+        {
+          "side": "base",
+          "file": "docs/index.rst",
+          "lines": [
+            530,
+            560
+          ],
+          "note": "cachedmethod 的实例接收者及独立缓存/统计约定可见。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\base\\docs\\index.rst",
+          "file_sha256": "3158547980de18c94a5dabcad2b2f94753d759cb8cff10104cccde51e5edab47"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_cachedmethod.py",
+          "lines": [
+            687,
+            728
+          ],
+          "note": "类调用、self=、实例隔离及 __wrapped__ 绕过均对应既有 API 和题面。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\fix\\tests\\test_cachedmethod.py",
+          "file_sha256": "6aa279f273afcb7690af1bc18711263efb298783e688e5bb1f9db299aacd6b8d"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "3fd3c798e0096ad8178f608ea51fbd9ba993d32118621ea0f6d19fd961cafb44",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-059-cachetools-436\\fix",
+      "guard_paths": [
+        "tests/test_cachedmethod.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ]
+    },
+    {
+      "id": "xb-060-cachetools-424",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "RRCache 空缓存上不同 choice 回调的映射异常接口及非空行为。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/cachetools/__init__.py",
+          "lines": [
+            330,
+            366
+          ],
+          "note": "popitem 已将默认 choice 的空序列异常转换为 KeyError，题面要求自定义 choice 也保持缓存映射接口。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-060-cachetools-424\\base\\src\\cachetools\\__init__.py",
+          "file_sha256": "781ff2e0822a774dcfe18ccc6b0a4752ec7c4771ee1cd27b18f8136b3d88712a"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_rr.py",
+          "lines": [
+            90,
+            103
+          ],
+          "note": "min/max/next 对空缓存统一 KeyError，非空正常；没有要求回调某种固定内部写法。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-060-cachetools-424\\fix\\tests\\test_rr.py",
+          "file_sha256": "995ee7555ebe96c8b4f988c23a8923de980b5f0c42ca073906988e28dd773ec2"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "e361378757c13a7a613434831b942e25ae74b749e580a79aa82b27963fb2d84c",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-060-cachetools-424\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-060-cachetools-424\\fix",
+      "guard_paths": [
+        "tests/test_rr.py"
+      ],
+      "regression_test_files": [
+        "tests/test_rr.py"
+      ]
+    },
+    {
+      "id": "xb-068-w3lib-272",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "IPv6 URL canonicalization、查询参数、片段及 keep_fragments 开关。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "w3lib/url.py",
+          "lines": [
+            616,
+            645
+          ],
+          "note": "canonicalize_url 明确承诺安全 URL、排序 query，以及按 keep_fragments 去除或保留 fragment。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-068-w3lib-272\\base\\w3lib\\url.py",
+          "file_sha256": "41c6f49b8fe60de2660c1c45ab56ca59bdc008e8f669e85b4261ee6dd5e655ab"
+        },
+        {
+          "side": "base",
+          "file": "w3lib/_url.py",
+          "lines": [
+            630,
+            712
+          ],
+          "note": "底层 parser 的 host/query/fragment 切分是相关可见生产者接口；审查没有读取 fix 的 parser 解法。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-068-w3lib-272\\base\\w3lib\\_url.py",
+          "file_sha256": "2d6ce025ecd22095216136bcee292c5af0e46066a8447c0924f4fdffb8df3464"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_url.py",
+          "lines": [
+            1435,
+            1442
+          ],
+          "note": "新增 IPv6 URL 在有无片段两种选项下的普通输出，属于明确题面和既有 canonicalization 契约。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-068-w3lib-272\\fix\\tests\\test_url.py",
+          "file_sha256": "b6a2a74419e747a9d91f09adbbc37d9efdf69e42d0dcb0143a051d97bfcec751"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "144dba75075c8279d80c7145d3da2099c9bd406924c7e1c5c9d78bd5a898db6c",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-068-w3lib-272\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-068-w3lib-272\\fix",
+      "guard_paths": [
+        "tests/test_url.py"
+      ],
+      "regression_test_files": [
+        "tests/test_url.py"
+      ]
+    },
+    {
+      "id": "xb-069-w3lib-85",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "重复 HTTP 头的 bytes 值、多值列表与遇见顺序。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "w3lib/http.py",
+          "lines": [
+            4,
+            36
+          ],
+          "note": "接口在原始 bytes 头和字典列表间转换；现有字典生成会覆盖重复头。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-069-w3lib-85\\base\\w3lib\\http.py",
+          "file_sha256": "03b19d887da9b692f5724ca960e4ca353c5fe437cbd6379f19375dfa73f67802"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_http.py",
+          "lines": [
+            21,
+            26
+          ],
+          "note": "重复 Cache-Control 按输入顺序累积 bytes 值，与题面保存重复头及现有值类型一致。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-069-w3lib-85\\fix\\tests\\test_http.py",
+          "file_sha256": "590f73d692f7aaf474e2d80130a78b66b0e2026cbb58f479ccf6e86e287b24c1"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "7f3f3c0c3a5a5245af11c234ae461eacfb2f166729b2baaf23ed9deb9602c630",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-069-w3lib-85\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-069-w3lib-85\\fix",
+      "guard_paths": [
+        "tests/test_http.py"
+      ],
+      "regression_test_files": [
+        "tests/test_http.py"
+      ]
+    },
+    {
+      "id": "extra-a-boltons-114",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "Callpoint.to_dict 的 JSON 可序列化及源码行文本保留。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "boltons/tbutils.py",
+          "lines": [
+            50,
+            85
+          ],
+          "note": "Callpoint 将 line 描述为 str，并把 to_dict 定位为序列化表示，当前 lazy line 会泄露为对象。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-114\\base\\boltons\\tbutils.py",
+          "file_sha256": "308b2c29a2880d606c6a1dcd87c6fe763806dce57a1b7fd25a2dc776e15542ec"
+        },
+        {
+          "side": "base",
+          "file": "boltons/tbutils.py",
+          "lines": [
+            384,
+            390
+          ],
+          "note": "同一公开 traceback 序列化路径明确提到 JSON 用途。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-114\\base\\boltons\\tbutils.py",
+          "file_sha256": "308b2c29a2880d606c6a1dcd87c6fe763806dce57a1b7fd25a2dc776e15542ec"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_tbutils.py",
+          "lines": [
+            77,
+            83
+          ],
+          "note": "保留源码行并允许 json.dumps，没有新增固定内部对象布局。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-114\\fix\\tests\\test_tbutils.py",
+          "file_sha256": "b551944f0b93b2b08079515eedca5ab25b44c47728033c4b598bc9dd40c8e7d3"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "6ed01a38c3cea5fcda1c744d801356b3548cdf970ef5934c57c895059ab1591d",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-114\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-114\\fix",
+      "guard_paths": [
+        "tests/test_tbutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_tbutils.py"
+      ]
+    },
+    {
+      "id": "extra-a-boltons-407",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "BarrelList 多分段时极负 insert 下标，顺序及长度。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "boltons/listutils.py",
+          "lines": [
+            108,
+            145
+          ],
+          "note": "单段直接用 list.insert；多段下标翻译对过小负值无法定位，违反题面要求的列表兼容行为。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-407\\base\\boltons\\listutils.py",
+          "file_sha256": "535b28641e3955f48d5dff74a68fcfb0e367ed154dc29c565dcd5e542eaa1edb"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_listutils.py",
+          "lines": [
+            55,
+            62
+          ],
+          "note": "强制多分段后极负下标插到开头，长度加一，对应 list.insert 可见语义。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-407\\fix\\tests\\test_listutils.py",
+          "file_sha256": "ab56014826be44debbd8ea4da2963c30667f4eed738d06ba138c9ea959a5d0ba"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "be0f054bf42d23eca6ddbbebbf13c8500cef3e6b72f97632fcb98983b5997487",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-407\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-407\\fix",
+      "guard_paths": [
+        "tests/test_listutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_listutils.py"
+      ]
+    },
+    {
+      "id": "extra-a-boltons-468",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "零宽 Bits 的 bin/hex/bytes 往返以及已有非法输入异常。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "boltons/mathutils.py",
+          "lines": [
+            140,
+            167
+          ],
+          "note": "空字符串/列表输入已生成零宽对象；既有非法构造输入有明确异常路径。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-468\\base\\boltons\\mathutils.py",
+          "file_sha256": "0aeac3312b66b3919ec93f35e9785c62f3d79bf6db82d60f3b5a3140b3d30ae5"
+        },
+        {
+          "side": "base",
+          "file": "boltons/mathutils.py",
+          "lines": [
+            210,
+            239
+          ],
+          "note": "转换及 from_hex 公开接口可见，非字符串的 from_hex 在 startswith 处已有 AttributeError。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-468\\base\\boltons\\mathutils.py",
+          "file_sha256": "0aeac3312b66b3919ec93f35e9785c62f3d79bf6db82d60f3b5a3140b3d30ae5"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_mathutils.py",
+          "lines": [
+            132,
+            147
+          ],
+          "note": "空值往返是核心要求；None/0/False 的 AttributeError 沿用 base 已有错误，题面明确保留非法输入错误。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-468\\fix\\tests\\test_mathutils.py",
+          "file_sha256": "4ebade6be193eec32db47e6f329816e335bf7d462acbe4874b4b811699a9df32"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "d2ecaa7c8f9f472a7626b622f716925705ecb13ff10006214e10c30116830ffa",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-468\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-boltons-468\\fix",
+      "guard_paths": [
+        "tests/test_mathutils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_mathutils.py"
+      ]
+    },
+    {
+      "id": "extra-a-mi-1153",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "空 numeric_range 的 reversed 行为。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "more_itertools/more.py",
+          "lines": [
+            2404,
+            2409
+          ],
+          "note": "__reversed__ 对空范围也索引最后一个元素；这是空序列反转异常的直接来源。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1153\\base\\more_itertools\\more.py",
+          "file_sha256": "d4f4133e2c5b904ca0fa4f4a45063c50a5b5e2260f8e10670397afab4ca34cd7"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_more.py",
+          "lines": [
+            3140,
+            3141
+          ],
+          "note": "只要求 list(reversed(numeric_range(0))) 为空。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1153\\fix\\tests\\test_more.py",
+          "file_sha256": "05b32af369bd258e41a4e7f08ddfedc8e7b5b745542dc8728f4c1d0bca911cb4"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "5c66754cd6d854433fbc77353a90d6850dca4faceb142acde859d1f9892934b6",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1153\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-1153\\fix",
+      "guard_paths": [
+        "tests/test_more.py"
+      ],
+      "regression_test_files": [
+        "tests/test_more.py"
+      ]
+    },
+    {
+      "id": "extra-a-mi-650",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "before_and_after 重复分段的深链、边界项及迭代器消费顺序。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "more_itertools/recipes.py",
+          "lines": [
+            722,
+            751
+          ],
+          "note": "公开文档要求先完整消费第一个迭代器，并保留不满足条件的边界项到 remainder。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-650\\base\\more_itertools\\recipes.py",
+          "file_sha256": "096c1e6b0e27d186fc4ee5a6c24673b73b9599586ab250707a821f4e5108f93c"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_recipes.py",
+          "lines": [
+            787,
+            818
+          ],
+          "note": "新增大量分段，调用顺序遵守先消费首段的文档；断言最终分组结果而不是 chain 等特定实现。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-650\\fix\\tests\\test_recipes.py",
+          "file_sha256": "6caafca62fca09e82ce5607072559f744915defb92c49c4a53ad52bc083bd97f"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "b9169fa22f562a07b044d0a0788859a972252c1eb747e1970c038d5b833edccb",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-650\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a-mi-650\\fix",
+      "guard_paths": [
+        "tests/test_recipes.py"
+      ],
+      "regression_test_files": [
+        "tests/test_recipes.py"
+      ]
+    },
+    {
+      "id": "extra-a2-click-3484",
+      "status": "underspecified",
+      "confidence": "high",
+      "scope": "类型转换/eager 回调中的来源、共享槽位竞争，以及回调直接改 ctx.params 的额外来源政策。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            907,
+            923
+          ],
+          "note": "get_parameter_source 的文档基于值的实际来源，默认值仅在值来自 default 时标为 DEFAULT。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\base\\src\\click\\core.py",
+          "file_sha256": "b1e15bbdc3d71ed355b7655e074d72e51173c4a0d845e416acbdbd3136fba5a5"
+        },
+        {
+          "side": "base",
+          "file": "docs/advanced.md",
+          "lines": [
+            116,
+            148
+          ],
+          "note": "允许回调更改 ctx.params，但没有定义手工塞入值在转换阶段的 provisional ParameterSource。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\base\\docs\\advanced.md",
+          "file_sha256": "35819dd8283b59008a2cb9eed689bd03bcf511a25f56cda4ca40c9de45917cf7"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_defaults.py",
+          "lines": [
+            271,
+            388
+          ],
+          "note": "主要新增用例验证来源在转换和回调中提前可见，属于题面核心要求。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\fix\\tests\\test_defaults.py",
+          "file_sha256": "8e424ea80ac72ec614855b7b51e8af149fb8275e0e3d4de2f81f428dd0e71b88"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_defaults.py",
+          "lines": [
+            391,
+            415
+          ],
+          "note": "额外 bypass 用例手工写 ctx.params[target] 后要求 DEFAULT；注释自身称不是契约强制测试。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\fix\\tests\\test_defaults.py",
+          "file_sha256": "8e424ea80ac72ec614855b7b51e8af149fb8275e0e3d4de2f81f428dd0e71b88"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_options.py",
+          "lines": [
+            2898,
+            2957
+          ],
+          "note": "共享布尔存储名的胜出值/来源测试由题面明确支持。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\fix\\tests\\test_options.py",
+          "file_sha256": "5e781c32ef63ae19c8f5bd2ec6539aa3719848c6540fda64d68fb39a6c610964"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "callback_injected_value_source_policy",
+          "requirement": "对回调提前手工写入 ctx.params 的值，另一个转换阶段查询来源必须得到 DEFAULT。",
+          "gap": "题面聚焦已确定来源及共享参数竞争；base 虽允许写 ctx.params，却没有规定手工注入值的来源或临时查询值。该新增测试注释还明示观察结果不意在强制契约。",
+          "supported_core": "真实默认值、环境变量和显式参数的来源提前可见，最终共享值与来源一致。",
+          "alternative_allowed_by_visible_contract": "为手工注入值保留未定义来源或另一种显式追踪政策，仍能满足题面中的已确定来源场景，却可能失败于这个额外断言。"
+        }
+      ],
+      "task_sha256": "e93cbf6f7f08aa44cb8f5fd89709134c6593c0964358383cce2ec74cb66df2b2",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3484\\fix",
+      "guard_paths": [
+        "tests/test_defaults.py",
+        "tests/test_options.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py",
+        "tests/test_options.py"
+      ]
+    },
+    {
+      "id": "extra-a2-click-3678",
+      "status": "underspecified",
+      "confidence": "high",
+      "scope": "自动帮助与用户参数共存、显式覆盖、真实冲突诊断和新增内部名称/文字。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            1099,
+            1122
+          ],
+          "note": "现有重复外部选项有诊断，但没有 _click_default_help 这个保留内部名。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\base\\src\\click\\core.py",
+          "file_sha256": "6ce6ad79d4f89e700cbd3b2dff2eb98a0526978bdda25f6cde551f10c152e662"
+        },
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            1151,
+            1176
+          ],
+          "note": "默认 help Option 的公开创建/缓存接口可见；没有指定修复后内部存储名。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\base\\src\\click\\core.py",
+          "file_sha256": "6ce6ad79d4f89e700cbd3b2dff2eb98a0526978bdda25f6cde551f10c152e662"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_basic.py",
+          "lines": [
+            46,
+            87
+          ],
+          "note": "除共存外，还要求自动帮助的 name 精确等于 _click_default_help，且用户占用这个新名称触发指定警告和退出码。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\fix\\tests\\test_basic.py",
+          "file_sha256": "263d7c13d013245aa275da813a4dcb1a1cf2625f6ad8e062dd99df4001f7f15a"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_info_dict.py",
+          "lines": [
+            9,
+            14
+          ],
+          "note": "信息字典也被固定为同一个新内部名。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\fix\\tests\\test_info_dict.py",
+          "file_sha256": "00decaa4770e915f954fc4513ae9909ea0af6293566c9495ac3f197e34e7251e"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_options.py",
+          "lines": [
+            3327,
+            3343
+          ],
+          "note": "对内部名称冲突要求特定 UserWarning 文本。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\fix\\tests\\test_options.py",
+          "file_sha256": "6b9d80e2449e6a9cdd3186eee305c6249464fe31298336566cbef2ff4e962e1e"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "new_internal_namespace_and_diagnostic_policy",
+          "requirement": "默认帮助必须以 _click_default_help 作为内部名，并采用该新保留名及固定冲突文字。",
+          "gap": "题面规定共存和诊断，但未选择新内部命名空间或错误措辞；base 也没有这些新政策。",
+          "supported_core": "合法 help 名称参数保留值、自动帮助正常、显式 --help 可覆盖、真实冲突被诊断。",
+          "alternative_allowed_by_visible_contract": "不同不冲突的内部名称，或不依赖改名的参数存储方案，可以满足公开行为却被内部 name 的精确断言拒绝。"
+        }
+      ],
+      "task_sha256": "9dcadf9c97cd124dd3d3b4bd8b1d01c7c527888e98d77d91dcf17480ccd0cc51",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3678\\fix",
+      "guard_paths": [
+        "tests/test_basic.py",
+        "tests/test_info_dict.py",
+        "tests/test_options.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py",
+        "tests/test_info_dict.py",
+        "tests/test_options.py"
+      ]
+    },
+    {
+      "id": "extra-a2-click-3884",
+      "status": "underspecified",
+      "confidence": "medium",
+      "scope": "空 show_envvar、序列逐项显示、自动前缀及新增多变量错误提示格式。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            2871,
+            2879
+          ],
+          "note": "普通错误提示已有选项引用惯例，但没有环境变量候选列表的格式契约。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\base\\src\\click\\core.py",
+          "file_sha256": "2d6eaa280cc69b34f6570471620aa2bec47c439b99847486a74c54d0cb550310"
+        },
+        {
+          "side": "base",
+          "file": "src/click/core.py",
+          "lines": [
+            3271,
+            3275
+          ],
+          "note": "旧 envvar 提示将整个配置作为一个带引号值插入；单字符串惯例存在，序列逐项分隔政策不存在。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\base\\src\\click\\core.py",
+          "file_sha256": "2d6eaa280cc69b34f6570471620aa2bec47c439b99847486a74c54d0cb550310"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_options.py",
+          "lines": [
+            878,
+            892
+          ],
+          "note": "空配置等同未配置由题面直接支持。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\fix\\tests\\test_options.py",
+          "file_sha256": "fd2b86d088d3e5956a1272a5a3e27e5b35bb873c3383fe2fd3b4a77321d75513"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_options.py",
+          "lines": [
+            1038,
+            1054
+          ],
+          "note": "多变量错误测试要求逐项单引号加逗号空格的精确字符串。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\fix\\tests\\test_options.py",
+          "file_sha256": "fd2b86d088d3e5956a1272a5a3e27e5b35bb873c3383fe2fd3b4a77321d75513"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "new_plural_diagnostic_punctuation",
+          "requirement": "候选变量错误提示必须精确形如 (env var: 'WEATHER_UNITS', 'UNITS')。",
+          "gap": "题面要求逐项清楚列出而非整体加引号的 Python 列表；它没有唯一规定分隔符、复数标签或标点。已有单字符串提示为风格提供依据，但不能唯一推出新增序列文字。",
+          "supported_core": "隐藏空配置信息、逐个展示非空候选变量、保留自动前缀。",
+          "alternative_allowed_by_visible_contract": "以其他清楚的分隔符逐项引用，仍然满足题面，却可能失败于精确错误文本比较。",
+          "interpretation_limit": "仅指出新复数格式的窄断言；不是否认原有帮助文本兼容性的要求。"
+        }
+      ],
+      "task_sha256": "e2bcb11252974527d4400df558bee28de8f1af2875d6b862dc4fd733101cec3d",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a2-click-3884\\fix",
+      "guard_paths": [
+        "tests/test_options.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ]
+    },
+    {
+      "id": "extra-a3-funcy-182",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "同一 memoize/cache 装饰器对象装饰不同函数时缓存与失效隔离。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "funcy/calc.py",
+          "lines": [
+            19,
+            72
+          ],
+          "note": "公开装饰器返回 callable decorator；被装饰函数调用、memory、invalidate 和 invalidate_all 都可见，共享闭包 memory 导致互串。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-182\\base\\funcy\\calc.py",
+          "file_sha256": "63b90ba135fbd7d4c2f3fc0b7f5641e9f69d30626a701c33da7f3dc3236eea37"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_calc.py",
+          "lines": [
+            108,
+            136
+          ],
+          "note": "inc/double 的结果、调用计数和失效隔离，以及单个函数命中行为，均由题面要求支持。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-182\\fix\\tests\\test_calc.py",
+          "file_sha256": "76eec7c292f5b489566156e6865575eaa6179ce46da9d28cdf4a655c3fe5f67e"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "dfc856ea41fd46a38c146eaf928da30438ac4390c192e96a58ca2222b1370ee2",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-182\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-182\\fix",
+      "guard_paths": [
+        "tests/test_calc.py"
+      ],
+      "regression_test_files": [
+        "tests/test_calc.py"
+      ]
+    },
+    {
+      "id": "extra-a3-funcy-197",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "wrap_prop 删除描述符协议、上下文退出、异常传播和缓存属性删后重算。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "funcy/objects.py",
+          "lines": [
+            40,
+            65
+          ],
+          "note": "公开说明包装属性访问器；读写已有上下文管理，删除误用 __del__ 而非描述符 __delete__。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-197\\base\\funcy\\objects.py",
+          "file_sha256": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_objects.py",
+          "lines": [
+            109,
+            163
+          ],
+          "note": "测试 Manager 实现完整 __enter__/__exit__，检查属性删除及异常退出、重算；没有缺少真实公开协议的替身问题。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-197\\fix\\tests\\test_objects.py",
+          "file_sha256": "6647a56dbdd90847a5c88e3fdd2d9a5e9b292c033e48b2c019c4d312528d61d4"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "ee112977cb91f88b931f0c9fae6276c23d2891a156d18e884affe240c6f1f2e0",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-197\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\extra-a3-funcy-197\\fix",
+      "guard_paths": [
+        "tests/test_objects.py"
+      ],
+      "regression_test_files": [
+        "tests/test_objects.py"
+      ]
+    },
+    {
+      "id": "xb-023-pydash-333",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "duplicates 迭代回调参数、原集合/对象身份、顺序及每项调用。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pydash/arrays.py",
+          "lines": [
+            469,
+            504
+          ],
+          "note": "文档已承诺 value/index/collection 三参数；结果通过原数组索引取回，示例有稳定顺序。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-023-pydash-333\\base\\src\\pydash\\arrays.py",
+          "file_sha256": "e0c6b0ab7d91cb2f7206985de4e3ef55c280023d75ee473f00a81c74870711b4"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_arrays.py",
+          "lines": [
+            152,
+            170
+          ],
+          "note": "新增双/三参数回调、原 collection 身份和结果对象身份，逐项调用与文档一致，不要求新复制机制。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-023-pydash-333\\fix\\tests\\test_arrays.py",
+          "file_sha256": "920e6ff39cd78d3c28d3bc0cdf307012a543207949bce757ab4a531e396ee6bc"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "1898bf04b3290a5f667d388f0bdb37f27d0ce6bb2eacd6e68f617b076d863f62",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-023-pydash-333\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-023-pydash-333\\fix",
+      "guard_paths": [
+        "tests/test_arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ]
+    },
+    {
+      "id": "xb-031-pydash-277",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "xor/xor_by/xor_with 的一般 iterable、一次性生成器、输出顺序及不修改输入。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pydash/arrays.py",
+          "lines": [
+            2517,
+            2651
+          ],
+          "note": "公开参数类型为 Iterable，xor_by/xor_with 文档已规定结果顺序；对输入切片的假设比接口更窄。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-031-pydash-277\\base\\src\\pydash\\arrays.py",
+          "file_sha256": "45036d91bc9a92a63076e5b0aaee5ae3019a27f685ea9ddf756ead4c57da229a"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_arrays.py",
+          "lines": [
+            1044,
+            1084
+          ],
+          "note": "tuple/list/generator 组合、单一输入配回调及一次性消费，均落在既有 Iterable 类型域及题面范围内。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-031-pydash-277\\fix\\tests\\test_arrays.py",
+          "file_sha256": "c800d4e100823484e7a7f316b297c8479a082ad7b01c7094db1e4779db43ee64"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "3b669aea89dd7e10b0930345d67eb42f8bee490b2c1160f745b244a36f07e308",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-031-pydash-277\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-031-pydash-277\\fix",
+      "guard_paths": [
+        "tests/test_arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ]
+    },
+    {
+      "id": "xb-038-pydash-258",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "median 对 iterable、奇偶项、iteratee 及空输入 NaN。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pydash/numerical.py",
+          "lines": [
+            596,
+            652
+          ],
+          "note": "重载明示 Iterable；空输入返回 NaN 是已有实现，直接 len 不能适配迭代器是问题。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-038-pydash-258\\base\\src\\pydash\\numerical.py",
+          "file_sha256": "4c52e02e06d8e675e9efe12a00a39b8651489adb7834695d591790c981197720"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_numerical.py",
+          "lines": [
+            159,
+            174
+          ],
+          "note": "新增 iterator 与空 iterator，保留已有空输入 NaN、数值和回调语义。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-038-pydash-258\\fix\\tests\\test_numerical.py",
+          "file_sha256": "7d8daf331a16c26ef0aff5c49719d410990cae19a98ead7b714dc152e62a63a2"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "818337f6ed7a16e6f9eb79354af8aace78424be0cce463904e1018c4e5678819",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-038-pydash-258\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-038-pydash-258\\fix",
+      "guard_paths": [
+        "tests/test_numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ]
+    },
+    {
+      "id": "xb-052-pluggy-728",
+      "status": "underspecified",
+      "confidence": "high",
+      "scope": "tracing 非 ASCII、孤立代理、坏 str/repr、多重坏异常及中断传播。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pluggy/_tracing.py",
+          "lines": [
+            25,
+            40
+          ],
+          "note": "原有 formatter 定义普通文字和字典输出，但没有坏 str/repr 的 fallback 文本或 surrogate 的指定显示法。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\base\\src\\pluggy\\_tracing.py",
+          "file_sha256": "499081bfd619d3c5a3acd0a650379e3d727f4cdf1e6cd266cf398707f7b61683"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_tracer.py",
+          "lines": [
+            178,
+            220
+          ],
+          "note": "有效文本保留有依据；坏表示则新增要求 RuntimeError(...) raised in str() 和类型/地址形式的特定文字。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\fix\\testing\\test_tracer.py",
+          "file_sha256": "f955eb1a37322462be9224713e6ad9c14066c1c1bfd0e9b39633e8e54fef937b"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_tracer.py",
+          "lines": [
+            224,
+            291
+          ],
+          "note": "中断传播由题面明示；多重失败要求精确 unpresentable ... raised in str() fallback，未在题面给出。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\fix\\testing\\test_tracer.py",
+          "file_sha256": "f955eb1a37322462be9224713e6ad9c14066c1c1bfd0e9b39633e8e54fef937b"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_pluginmanager.py",
+          "lines": [
+            961,
+            1029
+          ],
+          "note": "集成测试另要求 surrogate 的 backslash 表示和同一坏字符串 fallback 格式。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\fix\\testing\\test_pluginmanager.py",
+          "file_sha256": "41d53ca9be40d4e710da9559c60d79bec409ee2c8d5a07f78f1acd9465592016"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "new_fallback_representation_policy",
+          "requirement": "坏 str/repr 与其异常也无法表示时，诊断必须使用特定 RuntimeError(...) raised in str() / unpresentable ... raised in str() 模板和对象地址形式。",
+          "gap": "题面要求追踪可处理这些值并保留有效 Unicode 和中断，不规定失败表示的唯一文本；base 没有可继承的 fallback 格式。",
+          "supported_core": "诊断格式化故障不得破坏正常 hook；有效非 ASCII 不损坏；KeyboardInterrupt 等中断不被吞掉。",
+          "alternative_allowed_by_visible_contract": "安全、可识别的其他 fallback 文本同样可维持 hook 成功与中断行为，却会失败于指定子串断言。"
+        },
+        {
+          "kind": "new_surrogate_rendering_policy",
+          "requirement": "孤立代理必须显示为特定 backslash 转义文本。",
+          "gap": "题面规定可处理，未唯一选择转义显示、替换占位或其他安全表示；有效非 ASCII 的保留要求不能唯一推出孤立代理的表示方式。",
+          "confidence": "medium",
+          "interpretation_limit": "普通日志格式和有效 Unicode 属于既有兼容性；缺口限定在此前会崩溃输入的新 fallback 政策。"
+        }
+      ],
+      "task_sha256": "ab81c5dbcd4aa935fae9868cc1fdb0862d662fb48bc04c4603f8c22f6b164f0f",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-052-pluggy-728\\fix",
+      "guard_paths": [
+        "testing/test_pluginmanager.py",
+        "testing/test_tracer.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py",
+        "testing/test_tracer.py"
+      ]
+    },
+    {
+      "id": "xb-054-pluggy-504",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "Result.get_result 重复抛出时 traceback 长度稳定。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/pluggy/_result.py",
+          "lines": [
+            57,
+            65
+          ],
+          "note": "from_call 保存原始失败；后续读取应取同一调用结果。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-054-pluggy-504\\base\\src\\pluggy\\_result.py",
+          "file_sha256": "7846a4fbb21ef3c6d193296c81b2f007a88ca20a2020c6617aaf16ddb22699cb"
+        },
+        {
+          "side": "base",
+          "file": "src/pluggy/_result.py",
+          "lines": [
+            89,
+            100
+          ],
+          "note": "get_result 基于异常当前可变 traceback 重抛，导致积累。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-054-pluggy-504\\base\\src\\pluggy\\_result.py",
+          "file_sha256": "7846a4fbb21ef3c6d193296c81b2f007a88ca20a2020c6617aaf16ddb22699cb"
+        },
+        {
+          "side": "fix",
+          "file": "testing/test_result.py",
+          "lines": [
+            1,
+            27
+          ],
+          "note": "只比较三次 traceback 长度，不限定内部存储成员或唯一重抛手法。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-054-pluggy-504\\fix\\testing\\test_result.py",
+          "file_sha256": "6699113439e9477954ecb107929db305361ead8cec63a16d5b12b909bdf79c21"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "64157ab40150041d020be03e4b2ec35dcebf006b467f4b04cc8ea0b6a730793a",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-054-pluggy-504\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-054-pluggy-504\\fix",
+      "guard_paths": [
+        "testing/test_result.py"
+      ],
+      "regression_test_files": [
+        "testing/test_result.py"
+      ]
+    },
+    {
+      "id": "xb-058-cachetools-441",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "TTLCache 插入时 datetime 溢出后的失败原子性与可用性。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/cachetools/__init__.py",
+          "lines": [
+            496,
+            509
+          ],
+          "note": "已有顺序先修改缓存再计算到期时间，因此后者失败会留不一致状态。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-058-cachetools-441\\base\\src\\cachetools\\__init__.py",
+          "file_sha256": "c595cd9ea1ce7e52be423397398f33ad9fb8074d568bd664f229570e97f7a660"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_ttl.py",
+          "lines": [
+            102,
+            114
+          ],
+          "note": "datetime.max 加 timedelta 的 OverflowError 之后，键不存在、长度/大小为零、迭代和过期正常，是失败插入不污染缓存的直接表现。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-058-cachetools-441\\fix\\tests\\test_ttl.py",
+          "file_sha256": "963e7553e31dbaed08c853d028883e09cc37e3d6ea918b24803555665b827376"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "fe79948757cfc2917f96c97d1c1979d4d9aaa9860a518094f01820c0319ff09b",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-058-cachetools-441\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-058-cachetools-441\\fix",
+      "guard_paths": [
+        "tests/test_ttl.py"
+      ],
+      "regression_test_files": [
+        "tests/test_ttl.py"
+      ]
+    },
+    {
+      "id": "xb-067-w3lib-253",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "safe_url_string 对 IPv6 方括号、端口、路径和查询的保留。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "w3lib/url.py",
+          "lines": [
+            90,
+            190
+          ],
+          "note": "公开用途为生成有效 URL，已安全 URL 保持；netloc 拼装时裸 hostname 丢掉 IPv6 所需括号。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-067-w3lib-253\\base\\w3lib\\url.py",
+          "file_sha256": "a6514ff14572e7699c5660fc37be8957edcd17054385c54f78f109973a5d3cce"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_url.py",
+          "lines": [
+            248,
+            251
+          ],
+          "note": "普通合法 IPv6 URL 应保留括号及其余部分，符合题面与已有安全 URL 契约。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-067-w3lib-253\\fix\\tests\\test_url.py",
+          "file_sha256": "f2e187864211bd4fd3e5ec9bc179552e0d0231088db7925eb73188dbbb8aaeb6"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "6991babc70ce71cf596bca92a4a8e96556ae069ce03b0894e8d2e5aed6f78be0",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-067-w3lib-253\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-067-w3lib-253\\fix",
+      "guard_paths": [
+        "tests/test_url.py"
+      ],
+      "regression_test_files": [
+        "tests/test_url.py"
+      ]
+    },
+    {
+      "id": "xb-070-w3lib-40",
+      "status": "adequate",
+      "confidence": "high",
+      "scope": "非法 cp1252 数字实体的 remove_illegal 开关。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "w3lib/html.py",
+          "lines": [
+            38,
+            94
+          ],
+          "note": "文档已承诺非法实体按开关删除或原样保留；cp1252 decode 的异常路径缺少该处理。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-070-w3lib-40\\base\\w3lib\\html.py",
+          "file_sha256": "808f58a31b351bca72d65e0ef1dac8db2692ae8ab6956238e8ab6715422311c7"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_html.py",
+          "lines": [
+            39,
+            40
+          ],
+          "note": "十进制 157 分别删除或原样保留，没有新增异常文字或隐含类型域。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-070-w3lib-40\\fix\\tests\\test_html.py",
+          "file_sha256": "bf21e591e701e836b30bf551e2989130d2303a420ad17e29aa651c74f2f77621"
+        }
+      ],
+      "findings": [],
+      "task_sha256": "9dc4323f6febf1a497a734c22b975e70ad3498eab7255080fa62707627025613",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-070-w3lib-40\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-070-w3lib-40\\fix",
+      "guard_paths": [
+        "tests/test_html.py"
+      ],
+      "regression_test_files": [
+        "tests/test_html.py"
+      ]
+    },
+    {
+      "id": "xb-072-cachetools-462e867950",
+      "status": "underspecified",
+      "confidence": "high",
+      "scope": "hashkey/typedkey pickle 往返、相等哈希及额外私有 hash-cache 布局断言。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "cachetools/keys.py",
+          "lines": [
+            8,
+            43
+          ],
+          "note": "_HashedTuple 是内部实现；公开 hashkey/typedkey 要求合适的可哈希缓存键，没有声明 __dict__ 属性数量。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\base\\cachetools\\keys.py",
+          "file_sha256": "7f8e7d8c367934fde57b1e2cf53ed629f04d9e57e643d76bf1ce1562827b8599"
+        },
+        {
+          "side": "base",
+          "file": "docs/index.rst",
+          "lines": [
+            336,
+            339
+          ],
+          "note": "键 API 文档要求适合作为缓存键的 tuple，不承诺内部存储布局。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\base\\docs\\index.rst",
+          "file_sha256": "7e7b23202199e15eafb2fff625c6a1fac2e49e89c20556aa9b2ab9b44a69ef60"
+        },
+        {
+          "side": "base",
+          "file": "tests/test_keys.py",
+          "lines": [
+            1,
+            45
+          ],
+          "note": "既有测试关注公开相等性、哈希与类型区分，没有属性数量约束。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\base\\tests\\test_keys.py",
+          "file_sha256": "d069f179e8a6a278fcdee76e4ce73b049da2d4472592754ca2f552a3e4fbeb6d"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_keys.py",
+          "lines": [
+            47,
+            58
+          ],
+          "note": "新增 white-box 测试要求 __dict__ 长度依次为 0、hash 后 1、反序列化后 0。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\fix\\tests\\test_keys.py",
+          "file_sha256": "e13f3e6ec29a8943cb664866c0890454c70eb8050474a076bc48ca61c3b0a580"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "private_hash_cache_layout",
+          "requirement": "键的 __dict__ 在构造后必须为零项、hash 后为一项、pickle 往返后又为零项。",
+          "gap": "跨解释器恢复后与相等新键 hash 一致才是题面契约；正确清除旧 hash 不唯一要求这些私有属性计数。base 文档和既有测试都未规定该布局。",
+          "supported_core": "pickle 后不得复用别的解释器的旧 hash，并保持相等对象的哈希一致及缓存命中。",
+          "alternative_allowed_by_visible_contract": "用不同私有元数据、slots 或不同安全 hash-cache 策略，保持公开语义但具有不同 __dict__ 计数。",
+          "coverage_note": "同一解释器的 pickle round-trip 和清理内部状态是跨解释器问题的代理检验，不能单独证明不同 hash seed 的真实进程间行为。"
+        }
+      ],
+      "task_sha256": "5c5efa36b08349c89612a2b3a29725c45f9e8a5dd0d4067d4fd2232098240e5b",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-072-cachetools-462e867950\\fix",
+      "guard_paths": [
+        "tests/test_keys.py"
+      ],
+      "regression_test_files": [
+        "tests/test_keys.py"
+      ]
+    },
+    {
+      "id": "xb-074-cachetools-ec0b97b8a4",
+      "status": "underspecified",
+      "confidence": "medium",
+      "scope": "cachedmethod 的 super 覆盖、多层装饰、父子统计以及新增包装器身份/实例字典约束。",
+      "evidence": [
+        {
+          "side": "base",
+          "file": "src/cachetools/_cachedmethod.py",
+          "lines": [
+            68,
+            126
+          ],
+          "note": "已有描述符按方法名把 wrapper 缓存到实例字典，产生覆盖/递归问题；现有直接访问的稳定 wrapper 有可见实现依据，但新的 super 绑定策略并未公开规定。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\base\\src\\cachetools\\_cachedmethod.py",
+          "file_sha256": "0ccfc42617544389ba70d2b5f1c3de12e2b08c2b508d2a55a097ef49d98d49d0"
+        },
+        {
+          "side": "base",
+          "file": "docs/index.rst",
+          "lines": [
+            530,
+            560
+          ],
+          "note": "文档要求每实例缓存/统计及实例可变 __dict__，并未要求特定 wrapper 对象身份或禁止某个实例属性名。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\base\\docs\\index.rst",
+          "file_sha256": "3158547980de18c94a5dabcad2b2f94753d759cb8cff10104cccde51e5edab47"
+        },
+        {
+          "side": "base",
+          "file": "docs/index.rst",
+          "lines": [
+            659,
+            667
+          ],
+          "note": "公开计数是每实例 cache_info 语义，不等同于特定绑定对象的身份。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\base\\docs\\index.rst",
+          "file_sha256": "3158547980de18c94a5dabcad2b2f94753d759cb8cff10104cccde51e5edab47"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_cachedmethod.py",
+          "lines": [
+            731,
+            799
+          ],
+          "note": "主要结果与父子计数有依据；765-766 新增包装器身份，798 要求实例字典不得有 get 键。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\fix\\tests\\test_cachedmethod.py",
+          "file_sha256": "0d276a016da5a1bd034dbb547f9cd11ff59c1854e4681b8dc223099fc55553e1"
+        },
+        {
+          "side": "fix",
+          "file": "tests/test_cachedmethod.py",
+          "lines": [
+            801,
+            833
+          ],
+          "note": "多级继承结果验收符合题面，没有发现额外返回值政策。",
+          "absolute_path": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\fix\\tests\\test_cachedmethod.py",
+          "file_sha256": "0d276a016da5a1bd034dbb547f9cd11ff59c1854e4681b8dc223099fc55553e1"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "new_super_wrapper_identity_and_storage_policy",
+          "requirement": "重复 super(...).get 必须返回同一 wrapper 对象，且 vars(child) 不能包含 get。",
+          "gap": "题面要求覆盖链结果和父子统计正确；它没有指定 super 绑定对象身份或缓存放置位置。base 的直接访问 wrapper 缓存可支持保留其既有身份，但不能唯一决定修复后的 super 绑定实现和实例字典布局。",
+          "supported_core": "不能因父方法调用绕过子类覆盖，双层装饰不递归，父子缓存与统计保持正确。",
+          "alternative_allowed_by_visible_contract": "将统计状态独立保存并为 super 访问提供新的绑定包装器，或使用另一种不遮蔽覆盖链的存储方案，可以保持公开结果和统计却不满足新增身份/字典断言。",
+          "interpretation_limit": "此项有现有 wrapper 缓存的可观察行为作为反方证据，因此置信度为 medium；仅标记新增 super 身份及私有布局限制，不否定原有直接访问兼容性。"
+        }
+      ],
+      "task_sha256": "489df0345c5e45ebac1a7b79e08179a6477f0c19707b1c3aca3dd3002b0131de",
+      "base_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\base",
+      "fix_dir": "{PROJECT_ROOT}\\.local\\production-runtime\\real-v3\\snapshots\\xb-074-cachetools-ec0b97b8a4\\fix",
+      "guard_paths": [
+        "tests/test_cachedmethod.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ]
+    }
+  ],
+  "packet_sha256": "21bc95ca7b6c125e7b2fe7049502f734a34eb5598ae9ba30515458ffff5e7ac1",
+  "generated_at_utc": "2026-10-24T21:40:28.618719+00:00",
+  "counts": {
+    "tasks": 40,
+    "statuses": {
+      "adequate": 32,
+      "inconsistent": 1,
+      "underspecified": 7
+    },
+    "unresolved": 0
+  }
+}

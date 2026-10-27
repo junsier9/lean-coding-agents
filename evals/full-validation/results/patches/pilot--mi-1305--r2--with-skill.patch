@@ -1,0 +1,42 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c128bc9..8dabc3e 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3718,6 +3718,11 @@ def ichunked(iterable, n):
+     [8, 9, 10, 11]
+ 
+     """
++    if n < 0:
++        raise ValueError('n must be at least 0')
++    if n == 0:
++        return
++
+     iterator = iter(iterable)
+     for first in iterator:
+         rest = islice(iterator, n - 1)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 50fab9c..c0dec82 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4543,11 +4543,20 @@ class IchunkedTests(TestCase):
+         expected = []
+         self.assertEqual(actual, expected)
+ 
++    def test_zero_does_not_consume(self):
++        iterable = iter('ABC')
++        self.assertEqual(list(mi.ichunked(iterable, 0)), [])
++        self.assertEqual(list(iterable), ['A', 'B', 'C'])
++
+     def test_negative(self):
+         iterable = count()
+-        with self.assertRaises(ValueError):
++        with self.assertRaisesRegex(ValueError, '^n must be at least 0$'):
+             [list(c) for c in mi.ichunked(iterable, -1)]
+ 
++    def test_negative_empty(self):
++        with self.assertRaisesRegex(ValueError, '^n must be at least 0$'):
++            list(mi.ichunked([], -1))
++
+     def test_out_of_order(self):
+         iterable = map(str, count())
+         it = mi.ichunked(iterable, 4)

@@ -1,0 +1,94 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index e90b893..acdc43f 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1154,6 +1154,10 @@ class bucket:
+     The original iterable will be advanced and its items will be cached until
+     they are used by the child iterables. This may require significant storage.
+ 
++    Iterating over the object yields the keys of buckets that have had values,
++    including those whose values have all been consumed. Queries for
++    nonexistent buckets do not add keys.
++
+     By default, attempting to select a bucket to which no items belong  will
+     exhaust the iterable and cache all values.
+     If you specify a *validator* function, selected buckets will instead be
+@@ -1206,7 +1210,7 @@ class bucket:
+         while True:
+             # If we've cached some items that match the target value, emit
+             # the first one and evict it from the cache.
+-            if self._cache[value]:
++            if self._cache.get(value):
+                 yield self._cache[value].popleft()
+             # Otherwise we need to advance the parent iterator to search for
+             # a matching item, caching the rest.
+@@ -1218,6 +1222,8 @@ class bucket:
+                         return
+                     item_value = self._key(item)
+                     if item_value == value:
++                        # Remember keys whose values are consumed directly.
++                        self._cache.setdefault(value, deque())
+                         yield item
+                         break
+                     elif self._validator(item_value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4401dc6..13e63ce 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1081,6 +1081,56 @@ class BucketTests(TestCase):
+         # Checking in-ness shouldn't advance the iterator
+         self.assertEqual(next(D[10]), 10)
+ 
++    def test_missing_getitem_does_not_add_keys(self):
++        for iterable in ('', 'abac'):
++            with self.subTest(iterable=iterable):
++                D = mi.bucket(iterable, key=lambda x: x)
++                for missing in 'xyx':
++                    self.assertEqual(list(D[missing]), [])
++                    self.assertEqual(set(D), set(iterable))
++
++                for key in set(iterable):
++                    self.assertEqual(list(D[key]), [key] * iterable.count(key))
++
++    def test_missing_contains_does_not_add_keys(self):
++        for iterable in ('', 'abac'):
++            with self.subTest(iterable=iterable):
++                D = mi.bucket(iterable, key=lambda x: x)
++                for missing in 'xyx':
++                    self.assertNotIn(missing, D)
++                    self.assertEqual(set(D), set(iterable))
++
++                for key in set(iterable):
++                    self.assertEqual(list(D[key]), [key] * iterable.count(key))
++
++    def test_consumed_key_is_retained(self):
++        D = mi.bucket(['a1'], key=lambda x: x[0])
++        values = D['a']
++        self.assertEqual(next(values), 'a1')
++        self.assertEqual(list(D), ['a'])
++        self.assertEqual(list(values), [])
++        self.assertNotIn('a', D)
++        self.assertEqual(list(D['a']), [])
++        self.assertEqual(list(D), ['a'])
++
++    def test_missing_key_with_validator(self):
++        D = mi.bucket('abac', key=lambda x: x, validator=lambda x: x != 'b')
++        self.assertEqual(list(D['x']), [])
++        self.assertNotIn('y', D)
++        self.assertEqual(set(D), {'a', 'c'})
++        self.assertEqual(list(D['a']), ['a', 'a'])
++        self.assertEqual(list(D['c']), ['c'])
++        self.assertEqual(list(D['b']), [])
++        self.assertEqual(set(D), {'a', 'c'})
++
++    def test_rejected_key_does_not_advance(self):
++        iterable = iter('ab')
++        D = mi.bucket(iterable, key=lambda x: x, validator=lambda x: x != 'b')
++        self.assertEqual(list(D['b']), [])
++        self.assertNotIn('b', D)
++        self.assertEqual(next(iterable), 'a')
++        self.assertEqual(list(D), [])
++
+     def test_validator(self):
+         iterable = count(0)
+         key = lambda x: int(str(x)[0])  # First digit of each number

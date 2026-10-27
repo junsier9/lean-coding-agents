@@ -1,0 +1,18 @@
+{
+  "regraded_at": "2026-10-24T19:58:34.584963+00:00",
+  "original_valid_model_runs": 16,
+  "original_accepted": 15,
+  "corrected_oracle_accepted": 16,
+  "changed_oracle_case_ids": [
+    "d06"
+  ],
+  "assertion_asts_unchanged": true,
+  "task_and_visible_sources_and_reference_unchanged": true,
+  "old_model_worktrees_and_original_records_unchanged": true,
+  "model_reruns": 0,
+  "original_usage_and_client_seconds_preserved": true,
+  "original_grading_cost_plus_regrade_cost_retained": true,
+  "original_marker_sha256": "13EA91846907018EE6AA9D80C9EC999BD5B7B7476347D197208CD98207A212EC",
+  "corrected_case_manifest_sha256": "038592C3CF8277378959AC7887EA55D2B7B03861EDFF27D7DD212A0D57D0CC1C",
+  "interpretation": "Development oracle fidelity correction only; original15/16 remains recorded. Not confirmatory data or an improvement of the skill body."
+}

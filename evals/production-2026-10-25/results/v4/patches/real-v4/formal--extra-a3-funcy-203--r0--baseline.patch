@@ -1,0 +1,142 @@
+diff --git a/docs/flow.rst b/docs/flow.rst
+index 55220bf..9987f2e 100644
+--- a/docs/flow.rst
++++ b/docs/flow.rst
+@@ -69,6 +69,11 @@ Flow
+                 pre_save.connect(self._pre_save, sender=cls)
+                 # ... set up signals, no dups
+ 
++    ``once_per_args`` considers all arguments, including keyword-only parameters,
++    ``*args`` and ``**kwargs``. Omitting a default value or passing it explicitly
++    counts as the same call, as do equivalent positional and keyword forms.
++    Keyword order does not matter, and unhashable argument values are supported.
++
+ 
+ .. function:: raiser(exception_or_class=Exception, *args, **kwargs)
+ 
+diff --git a/funcy/decorators.py b/funcy/decorators.py
+index e001629..0804b90 100644
+--- a/funcy/decorators.py
++++ b/funcy/decorators.py
+@@ -103,7 +103,13 @@ def has_1pos_and_kwonly(func):
+ 
+ def get_argnames(func):
+     func = getattr(func, '__original__', None) or unwrap(func)
+-    return func.__code__.co_varnames[:func.__code__.co_argcount]
++    code = func.__code__
++    n = code.co_argcount + code.co_kwonlyargcount
++    if code.co_flags & inspect.CO_VARARGS:
++        n += 1
++    if code.co_flags & inspect.CO_VARKEYWORDS:
++        n += 1
++    return code.co_varnames[:n]
+ 
+ def arggetter(func, _cache={}):
+     if func in _cache:
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 8d5aa5e..efbb68e 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -266,6 +266,102 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++def test_once_per_args_keyword_only():
++    calls = []
++
++    @once_per_args
++    def call(n=1, *, flag=False):
++        calls.append((n, flag))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1, flag=False) is None
++    assert call(1, flag=True) == 'called'
++    assert call(flag=True, n=1) is None
++    assert call(n=2, flag=True) == 'called'
++    assert calls == [(1, False), (1, True), (2, True)]
++
++
++def test_once_per_args_varargs():
++    calls = []
++
++    @once_per_args
++    def call(n=1, *args):
++        calls.append((n, args))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1) is None
++    assert call(1, 2) == 'called'
++    assert call(1, 2) is None
++    assert call(1, 3) == 'called'
++    assert call(1, 2, 3) == 'called'
++    assert calls == [(1, ()), (1, (2,)), (1, (3,)), (1, (2, 3))]
++
++
++def test_once_per_args_kwargs():
++    calls = []
++
++    @once_per_args
++    def call(n=1, **kwargs):
++        calls.append((n, kwargs))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1) is None
++    assert call(1, a=2, b=3) == 'called'
++    assert call(b=3, n=1, a=2) is None
++    assert call(a=2, b=4) == 'called'
++    assert call(a=2) == 'called'
++    assert call(c=2) == 'called'
++    assert calls == [(1, {}), (1, {'a': 2, 'b': 3}), (1, {'a': 2, 'b': 4}),
++                     (1, {'a': 2}), (1, {'c': 2})]
++
++
++def test_once_per_args_combined_wrapped_signature():
++    calls = []
++
++    @once_per_args
++    @post_processing(str)
++    def call(n=1, *args, flag=False, **kwargs):
++        values = (n, args, flag, kwargs)
++        calls.append(values)
++        return len(calls)
++
++    assert call() == '1'
++    assert call(n=1, flag=False) is None
++    assert call(1, 2, flag=True, args=3, kwargs=4) == '2'
++    assert call(1, 2, kwargs=4, args=3, flag=True) is None
++    assert call(n=1, flag=True, args=3, kwargs=4) == '3'
++    assert calls == [(1, (), False, {}), (1, (2,), True, {'args': 3, 'kwargs': 4}),
++                     (1, (), True, {'args': 3, 'kwargs': 4})]
++
++
++@pytest.mark.parametrize('kind', ['keyword_only', 'varargs', 'kwargs'])
++@pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
++def test_once_per_args_unhashable_parameter_kinds(kind, make_value):
++    calls = []
++
++    @once_per_args
++    def call(*args, option=None, **kwargs):
++        calls.append((args, option, kwargs))
++        return 'called'
++
++    def invoke(value):
++        if kind == 'keyword_only':
++            return call(option=value)
++        elif kind == 'varargs':
++            return call(value)
++        else:
++            return call(value=value)
++
++    assert invoke(make_value()) == 'called'
++    assert invoke(make_value()) is None
++    assert invoke('other') == 'called'
++    assert invoke('other') is None
++    assert len(calls) == 2
++
++
+ @pytest.mark.parametrize('decorate', [once_per('n'), once_per_args])
+ @pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
+ def test_once_per_unhashable_arguments(decorate, make_value):

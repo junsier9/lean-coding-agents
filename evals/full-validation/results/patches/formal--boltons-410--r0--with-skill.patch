@@ -1,0 +1,116 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index d4dd1db..cee85db 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -176,6 +176,10 @@ class OrderedMultiDict(dict):
+     def __getstate__(self):
+         return list(self.iteritems(multi=True))
+ 
++    def __reduce_ex__(self, protocol):
++        # Restore all items through the state, without dict's single-value items.
++        return self.__class__, (), self.__getstate__()
++
+     def __setstate__(self, state):
+         self.clear()
+         self.update_extend(state)
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index b9df65f..9c98bb0 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -1,7 +1,10 @@
++import copy
++import pickle
+ import sys
+ import pytest
+ 
+ from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
++from boltons.dictutils import FastIterOrderedMultiDict
+ 
+ 
+ _ITEMSETS = [[],
+@@ -86,17 +89,81 @@ def test_copy():
+     return
+ 
+ 
+-def test_omd_pickle():
+-    import pickle
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('copier', [copy.copy, copy.deepcopy])
++@pytest.mark.parametrize('itemset', _ITEMSETS)
++def test_omd_copy_protocol(dict_type, copier, itemset):
++    omd = dict_type(itemset)
++    cloned = copier(omd)
++
++    assert type(cloned) is dict_type
++    assert cloned is not omd
++    assert cloned.items(multi=True) == itemset
++    for key in omd:
++        assert cloned.getlist(key) == omd.getlist(key)
++
++    if cloned:
++        cloned.poplast()
++    cloned.add('new', None)
++    cloned.clear()
++    assert omd.items(multi=True) == itemset
++
++
++def test_omd_shallow_copy_values():
++    first = {'nested': [1]}
++    last = {'nested': [2]}
++    omd = OMD([('a', first), ('b', None), ('a', last)])
++
++    cloned = copy.copy(omd)
++
++    assert cloned.getlist('a')[0] is first
++    assert cloned['a'] is last
++    cloned.getlist('a')[0]['nested'].append(3)
++    assert first['nested'] == [1, 3]
++
++
++def test_omd_deepcopy_values():
++    shared = {'nested': [1]}
++    last = {'nested': [2]}
++    omd = OMD([('a', shared), ('b', shared), ('a', last)])
++
++    cloned = copy.deepcopy(omd)
++
++    assert cloned.items(multi=True) == omd.items(multi=True)
++    assert cloned.getlist('a')[0] is cloned['b']
++    for original, copied in zip(omd.values(multi=True), cloned.values(multi=True)):
++        assert copied is not original
++        assert copied['nested'] is not original['nested']
++
++    cloned['b']['nested'].append(3)
++    cloned['a']['nested'].append(4)
++    assert shared == {'nested': [1]}
++    assert last == {'nested': [2]}
++
++
++def test_omd_deepcopy_recursive():
++    omd = OMD([('a', [])])
++    omd.add('a', omd)
++
++    cloned = copy.deepcopy(omd)
++
++    assert cloned is not omd
++    assert cloned.getlist('a')[0] == []
++    assert cloned.getlist('a')[0] is not omd.getlist('a')[0]
++    assert cloned['a'] is cloned
++
++
++@pytest.mark.parametrize('protocol', range(pickle.HIGHEST_PROTOCOL + 1))
++def test_omd_pickle(protocol):
+ 
+     empty = OMD()
+-    pickled = pickle.dumps(empty)
++    pickled = pickle.dumps(empty, protocol=protocol)
+     roundtripped = pickle.loads(pickled)
+     assert roundtripped == empty
+ 
+     nonempty = OMD([('a', 1), ('b', 2), ('b', 3)])
+ 
+-    roundtripped = pickle.loads(pickle.dumps(nonempty)) 
++    roundtripped = pickle.loads(pickle.dumps(nonempty, protocol=protocol))
+     assert roundtripped == nonempty
+     assert roundtripped.getlist('b') == [2, 3]
+ 

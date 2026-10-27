@@ -1,0 +1,82 @@
+{
+  "reviewed_at": "2026-10-25T20:07:09.376465+00:00",
+  "review_type": "parent_read_only_source_review",
+  "records_reviewed": 6,
+  "entries": [
+    {
+      "key": "development--d09--r0--with-skill",
+      "changed_tracked_files": [
+        "memo.py"
+      ],
+      "patch_sha256": "D8514F00FD8905FF7F94724F73B1B4AA9E17DADF0CF90C21457D7EB535C1CA48",
+      "source_hashes": {
+        "memo.py": "191E51890AF3FE1DFD377D8387C3D57B3F94DB6EF207AA1BE08BC8F864F0ABDF"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Canonical signature binding preserves receiver keywords and equivalent cache keys. Cache eligibility/type distinctions prevent invalid values from bypassing business validation; original business execution and failure propagation remain responsible for validation."
+    },
+    {
+      "key": "development--d09--r1--with-skill",
+      "changed_tracked_files": [
+        "memo.py"
+      ],
+      "patch_sha256": "C569F507B9C15C4026ACE1320549DE149449D737336EAC472D1DC42F8D0A33A9",
+      "source_hashes": {
+        "memo.py": "DE44F8A0271F65F683966A04F3638AA844704B25F0DD32FF32ABF3CC0A80B088"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Canonical signature binding preserves receiver keywords and equivalent cache keys. Cache eligibility/type distinctions prevent invalid values from bypassing business validation; original business execution and failure propagation remain responsible for validation."
+    },
+    {
+      "key": "development--d09--r2--with-skill",
+      "changed_tracked_files": [
+        "memo.py"
+      ],
+      "patch_sha256": "60DB946030E24862C7E00297A54A77C85C20C42BE1810D62368CB203F87E21AA",
+      "source_hashes": {
+        "memo.py": "37D42FAF4413BA520D952323DEA2B3768E5F70793B82E55E742342AB67542F5B"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Canonical signature binding preserves receiver keywords and equivalent cache keys. Cache eligibility/type distinctions prevent invalid values from bypassing business validation; original business execution and failure propagation remain responsible for validation."
+    },
+    {
+      "key": "development--d10--r0--with-skill",
+      "changed_tracked_files": [
+        "click/parser.py"
+      ],
+      "patch_sha256": "EE1DA26471FA662B2A407C5D3D4BBF21BDB9AE89AFA77129D647DEB3B60CB77C",
+      "source_hashes": {
+        "click/parser.py": "C1E3F1AFED3B9E6127FD3F882863D50745AC111555F61727BF494B943878842F"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Explicit value provenance is passed through the existing parser helper; optional fallback applies only to a separate token. No new framework, wrapper, fallback, retry or error swallowing observed."
+    },
+    {
+      "key": "development--d10--r1--with-skill",
+      "changed_tracked_files": [
+        "click/parser.py"
+      ],
+      "patch_sha256": "CF9BB3A1785E4C81E5CC2E65D018DC1D76D00397257AC5F2F84AFEAFDE12758F",
+      "source_hashes": {
+        "click/parser.py": "45E7142CCEE630D3C9654E7C406E9A3AC05762AAAA6415713BD3F649CDF9F6A5"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Explicit value provenance is passed through the existing parser helper; optional fallback applies only to a separate token. No new framework, wrapper, fallback, retry or error swallowing observed."
+    },
+    {
+      "key": "development--d10--r2--with-skill",
+      "changed_tracked_files": [
+        "click/parser.py"
+      ],
+      "patch_sha256": "2FB4359132E70AB53C53EE6DA4ACC7CB187754CE86D9271BB6A316026695D0A0",
+      "source_hashes": {
+        "click/parser.py": "595C1BBA4043371F4A8507BAE8AE337357A452F0639824B85CBCC42E5CCD2DD7"
+      },
+      "task_and_existing_visible_tests_unchanged": true,
+      "finding": "Explicit value provenance is passed through the existing parser helper; optional fallback applies only to a separate token. No new framework, wrapper, fallback, retry or error swallowing observed."
+    }
+  ],
+  "no_confirmed_unjustified_added_machinery_in_reviewed_changes": true,
+  "not_a_line_count_or_test_count_score": true,
+  "limits": "Review of these six known development outputs only; not a proof of general safety, causal improvement or production readiness."
+}

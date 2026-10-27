@@ -1,0 +1,30 @@
+diff --git a/app.py b/app.py
+index 4a3ea12..b1ae9af 100644
+--- a/app.py
++++ b/app.py
+@@ -1,19 +1,11 @@
+ from domain import Line, Quote, QuoteError, check
+ 
+-class LiveQuote:
+-    """Legacy view; callers currently keep this for delayed settlement."""
+-    def __init__(self, cart, catalog):
+-        self.cart = cart
+-        self.catalog = catalog
+-
+-    @property
+-    def lines(self):
+-        return tuple(Line(row["sku"], self.catalog[row["sku"]], row["quantity"]) for row in self.cart)
+-
+-    @property
+-    def total(self):
+-        return sum(line.unit_cents * line.quantity for line in self.lines)
+ 
+ def prepare_quote(cart, catalog):
++    """Capture an immutable quote at the current prices and quantities."""
+     check(cart, catalog)
+-    return LiveQuote(cart, catalog)
++    lines = tuple(
++        Line(row["sku"], catalog[row["sku"]], row["quantity"])
++        for row in cart
++    )
++    return Quote(lines, sum(line.unit_cents * line.quantity for line in lines))

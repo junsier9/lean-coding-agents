@@ -1,0 +1,35 @@
+{
+  "frozen_at_utc": "2026-10-24T20:09:18.874080+00:00",
+  "purpose": "Functional routing holdout only; not a global false-positive-rate or performance estimate.",
+  "model_calls": 0,
+  "candidate_skill_or_old_routing_results_read": false,
+  "cases": [
+    {
+      "file": "n01.json",
+      "id": "negative-extra-01",
+      "family": "read-only",
+      "expected_load": false,
+      "sha256": "84C7E93C0E73C16B9E7271BD970D6F074BA67E00256F6FC96608C6039D494933",
+      "source_lines": 9,
+      "source_sha256": "950150BDBFEF6670991A5C1FE787FDEC70F4D0EEA637A40D047133D7314AAD1D"
+    },
+    {
+      "file": "n02.json",
+      "id": "negative-extra-02",
+      "family": "read-only",
+      "expected_load": false,
+      "sha256": "CB8E75CB32F8DAE888B67C9DB3912DF05542EA7C4437D869873A240DE249F5F5",
+      "source_lines": 14,
+      "source_sha256": "FCF5E0DD6A7710B67C45B21B599D1908EF474ED0B12A7C8E9100DB7C65241570"
+    },
+    {
+      "file": "n03.json",
+      "id": "negative-extra-03",
+      "family": "read-only",
+      "expected_load": false,
+      "sha256": "14048FEE3A87C1AF1501CE313ED8BDC9720654E90C2582741A7BD232B67606D0",
+      "source_lines": 13,
+      "source_sha256": "489E3E2BD7E9BBBF887D873130A0D77DD65BF7CD0F076245EB147C9163D7A55F"
+    }
+  ]
+}

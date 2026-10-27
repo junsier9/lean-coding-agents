@@ -1,0 +1,226 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..84e0ee4 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2608,6 +2608,8 @@ class Parameter(ABC):
+ 
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
++            # Make the incoming source available to type conversion and callbacks.
++            ctx.set_parameter_source(self.name, source)
+ 
+             # Display a deprecation warning if necessary.
+             if (
+@@ -2658,10 +2660,9 @@ class Parameter(ABC):
+             if self.expose_value:
+                 ctx.params[self.name] = value
+                 ctx._param_default_explicit[self.name] = self._default_explicit
+-        elif existing_source is None:
+-            # Nothing has claimed the slot yet. Record at least our source so downstream
+-            # lookups don't return ``None``.
+-            ctx.set_parameter_source(self.name, source)
++        elif existing_source is not None:
++            # Keep the source paired with the value that retained the shared slot.
++            ctx.set_parameter_source(self.name, existing_source)
+ 
+         return value, args
+ 
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 49f0ac6..0f232f1 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -265,6 +265,83 @@ def test_default_map_source(runner, args, default_map, expected_value, expected_
+     assert f"source={expected_source}" in result.output
+ 
+ 
++@pytest.mark.parametrize("is_eager", [False, True])
++@pytest.mark.parametrize("expose_value", [False, True])
++@pytest.mark.parametrize(
++    ("args", "env", "default_map", "expected_value", "expected_source"),
++    [
++        (
++            ["--name", "cli"],
++            {"NAME": "environment"},
++            {"name": "mapped"},
++            "cli",
++            click.ParameterSource.COMMANDLINE,
++        ),
++        (
++            [],
++            {"NAME": "environment"},
++            {"name": "mapped"},
++            "environment",
++            click.ParameterSource.ENVIRONMENT,
++        ),
++        (
++            [],
++            {"AUTO_NAME": "environment"},
++            {"name": "mapped"},
++            "environment",
++            click.ParameterSource.ENVIRONMENT,
++        ),
++        ([], {}, {"name": "mapped"}, "mapped", click.ParameterSource.DEFAULT_MAP),
++        ([], {}, None, "original", click.ParameterSource.DEFAULT),
++    ],
++)
++def test_parameter_source_during_processing(
++    runner, is_eager, expose_value, args, env, default_map, expected_value, expected_source
++):
++    seen = []
++
++    class SourceType(click.ParamType):
++        def convert(self, value, param, ctx):
++            seen.append(("type", value, ctx.get_parameter_source(param.name)))
++            return value
++
++    def callback(ctx, param, value):
++        seen.append(("callback", value, ctx.get_parameter_source(param.name)))
++        return value
++
++    @click.command()
++    @click.option(
++        "--name",
++        default="original",
++        envvar="NAME",
++        type=SourceType(),
++        callback=callback,
++        is_eager=is_eager,
++        expose_value=expose_value,
++    )
++    @click.pass_context
++    def cli(ctx, **params):
++        return params, ctx.get_parameter_source("name")
++
++    result = runner.invoke(
++        cli,
++        args,
++        env=env,
++        default_map=default_map,
++        auto_envvar_prefix="AUTO",
++        standalone_mode=False,
++    )
++    assert result.exception is None
++    assert seen == [
++        ("type", expected_value, expected_source),
++        ("callback", expected_value, expected_source),
++    ]
++    assert result.return_value == (
++        {"name": expected_value} if expose_value else {},
++        expected_source,
++    )
++
++
+ def test_lookup_default_override_respected(runner):
+     """A subclass override of ``lookup_default()`` should be called by Click
+     internals, not bypassed by a private method.
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 25e649d..d5755fa 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -2895,6 +2895,106 @@ def test_bool_flag_group_competition_with_default_map(
+     assert result.output == repr(expected)
+ 
+ 
++@pytest.mark.parametrize("is_eager", [False, True])
++@pytest.mark.parametrize(
++    ("args", "env", "default_map", "expected", "without_source", "with_source"),
++    [
++        (
++            [],
++            {"XYZ": "0"},
++            None,
++            (False, click.ParameterSource.ENVIRONMENT),
++            click.ParameterSource.DEFAULT,
++            click.ParameterSource.ENVIRONMENT,
++        ),
++        (
++            [],
++            {},
++            None,
++            (True, click.ParameterSource.DEFAULT),
++            click.ParameterSource.DEFAULT,
++            click.ParameterSource.DEFAULT,
++        ),
++        (
++            [],
++            {},
++            {"enable_xyz": False},
++            (False, click.ParameterSource.DEFAULT_MAP),
++            click.ParameterSource.DEFAULT_MAP,
++            click.ParameterSource.DEFAULT_MAP,
++        ),
++        (
++            ["--without-xyz"],
++            {"XYZ": "1"},
++            {"enable_xyz": True},
++            (False, click.ParameterSource.COMMANDLINE),
++            click.ParameterSource.COMMANDLINE,
++            click.ParameterSource.COMMANDLINE,
++        ),
++    ],
++)
++def test_flag_group_parameter_source_during_callbacks(
++    runner, is_eager, args, env, default_map, expected, without_source, with_source
++):
++    seen = {}
++
++    def callback(ctx, param, value):
++        seen[param.opts[0]] = ctx.get_parameter_source(param.name)
++        return value
++
++    @click.command()
++    @click.option("--without-xyz", "enable_xyz", flag_value=False, callback=callback)
++    @click.option(
++        "--with-xyz",
++        "enable_xyz",
++        flag_value=True,
++        default=True,
++        envvar="XYZ",
++        is_eager=is_eager,
++        callback=callback,
++    )
++    @click.pass_context
++    def cli(ctx, enable_xyz):
++        return enable_xyz, ctx.get_parameter_source("enable_xyz")
++
++    result = runner.invoke(
++        cli, args, env=env, default_map=default_map, standalone_mode=False
++    )
++    assert result.exception is None
++    assert seen == {"--without-xyz": without_source, "--with-xyz": with_source}
++    assert result.return_value == expected
++
++
++@pytest.mark.parametrize("resilient_parsing", [False, True])
++def test_flag_group_parameter_source_after_callback_error(runner, resilient_parsing):
++    seen = []
++    error = RuntimeError("callback failed")
++
++    def callback(ctx, param, value):
++        seen.append(ctx.get_parameter_source(param.name))
++        raise error
++
++    @click.command()
++    @click.option("--first", "mode", flag_value="first", is_eager=True, envvar="MODE")
++    @click.option("--second", "mode", flag_value="second", callback=callback)
++    @click.pass_context
++    def cli(ctx, mode):
++        return mode, ctx.get_parameter_source("mode")
++
++    result = runner.invoke(
++        cli,
++        env={"MODE": "first"},
++        resilient_parsing=resilient_parsing,
++        standalone_mode=False,
++    )
++    assert seen == [click.ParameterSource.DEFAULT]
++    if resilient_parsing:
++        assert result.exception is None
++        assert result.return_value == ("first", click.ParameterSource.ENVIRONMENT)
++    else:
++        assert result.exception is error
++
++
+ @pytest.mark.parametrize(
+     ("opts", "args", "expected"),
+     [

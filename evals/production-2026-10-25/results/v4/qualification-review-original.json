@@ -1,0 +1,955 @@
+{
+  "review_id": "production-final-qualification-implementation-review-2026-10-25",
+  "language": "zh-CN",
+  "reviewed_qualification_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+  "scope": "独立审查新的最终发布判定实现；不判断当前 skill 是否有效，不读取 v4 真实模型结果、新40题正文、skill正文、私有标签或固定生产解。",
+  "status": "six_reproducible_qualification_gaps_on_reviewed_revision",
+  "changes_made": {
+    "real_research_code": false,
+    "real_research_data": false,
+    "real_research_reports": false,
+    "protocol": false,
+    "skill": false,
+    "only_durable_artifact": ".local/production-qualification-review.json"
+  },
+  "execution": {
+    "native_cli_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "real_project_tests": 0,
+    "synthetic_full_qualification_scenarios": 43,
+    "temporary_fixtures": "项目 .local 下 TemporaryDirectory，每次验证绝对路径位于隔离目录，测试结束清理；全部候选文件、报告、包和标签均为合成值。"
+  },
+  "inputs_at_initial_read": [
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00"
+    },
+    {
+      "file": "evals/production-2026-10-25/benefit_gate.py",
+      "sha256": "06b981fbc683bdbcdaea6fef2292eb0fc5d103a8d52742184db849a1cebecb6e"
+    },
+    {
+      "file": "evals/production-2026-10-25/study_config.py",
+      "sha256": "d3c04bf865d9ee04e147f16e5dd2bab0fbfb6eefb016201316de8f87ce5a3ffa"
+    },
+    {
+      "file": "evals/production-2026-10-25/results/release-requirements.json",
+      "sha256": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797"
+    },
+    {
+      "file": "evals/production-2026-10-25/protocol-v4.json",
+      "sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746"
+    }
+  ],
+  "schema_only_reads": [
+    "旧 results/evidence-integrity.json 的字段名称/类型",
+    "旧 results/evidence-retention.json 的字段名称/类型",
+    "旧 results/blind-review-summary.json 的字段名称/类型",
+    "旧 results/confirmation-conclusion.json 不存在，仅记录这一事实"
+  ],
+  "probe_method": {
+    "qualification_logic": "通过 importlib 执行被审 qualify_release.py、真实 benefit_gate.py 和 study_config.py；仅把 runner 的 read/write/digest/utc 四个文件/时钟原语替换成同语义本地实现，以避免导入 CLI 运行器。HERE/PROJECT/BASE 指向合成隔离目录，任何 write 均断言未逃离该目录。",
+    "positive_fixture": "两批各20题、双臂3次共240唯一行；全成功。baseline每次1000token/10秒、treatment每次700token/7秒，分析总成本60000/42000、比率和上界均.7；八对盲审均是合成行内真实存在的题。假候选两文件、公开包两条目、私有证据ZIP、hash/字节数/CRC和报告元数据一致。预模型判定代码hash正确、时间早于合成调用。",
+    "negative_fixture": "每个反例从正例重新创建临时目录，只改变所述一项或一组对应元数据；不复用被前一反例污染的输出。",
+    "source_version_guard": "探针在任何执行前断言 qualifier hash 为 B1729D...，防止父任务修复后把新代码的结果混称原版本结果。",
+    "classification_limit": "自相矛盾/过期报告的反例用于测试最终 gate 能否发现旧 study、旧阶段、错误phase或失去原始证据的组合。它们不证明真实研究存在这些错误，也不要求对恶意伪造报告作密码学安全保证。"
+  },
+  "summary": {
+    "positive_controls_passed": 1,
+    "expected_rejections": 30,
+    "unexpected_acceptances": 12,
+    "grouped_findings": 6,
+    "no_real_skill_effect_decision": true
+  },
+  "findings": [
+    {
+      "id": "Q01",
+      "severity": "blocking_before_final_qualification_freeze",
+      "title": "分析、原始记录和 study/phase 没有最终对应校验",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            48,
+            56
+          ],
+          "note": "真实导出只查240行与最早时间；分析按文件名读取，没有验证其phase或复算与当前原始行的一致性。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            101,
+            107
+          ],
+          "note": "只相信 integrity 的总布尔值/branch计数；未检查已有 study_version、integrity_issues、analyses_reproduced_from_exported_rows 等具体字段或当前文件绑定。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            46,
+            73
+          ],
+          "note": "要求两个新批次完整配对、同一endpoint及固定方法，不能借另一个study或复制单批结果替代。",
+          "source_sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json"
+        }
+      ],
+      "probes": [
+        "formal_analysis_reused_as_replication",
+        "analysis_study_labels_v3",
+        "240_duplicate_real_rows",
+        "raw_acceptance_disagrees_with_analyses",
+        "integrity_wrong_study",
+        "integrity_analysis_replay_false"
+      ],
+      "observed": "六种情形都 production_assistant_qualified=True。包括把唯一一行重复240次，以及原始240行全部accepted=False但分析仍报告60/60。",
+      "impact": "文件放在 results/v4 并不能保证其内容来自 v4 的正确phase或当前原始导出；输出时才计算 source_report_sha256 只记录已接受的错配，不能证明资格判定用的是复算一致的结果。",
+      "targeted_correction_scope": "在已有完整性/重放结果与当前导出/分析之间核对 study、phase、配对唯一性与内容身份；不改任务、统计算法或收益阈值。"
+    },
+    {
+      "id": "Q02",
+      "severity": "blocking_before_final_qualification_freeze",
+      "title": "关键回归等阶段没有绑定到最终候选的同一字节版本",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            41,
+            45
+          ],
+          "note": "只把 candidate-freeze 的两个hash与当前候选/包匹配。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            57,
+            59
+          ],
+          "note": "CLI iteration 决定读取哪一组阶段摘要。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            84,
+            86
+          ],
+          "note": "阶段gate只核对计数和摘要bool，未核对它们对应的候选hash或与freeze的测试证据身份。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            11,
+            25
+          ],
+          "note": "最终候选须在新确认前冻结，development/read等gate是该候选证据。",
+          "source_sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json"
+        }
+      ],
+      "probes": [
+        "stage_hash_other_candidate"
+      ],
+      "observed": "仅把 safety 摘要的 skill_sha256 改成 NOT-THE-CANDIDATE，freeze、当前候选、包和真实导出保持原合成hash，仍 critical_contracts=True/qualified=True。",
+      "impact": "旧阶段摘要或误选 iteration 的全通过计数可以为另一候选提供资格。真实 schema 若通过记录/冻结清单而非摘要直接存hash，应绑定到那个实际权威身份；不能仅依赖本探针添加字段的名字。",
+      "targeted_correction_scope": "核对当前候选与 development/safety/routing 所用字节身份；复用既有freeze/证据字段，不增加新的研究门槛。"
+    },
+    {
+      "id": "Q03",
+      "severity": "blocking_before_final_qualification_freeze",
+      "title": "盲态已明确破坏的报告仍通过 blinded_review",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            89,
+            92
+          ],
+          "note": "核对8对、计划成员、源hash和无风险结论，未检查已有盲态泄露标志。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            89,
+            93
+          ],
+          "note": "要求预先指定的独立盲审，并在父级解盲前完成。",
+          "source_sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json"
+        }
+      ],
+      "probes": [
+        "blindness_explicitly_violated"
+      ],
+      "observed": "仅把 reviewer_received_labels_costs_skill_or_hidden_fixes 改为 True，仍 blinded_review=True，整体qualified=True。",
+      "impact": "完成8份审查不等于完成8份盲态审查；报告已经明示失去盲态时不能继续认证该gate。",
+      "targeted_correction_scope": "检查已存在的盲态声明，并把计划/审查身份与预先冻结的对应关系保留；不改变8对或原定选择规则。"
+    },
+    {
+      "id": "Q04",
+      "severity": "blocking_two_file_package_check",
+      "title": "set(namelist) 吞掉同名重复 ZIP 条目，实际三条目包通过",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            71,
+            78
+          ],
+          "note": "package_entries_verified 是摘要数字，实际ZIP只比较名字集合；按名字读取会读取同名最后条目。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/release-requirements.json",
+          "lines": [
+            12,
+            13
+          ],
+          "note": "要求双文件包安装/回滚及完整性。",
+          "source_sha256": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json"
+        }
+      ],
+      "probes": [
+        "zip_three_entries_with_duplicate_name"
+      ],
+      "observed": "ZIP先写不同的合成 lean-coding/SKILL.md，再写正确 SKILL.md 和 agents/openai.yaml，实际len(namelist)=3；所有CRC正确且最终按名字读取的hash正确，仍 two_file_package=True/qualified=True。",
+      "impact": "实际归档包含未被最终hash比较覆盖的额外内容；不同解压器的重复名称处理还可能不同。当前检查不能证明包恰有两条目。",
+      "targeted_correction_scope": "按真实条目数量/唯一性核对两文件，而非只比较去重后的集合。"
+    },
+    {
+      "id": "Q05",
+      "severity": "blocking_evidence_retention_gate",
+      "title": "evidence-retention 被要求存在，却没有被用来判定",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            28,
+            37
+          ],
+          "note": "要求读入 evidence-retention.json。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            83,
+            103
+          ],
+          "note": "全部gates没有使用该报告；private archive 路径/内容未核对。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/protocol-v4.json",
+          "lines": [
+            89,
+            93
+          ],
+          "note": "要求 raw/data integrity 与统计复现。",
+          "source_sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json"
+        }
+      ],
+      "probes": [
+        "retention_crc_explicitly_false",
+        "private_evidence_archive_absent"
+      ],
+      "observed": "单独把 all_archive_entries_crc_and_sha256_verified 改为False，或删除合成私有证据ZIP，仍 qualified=True。",
+      "impact": "当前证据可能已不能留存/复核，但一份旧 integrity=True 摘要依然通行。仅存在所需文件名没有验证它声明的保留结果。",
+      "targeted_correction_scope": "使用既有retention检查结果并核对指定 study 的实际归档身份；具体保留规则沿用已有协议。"
+    },
+    {
+      "id": "Q06",
+      "severity": "blocking_material_gain_claim",
+      "title": "至少10%收益声明只信旧 bool，没有核对已使用的上界",
+      "evidence": [
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            53,
+            56
+          ],
+          "note": "positive按数值界判断，material却只聚合batch_criterion_met。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/qualify_release.py",
+          "lines": [
+            111,
+            114
+          ],
+          "note": "qualified后把material bool直接发布成 stable_at_least10percent_benefit。",
+          "source_sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+        },
+        {
+          "file": "evals/production-2026-10-25/results/release-requirements.json",
+          "lines": [
+            15,
+            19
+          ],
+          "note": "同一上界的强阈值必须两批均<.90。",
+          "source_sha256": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+          "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json"
+        }
+      ],
+      "probes": [
+        "material_flags_disagree_with_upper_bound"
+      ],
+      "observed": "两批/两endpoint上界改为.99，保留旧batch_criterion_met=True。正收益仍成立，但实际不足以确认10%；函数仍输出 stable_at_least10percent_benefit.token/time=True。",
+      "impact": "这是无效或过期分析摘要下的直接错误强收益标签；未证明真实冻结 assess 会自行产生这种矛盾输出。",
+      "targeted_correction_scope": "强收益声明与同一个已验证数值界保持一致，不能仅靠未绑定的新旧 bool。"
+    }
+  ],
+  "verified_correct": [
+    "完整且内部一致的合成正例通过全部10个gate。",
+    "任一15个必要报告缺失均在写资格输出前拒绝。",
+    "native完整性False、development失败、critical失败、routing失败、盲审安全/源hash失败、pending trace flag、global安装被修改、evidence完整性False均正确拒绝。",
+    "当前候选freeze不匹配、预模型codehash不匹配、控制记录晚于首次合成调用、239行均正确拒绝。",
+    "skill验收56/60低于95%正确拒绝；不同endpoint分别在两批达标不能拼接成功。",
+    "qualify 固定选择study('v4')，study_config 的v3/v4有不同输出目录、真实branch及私有归档路径；已发现的是内容/证据身份未绑定，而非路径常量直接共用。"
+  ],
+  "limitations": [
+    "全部资格探针只使用合成候选、报告、ZIP、原始行及计划；没有检查任何真实 v4 结果，也没有对当前 skill 有效性作决定。",
+    "runner四个纯I/O/时钟原语是等价替身，完整qualify/benefit/study逻辑真实执行；这不是对实际runner或模型的端到端生产验证。",
+    "部分反例故意造成摘要和底层字段不一致，代表过期、误拷贝或错候选证据的边界；没有声称真实当前报告已不一致。",
+    "阶段hash不匹配探针使用显式skill_sha256字段。修复需对应真实阶段报告已有的权威记录/冻结身份，不能把这个合成字段名误当已验证的真实schema承诺。",
+    "本轮不重述先前一般统计覆盖局限，不修改冻结数据、案例、候选或成本算法。发现针对的是新的发布组合实现。",
+    "若父任务随后修改代码，必须用新hash另记复核，不能把此43场景结果挪用于新版本。"
+  ],
+  "actual_probe_results": [
+    {
+      "probe": "complete_valid_synthetic_bundle",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "missing_required_report:formal-analysis.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: formal-analysis.json"
+    },
+    {
+      "probe": "missing_required_report:replication-analysis.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: replication-analysis.json"
+    },
+    {
+      "probe": "missing_required_report:confirmation-conclusion.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: confirmation-conclusion.json"
+    },
+    {
+      "probe": "missing_required_report:candidate-freeze.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: candidate-freeze.json"
+    },
+    {
+      "probe": "missing_required_report:development-iteration1.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: development-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:safety-iteration1.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: safety-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:routing-iteration1.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: routing-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:blind-review-summary.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: blind-review-summary.json"
+    },
+    {
+      "probe": "missing_required_report:trace-audit.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: trace-audit.json"
+    },
+    {
+      "probe": "missing_required_report:trace-adjudication.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: trace-adjudication.json"
+    },
+    {
+      "probe": "missing_required_report:untracked-output-adjudication.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: untracked-output-adjudication.json"
+    },
+    {
+      "probe": "missing_required_report:package-candidate.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: package-candidate.json"
+    },
+    {
+      "probe": "missing_required_report:evidence-integrity.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: evidence-integrity.json"
+    },
+    {
+      "probe": "missing_required_report:evidence-retention.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: evidence-retention.json"
+    },
+    {
+      "probe": "missing_required_report:pre-model-qualification-control.json",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: pre-model-qualification-control.json"
+    },
+    {
+      "probe": "incomplete_native_runs",
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Finish every planned native attempt before qualification"
+    },
+    {
+      "probe": "development_failure",
+      "qualified": false,
+      "gates": {
+        "development": false,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "critical_failure",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": false,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "routing_failure",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "unsafe_blind_summary",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "blind_sources_changed",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "trace_pending_flag",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": false,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "global_install_modified",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": false,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "evidence_integrity_false",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": false
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "blindness_explicitly_violated",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "retention_crc_explicitly_false",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "integrity_wrong_study",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "integrity_analysis_replay_false",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "stage_hash_other_candidate",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "freeze_hash_mismatch",
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Package candidate differs from the tested frozen bundle"
+    },
+    {
+      "probe": "code_hash_mismatch",
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Qualification code changed after the pre-model freeze"
+    },
+    {
+      "probe": "pre_model_control_after_real_start",
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Fix the decision code before the first fresh native attempt"
+    },
+    {
+      "probe": "less_than240_raw_rows",
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Fix the decision code before the first fresh native attempt"
+    },
+    {
+      "probe": "below95percent_quality",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": false,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "different_endpoints_between_batches",
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": false,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "formal_analysis_reused_as_replication",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "analysis_study_labels_v3",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "240_duplicate_real_rows",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "raw_acceptance_disagrees_with_analyses",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "private_evidence_archive_absent",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "zip_three_entries_with_duplicate_name",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "material_flags_disagree_with_upper_bound",
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    }
+  ],
+  "reproducible_probe_script": "import copy,datetime,hashlib,importlib.util,json,math,pathlib,sys,tempfile,types,warnings,zipfile\nreal_root=pathlib.Path.cwd()\nsource=real_root/'evals/production-2026-10-25'\ndef loadmod(name,path):\n spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);sys.modules[name]=m;spec.loader.exec_module(m);return m\n# Only runner's four file/clock primitives are stubbed; no CLI implementation is imported.\nrunner=types.ModuleType('runner')\nrunner.read=lambda p:json.loads(pathlib.Path(p).read_text(encoding='utf-8'))\nrunner.digest=lambda p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest().upper()\nrunner.utc=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()\ndef write(p,value):\n p=pathlib.Path(p).resolve()\n assert current_project.resolve() in p.parents,('write escaped synthetic fixture',p)\n p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(value,ensure_ascii=False,indent=2),encoding='utf-8')\nrunner.write=write;sys.modules['runner']=runner\nsys.path.insert(0,str(source))\nbenefit=loadmod('benefit_gate',source/'benefit_gate.py')\nsc=loadmod('study_config',source/'study_config.py')\nq=loadmod('qualification_review_target',source/'qualify_release.py')\ninitial_code_hash=runner.digest(source/'qualify_release.py')\nassert initial_code_hash=='B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00',initial_code_hash\nrequired=[\"formal-analysis.json\",\"replication-analysis.json\",\"confirmation-conclusion.json\",\"candidate-freeze.json\",\"development-iteration1.json\",\"safety-iteration1.json\",\"routing-iteration1.json\",\"blind-review-summary.json\",\"trace-audit.json\",\"trace-adjudication.json\",\"untracked-output-adjudication.json\",\"package-candidate.json\",\"evidence-integrity.json\",\"evidence-retention.json\",\"pre-model-qualification-control.json\"]\nresults=[]\ndef analysis(phase):\n return {'phase':phase,'task_count':20,'confidence':.9875,'alpha':.0125,'draws':40000,'seed':20261025,'sampling_unit':'complete paired task with both arms and all3 repeats','integrity':{'ok':True,'structure_ok':True},'quality':{'baseline_accepted':60,'skill_accepted':60,'runs_per_arm':60,'degraded_tasks':[],'gate_pass':True},'metrics':{m:{'available':True,'mode':'exact','actual_ratio':.7,'observed_ratio_upper_bound':None,'upper_one_sided_98_75':.7,'cost_total':{'baseline':60000.,'with-skill':42000.},'batch_criterion_met':True} for m in ['token','time']}}\ndef fixture(project):\n here=project/'evals/production-2026-10-25';base=project/'.local/production-runtime';out=here/'results/v4';out.mkdir(parents=True)\n q.HERE=here;q.PROJECT=project;sc.HERE=here;sc.PROJECT=project;sc.BASE=base\n for branch in ['dev-v4-iteration1','safety-v4-iteration1','routing-v4-iteration1']:(base/branch).mkdir(parents=True)\n candidate=here/'candidates/v4-python';(candidate/'agents').mkdir(parents=True)\n (candidate/'SKILL.md').write_bytes(b'synthetic qualification fixture only\\n')\n (candidate/'agents/openai.yaml').write_bytes(b'synthetic: true\\n')\n hashes={name:runner.digest(candidate/name) for name in q.FILES}\n plan={'selected':[{'pair':f'synthetic-pair-{i}','phase':('formal' if i<4 else 'replication'),'case_id':f'synthetic-{i if i<4 else i+16}','repeat':0} for i in range(8)]}\n write(here/'results/v4-blind-review-plan.json',plan)\n write(project/'.local/production-trace-flags-v4.json',[])\n flags_hash=runner.digest(project/'.local/production-trace-flags-v4.json')\n config=sc.study('v4')\n archive=project/'dist/synthetic-bundle.zip';archive.parent.mkdir(parents=True)\n with zipfile.ZipFile(archive,'w') as z:\n  for name in q.FILES:z.writestr('lean-coding/'+name,(candidate/name).read_bytes())\n retention={'retained_at':'2026-10-25T00:00:00+00:00','study_version':'v4','private_archive':str(config.archive_path),'archive_sha256':'synthetic','archive_bytes':10,'files':1,'all_archive_entries_crc_and_sha256_verified':True,'dependency_trees_and_global_credentials_included':False,'other_study_active_controller_files_excluded':True,'raw_prompts_and_events_kept_private':True}\n config.archive_path.parent.mkdir(parents=True,exist_ok=True)\n with zipfile.ZipFile(config.archive_path,'w') as z:z.writestr('manifest.json',json.dumps({'synthetic':True}))\n retention.update(archive_sha256=runner.digest(config.archive_path),archive_bytes=config.archive_path.stat().st_size,files=1)\n reports={\n 'formal-analysis.json':analysis('formal'),'replication-analysis.json':analysis('replication'),\n 'confirmation-conclusion.json':{'real_valid_runs':240,'skill_sha256':hashes['SKILL.md'],'study_version':'v4'},\n 'candidate-freeze.json':{'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'iteration':1,'study_version':'v4'},\n 'development-iteration1.json':{'native_runs':6,'accepted':6,'body_reads':6,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'safety-iteration1.json':{'native_runs':36,'accepted':36,'body_reads':36,'critical_gate_pass':True,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'routing-iteration1.json':{'model_runs':9,'routing_qualified':True,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'blind-review-summary.json':{'prespecified_pairs':8,'reviews_completed_before_parent_unblinding':8,'entries':copy.deepcopy(plan['selected']),'parent_source_hashes_match':True,'no_confirmed_unsafe_or_unjustified_treatment_machinery':True,'reviewer_received_labels_costs_skill_or_hidden_fixes':False,'native_model_or_network_calls_during_review':0,'review_plan_sha256':runner.digest(here/'results/v4-blind-review-plan.json'),'study_version':'v4'},\n 'trace-audit.json':{'study_version':'v4','actual_native_runs':sum(config.expected_counts.values()),'all_planned_runs_present':True,'integrity_issues':[],'distinct_thread_per_run':True,'potential_flag_count':0},\n 'trace-adjudication.json':{'trace_flags_sha256':flags_hash,'entries':[],'pending_flag_count':0,'reviewed_flag_count':0,'study_version':'v4'},\n 'untracked-output-adjudication.json':{'entries':[],'study_version':'v4'},\n 'package-candidate.json':{'files_sha256':hashes,'package_entries_verified':2,'install_and_rollback_byte_checks_passed':True,'global_skill_directory_modified':False,'archive':archive.name,'archive_sha256':runner.digest(archive),'study_version':'v4'},\n 'evidence-integrity.json':{'all_planned_runs_present':True,'qualification_evidence_integrity_pass':True,'branch_counts':config.expected_counts,'untracked_listing_limitations_for_explicit_review':[],'study_version':'v4','private_archive_verified':True,'integrity_issues':[],'analyses_reproduced_from_exported_rows':{'formal':True,'replication':True}},\n 'evidence-retention.json':retention,\n 'pre-model-qualification-control.json':{'qualification_code_sha256':initial_code_hash,'recorded_at':'2026-10-24T00:00:00+00:00','study_version':'v4'}}\n rows=[{'phase':phase,'case_id':f'synthetic-{20*ph+i}','arm':arm,'repeat':rep,'started_at':'2026-10-25T00:00:00+00:00','accepted':True,'completed':True,'usage_complete':True,'total_tokens':(1000 if arm=='baseline' else 700),'wall_seconds':(10 if arm=='baseline' else 7),'skill_sha256':hashes['SKILL.md'],'case_sha256':f'synthetic-hash-{20*ph+i}'} for ph,phase in enumerate(['formal','replication']) for i in range(20) for rep in range(3) for arm in ['baseline','with-skill']]\n return here,out,candidate,archive,reports,rows\ndef run(label,mutate=None,omit=None):\n global current_project\n with tempfile.TemporaryDirectory(prefix='qualification-review-',dir=real_root/'.local') as td:\n  current_project=pathlib.Path(td).resolve()\n  assert current_project.parent==(real_root/'.local').resolve()\n  here,out,candidate,archive,reports,rows=fixture(current_project)\n  if mutate:mutate(here,out,candidate,archive,reports,rows)\n  for name,obj in reports.items():\n   if name!=omit:write(out/name,obj)\n  (out/'runs-real-v4.jsonl').write_text('\\n'.join(json.dumps(r) for r in rows)+'\\n',encoding='utf-8')\n  try:\n   import contextlib,io\n   with contextlib.redirect_stdout(io.StringIO()):result=q.qualify(1,candidate)\n   observed={'qualified':result['production_assistant_qualified'],'gates':result['gates'],'material':result['stable_at_least10percent_benefit']}\n  except Exception as exc:observed={'qualified':False,'exception':type(exc).__name__,'message':str(exc)}\n  results.append(dict(probe=label,**observed))\ndef setreport(name,key,value):return lambda h,o,c,a,rs,rows:rs[name].__setitem__(key,value)\nrun('complete_valid_synthetic_bundle')\nfor name in required:run('missing_required_report:'+name,omit=name)\nfor label,name,key,value in [\n ('incomplete_native_runs','evidence-integrity.json','all_planned_runs_present',False),\n ('development_failure','development-iteration1.json','accepted',5),\n ('critical_failure','safety-iteration1.json','critical_gate_pass',False),\n ('routing_failure','routing-iteration1.json','routing_qualified',False),\n ('unsafe_blind_summary','blind-review-summary.json','no_confirmed_unsafe_or_unjustified_treatment_machinery',False),\n ('blind_sources_changed','blind-review-summary.json','parent_source_hashes_match',False),\n ('trace_pending_flag','trace-adjudication.json','pending_flag_count',1),\n ('global_install_modified','package-candidate.json','global_skill_directory_modified',True),\n ('evidence_integrity_false','evidence-integrity.json','qualification_evidence_integrity_pass',False),\n ('blindness_explicitly_violated','blind-review-summary.json','reviewer_received_labels_costs_skill_or_hidden_fixes',True),\n ('retention_crc_explicitly_false','evidence-retention.json','all_archive_entries_crc_and_sha256_verified',False),\n ('integrity_wrong_study','evidence-integrity.json','study_version','v3'),\n ('integrity_analysis_replay_false','evidence-integrity.json','analyses_reproduced_from_exported_rows',{'formal':False,'replication':False}),\n ('stage_hash_other_candidate','safety-iteration1.json','skill_sha256','NOT-THE-CANDIDATE')]:\n run(label,setreport(name,key,value))\ndef badfreeze(h,o,c,a,rs,rows):rs['candidate-freeze.json']['ui_sha256']='wrong'\nrun('freeze_hash_mismatch',badfreeze)\nrun('code_hash_mismatch',setreport('pre-model-qualification-control.json','qualification_code_sha256','wrong'))\nrun('pre_model_control_after_real_start',setreport('pre-model-qualification-control.json','recorded_at','2026-10-26T00:00:00+00:00'))\nrun('less_than240_raw_rows',lambda h,o,c,a,rs,rows:rows.pop())\ndef lowquality(h,o,c,a,rs,rows):rs['formal-analysis.json']['quality']['skill_accepted']=56\nrun('below95percent_quality',lowquality)\ndef crossover(h,o,c,a,rs,rows):\n rs['formal-analysis.json']['metrics']['time']['upper_one_sided_98_75']=1.1\n rs['replication-analysis.json']['metrics']['token']['upper_one_sided_98_75']=1.1\nrun('different_endpoints_between_batches',crossover)\ndef bothanalysesformal(h,o,c,a,rs,rows):rs['replication-analysis.json']=copy.deepcopy(rs['formal-analysis.json'])\nrun('formal_analysis_reused_as_replication',bothanalysesformal)\ndef bothanalysesv3(h,o,c,a,rs,rows):\n for name in ['formal-analysis.json','replication-analysis.json']:rs[name]['study_version']='v3'\nrun('analysis_study_labels_v3',bothanalysesv3)\ndef duplicates(h,o,c,a,rs,rows):rows[:]=[copy.deepcopy(rows[0]) for _ in range(240)]\nrun('240_duplicate_real_rows',duplicates)\ndef rawfail(h,o,c,a,rs,rows):\n for r in rows:r['accepted']=False\nrun('raw_acceptance_disagrees_with_analyses',rawfail)\ndef removedarchive(h,o,c,a,rs,rows):sc.study('v4').archive_path.unlink()\nrun('private_evidence_archive_absent',removedarchive)\ndef zipduplicate(h,o,c,a,rs,rows):\n with warnings.catch_warnings():\n  warnings.simplefilter('ignore')\n  with zipfile.ZipFile(a,'w') as z:\n   z.writestr('lean-coding/SKILL.md',b'synthetic different first duplicate\\n')\n   for name in q.FILES:z.writestr('lean-coding/'+name,(c/name).read_bytes())\n rs['package-candidate.json']['archive_sha256']=runner.digest(a)\nrun('zip_three_entries_with_duplicate_name',zipduplicate)\ndef wrongmaterial(h,o,c,a,rs,rows):\n for name in ['formal-analysis.json','replication-analysis.json']:\n  for m in ['token','time']:rs[name]['metrics'][m]['upper_one_sided_98_75']=.99\nrun('material_flags_disagree_with_upper_bound',wrongmaterial)\nprint(json.dumps({'reviewed_qualifier_sha256':initial_code_hash,'synthetic_runs':len(results),'positive_fixture_consistency':'raw costs and analyses agree; blinded pairs are actual synthetic tasks; private evidence is a valid ZIP with matching digest/size','results':results},ensure_ascii=True))\n",
+  "post_review_followup": [],
+  "input_source_snapshots": [
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py",
+      "sha256": "b1729d99a10fd7ba5dbf6cdf0d87ce3265cea5d024f207a35cf892c45a01dd00",
+      "content_utf8": "\"\"\"Combine the pre-frozen release requirements after the complete v4 study.\"\"\"\nfrom pathlib import Path\nimport argparse\nfrom collections import Counter\nfrom datetime import datetime\nimport hashlib\nimport json\nimport zipfile\nimport runner\nfrom benefit_gate import credible_benefit\nfrom study_config import study\n\nHERE = Path(__file__).resolve().parent\nPROJECT = HERE.parent.parent\nFILES = (\"SKILL.md\", \"agents/openai.yaml\")\n\n\ndef quality_qualified(analyses):\n    return len(analyses) == 2 and all(\n        a[\"task_count\"] == 20 and a[\"quality\"][\"runs_per_arm\"] == 60\n        and a[\"quality\"][\"gate_pass\"] is True\n        and a[\"quality\"][\"skill_accepted\"] >= 57 for a in analyses.values())\n\n\ndef qualify(iteration, candidate):\n    config = study(\"v4\")\n    out = config.out\n    names = [\"formal-analysis.json\", \"replication-analysis.json\", \"confirmation-conclusion.json\",\n             \"candidate-freeze.json\", f\"development-iteration{iteration}.json\",\n             f\"safety-iteration{iteration}.json\", f\"routing-iteration{iteration}.json\",\n             \"blind-review-summary.json\", \"trace-audit.json\", \"trace-adjudication.json\",\n             \"untracked-output-adjudication.json\", \"package-candidate.json\",\n             \"evidence-integrity.json\", \"evidence-retention.json\", \"pre-model-qualification-control.json\"]\n    missing = [name for name in names if not (out / name).is_file()]\n    if missing:\n        raise RuntimeError(\"Complete required evidence before qualification: \" + \", \".join(missing))\n    reports = {name: runner.read(out / name) for name in names}\n    integrity = reports[\"evidence-integrity.json\"]\n    if not integrity[\"all_planned_runs_present\"]:\n        raise RuntimeError(\"Finish every planned native attempt before qualification\")\n    candidate = candidate.resolve()\n    hashes = {name: runner.digest(candidate / name) for name in FILES}\n    freeze = reports[\"candidate-freeze.json\"]\n    if freeze[\"skill_sha256\"] != hashes[\"SKILL.md\"] or freeze[\"ui_sha256\"] != hashes[\"agents/openai.yaml\"]:\n        raise ValueError(\"Package candidate differs from the tested frozen bundle\")\n    if reports[\"pre-model-qualification-control.json\"][\"qualification_code_sha256\"] != runner.digest(Path(__file__)):\n        raise ValueError(\"Qualification code changed after the pre-model freeze\")\n    real_rows = [json.loads(line) for line in (out / \"runs-real-v4.jsonl\").read_text(encoding=\"utf-8\").splitlines()]\n    decision_fixed_at = datetime.fromisoformat(reports[\"pre-model-qualification-control.json\"][\"recorded_at\"])\n    if len(real_rows) != 240 or decision_fixed_at >= min(datetime.fromisoformat(row[\"started_at\"]) for row in real_rows):\n        raise ValueError(\"Fix the decision code before the first fresh native attempt\")\n    analyses = {phase: reports[phase + \"-analysis.json\"] for phase in (\"formal\", \"replication\")}\n    positive = {metric: all(credible_benefit(a, metric) for a in analyses.values())\n                for metric in (\"token\", \"time\")}\n    material = {metric: all(a[\"metrics\"][metric][\"batch_criterion_met\"] for a in analyses.values())\n                for metric in (\"token\", \"time\")}\n    development = reports[f\"development-iteration{iteration}.json\"]\n    safety = reports[f\"safety-iteration{iteration}.json\"]\n    routing = reports[f\"routing-iteration{iteration}.json\"]\n    blind = reports[\"blind-review-summary.json\"]\n    trace = reports[\"trace-audit.json\"]\n    flags = reports[\"trace-adjudication.json\"]\n    raw_flags_path = PROJECT / \".local/production-trace-flags-v4.json\"\n    raw_flags = runner.read(raw_flags_path)\n    flag_id = lambda flag: hashlib.sha256(json.dumps(flag, sort_keys=True, ensure_ascii=False, separators=(\",\", \":\")).encode(\"utf-8\")).hexdigest().upper()\n    flag_reviews_match = (flags[\"trace_flags_sha256\"] == runner.digest(raw_flags_path)\n        and Counter(entry[\"flag_id\"] for entry in flags[\"entries\"]) == Counter(flag_id(flag) for flag in raw_flags)\n        and all(entry[\"decision\"] == \"benign_keyword_match\" for entry in flags[\"entries\"]))\n    outputs = reports[\"untracked-output-adjudication.json\"]\n    package = reports[\"package-candidate.json\"]\n    package_ok = (package[\"files_sha256\"] == hashes and package[\"package_entries_verified\"] == 2\n                  and package[\"install_and_rollback_byte_checks_passed\"] is True\n                  and package[\"global_skill_directory_modified\"] is False)\n    archive = PROJECT / \"dist\" / package[\"archive\"]\n    package_ok = package_ok and runner.digest(archive) == package[\"archive_sha256\"]\n    with zipfile.ZipFile(archive) as z:\n        package_ok = package_ok and z.testzip() is None and set(z.namelist()) == {\"lean-coding/\" + name for name in FILES}\n        package_ok = package_ok and all(hashlib.sha256(z.read(\"lean-coding/\" + name)).hexdigest().upper() == hashes[name] for name in FILES)\n    plan = runner.read(HERE / \"results/v4-blind-review-plan.json\")\n    selection = lambda entry: tuple(entry[key] for key in (\"pair\", \"phase\", \"case_id\", \"repeat\"))\n    warning_keys = {(entry[\"branch\"], entry[\"key\"]) for entry in integrity[\"untracked_listing_limitations_for_explicit_review\"]}\n    reviewed_keys = {(entry[\"branch\"], entry[\"key\"]) for entry in outputs[\"entries\"]}\n    gates = {\n        \"development\": development[\"native_runs\"] == development[\"accepted\"] == development[\"body_reads\"] == 6,\n        \"critical_contracts\": safety[\"native_runs\"] == safety[\"accepted\"] == safety[\"body_reads\"] == 36 and safety[\"critical_gate_pass\"] is True,\n        \"native_routing\": routing[\"model_runs\"] == 9 and routing[\"routing_qualified\"] is True,\n        \"real_quality\": quality_qualified(analyses),\n        \"same_endpoint_positive\": any(positive.values()),\n        \"blinded_review\": blind[\"prespecified_pairs\"] == blind[\"reviews_completed_before_parent_unblinding\"] == 8\n            and {selection(e) for e in blind[\"entries\"]} == {selection(e) for e in plan[\"selected\"]}\n            and blind[\"parent_source_hashes_match\"] is True\n            and blind[\"no_confirmed_unsafe_or_unjustified_treatment_machinery\"] is True,\n        \"trace_integrity\": trace[\"study_version\"] == \"v4\" and trace[\"actual_native_runs\"] == sum(config.expected_counts.values())\n            and trace[\"all_planned_runs_present\"] is True and not trace[\"integrity_issues\"]\n            and trace[\"distinct_thread_per_run\"] is True and flags[\"pending_flag_count\"] == 0\n            and flags[\"reviewed_flag_count\"] == trace[\"potential_flag_count\"] == len(raw_flags) and flag_reviews_match,\n        \"output_limitations_reviewed\": warning_keys == reviewed_keys\n            and all(e[\"no_tracked_source_files_below_directory\"] is True and e[\"not_a_symlink_or_junction\"] is True\n                        and e[\"original_workspace_retained\"] is True and bool(e[\"setup_command_sha256\"]) for e in outputs[\"entries\"]),\n        \"two_file_package\": package_ok,\n        \"evidence_integrity\": integrity[\"qualification_evidence_integrity_pass\"] is True\n            and integrity[\"branch_counts\"] == config.expected_counts,\n    }\n    qualified = all(gates.values())\n    conclusion = reports[\"confirmation-conclusion.json\"]\n    if conclusion[\"real_valid_runs\"] != 240 or conclusion[\"skill_sha256\"] != hashes[\"SKILL.md\"]:\n        raise ValueError(\"Wrong confirmation conclusion\")\n    result = {\"evaluated_at\": runner.utc(), \"candidate\": \"v4\", \"skill_sha256\": hashes[\"SKILL.md\"],\n              \"candidate_directory\": candidate.relative_to(PROJECT).as_posix(),\n              \"production_assistant_qualified\": qualified, \"gates\": gates,\n              \"same_endpoint_credible_positive\": positive,\n              \"two_batch_material_metric_criterion\": material,\n              \"stable_at_least10percent_benefit\": {metric: qualified and value for metric, value in material.items()},\n              \"claim_requires_complete_qualification\": True,\n              \"source_report_sha256\": {name: runner.digest(out / name) for name in names},\n              \"qualification_code_sha256\": runner.digest(Path(__file__)),\n              \"supported_scope\": \"Tested Codex configuration and existing Python maintenance with project CI and review\",\n              \"limits\": \"Observed guard acceptance and approximate paired task-cluster intervals; no universal defect, latency or benefit guarantee. Claude untested.\",\n              \"global_skill_installation_or_external_publication\": False}\n    runner.write(out / \"release-qualification.json\", result)\n    runner.write(HERE / \"results/release-qualification.json\", result)\n    print(json.dumps({\"production_assistant_qualified\": qualified, \"gates\": gates}))\n    return result\n\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--iteration\", type=int, required=True)\n    parser.add_argument(\"--candidate\", type=Path, default=HERE / \"candidates/v4-python\")\n    args = parser.parse_args()\n    qualify(args.iteration, args.candidate)\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/benefit_gate.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\benefit_gate.py",
+      "sha256": "06b981fbc683bdbcdaea6fef2292eb0fc5d103a8d52742184db849a1cebecb6e",
+      "content_utf8": "\"\"\"Apply the pre-frozen positive-gain threshold to an assessment, including bounds.\"\"\"\nfrom assess import core\n\n\ndef credible_benefit(batch, metric):\n    quality = batch[\"quality\"]\n    if not quality[\"gate_pass\"] or batch[\"task_count\"] != 20:\n        return False\n    if min(quality[\"baseline_accepted\"], quality[\"skill_accepted\"]) <= 0:\n        return False\n    value = batch[\"metrics\"][metric]\n    if not value[\"available\"]:\n        return False\n    upper = value[\"upper_one_sided_98_75\"]\n    observed = (value[\"actual_ratio\"] if value[\"mode\"] == \"exact\"\n                else value[\"observed_ratio_upper_bound\"])\n    if not core._number(upper) or not core._number(observed):\n        return False\n    return bool(0 < upper < 1 and observed > 0\n                and all(core._number(cost) and cost > 0 for cost in value[\"cost_total\"].values()))\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/study_config.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\study_config.py",
+      "sha256": "d3c04bf865d9ee04e147f16e5dd2bab0fbfb6eefb016201316de8f87ce5a3ffa",
+      "content_utf8": "\"\"\"Separate the two preplanned studies while retaining every development iteration.\"\"\"\nfrom pathlib import Path\nfrom typing import NamedTuple\n\nHERE = Path(__file__).resolve().parent\nPROJECT = HERE.parent.parent\nBASE = PROJECT / \".local/production-runtime\"\nV3_COUNTS = {\"dev-v3\": 16, \"routing-v3-python\": 6,\n             \"routing-v3-python-v2\": 9, \"safety-v3\": 72, \"real-v3\": 240}\n\n\nclass Study(NamedTuple):\n    out: Path\n    expected_counts: dict[str, int]\n    real_branch: str\n    archive_path: Path\n    analysis_suffix: str\n\n\ndef study(version):\n    if version == \"v3\":\n        return Study(HERE / \"results\", dict(V3_COUNTS), \"real-v3\",\n                     PROJECT / \".local/production-evidence.zip\", \"-v3-analysis.json\")\n    if version != \"v4\":\n        raise ValueError(\"Only the two preplanned studies v3/v4 are supported\")\n    expected = {}\n    for prefix, count in ((\"dev-v4-iteration\", 6), (\"routing-v4-iteration\", 9), (\"safety-v4-iteration\", 36)):\n        names = sorted(path.name for path in BASE.glob(prefix + \"*\") if path.is_dir())\n        # Before model work starts, the unexecuted mandatory gates stay visible.\n        for name in names or [prefix + \"1\"]:\n            expected[name] = count\n    expected[\"real-v4\"] = 240\n    return Study(HERE / \"results/v4\", expected, \"real-v4\",\n                 PROJECT / \".local/production-v4-evidence.zip\", \"-analysis.json\")\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/results/release-requirements.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json",
+      "sha256": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+      "content_utf8": "{\r\n  \"frozen_at\": \"2026-10-24T20:40:13.300429+00:00\",\r\n  \"protocol_sha256\": \"BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F\",\r\n  \"skill_sha256\": \"026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE\",\r\n  \"new_real_model_runs_before_addition\": 0,\r\n  \"scope\": \"Additional release-fitness requirement; no change to case allocation, scores, analysis or original>=10% threshold\",\r\n  \"required_for_production_assistant_qualification\": [\r\n    \"All frozen critical treatment contracts pass in ordinary and optimized modes\",\r\n    \"Native relevant-edit routing and negative scope checks pass\",\r\n    \"Real treatment acceptance>=baseline in each batch, no task-level accepted-count regression and>=95% treatment acceptance\",\r\n    \"Same efficiency endpoint has its existing one-sided98.75% upper ratio<1.00 in both real batches\",\r\n    \"Independent blinded review finds no confirmed unsafe or unjustified treatment machinery\",\r\n    \"Two-file package install/rollback and evidence integrity checks pass\"\r\n  ],\r\n  \"credible_positive_benefit_threshold_ratio\": 1.0,\r\n  \"material_benefit_claim_threshold_ratio\": 0.9,\r\n  \"same_confidence_bound_for_nested_thresholds\": true,\r\n  \"alpha_note\": \"Both thresholds use the same upper confidence bound for each endpoint; nested claims do not add a separate test. Original2 endpoints x2 confirmatory candidates budget is retained. Bootstrap coverage remains approximate.\",\r\n  \"minimum10percent_claim_still_requires_both_batches_below0_90\": true,\r\n  \"missing_usage_policy_unchanged\": true,\r\n  \"no_universal_or_unattended_production_guarantee\": true\r\n}"
+    },
+    {
+      "file": "evals/production-2026-10-25/protocol-v4.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+      "sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+      "content_utf8": "{\n  \"experiment\": \"lean-coding-python-production-confirmation-slot2\",\n  \"status\": \"planned_before_any_v4_native_model_calls\",\n  \"parent_protocol\": \"protocol.json\",\n  \"parent_protocol_sha256\": \"BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F\",\n  \"parent_release_requirements\": \"results/release-requirements.json\",\n  \"confirmation_slot\": 2,\n  \"maximum_confirmatory_candidates_in_this_study\": 2,\n  \"scope\": \"User-selected Codex + Python production maintenance; Claude remains excluded\",\n  \"first_confirmation_must_complete_before_v4_model_work\": true,\n  \"candidate\": {\n    \"initial_draft\": \"candidates/v4-python-draft/SKILL.md\",\n    \"initial_draft_sha256\": \"086AD88F21493E879D3C64F7A5AED6D7FF049F1BA74F88F02492C59DAE55A67F\",\n    \"status\": \"Development draft; final body and metadata frozen after all development gates, before first new real case\",\n    \"reason\": \"Reproducible legal class-call compatibility failures in a revealed first-round case; preserve public signatures/call forms/protocols and metadata explicitly\",\n    \"not_selected_using_interim_efficiency_metrics\": true,\n    \"no_real_case_specific_names_or_magic_error_messages_in_rules\": true,\n    \"keep_all_development_versions_and_outcomes\": true,\n    \"no_changes_after_real_confirmation_begins\": true\n  },\n  \"development\": {\n    \"cases\": [\"New independent development-next/d09.json\", \"Revealed cachetools436 first-round source and unchanged whole-file guard\"],\n    \"candidate_repeats_per_case\": 3,\n    \"planned_calls_per_development_iteration\": 6,\n    \"gate\": \"All accepted and all skill bodies read; synthetic d09 normal and -O counts both match nonzero reference\",\n    \"purpose\": \"Development only; neither task is a fresh production holdout or efficiency confirmation\",\n    \"refinement\": \"Only concrete behavior or oracle-fidelity failures justify revisions; preserve every version and cost. No real confirmation outcome is available for the new40 cases.\"\n  },\n  \"critical_regression\": {\n    \"source\": \"Unchanged holdout-sealed-v2 twelve contracts, previously tested in slot1\",\n    \"case_manifest_sha256\": \"7FEEF291F22A0ABFA65E8B098157687BB6F4CFFF8247C951AD11120220EAC65A\",\n    \"arms\": [\"with-skill\"],\n    \"repeats_per_case\": 3,\n    \"planned_calls\": 36,\n    \"gate\": \"All36 accepted; all normal and optimized counts match frozen nonzero reference; all bodies read\",\n    \"baseline_context\": \"Previous unchanged no-skill arm passed36/36; no new comparative efficiency claim from these regressions\",\n    \"not_a_new_independent_holdout\": true\n  },\n  \"routing_regression\": {\n    \"requests\": \"Same nine frozen relevant-edit and negative-scope requests used for v3-python-v2\",\n    \"planned_calls\": 9,\n    \"gate\": \"Three related edits load final rule body and pass contracts; six negatives satisfy original no-body-read and intended-scope checks\",\n    \"not_a_population_false_positive_rate_estimate\": true,\n    \"any_metadata_revision_before_real_calls_requires_new_hash_and_preserved_routing_history\": true\n  },\n  \"new_real_confirmation\": {\n    \"selection\": \"results/second-corpus-selection.json\",\n    \"selection_rule\": \"First40 adequate cases in the previously frozen87-case reserve order; independent outcome-blind contract review\",\n    \"all_cases_previously_unexecuted\": true,\n    \"no_overlap_with_prior50_or_first_confirmation40\": true,\n    \"tasks_per_batch\": 20,\n    \"batches\": [\"formal\", \"replication\"],\n    \"arms\": [\"baseline\", \"with-skill\"],\n    \"repeats_per_arm\": 3,\n    \"planned_calls\": 240,\n    \"grading\": \"Same unchanged pinned upstream whole-file guard and overlay hashes\",\n    \"all_failed_costs_retained\": true,\n    \"both_batches_complete_even_if_formal_release_or_material_gain_gate_fails\": true,\n    \"outcome_based_case_replacement_or_resizing\": false\n  },\n  \"unchanged_efficiency_inference\": {\n    \"assessment\": \"assess.py, same frozen implementation as slot1\",\n    \"unit\": \"Complete paired task, both arms and all3 repeats\",\n    \"draws\": 40000,\n    \"seed\": 20261025,\n    \"quantile\": \"inverted_cdf\",\n    \"per_endpoint_alpha_for_this_second_slot\": 0.0125,\n    \"one_sided_confidence\": 0.9875,\n    \"credible_positive_release\": \"Same endpoint upper ratio<1.00 in both batches\",\n    \"stable_at_least10percent_claim\": \"Same endpoint upper ratio<0.90 in both batches\",\n    \"quality\": \"Each batch treatment>=95%, accepted>=baseline and no task-level accepted-count loss\",\n    \"missing_usage\": \"No zero fill or fabricated point estimate; original baseline-only conservative bound policy unchanged\",\n    \"alpha_budget\": \"Consumes remaining original slot. No new alpha or additional confirmatory candidate. Coverage remains approximate, scoped to this study.\"\n  },\n  \"unchanged_execution\": {\n    \"configured_model\": \"gpt-6.1-sol\",\n    \"reasoning\": \"xhigh\",\n    \"maximum_simultaneous_native_solver_processes\": 3,\n    \"fresh_context_and_workspace_per_attempt\": true,\n    \"balanced_seeded_pair_order\": true,\n    \"cli_timeout_seconds\": 600,\n    \"grade_timeout_seconds\": 60,\n    \"paid_cli_checkpoint_before_grade\": true,\n    \"grading_recovery_never_repeats_model\": true,\n    \"no_global_config_changes_or_model_substitution\": true,\n    \"forbid_solver_network_install_delegation_commit_and_cross_run_access\": true,\n    \"resource_limit\": \"On an actual provider limit, stop queued model launches; do not purchase, reset or substitute. Partial cohorts do not establish the fixed-sample claim.\"\n  },\n  \"release\": {\n    \"requires\": [\"Development and critical regressions\", \"Native routing\", \"Both fresh real quality gates\", \"Same credible-positive endpoint in both batches\", \"Eight prespecified blinded pair reviews\", \"Package install and rollback\", \"Raw/data integrity and statistical reproduction\"],\n    \"review_selection\": \"Four pairs per batch, repeat0, seed20261026; random A/B labels seed20261027; freeze before model work\",\n    \"not_universal_correctness_or_unattended_deployment_authorization\": true,\n    \"no_external_publication_during_comparison\": true\n  }\n}\n"
+    }
+  ],
+  "saved_at_utc": "2026-10-25T02:23:49.227521+00:00",
+  "probe_script_sha256": "33752aee7b54f5e8f299c6fea716baf48e5caba9ce0ed0dbe993b2ecf4fb693c"
+}

@@ -1,0 +1,123 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index 54b4397..93b7e57 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -75,13 +75,18 @@ class Callpoint(object):
+         self.line = line
+ 
+     def to_dict(self):
+-        "Get a :class:`dict` copy of the Callpoint. Useful for serialization."
++        """Get a JSON-serializable :class:`dict` copy of the Callpoint.
++
++        Deferred source lines are resolved to strings.
++        """
+         ret = {}
+         for slot in self.__slots__:
+             try:
+                 ret[slot] = getattr(self, slot)
+             except AttributeError:
+                 pass
++        if isinstance(ret.get('line'), _DeferredLine):
++            ret['line'] = str(ret['line'])
+         return ret
+ 
+     @classmethod
+diff --git a/tests/test_tbutils.py b/tests/test_tbutils.py
+index 84f6725..1f0bbcf 100644
+--- a/tests/test_tbutils.py
++++ b/tests/test_tbutils.py
+@@ -1,13 +1,17 @@
+ # -*- coding: utf-8 -*-
+ 
++import json
+ import sys
+ 
++import pytest
++
+ try:
+     from cStringIO import StringIO
+ except:
+     from io import StringIO
+ 
+-from boltons.tbutils import (TracebackInfo,
++from boltons.tbutils import (Callpoint,
++                             TracebackInfo,
+                              ExceptionInfo,
+                              print_exception,
+                              fix_print_exception,
+@@ -15,6 +19,75 @@ from boltons.tbutils import (TracebackInfo,
+                              ContextualExceptionInfo)
+ 
+ 
++def test_callpoint_to_dict():
++    callpoint = Callpoint.from_current()
++    deferred_line = callpoint.line
++
++    result = callpoint.to_dict()
++    assert json.loads(json.dumps(result)) == {
++        'func_name': 'test_callpoint_to_dict',
++        'lineno': callpoint.lineno,
++        'module_name': __name__,
++        'module_path': __file__,
++        'lasti': callpoint.lasti,
++        'line': '    callpoint = Callpoint.from_current()',
++    }
++    assert callpoint.line is deferred_line
++
++
++@pytest.mark.parametrize('line', [None, '', '    return value  ', u'    # 源码'])
++def test_callpoint_to_dict_explicit_line(line):
++    callpoint = Callpoint('example', 'example.py', 'func', 3, 7, line=line)
++
++    assert json.loads(json.dumps(callpoint.to_dict())) == {
++        'func_name': 'func',
++        'lineno': 3,
++        'module_name': 'example',
++        'module_path': 'example.py',
++        'lasti': 7,
++        'line': line,
++    }
++
++
++def test_callpoint_to_dict_unavailable_source():
++    callpoint = eval(compile('Callpoint.from_current()', '<no source>', 'eval'),
++                     {'Callpoint': Callpoint})
++
++    result = json.loads(json.dumps(callpoint.to_dict()))
++    assert result['line'] == ''
++    assert result['module_path'] == '<no source>'
++
++
++@pytest.mark.parametrize('info_type', [ExceptionInfo, ContextualExceptionInfo])
++def test_exception_info_to_dict(info_type):
++    def fail():
++        value = 42
++        raise ValueError('diagnostic data')
++
++    try:
++        fail()
++    except ValueError:
++        info = info_type.from_current()
++
++    result = json.loads(json.dumps(info.to_dict()))
++    assert result['exc_type'] == 'ValueError'
++    assert result['exc_msg'] == 'diagnostic data'
++    frames = result['exc_tb']['frames']
++    assert len(frames) == 2
++    assert frames[0]['line'].strip() == 'fail()'
++    assert frames[1]['line'].strip() == "raise ValueError('diagnostic data')"
++    assert frames[1]['func_name'] == 'fail'
++    assert frames[1]['module_name'] == __name__
++    assert frames[1]['module_path'] == __file__
++    assert isinstance(frames[1]['lineno'], int)
++    assert isinstance(frames[1]['lasti'], int)
++    if info_type is ContextualExceptionInfo:
++        assert frames[1]['locals']['value'] == '42'
++        assert any(line['line'].strip() == 'value = 42'
++                   for line in frames[1]['pre_lines'])
++        assert 'post_lines' in frames[1]
++
++
+ 
+ def test_exception_info():
+     # test ExceptionInfo and TracebackInfo and hooks, via StringIOs

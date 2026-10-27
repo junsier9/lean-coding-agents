@@ -1,0 +1,100 @@
+{
+  "valid_runs": 300,
+  "tasks": 50,
+  "all_planned_keys_exactly_once": true,
+  "all_journal_rows_match_local_records": true,
+  "all_grade_decisions_reconciled": true,
+  "all_available_usage_sums_reconciled": true,
+  "missing_usage_retained_as_null": true,
+  "all_recorded_time_sums_reconciled": true,
+  "replayed_from_all_records": {
+    "pilot": {
+      "task_count": 10,
+      "metrics_reproduced": true,
+      "quality_reproduced": true,
+      "structure_ok": true
+    },
+    "formal": {
+      "task_count": 20,
+      "metrics_reproduced": true,
+      "quality_reproduced": true,
+      "structure_ok": true
+    },
+    "replication": {
+      "task_count": 20,
+      "metrics_reproduced": true,
+      "quality_reproduced": true,
+      "structure_ok": true
+    }
+  },
+  "both_token_bound_analyses_reproduced": true,
+  "all_300_threads_distinct": true,
+  "skill_body_observed_in_all_150_treatment_runs_only": true,
+  "skill_sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF",
+  "protocol_sha256": "EEDE558723B8E998169624A387057A2386AD45FBE4FC58E4F64976C6A8E95DEE",
+  "allocation_at": "2026-10-24T13:30:57.860646+00:00",
+  "first_formal_start": "2026-10-24T13:30:58.561479+00:00",
+  "allocation_before_formal_start_by_local_timestamps": true,
+  "allocation_embedded_plan_uses_only_60_pilot_records": true,
+  "reported_usage_complete": 299,
+  "timeouts": [
+    "formal--mi-1248--r1--baseline"
+  ],
+  "failures": [
+    {
+      "key": "formal--boltons-pearson-zero--r2--with-skill",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r2--baseline",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--with-skill",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--baseline",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--baseline",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--with-skill",
+      "tests": [
+        "tests.test_statsutils::test_pearson_type_zero_denominator"
+      ]
+    },
+    {
+      "key": "replication--b-26-click-1478--r2--baseline",
+      "tests": [
+        "tests.test_options::test_option_help_preserve_paragraphs"
+      ]
+    },
+    {
+      "key": "replication--b-26-click-1478--r0--with-skill",
+      "tests": [
+        "tests.test_options::test_option_help_preserve_paragraphs"
+      ]
+    },
+    {
+      "key": "replication--b-26-click-1478--r0--baseline",
+      "tests": [
+        "tests.test_options::test_option_help_preserve_paragraphs"
+      ]
+    }
+  ],
+  "configured_scope_only_not_general_safety_proof": true
+}

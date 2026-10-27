@@ -1,0 +1,136 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 00f1d37..f9a0d84 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2175,9 +2175,6 @@ def union(array, *others):
+ 
+     .. versionadded:: 1.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+     return uniq(flatten([array] + list(others)))
+ 
+ 
+@@ -2217,10 +2214,10 @@ def union_by(array, *others, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+-    iteratee, others = parse_iteratee("iteratee", *others, **kwargs)
++    if others:
++        iteratee, others = parse_iteratee("iteratee", *others, **kwargs)
++    else:
++        iteratee = kwargs.get("iteratee")
+ 
+     return uniq_by(flatten([array] + list(others)), iteratee=iteratee)
+ 
+@@ -2263,10 +2260,10 @@ def union_with(array, *others, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+-    comparator, others = parse_iteratee("comparator", *others, **kwargs)
++    if others:
++        comparator, others = parse_iteratee("comparator", *others, **kwargs)
++    else:
++        comparator = kwargs.get("comparator")
+ 
+     return uniq_with(flatten([array] + list(others)), comparator=comparator)
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index fe18641..25c34cc 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1054,7 +1054,14 @@ def test_uniq_with(case, iteratee, expected):
+ 
+ @parametrize(
+     "case,expected",
+-    [(([1, 2, 3], [101, 2, 1, 10], [2, 1]), [1, 2, 3, 101, 10]), (([11, 22, 33],), [11, 22, 33])],
++    [
++        (([1, 2, 3], [101, 2, 1, 10], [2, 1]), [1, 2, 3, 101, 10]),
++        (([11, 22, 33],), [11, 22, 33]),
++        (([3, 1, 3, 2, 1],), [3, 1, 2]),
++        (((3, 1, 3, 2, 1),), [3, 1, 2]),
++        (([[1], [2], [1]],), [[1], [2]]),
++        (([],), []),
++    ],
+ )
+ def test_union(case, expected):
+     assert _.union(*case) == expected
+@@ -1067,6 +1074,12 @@ def test_union(case, expected):
+         (([1, 2, 3], [2, 3, 4]), lambda x: x % 2, [1, 2]),
+         (([1, 2, 3], [2, 3, 4], lambda x: x % 2), None, [1, 2]),
+         (([11, 22, 33],), None, [11, 22, 33]),
++        (([3, 1, 3, 2, 1],), None, [3, 1, 2]),
++        (((1, 2, 3),), lambda x: x % 2, [1, 2]),
++        (([1, 2, 3], lambda x: x % 2), None, [1, 2]),
++        (([{"x": 1}, {"x": 1, "y": 2}], "x"), None, [{"x": 1}]),
++        (([{"x": 1}, {"x": 1, "y": 2}],), "x", [{"x": 1}]),
++        (([],), None, []),
+     ],
+ )
+ def test_union_by(case, iteratee, expected):
+@@ -1079,12 +1092,58 @@ def test_union_by(case, iteratee, expected):
+         (([11, 22, 33], [22, 33, 44]), [11, 22, 33, 44]),
+         (([11, 22, 33],), [11, 22, 33]),
+         (([1, 2, 3], [2, 3, 4], lambda a, b: (a % 2) == (b % 2)), [1, 2]),
++        (([3, 1, 3, 2, 1],), [3, 1, 2]),
++        (((3, 1, 3, 2, 1),), [3, 1, 2]),
++        (([1, 2, 3], lambda a, b: (a % 2) == (b % 2)), [1, 2]),
++        (([],), []),
+     ],
+ )
+ def test_union_with(case, expected):
+     assert _.union_with(*case) == expected
+ 
+ 
++def test_union_with_single_array_keyword_comparator():
++    assert _.union_with([1, 2, 3], comparator=lambda a, b: (a % 2) == (b % 2)) == [1, 2]
++
++
++@parametrize(
++    "function,kwargs",
++    [
++        (_.union, {}),
++        (_.union_by, {}),
++        (_.union_by, {"iteratee": None}),
++        (_.union_by, {"iteratee": "x"}),
++        (_.union_with, {}),
++        (_.union_with, {"comparator": None}),
++        (_.union_with, {"comparator": lambda a, b: a["x"] == b["x"]}),
++    ],
++)
++def test_union_empty_arrays_preserve_result_and_references(function, kwargs):
++    first = {"x": 2}
++    second = {"x": 1}
++    array = [first, second, {"x": 2}]
++
++    result = function(array=array, **kwargs)
++
++    assert result == [first, second]
++    assert result is not array
++    assert result[0] is first
++    assert result[1] is second
++    assert function(array, [], **kwargs) == result
++    assert function([], array, **kwargs) == result
++    assert function(array, [], [], **kwargs) == result
++    assert array == [{"x": 2}, {"x": 1}, {"x": 2}]
++
++
++@parametrize("function,keyword", [(_.union_by, "iteratee"), (_.union_with, "comparator")])
++def test_union_single_array_propagates_callback_errors(function, keyword):
++    def fail(*args):
++        raise ValueError("comparison failed")
++
++    with pytest.raises(ValueError, match="comparison failed"):
++        function([1, 2], **{keyword: fail})
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,243 @@
+diff --git a/CHANGES.md b/CHANGES.md
+index fc3fada..e18575e 100644
+--- a/CHANGES.md
++++ b/CHANGES.md
+@@ -2,6 +2,9 @@
+ 
+ Unreleased
+ 
++- Automatic help no longer conflicts with user parameters that share its
++  internal name. Duplicate parameter warnings also check secondary option flags
++  and normalized argument names, including argument and option collisions.
+ - Supported versions of Windows enable ANSI terminal styles by default.
+   Colorama is no longer a dependency and is not used. {issue}`2986` {pr}`3505`
+ - {class}`Argument` accepts a `help` parameter, and help output includes
+diff --git a/docs/documentation.md b/docs/documentation.md
+index 1215c85..1e4ad59 100644
+--- a/docs/documentation.md
++++ b/docs/documentation.md
+@@ -322,7 +322,14 @@ The default placeholder variable ([meta variable](https://en.wikipedia.org/wiki/
+ 
+ ## Help Parameter Customization
+ 
+-Help parameters are automatically added by Click for any command. The default is `--help` but can be overridden by the context setting {attr}`~Context.help_option_names`. Click also performs automatic conflict resolution on the default help parameter, so if a command itself implements a parameter named `help` then the default help will not be run.
++Help parameters are automatically added by Click for any command. The default is
++`--help` but can be overridden by the context setting
++{attr}`~Context.help_option_names`. If a command explicitly defines an option
++using one of those flags, that flag is omitted from automatic help. For example,
++a user-defined `--help` option overrides the default help option. An argument
++named `help`, or another option whose internal name is `help`, can coexist with
++automatic help: Click gives the automatic help option an unused internal name.
++The same applies to custom help flags and their inferred internal names.
+ 
+ This example changes the default parameters to `-h` and `--help`
+ instead of just `--help`:
+diff --git a/src/click/core.py b/src/click/core.py
+index 6de4216..ccfccb3 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1106,7 +1106,22 @@ class Command:
+         if __debug__:
+             import warnings
+ 
+-            opts = [opt for param in params for opt in param.opts]
++            argument_names = {
++                param.name for param in params if isinstance(param, Argument)
++            }
++            opts = []
++
++            for param in params:
++                if isinstance(param, Argument):
++                    opts.append(param.name)
++                else:
++                    opts.extend(param.opts)
++                    opts.extend(param.secondary_opts)
++                    # Options may intentionally share a destination, but an
++                    # argument cannot share its destination with another parameter.
++                    if param.name in argument_names:
++                        opts.append(param.name)
++
+             opts_counter = Counter(opts)
+             duplicate_opts = (opt for opt, count in opts_counter.items() if count > 1)
+ 
+@@ -1173,6 +1188,13 @@ class Command:
+             help_option(*help_option_names)(self)
+             self._help_option = self.params.pop()  # type: ignore[assignment]
+ 
++        # The parser stores values by parameter name even for options that
++        # don't expose a value. Keep automatic help out of user parameters'
++        # slots, including when parameters are added after help was cached.
++        param_names = {param.name for param in self.params}
++        while self._help_option.name in param_names:
++            self._help_option.name = f"_{self._help_option.name}"
++
+         return self._help_option
+ 
+     def make_parser(self, ctx: Context) -> _OptionParser:
+diff --git a/tests/test_basic.py b/tests/test_basic.py
+index 96c1bf2..cca85f4 100644
+--- a/tests/test_basic.py
++++ b/tests/test_basic.py
+@@ -28,6 +28,118 @@ def test_basic_functionality(runner):
+     assert result.exit_code == 0
+ 
+ 
++@pytest.mark.parametrize("param_type", [click.Argument, click.Option])
++@pytest.mark.parametrize(
++    ("help_names", "param_name"),
++    [
++        (["--help"], "help"),
++        (["-h", "--help"], "help"),
++        (["--assist"], "assist"),
++        (["--show-help"], "show_help"),
++        (["-h"], "h"),
++    ],
++)
++@pytest.mark.parametrize("value", [None, "payload"])
++def test_help_option_name_matches_parameter(
++    runner, param_type, help_names, param_name, value
++):
++    decls = [param_name] if param_type is click.Argument else ["--value", param_name]
++    param = param_type(decls, default="fallback", required=False)
++
++    @click.pass_context
++    def callback(ctx, **values):
++        return values, ctx.get_parameter_source(param_name)
++
++    cli = click.Command(
++        "cli",
++        params=[param],
++        callback=callback,
++        context_settings={"help_option_names": help_names},
++    )
++    args = []
++    if value is not None:
++        args = [value] if param_type is click.Argument else ["--value", value]
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exit_code == 0, result.output
++    source = click.core.ParameterSource.DEFAULT
++    if value is not None:
++        source = click.core.ParameterSource.COMMANDLINE
++    assert result.return_value == ({param_name: value or "fallback"}, source)
++    assert result.output == ""
++    assert param.name == param_name
++
++    for help_name in help_names:
++        result = runner.invoke(cli, [*args, help_name])
++        assert result.exit_code == 0, result.output
++        assert "Show this message and exit." in result.output
++
++
++def test_help_option_name_avoids_all_parameters(runner):
++    cli = click.Command(
++        "cli",
++        params=[
++            click.Argument(["help"]),
++            click.Argument(["_help"]),
++            click.Option(["--value", "__help"]),
++        ],
++        callback=lambda **values: values,
++    )
++    ctx = click.Context(cli)
++    help_option = cli.get_help_option(ctx)
++    assert help_option.name not in {param.name for param in cli.params}
++    assert cli.get_help_option(ctx) is help_option
++
++    # A command may gain more parameters after the help option was cached.
++    extra_name = help_option.name
++    cli.params.append(click.Option(["--extra", extra_name]))
++    assert cli.get_help_option(ctx) is help_option
++    assert help_option.name not in {param.name for param in cli.params}
++
++    result = runner.invoke(
++        cli, ["a", "b", "--value", "c", "--extra", "d"], standalone_mode=False
++    )
++    assert result.exit_code == 0, result.output
++    assert result.return_value == {
++        "help": "a",
++        "_help": "b",
++        "__help": "c",
++        extra_name: "d",
++    }
++
++
++@pytest.mark.parametrize("help_names", [["--help"], ["-h", "--help"]])
++def test_explicit_help_option_overrides_automatic_help(runner, help_names):
++    @click.command(context_settings={"help_option_names": help_names})
++    @click.option("--help", default="fallback")
++    def cli(help):
++        click.echo(help)
++
++    result = runner.invoke(cli, ["--help", "payload"])
++    assert result.exit_code == 0, result.output
++    assert result.output == "payload\n"
++
++    if "-h" in help_names:
++        result = runner.invoke(cli, ["-h"])
++        assert result.exit_code == 0, result.output
++        assert "Show this message and exit." in result.output
++
++
++@pytest.mark.parametrize(
++    ("params", "name"),
++    [
++        ([click.Argument(["HELP"]), click.Argument(["help"])], "help"),
++        ([click.Argument(["foo-bar"]), click.Argument(["foo_bar"])], "foo_bar"),
++        ([click.Argument(["help"]), click.Option(["--value", "help"])], "help"),
++    ],
++)
++def test_conflicting_argument_names_warning(params, name):
++    cli = click.Command("cli", params=params)
++    message = f"The parameter {name} is used more than once"
++    with pytest.warns(UserWarning, match=message):
++        cli.get_params(click.Context(cli))
++
++
+ def test_repr():
+     @click.command()
+     def command():
+diff --git a/tests/test_info_dict.py b/tests/test_info_dict.py
+index b434c3f..a56ea5e 100644
+--- a/tests/test_info_dict.py
++++ b/tests/test_info_dict.py
+@@ -269,6 +269,19 @@ def test_context():
+     }
+ 
+ 
++@pytest.mark.parametrize("help_name", ["--help", "--show-help"])
++def test_help_option_name_does_not_shadow_parameter(help_name):
++    name = help_name[2:].replace("-", "_")
++    cli = click.Command("cli", params=[click.Argument([name])])
++    ctx = click.Context(cli, help_option_names=[help_name])
++    params = cli.to_info_dict(ctx)["params"]
++    assert params[0]["name"] == name
++    assert params[1]["name"] != name
++    assert params[1]["opts"] == [help_name]
++    assert cli.to_info_dict(ctx)["params"] == params
++    assert cli.get_params(ctx)[-1] is cli.get_help_option(ctx)
++
++
+ def test_paramtype_no_name():
+     class TestType(click.ParamType):
+         pass
+diff --git a/tests/test_options.py b/tests/test_options.py
+index ec3ba23..3aa729a 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -1937,6 +1937,15 @@ def test_choice_default_rendering(runner, choices, default, default_string):
+             ("-a", "--aardvark"),
+             ("-b", "--aardvark"),
+         ),
++        # A secondary flag can collide with a primary or secondary flag.
++        (
++            ("--cache/--no-cache",),
++            ("--no-cache",),
++        ),
++        (
++            ("--cache/--no-cache",),
++            ("--other/--no-cache",),
++        ),
+     ],
+ )
+ def test_duplicate_names_warning(runner, opts_one, opts_two):

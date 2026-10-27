@@ -1,0 +1,36 @@
+{
+  "completed_at": "2026-10-25T20:18:19.759667+00:00",
+  "candidate": "v5-python-development",
+  "skill_sha256": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+  "word_count": 377,
+  "rules": 4,
+  "new_native_attempts": 6,
+  "unexecuted_preparatory_iteration1_native_calls": 0,
+  "functional_contract_pass": true,
+  "case_results": {
+    "d09": {
+      "attempts": 3,
+      "accepted": 3
+    },
+    "d10": {
+      "attempts": 3,
+      "accepted": 3
+    }
+  },
+  "complete_usage_records": 6,
+  "normal_cli_completions": 6,
+  "original_shell_body_count": 5,
+  "adjudicated_full_body_count": 6,
+  "original_automatic_gate_result_preserved": true,
+  "original_summary_sha256": "6AEE3F4C69ACC3CD470B5BA38AE04891CAC9363454A9C7D344D52845512C0C0A",
+  "observation_adjudication_sha256": "0A56AF0DAF67B86C023B9A1648D4CF14F6CD74BF4682D17DEB16E99310D786F6",
+  "offline_reference_passes_both_modes": true,
+  "bad_initial_and_two_bad_repairs_rejected": true,
+  "closed_v4_evidence_unchanged": true,
+  "source_input_and_frozen_driver_hashes_still_match": true,
+  "new_confirmation_rounds_started": 0,
+  "production_qualification_assessed": false,
+  "comparative_efficiency_or_causal_improvement_claim": false,
+  "global_installation_or_external_publication": false,
+  "source_review_sha256": "E5E03F22E6C92041E733C7A24C49A4279877F1361D4ECA03137DC8607F271CEE"
+}

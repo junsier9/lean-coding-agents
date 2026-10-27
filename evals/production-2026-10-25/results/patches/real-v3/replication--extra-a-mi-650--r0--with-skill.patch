@@ -1,0 +1,135 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index 76c6815..e2611d9 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -733,22 +733,22 @@ def before_and_after(predicate, it):
+     Note that the first iterator must be fully consumed before the second
+     iterator can generate valid results.
+     """
+-    it = iter(it)
+-    transition = []
++    # tee shares a buffer when splitting a remainder again.
++    it, remainder = tee(it)
+ 
+     def true_iterator():
+         for elem in it:
+-            if predicate(elem):
+-                yield elem
+-            else:
+-                transition.append(elem)
+-                return
+-
+-    def remainder_iterator():
+-        yield from transition
+-        yield from it
+-
+-    return true_iterator(), remainder_iterator()
++            try:
++                if not predicate(elem):
++                    return
++            except BaseException:
++                # A predicate error still consumes the current source item.
++                next(remainder)
++                raise
++            next(remainder)
++            yield elem
++
++    return true_iterator(), remainder
+ 
+ 
+ def triplewise(iterable):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 6c3d977..2678095 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -783,6 +783,90 @@ class BeforeAndAfterTests(TestCase):
+         self.assertEqual(list(before), [1, True])
+         self.assertEqual(list(after), [0, False])
+ 
++    def test_nested_remainders(self):
++        remainder = iter(range(5000))
++        for boundary in range(1, 5000):
++            before, remainder = mi.before_and_after(
++                lambda x: x < boundary, remainder
++            )
++            self.assertEqual(list(before), [boundary - 1])
++        self.assertEqual(list(remainder), [4999])
++
++    def test_nested_empty_prefixes(self):
++        remainder = iter([0, 1, 2])
++        for _ in range(5000):
++            before, remainder = mi.before_and_after(bool, remainder)
++            self.assertEqual(list(before), [])
++        self.assertEqual(list(remainder), [0, 1, 2])
++
++    def test_lazy_consumption(self):
++        consumed = []
++        tested = []
++
++        def source():
++            for elem in [1, 2, None, 3]:
++                consumed.append(elem)
++                yield elem
++
++        def predicate(elem):
++            tested.append(elem)
++            return elem is not None
++
++        before, after = mi.before_and_after(predicate, source())
++        self.assertEqual(consumed, [])
++        self.assertEqual(tested, [])
++        self.assertEqual(next(before), 1)
++        self.assertEqual(consumed, [1])
++        self.assertEqual(tested, [1])
++        self.assertEqual(list(before), [2])
++        self.assertEqual(consumed, [1, 2, None])
++        self.assertEqual(tested, [1, 2, None])
++        self.assertEqual(list(after), [None, 3])
++        self.assertEqual(consumed, [1, 2, None, 3])
++        self.assertEqual(tested, [1, 2, None])
++        self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [])
++
++    def test_partly_consumed_remainder(self):
++        before, remainder = mi.before_and_after(lambda x: x < 2, range(8))
++        self.assertEqual(list(before), [0, 1])
++        self.assertEqual(next(remainder), 2)
++        before, remainder = mi.before_and_after(lambda x: x < 5, remainder)
++        self.assertEqual(list(before), [3, 4])
++        self.assertEqual(list(remainder), [5, 6, 7])
++
++    def test_predicate_error(self):
++        error = ValueError('predicate failed')
++
++        def predicate(elem):
++            if elem == 2:
++                raise error
++            return True
++
++        before, after = mi.before_and_after(predicate, range(5))
++        self.assertEqual(next(before), 0)
++        self.assertEqual(next(before), 1)
++        with self.assertRaises(ValueError) as caught:
++            next(before)
++        self.assertIs(caught.exception, error)
++        self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [3, 4])
++
++    def test_source_error(self):
++        error = ValueError('source failed')
++
++        def source():
++            yield 1
++            raise error
++
++        before, after = mi.before_and_after(bool, source())
++        self.assertEqual(next(before), 1)
++        with self.assertRaises(ValueError) as caught:
++            next(before)
++        self.assertIs(caught.exception, error)
++        self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [])
++
+ 
+ class TriplewiseTests(TestCase):
+     def test_basic(self):

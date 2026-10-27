@@ -1,0 +1,58 @@
+{
+  "evaluated_at": "2026-10-25T17:27:38.135229+00:00",
+  "candidate": "v4",
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "candidate_directory": "evals/production-2026-10-25/candidates/v4-python",
+  "production_assistant_qualified": false,
+  "gates": {
+    "development": true,
+    "critical_contracts": true,
+    "native_routing": true,
+    "candidate_bound_gate_reports": true,
+    "real_quality": false,
+    "same_endpoint_positive": false,
+    "blinded_review": false,
+    "trace_integrity": true,
+    "output_limitations_reviewed": true,
+    "two_file_package": true,
+    "evidence_integrity": true
+  },
+  "same_endpoint_credible_positive": {
+    "token": false,
+    "time": false
+  },
+  "two_batch_material_metric_criterion": {
+    "token": false,
+    "time": false
+  },
+  "stable_at_least10percent_benefit": {
+    "token": false,
+    "time": false
+  },
+  "claim_requires_complete_qualification": true,
+  "source_report_sha256": {
+    "formal-analysis.json": "5B9E0F68D000F7B55F34961003D15D423287706DF801CF1EB0C4595ECA2E3635",
+    "replication-analysis.json": "DF3800BA550FFC119D103DB065F9E7E3E7018FDE8189CC51E6511BC093A5D1EF",
+    "confirmation-conclusion.json": "D64B5D163F8172AFC5C9813B68ACB148967EB71928DB94F83AB0D3E8F16BA6A8",
+    "candidate-freeze.json": "F204E71BC8A7074457015AFDFB1207051FF51B1A9C5644FFC0DD4F403617EF5D",
+    "development-iteration3.json": "FFAAE022729CE933EF370CA2D61E30A7DC88D78A48ECDE06D3AAD262FDB3822A",
+    "safety-iteration3.json": "37459D60B5368B35C199663C90175AEAB4DB3A805894141BE8044BDEEBEE29C6",
+    "routing-iteration3.json": "A6C7FD70F0ECC5BDF75E04FAECD337A12CF49FA1C2F1C8B8026035B8140A04C3",
+    "blind-review-summary.json": "45F3E27A036CDF78F2CE4F02EBA860001496A954DEB6220DFEA1AFF12BF0BA9F",
+    "trace-audit.json": "7E4C8D0A58B46375490362BF0654D780080816179E46C210BCC172315028F3B1",
+    "trace-adjudication.json": "A8269EF3553C4A8EBFDCEA20FCF3EBB2B64F18DE191793DE2C213EAB5750F34D",
+    "untracked-output-adjudication.json": "63206B5E978F8E8D1E165AC9ED54EC6CC1E42FBFFE63382AE7902884E5D116E0",
+    "package-candidate.json": "2A58873DEF845A49954471764B539CC0582DE5494CF34ADB2764F1473C48CEAD",
+    "evidence-integrity.json": "A98BFDAD169FFC3F311020D4356C3CB6FD04A3489BD502E3238081ED2D7CF79C",
+    "evidence-retention.json": "57D2083A4537F1E78D62D1F5BB90C35602C10A19E4820F1A3F000C41F06E0CD9",
+    "pre-model-qualification-control.json": "964CB06663B4307157EEA42914F55F779E8176B9C3320F324979A5692208901B",
+    "qualification-code-amendment.json": "DEAB2D5FD705170CD3EA8C05D81F7056505B8C6973A54D55C458C1CED408E50E",
+    "qualification-fix-review.json": "A9D65E3509594482DE5A6E6CCE9B21293978BDF2F62328692039E7194AF49D15"
+  },
+  "qualification_code_sha256": "5B3263CEA6936E263B34B7C82AE110CF606FDAF2AD27957F109AC53716CD6D03",
+  "original_pre_model_code_sha256": "B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00",
+  "implementation_only_amendment": "Original code/control and independent synthetic counterexamples retained; no model input, score, statistics or threshold changed; no timestamp backfill.",
+  "supported_scope": "Tested Codex configuration and existing Python maintenance with project CI and review",
+  "limits": "Observed guard acceptance and approximate paired task-cluster intervals; no universal defect, latency or benefit guarantee. Claude untested.",
+  "global_skill_installation_or_external_publication": false
+}

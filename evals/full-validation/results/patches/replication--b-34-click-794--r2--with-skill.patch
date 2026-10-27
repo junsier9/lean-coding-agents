@@ -1,0 +1,53 @@
+diff --git a/click/core.py b/click/core.py
+index 7456451..9f09405 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1548,8 +1548,8 @@ class Option(Parameter):
+                     opts.append(decl)
+ 
+         if name is None and possible_names:
+-            possible_names.sort(key=lambda x: len(x[0]))
+-            name = possible_names[-1][1].replace('-', '_').lower()
++            possible_names.sort(key=lambda x: -len(x[0]))
++            name = possible_names[0][1].replace('-', '_').lower()
+             if not isidentifier(name):
+                 name = None
+ 
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d196fe2..9371ba7 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -7,6 +7,33 @@ import pytest
+ from click._compat import text_type
+ 
+ 
++@pytest.mark.parametrize('param_decls, expected_name', [
++    (['--first-name', '--second'], 'first_name'),
++    (['--second', '--first-name'], 'second'),
++    (['-f', '--first-name', '--second'], 'first_name'),
++    (['--first-name', '-f', '--second'], 'first_name'),
++    (['--first-name', '--second', '-f'], 'first_name'),
++    (['-f', '--second', '--first-name'], 'second'),
++    (['-f', '-s'], 'f'),
++    (['-s', '-f'], 's'),
++    (['--Camel-Case', '--alias'], 'camel_case'),
++    (['destination', '-f', '--first-name', '--second'], 'destination'),
++    (['-f', '--first-name', '--second', 'destination'], 'destination'),
++])
++def test_option_name_inference(runner, param_decls, expected_name):
++    @click.command()
++    @click.option(*param_decls)
++    def cli(**params):
++        assert params == {expected_name: 'value'}
++        click.echo(params[expected_name])
++
++    for alias in cli.params[0].opts:
++        result = runner.invoke(cli, [alias, 'value'])
++        assert not result.exception
++        assert result.exit_code == 0
++        assert result.output == 'value\n'
++
++
+ def test_prefixes(runner):
+     @click.command()
+     @click.option('++foo', is_flag=True, help='das foo')

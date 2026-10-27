@@ -1,0 +1,136 @@
+diff --git a/cachetools/keys.py b/cachetools/keys.py
+index adb9dad..060a0e6 100644
+--- a/cachetools/keys.py
++++ b/cachetools/keys.py
+@@ -21,8 +21,13 @@ class _HashedTuple(tuple):
+     def __radd__(self, other, add=tuple.__add__):
+         return _HashedTuple(add(other, self))
+ 
++    def __getstate__(self):
++        # Recompute the hash after unpickling in another interpreter.
++        return {}
+ 
+-_kwmark = (object(),)
++
++# A module-level class retains its identity when pickled or copied.
++_kwmark = (_HashedTuple,)
+ 
+ 
+ def hashkey(*args, **kwargs):
+diff --git a/tests/test_keys.py b/tests/test_keys.py
+index 2b9ced6..43ebf8c 100644
+--- a/tests/test_keys.py
++++ b/tests/test_keys.py
+@@ -1,3 +1,9 @@
++import copy
++import os
++import pickle
++import subprocess
++import sys
++import textwrap
+ import unittest
+ 
+ import cachetools.keys
+@@ -21,6 +27,10 @@ class CacheKeysTest(unittest.TestCase):
+         # untyped keys compare equal
+         self.assertEqual(key(1, 2, 3), key(1.0, 2.0, 3.0))
+         self.assertEqual(hash(key(1, 2, 3)), hash(key(1.0, 2.0, 3.0)))
++        self.assertEqual(key(1, x=2), key(1.0, x=2.0))
++        self.assertEqual(hash(key(1, x=2)), hash(key(1.0, x=2.0)))
++        self.assertEqual({key(1, x=2): 'value'}[key(1.0, x=2.0)],
++                         'value')
+ 
+     def test_typedkey(self, key=cachetools.keys.typedkey):
+         self.assertEqual(key(), key())
+@@ -37,9 +47,91 @@ class CacheKeysTest(unittest.TestCase):
+             hash(key({}))
+         # typed keys compare unequal
+         self.assertNotEqual(key(1, 2, 3), key(1.0, 2.0, 3.0))
++        self.assertNotEqual(key(x=1), key(x=1.0))
+ 
+     def test_addkeys(self, key=cachetools.keys.hashkey):
+         self.assertIsInstance(key(), tuple)
+         self.assertIsInstance(key(1, 2, 3) + key(4, 5, 6), type(key()))
+         self.assertIsInstance(key(1, 2, 3) + (4, 5, 6), type(key()))
+         self.assertIsInstance((1, 2, 3) + key(4, 5, 6), type(key()))
++
++    def test_pickle(self):
++        for key in (cachetools.keys.hashkey, cachetools.keys.typedkey):
++            for args, kwargs in (((), {}), ((1, 'value'), {}),
++                                 ((), {'x': 'value', 'y': 2}),
++                                 ((1, 'value'), {'x': 2, 'y': 'other'})):
++                for hashed in (False, True):
++                    for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
++                        source = key(*args, **kwargs)
++                        if hashed:
++                            hash(source)
++                        restored = pickle.loads(pickle.dumps(source, protocol))
++                        expected = key(*args, **kwargs)
++                        self.assertIs(type(restored), type(source))
++                        self.assertEqual(restored, expected)
++                        self.assertEqual(expected, restored)
++                        self.assertEqual(hash(restored), hash(expected))
++                        self.assertEqual(hash(restored), hash(tuple(restored)))
++                        self.assertEqual({restored: 'value'}[expected], 'value')
++
++    def test_copy(self):
++        for key in (cachetools.keys.hashkey, cachetools.keys.typedkey):
++            for clone in (copy.copy, copy.deepcopy):
++                source = key('value', x=1)
++                hash(source)
++                restored = clone(source)
++                self.assertEqual(restored, source)
++                self.assertEqual(hash(restored), hash(source))
++                self.assertEqual({restored: 'value'}[source], 'value')
++
++    def test_pickle_hash_seed(self):
++        script = textwrap.dedent('''\
++            import pickle
++            import sys
++
++            import cachetools
++            from cachetools import keys
++
++            if sys.argv[1] == 'dump':
++                records = []
++                for key in (keys.hashkey, keys.typedkey):
++                    for args, kwargs in ((('value',), {}),
++                                         ((), {'x': 'value', 'y': 2}),
++                                         (('value',), {'x': 1, 'y': 'other'})):
++                        for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
++                            source = key(*args, **kwargs)
++                            cache = cachetools.LRUCache(maxsize=2)
++                            cache[source] = 'cached'
++                            records.append((key.__name__, args, kwargs,
++                                            pickle.dumps(source, protocol),
++                                            pickle.dumps(cache, protocol)))
++                pickle.dump(records, getattr(sys.stdout, 'buffer', sys.stdout))
++            else:
++                records = pickle.load(getattr(sys.stdin, 'buffer', sys.stdin))
++                for name, args, kwargs, key_data, cache_data in records:
++                    key = getattr(keys, name)
++                    expected = key(*args, **kwargs)
++                    restored = pickle.loads(key_data)
++                    assert restored == expected
++                    assert expected == restored
++                    assert hash(restored) == hash(expected)
++                    assert hash(restored) == hash(tuple(restored))
++                    cache = pickle.loads(cache_data)
++                    assert cache[expected] == 'cached'
++                    def miss(*args, **kwargs):
++                        raise AssertionError('restored cache missed')
++                    wrapper = cachetools.cached(cache, key=key)(miss)
++                    assert wrapper(*args, **kwargs) == 'cached'
++            ''')
++        env = os.environ.copy()
++        cwd = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++        env['PYTHONHASHSEED'] = '1'
++        payload = subprocess.check_output(
++            [sys.executable, '-c', script, 'dump'], env=env, cwd=cwd)
++        env['PYTHONHASHSEED'] = '2'
++        process = subprocess.Popen(
++            [sys.executable, '-c', script, 'load'], env=env, cwd=cwd,
++            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
++            stderr=subprocess.PIPE)
++        stdout, stderr = process.communicate(payload)
++        self.assertEqual(process.returncode, 0, (stdout, stderr))

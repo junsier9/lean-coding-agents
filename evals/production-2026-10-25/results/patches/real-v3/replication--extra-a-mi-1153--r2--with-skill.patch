@@ -1,0 +1,57 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 3703a9c..b3f0947 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2402,6 +2402,8 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
++        if not self:
++            return iter(())
+         return iter(
+             numeric_range(
+                 self._get_by_index(-1), self._start - self._step, -self._step
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 084006d..8f3666d 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -2998,6 +2998,8 @@ class NumericRangeTests(TestCase):
+         for args, expected in [
+             ((7.0,), [6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0]),
+             ((1.0, 7.0), [6.0, 5.0, 4.0, 3.0, 2.0, 1.0]),
++            ((1.0, 2.0, 1.5), [1.0]),
++            ((2.0, 1.0, -1.5), [2.0]),
+             ((7.0, 1.0, -1.5), [2.5, 4.0, 5.5, 7.0]),
+             ((7.0, 0.9, -1.5), [1.0, 2.5, 4.0, 5.5, 7.0]),
+             (
+@@ -3023,6 +3025,30 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_empty(self):
++        for args in [
++            (0,),
++            (0.0,),
++            (1.0, 1.0, 1.5),
++            (1.0, 1.0, -1.5),
++            (2.0, 1.0, 1.5),
++            (1.0, 2.0, -1.5),
++            (Decimal('1.0'), Decimal('1.0'), Decimal('0.5')),
++            (Fraction(1, 2), Fraction(3, 2), Fraction(-1, 2)),
++            (
++                datetime(2019, 3, 30),
++                datetime(2019, 3, 29),
++                timedelta(hours=1),
++            ),
++            (
++                datetime(2019, 3, 29),
++                datetime(2019, 3, 30),
++                timedelta(hours=-1),
++            ),
++        ]:
++            with self.subTest(args=args):
++                self.assertEqual([], list(reversed(mi.numeric_range(*args))))
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

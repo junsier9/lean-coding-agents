@@ -1,0 +1,73 @@
+diff --git a/boltons/timeutils.py b/boltons/timeutils.py
+index 1ec31dd..3235e0d 100644
+--- a/boltons/timeutils.py
++++ b/boltons/timeutils.py
+@@ -319,6 +319,9 @@ def daterange(start, stop, step=1, inclusive=False):
+     *step* falls evenly on it. By default, *step* is one day. See
+     details below for many more details.
+ 
++    If *start* and *stop* are equal, yield that date once when
++    *inclusive* is True, or yield no dates otherwise.
++
+     Args:
+         start (datetime.date): The starting date The first value in
+             the sequence.
+@@ -380,6 +383,11 @@ def daterange(start, stop, step=1, inclusive=False):
+     
+     m_step += y_step * 12
+ 
++    if start == stop:
++        if inclusive:
++            yield start
++        return
++
+     if stop is None:
+         finished = lambda now, stop: False
+     elif start < stop:
+diff --git a/tests/test_timeutils.py b/tests/test_timeutils.py
+index 631435e..2f370db 100644
+--- a/tests/test_timeutils.py
++++ b/tests/test_timeutils.py
+@@ -1,5 +1,9 @@
+ 
+ from datetime import timedelta, date
++from itertools import islice
++
++import pytest
++
+ from boltons.timeutils import total_seconds, daterange
+ 
+ 
+@@ -62,6 +66,32 @@ def test_daterange_years_step():
+     assert dates == expected
+ 
+ 
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('step', [
++    1, -1, 0, timedelta(days=2), timedelta(days=-2), timedelta(0),
++    (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 0),
++])
++@pytest.mark.parametrize('day', [date(2021, 1, 31), date.min, date.max])
++def test_daterange_equal_endpoints(day, step, inclusive):
++    # Bound consumption so a nonterminating regression fails promptly.
++    dates = list(islice(daterange(day, day, step=step, inclusive=inclusive), 2))
++    assert dates == ([day] if inclusive else [])
++
++
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('direction', [1, -1])
++@pytest.mark.parametrize('span', [3, 4])
++def test_daterange_daily_endpoints(span, direction, inclusive):
++    start = date(2021, 1, 15)
++    stop = start + timedelta(days=span * direction)
++    expected = [start + timedelta(days=offset * direction)
++                for offset in range(0, span + int(inclusive), 2)]
++
++    dates = list(daterange(start, stop, step=2 * direction, inclusive=inclusive))
++
++    assert dates == expected
++
++
+ def test_daterange_infinite():
+     today = date.today()
+     infinite_dates = daterange(today, None)

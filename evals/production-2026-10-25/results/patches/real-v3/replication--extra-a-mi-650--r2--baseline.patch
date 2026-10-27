@@ -1,0 +1,135 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index 76c6815..2effad0 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -719,6 +719,33 @@ def convolve(signal, kernel):
+         yield sum(map(operator.mul, kernel, window))
+ 
+ 
++class _BeforeAndAfterIterator:
++    def __init__(self, transition, it):
++        self._transition = transition
++        self._it = it
++
++    def __iter__(self):
++        return self
++
++    def __next__(self):
++        if self._transition:
++            return self._transition.pop()
++
++        # Unwrap prior remainders without growing the Python call stack.
++        # Prior first iterators have finished; no new transitions can appear.
++        while isinstance(self._it, _BeforeAndAfterIterator):
++            remainder = self._it
++            self._it = remainder._it
++            if remainder._transition:
++                return remainder._transition.pop()
++        try:
++            return next(self._it)
++        except BaseException:
++            # Like the original generator, stay exhausted after an error.
++            self._it = iter(())
++            raise
++
++
+ def before_and_after(predicate, it):
+     """A variant of :func:`takewhile` that allows complete access to the
+     remainder of the iterator.
+@@ -744,11 +771,7 @@ def before_and_after(predicate, it):
+                 transition.append(elem)
+                 return
+ 
+-    def remainder_iterator():
+-        yield from transition
+-        yield from it
+-
+-    return true_iterator(), remainder_iterator()
++    return true_iterator(), _BeforeAndAfterIterator(transition, it)
+ 
+ 
+ def triplewise(iterable):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 6c3d977..6d6c300 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -783,6 +783,79 @@ class BeforeAndAfterTests(TestCase):
+         self.assertEqual(list(before), [1, True])
+         self.assertEqual(list(after), [0, False])
+ 
++    def test_nested_remainders(self):
++        segment_count = 10000
++        remainder = iter(range(2 * segment_count + 3))
++        for stop in range(2, 2 * segment_count + 1, 2):
++            before, remainder = mi.before_and_after(
++                lambda value: value < stop, remainder
++            )
++            self.assertEqual(list(before), [stop - 2, stop - 1])
++        self.assertEqual(
++            list(remainder),
++            list(range(2 * segment_count, 2 * segment_count + 3)),
++        )
++
++    def test_nested_empty_prefixes(self):
++        remainder = iter([None, False, 0])
++        for _ in range(10000):
++            before, remainder = mi.before_and_after(bool, remainder)
++            self.assertEqual(list(before), [])
++        self.assertEqual(list(remainder), [None, False, 0])
++        self.assertEqual(list(remainder), [])
++
++    def test_nested_before_consumption(self):
++        first, remainder = mi.before_and_after(lambda x: x < 2, range(7))
++        second, remainder = mi.before_and_after(lambda x: x < 4, remainder)
++        third, remainder = mi.before_and_after(lambda x: x < 6, remainder)
++        self.assertEqual(list(first), [0, 1])
++        self.assertEqual(list(second), [2, 3])
++        self.assertEqual(list(third), [4, 5])
++        self.assertEqual(list(remainder), [6])
++
++    def test_lazy_consumption(self):
++        consumed = []
++        evaluated = []
++
++        def source():
++            for value in 'ABcd':
++                consumed.append(value)
++                yield value
++
++        def predicate(value):
++            evaluated.append(value)
++            return value.isupper()
++
++        before, after = mi.before_and_after(predicate, source())
++        self.assertEqual(consumed, [])
++        self.assertEqual(evaluated, [])
++        self.assertEqual(next(before), 'A')
++        self.assertEqual(consumed, ['A'])
++        self.assertEqual(evaluated, ['A'])
++        self.assertEqual(list(before), ['B'])
++        self.assertEqual(consumed, ['A', 'B', 'c'])
++        self.assertEqual(evaluated, ['A', 'B', 'c'])
++        self.assertEqual(list(after), ['c', 'd'])
++        self.assertEqual(consumed, ['A', 'B', 'c', 'd'])
++        self.assertEqual(evaluated, ['A', 'B', 'c'])
++        self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [])
++
++    def test_remainder_error(self):
++        def source(value):
++            if value == 2:
++                raise ValueError('source error')
++            return value
++
++        before, after = mi.before_and_after(
++            lambda x: x < 1, map(source, range(4))
++        )
++        self.assertEqual(list(before), [0])
++        self.assertEqual(next(after), 1)
++        with self.assertRaisesRegex(ValueError, 'source error'):
++            next(after)
++        self.assertEqual(list(after), [])
++
+ 
+ class TriplewiseTests(TestCase):
+     def test_basic(self):

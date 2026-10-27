@@ -1,0 +1,15 @@
+test_expected_boundary_translation (test_contract.Contract.test_expected_boundary_translation) ... ok
+test_expiry (test_contract.Contract.test_expiry) ... ok
+test_failed_miss_not_cached (test_contract.Contract.test_failed_miss_not_cached) ... ok
+test_force_failure_evicts_stale (test_contract.Contract.test_force_failure_evicts_stale) ... ok
+test_fresh_hit (test_contract.Contract.test_fresh_hit) ... ok
+test_invalid_ttl (test_contract.Contract.test_invalid_ttl) ... ok
+test_invalidate (test_contract.Contract.test_invalidate) ... ok
+test_key_isolation (test_contract.Contract.test_key_isolation) ... ok
+test_none_is_normal (test_contract.Contract.test_none_is_normal) ... ok
+test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK

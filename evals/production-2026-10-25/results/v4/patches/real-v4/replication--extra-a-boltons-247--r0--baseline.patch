@@ -1,0 +1,145 @@
+diff --git a/tests/test_socketutils.py b/tests/test_socketutils.py
+index 90d988d..9d6ded9 100644
+--- a/tests/test_socketutils.py
++++ b/tests/test_socketutils.py
+@@ -8,7 +8,9 @@ import threading
+ from boltons.socketutils import (BufferedSocket,
+                                  NetstringSocket,
+                                  ConnectionClosed,
++                                 NetstringInvalidSize,
+                                  NetstringMessageTooLong,
++                                 NetstringProtocolError,
+                                  MessageTooLong,
+                                  Timeout)
+ 
+@@ -246,6 +248,130 @@ def test_timeout_setters_getters():
+     assert bs.gettimeout() is None
+ 
+ 
++@pytest.fixture
++def netstring_pair():
++    x, y = socket.socketpair()
++    try:
++        yield NetstringSocket(x), y
++    finally:
++        x.close()
++        y.close()
++
++
++@pytest.mark.parametrize('default_maxsize, maxsize, size', [
++    (9, 100, 100),
++    (100, 4, 4),
++    (100, 0, 0),
++])
++def test_netstring_read_maxsize_override(netstring_pair,
++                                         default_maxsize, maxsize, size):
++    client, peer = netstring_pair
++    client.setmaxsize(default_maxsize)
++    payload = b'x' * size
++    peer.sendall(str(size).encode('ascii') + b':' + payload + b',')
++
++    assert client.read_ns(maxsize=maxsize) == payload
++    assert client.maxsize == default_maxsize
++    assert client._msgsize_maxsize == len(str(default_maxsize)) + 1
++
++
++def test_netstring_read_maxsize_override_is_temporary(netstring_pair):
++    client, peer = netstring_pair
++    client.setmaxsize(4)
++    peer.sendall(b'5:hello,5:hello,')
++
++    assert client.read_ns(maxsize=5) == b'hello'
++    with pytest.raises(NetstringMessageTooLong, match='5 > 4'):
++        client.read_ns()
++
++
++def test_netstring_read_rejects_smaller_maxsize(netstring_pair):
++    client, peer = netstring_pair
++    peer.sendall(b'5:hello,')
++
++    with pytest.raises(NetstringMessageTooLong, match='5 > 4'):
++        client.read_ns(maxsize=4)
++    assert client.bsock.getrecvbuffer() == b'hello,'
++
++
++@pytest.mark.parametrize('read_kwargs', [{}, {'maxsize': 10}])
++@pytest.mark.parametrize('message, error', [
++    (b'x:hello,', NetstringInvalidSize),
++    (b'5:hello.', NetstringProtocolError),
++    (b'11:hello world,', NetstringMessageTooLong),
++    (b'1234567890:', MessageTooLong),
++    (b'5:hi', ConnectionClosed),
++])
++def test_netstring_read_protocol_errors(netstring_pair, read_kwargs,
++                                       message, error):
++    client, peer = netstring_pair
++    client.setmaxsize(10)
++    peer.sendall(message)
++    peer.shutdown(socket.SHUT_WR)
++
++    with pytest.raises(error):
++        client.read_ns(**read_kwargs)
++
++
++@pytest.mark.parametrize('default_timeout, read_kwargs, expected_timeout', [
++    (2, {}, 2),
++    (None, {}, None),
++    (0, {}, 0),
++    (2, {'timeout': 0.25}, 0.25),
++    (2, {'timeout': None}, None),
++    (2, {'timeout': 0}, 0),
++])
++def test_netstring_read_fragmented_timeouts(default_timeout, read_kwargs,
++                                           expected_timeout):
++    class FragmentedSocket(object):
++        def __init__(self):
++            self.timeout = 9
++            self.read_timeouts = []
++            self.chunks = iter([b'5:', b'he', b'llo', b','] * 2)
++
++        def gettimeout(self):
++            return self.timeout
++
++        def settimeout(self, timeout):
++            self.timeout = timeout
++
++        def recv(self, size):
++            self.read_timeouts.append(self.timeout)
++            return next(self.chunks)
++
++    def check_timeouts(timeouts, expected):
++        assert len(timeouts) == 4
++        for timeout in timeouts:
++            if expected is None or expected == 0:
++                assert timeout == expected
++            else:
++                assert 0 < timeout <= expected
++
++    sock = FragmentedSocket()
++    client = NetstringSocket(sock)
++    client.settimeout(default_timeout)
++
++    assert client.read_ns(**read_kwargs) == b'hello'
++    check_timeouts(sock.read_timeouts, expected_timeout)
++    assert client.timeout == default_timeout
++    assert client.bsock.timeout == 9
++
++    sock.read_timeouts[:] = []
++    assert client.read_ns() == b'hello'
++    check_timeouts(sock.read_timeouts, default_timeout)
++
++
++@pytest.mark.parametrize('partial_message', [b'', b'5:', b'5:hello'])
++def test_netstring_read_timeout_at_each_stage(netstring_pair, partial_message):
++    client, peer = netstring_pair
++    client.settimeout(0.1)
++    client.bsock.settimeout(0.1)
++    peer.sendall(partial_message)
++
++    with pytest.raises(Timeout, match='20.0ms'):
++        client.read_ns(timeout=0.02)
++
++
+ def netstring_server(server_socket):
+     "A basic netstring server loop, supporting a few operations"
+     running = True

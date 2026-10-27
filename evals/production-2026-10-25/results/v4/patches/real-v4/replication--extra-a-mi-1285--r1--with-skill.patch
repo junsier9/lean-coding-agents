@@ -1,0 +1,128 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index e90b893..012b192 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1154,6 +1154,9 @@ class bucket:
+     The original iterable will be advanced and its items will be cached until
+     they are used by the child iterables. This may require significant storage.
+ 
++    Only keys with matching items appear when iterating over the bucket.
++    These keys are retained even after their child iterables are exhausted.
++
+     By default, attempting to select a bucket to which no items belong  will
+     exhaust the iterable and cache all values.
+     If you specify a *validator* function, selected buckets will instead be
+@@ -1206,7 +1209,7 @@ class bucket:
+         while True:
+             # If we've cached some items that match the target value, emit
+             # the first one and evict it from the cache.
+-            if self._cache[value]:
++            if self._cache.get(value):
+                 yield self._cache[value].popleft()
+             # Otherwise we need to advance the parent iterator to search for
+             # a matching item, caching the rest.
+@@ -1218,7 +1221,7 @@ class bucket:
+                         return
+                     item_value = self._key(item)
+                     if item_value == value:
+-                        yield item
++                        self._cache[value].append(item)
+                         break
+                     elif self._validator(item_value):
+                         self._cache[item_value].append(item)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4401dc6..3461194 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1069,6 +1069,58 @@ class BucketTests(TestCase):
+ 
+         self.assertEqual(list(D[40]), [])  # Nothing in here!
+ 
++    def test_missing_bucket_does_not_add_key(self):
++        D = mi.bucket([10, 20, 11], key=lambda x: 10 * (x // 10))
++
++        self.assertEqual(list(D[30]), [])
++        self.assertEqual(set(D), {10, 20})
++        self.assertEqual(list(D[40]), [])
++        self.assertEqual(set(D), {10, 20})
++        self.assertEqual(list(D[10]), [10, 11])
++        self.assertEqual(list(D[20]), [20])
++
++    def test_missing_membership_does_not_add_key(self):
++        D = mi.bucket([10, 20, 11], key=lambda x: 10 * (x // 10))
++
++        self.assertNotIn(30, D)
++        self.assertEqual(set(D), {10, 20})
++        self.assertNotIn(40, D)
++        self.assertEqual(set(D), {10, 20})
++        self.assertEqual(list(D[10]), [10, 11])
++        self.assertEqual(list(D[20]), [20])
++
++    def test_empty_does_not_add_keys(self):
++        D = mi.bucket([], key=lambda x: x)
++
++        self.assertEqual(list(D['a']), [])
++        self.assertNotIn('b', D)
++        self.assertEqual(list(D), [])
++
++    def test_direct_match_retains_key(self):
++        D = mi.bucket(['a1'], key=lambda x: x[0])
++        child = D['a']
++
++        self.assertEqual(next(child), 'a1')
++        self.assertEqual(list(D), ['a'])
++        self.assertEqual(list(child), [])
++        self.assertNotIn('a', D)
++        self.assertEqual(list(D), ['a'])
++
++    def test_interleaved_children(self):
++        D = mi.bucket(['a1', 'b1', 'a2', 'b2', 'a3'], key=lambda x: x[0])
++        a = D['a']
++        b = D['b']
++
++        self.assertEqual(next(a), 'a1')
++        self.assertIn('b', D)
++        self.assertEqual(next(b), 'b1')
++        self.assertEqual(next(a), 'a2')
++        self.assertEqual(list(b), ['b2'])
++        self.assertEqual(list(a), ['a3'])
++        self.assertNotIn('a', D)
++        self.assertNotIn('b', D)
++        self.assertEqual(set(D), {'a', 'b'})
++
+     def test_in(self):
+         iterable = [10, 20, 30, 11, 21, 31, 12, 22, 23, 33]
+         D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))
+@@ -1091,6 +1143,32 @@ class BucketTests(TestCase):
+         self.assertNotIn(0, D._cache)  # Don't store non-valid entries
+         self.assertEqual(list(D[0]), [])
+ 
++    def test_validator_missing_bucket(self):
++        iterable = iter([20, 10, 21, 11, 30])
++        key = lambda x: 10 * (x // 10)
++        validator = mock.Mock(side_effect=lambda x: x != 20)
++        D = mi.bucket(iterable, key, validator=validator)
++
++        self.assertEqual(list(D[20]), [])
++        self.assertNotIn(20, D)
++        self.assertEqual(next(iterable), 20)
++        self.assertEqual(list(D[10]), [10, 11])
++        self.assertEqual(
++            validator.call_args_list,
++            [
++                mock.call(20),
++                mock.call(20),
++                mock.call(10),
++                mock.call(20),
++                mock.call(30),
++            ],
++        )
++        self.assertEqual(list(D[40]), [])
++        self.assertNotIn(50, D)
++        self.assertEqual(set(D), {10, 30})
++        self.assertEqual(list(D[30]), [30])
++        self.assertEqual(set(D), {10, 30})
++
+     def test_list(self):
+         iterable = [10, 20, 30, 11, 21, 31, 12, 22, 23, 33]
+         D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))

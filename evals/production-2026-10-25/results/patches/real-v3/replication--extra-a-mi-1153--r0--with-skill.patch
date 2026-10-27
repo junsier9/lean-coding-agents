@@ -1,0 +1,47 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 3703a9c..b3f0947 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2402,6 +2402,8 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
++        if not self:
++            return iter(())
+         return iter(
+             numeric_range(
+                 self._get_by_index(-1), self._start - self._step, -self._step
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 084006d..19f2ef9 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3023,6 +3023,29 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_empty(self):
++        for args in [
++            (0,),
++            (0.0,),
++            (1, 1),
++            (1, 1, -1),
++            (1, 0),
++            (0, 1, -1),
++            (1.0, 0.0, 1.5),
++            (0.0, 1.0, -1.5),
++            (Decimal('1.0'), Decimal('0.0'), Decimal('0.5')),
++            (Fraction(0, 1), Fraction(1, 1), Fraction(-1, 2)),
++            (
++                datetime(2019, 3, 29),
++                datetime(2019, 3, 29),
++                timedelta(hours=1),
++            ),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual([], list(r))
++                self.assertEqual([], list(reversed(r)))
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

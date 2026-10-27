@@ -1,0 +1,19 @@
+{
+  "registered_at": "2026-10-27T09:46:34.703760+00:00",
+  "planned_native_attempts": 1,
+  "repeats": 1,
+  "max_workers": 1,
+  "candidate_unchanged": true,
+  "case_sha256": "9CC246BA8DEA9BE2CF258A86429DB881250B171E5B40D850D5BD4298D27654D1",
+  "skill_sha256": "0F1CD7F9DE30FCF0B73E8E5BAF0A04340386680905DB52C612787822EB01F80E",
+  "original_failed_summary_sha256": "A450591E99566D5D357A61DDADF1948AB21AB8B3B00DB3B07B02A1E782452C70",
+  "original_interrupted_record_sha256": "A19451E3E8627FE49CEE03C688ED1E3AEE1F450C001BAC6ADD02D240AD1DB64B",
+  "original_events_sha256": "ACA061B12122317A3DC9810476D1C5CF960AEB3F06E5F488F0D8EA0A7FD43FE6",
+  "visible_interrupted_test_sha256": "8AC1E355EB62867DA868D1F16D1E279E408A8F9B827E3267A43B3E1940F84175",
+  "driver_sha256": "39315C07BAA2294E300A7DCE1A1ECD1EECF219632620AF39B984FA657DFA747D",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "policy": "One different development input with the existing interrupted test artifact; no replacement of original results, no fresh-task/efficiency claim, no retries of this supplemental model attempt"
+}

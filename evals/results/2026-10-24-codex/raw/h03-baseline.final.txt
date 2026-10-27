@@ -1,0 +1,5 @@
+已修复 [app.py](/C:/Users/ASUS/AppData/Local/Temp/lean-coding-codex-f7ea3a63d0934ee180513de15998925e/baseline/h03/app.py:5)：直接读取 `options.max_rows`，使 `--max-rows` 生效。
+
+使用本地 Python 3.13.5 完成并通过 12 项检查，覆盖默认 100 行、零行、自定义限制、非法参数、输出无末尾换行，以及缺少必需属性时抛出 `AttributeError`。
+
+未完成项：无。

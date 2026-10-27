@@ -1,0 +1,105 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index a6573f2..564e66f 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -25,7 +25,7 @@ from itertools import (
+ from math import comb, e, exp, factorial, floor, fsum, log, log1p, perm, tau
+ from queue import Empty, Queue
+ from random import random, randrange, shuffle, uniform
+-from operator import itemgetter, mul, sub, gt, lt, le
++from operator import itemgetter, mul, sub, gt, lt
+ from sys import hexversion, maxsize
+ from time import monotonic
+ 
+@@ -3817,17 +3817,21 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     >>> is_sorted([1, 2, 2], strict=True)
+     False
+ 
++    Ordering is checked using ``<``, as in :func:`sorted`. If *strict*,
++    equality is also checked using ``==``.
++
+     The function returns ``False`` after encountering the first out-of-order
+     item, which means it may produce results that differ from the built-in
+     :func:`sorted` function for objects with unusual comparison dynamics.
+     If there are no out-of-order items, the iterable is exhausted.
+     """
+-    compare = le if strict else lt
+     it = iterable if (key is None) else map(key, iterable)
+     it_1, it_2 = tee(it)
+     next(it_2 if reverse else it_1, None)
+ 
+-    return not any(map(compare, it_1, it_2))
++    if strict:
++        return not any(x < y or x == y for x, y in zip(it_1, it_2))
++    return not any(map(lt, it_1, it_2))
+ 
+ 
+ class AbortThread(BaseException):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b25343f..1a26ef0 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4323,6 +4323,63 @@ class SampleTests(TestCase):
+ 
+ 
+ class IsSortedTests(TestCase):
++    def test_comparison_protocol(self):
++        class LtOnly:
++            def __init__(self, value):
++                self.value = value
++
++            def __lt__(self, other):
++                return self.value < other.value
++
++        class LtAndEq(LtOnly):
++            def __eq__(self, other):
++                return self.value == other.value
++
++        pool = [LtOnly(value) for value in range(3)]
++        for item_type, reverse, strict, use_key in product(
++            (LtOnly, LtAndEq), (False, True), (False, True), (False, True)
++        ):
++            for size in range(4):
++                for values in product(range(3), repeat=size):
++                    # Reuse objects for identity equality; also test distinct
++                    # objects that compare equal by value.
++                    items = [
++                        pool[value]
++                        if item_type is LtOnly
++                        else item_type(value)
++                        for value in values
++                    ]
++                    sorted_values = [
++                        item.value for item in sorted(items, reverse=reverse)
++                    ]
++                    self.assertEqual(
++                        sorted_values, sorted(values, reverse=reverse)
++                    )
++                    key = None
++                    if use_key:
++                        items = [{'value': item} for item in items]
++                        key = itemgetter('value')
++
++                    expected = list(values) == sorted(values, reverse=reverse)
++                    if strict:
++                        expected = expected and len(set(values)) == len(values)
++                    with self.subTest(
++                        item_type=item_type,
++                        values=values,
++                        reverse=reverse,
++                        strict=strict,
++                        use_key=use_key,
++                    ):
++                        self.assertEqual(
++                            mi.is_sorted(
++                                iter(items),
++                                key=key,
++                                reverse=reverse,
++                                strict=strict,
++                            ),
++                            expected,
++                        )
++
+     def test_basic(self):
+         for iterable, kwargs, expected in [
+             ([], {}, True),

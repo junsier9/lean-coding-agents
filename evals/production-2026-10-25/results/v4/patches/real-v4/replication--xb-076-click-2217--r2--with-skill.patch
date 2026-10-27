@@ -1,0 +1,125 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 8662316..e627115 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -3,6 +3,9 @@
+ Version 8.1.0
+ -------------
+ 
++-   Pass the group callback's return value to ``result_callback`` when
++    ``invoke_without_command=True`` and no subcommand is invoked for a
++    non-chained group.
+ -   Drop support for Python 3.6. :pr:`2129`
+ -   Remove previously deprecated code. :pr:`2130`
+ 
+diff --git a/src/click/core.py b/src/click/core.py
+index 9ba738b..96ae592 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1552,6 +1552,11 @@ class MultiCommand(Command):
+         :param replace: if set to `True` an already existing result
+                         callback will be removed.
+ 
++        .. versionchanged:: 8.1
++            The group callback's return value is passed if no subcommand
++            is invoked, ``invoke_without_command`` is enabled, and
++            chaining is disabled.
++
+         .. versionchanged:: 8.0
+             Renamed from ``resultcallback``.
+ 
+@@ -1626,11 +1631,11 @@ class MultiCommand(Command):
+         if not ctx.protected_args:
+             if self.invoke_without_command:
+                 # No subcommand was invoked, so the result callback is
+-                # invoked with None for regular groups, or an empty list
+-                # for chained groups.
++                # invoked with the group return value for regular
++                # groups, or an empty list for chained groups.
+                 with ctx:
+-                    super().invoke(ctx)
+-                    return _process_result([] if self.chain else None)
++                    rv = super().invoke(ctx)
++                    return _process_result([] if self.chain else rv)
+             ctx.fail(_("Missing command."))
+ 
+         # Fetch args back out
+diff --git a/tests/test_chain.py b/tests/test_chain.py
+index 3431009..db42941 100644
+--- a/tests/test_chain.py
++++ b/tests/test_chain.py
+@@ -85,23 +85,67 @@ def test_chaining_with_options(runner):
+     assert result.output.splitlines() == ["bdist called 1", "sdist called 2"]
+ 
+ 
+-@pytest.mark.parametrize(("chain", "expect"), [(False, "None"), (True, "[]")])
+-def test_no_command_result_callback(runner, chain, expect):
++@pytest.mark.parametrize("chain", [False, True])
++@pytest.mark.parametrize("return_value", [None, 42, 0, False, "", []])
++def test_no_command_result_callback(runner, chain, return_value):
+     """When a group has ``invoke_without_command=True``, the result
+-    callback is always invoked. A regular group invokes it with
+-    ``None``, a chained group with ``[]``.
++    callback receives the group's return value for regular groups, or
++    an empty list for chained groups.
+     """
+ 
+     @click.group(invoke_without_command=True, chain=chain)
+     def cli():
+-        pass
++        return return_value
+ 
+     @cli.result_callback()
+     def process_result(result):
+         click.echo(str(result), nl=False)
++        return "processed", result
++
++    result = runner.invoke(cli, [], standalone_mode=False)
++    expect = [] if chain else return_value
++    assert result.exception is None
++    assert result.output == str(expect)
++    assert result.return_value == ("processed", expect)
++    if not chain:
++        assert result.return_value[1] is return_value
++
++
++@pytest.mark.parametrize("chain", [False, True])
++def test_no_command_return_value(runner, chain):
++    return_value = object()
++
++    @click.group(invoke_without_command=True, chain=chain)
++    def cli():
++        return return_value
++
++    result = runner.invoke(cli, [], standalone_mode=False)
++    assert result.exception is None
++    if chain:
++        assert result.return_value == []
++    else:
++        assert result.return_value is return_value
++
++
++@pytest.mark.parametrize(("chain", "expect"), [(False, 23), (True, [23])])
++def test_command_result_callback(runner, chain, expect):
++    @click.group(invoke_without_command=True, chain=chain)
++    @click.option("--value", default=42)
++    def cli(value):
++        return value
++
++    @cli.command()
++    def sub():
++        return 23
++
++    @cli.result_callback()
++    def process_result(result, value):
++        assert value == 42
++        return "processed", result
+ 
+-    result = runner.invoke(cli, [])
+-    assert result.output == expect
++    result = runner.invoke(cli, ["sub"], standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == ("processed", expect)
+ 
+ 
+ def test_chaining_with_arguments(runner):

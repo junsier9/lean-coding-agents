@@ -1,0 +1,134 @@
+diff --git a/src/itsdangerous/exc.py b/src/itsdangerous/exc.py
+index 8c9021d..a78f9a5 100644
+--- a/src/itsdangerous/exc.py
++++ b/src/itsdangerous/exc.py
+@@ -37,9 +37,9 @@ class BadTimeSignature(BadSignature):
+     def __init__(self, message, payload=None, date_signed=None):
+         super().__init__(message, payload)
+ 
+-        #: If the signature expired this exposes the date of when the
+-        #: signature was created. This can be helpful in order to
+-        #: tell the user how long a link has been gone stale.
++        #: The date the signature was created, as an aware
++        #: :class:`datetime.datetime` in UTC. This is ``None`` if the
++        #: timestamp is missing or could not be decoded.
+         #:
+         #: .. versionchanged:: 2.0
+         #:     The datetime value is timezone-aware rather than naive.
+diff --git a/src/itsdangerous/timed.py b/src/itsdangerous/timed.py
+index 656bc16..178322f 100644
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -86,6 +86,9 @@ class TimestampSigner(Signer):
+         # Signature is *not* okay. Raise a proper error now that we have
+         # split the value and the timestamp.
+         if sig_error is not None:
++            if timestamp is not None:
++                timestamp = self.timestamp_to_datetime(timestamp)
++
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=timestamp)
+ 
+         # Signature was okay but the timestamp is actually not there or
+diff --git a/tests/test_itsdangerous/test_timed.py b/tests/test_itsdangerous/test_timed.py
+index 18de741..3abd39b 100644
+--- a/tests/test_itsdangerous/test_timed.py
++++ b/tests/test_itsdangerous/test_timed.py
+@@ -7,10 +7,12 @@ import pytest
+ from freezegun import freeze_time
+ 
+ from itsdangerous import Signer
++from itsdangerous.exc import BadSignature
+ from itsdangerous.exc import BadTimeSignature
+ from itsdangerous.exc import SignatureExpired
+ from itsdangerous.timed import TimedSerializer
+ from itsdangerous.timed import TimestampSigner
++from itsdangerous.url_safe import URLSafeTimedSerializer
+ from test_itsdangerous.test_serializer import TestSerializer
+ from test_itsdangerous.test_signer import TestSigner
+ 
+@@ -46,6 +48,26 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+         signed = signer.sign("value")
+         assert signer.unsign(signed, return_timestamp=True) == (b"value", ts)
+ 
++    @pytest.mark.parametrize(
++        "ts",
++        (
++            datetime(1970, 1, 1, tzinfo=timezone.utc),
++            datetime(2011, 6, 24, 0, 9, 5, tzinfo=timezone.utc),
++        ),
++    )
++    @pytest.mark.parametrize("return_timestamp", (False, True))
++    def test_bad_signature_date_signed(self, signer, ts, return_timestamp):
++        signed = signer.sign("value")[:-1]
++
++        with pytest.raises(BadTimeSignature) as exc_info:
++            signer.unsign(signed, return_timestamp=return_timestamp)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert "does not match" in str(exc_info.value)
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc
++
+     def test_timestamp_missing(self, signer):
+         other = Signer("secret-key")
+         signed = other.sign("value")
+@@ -54,15 +76,35 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+             signer.unsign(signed)
+ 
+         assert "missing" in str(exc_info.value)
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed is None
++
++    @pytest.mark.parametrize(
++        "signed, payload", ((b"value", None), (b"value.bad", b"value"))
++    )
++    def test_bad_signature_missing_timestamp(self, signer, signed, payload):
++        with pytest.raises(BadSignature) as exc_info:
++            signer.unsign(signed)
+ 
+-    def test_malformed_timestamp(self, signer):
++        assert type(exc_info.value) is BadSignature
++        assert exc_info.value.payload == payload
++
++    @pytest.mark.parametrize("timestamp", (b"____________", b"a"))
++    @pytest.mark.parametrize("bad_signature", (False, True))
++    def test_malformed_timestamp(self, signer, timestamp, bad_signature):
+         other = Signer("secret-key")
+-        signed = other.sign(b"value.____________")
++        signed = other.sign(b"value." + timestamp)
++
++        if bad_signature:
++            signed = signed[:-1]
+ 
+         with pytest.raises(BadTimeSignature) as exc_info:
+             signer.unsign(signed)
+ 
+-        assert "Malformed" in str(exc_info.value)
++        assert type(exc_info.value) is BadTimeSignature
++        assert ("does not match" if bad_signature else "Malformed") in str(exc_info.value)
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed is None
+ 
+     def test_future_age(self, signer):
+         signed = signer.sign("value")
+@@ -92,3 +134,19 @@ class TestTimedSerializer(FreezeMixin, TestSerializer):
+     def test_return_payload(self, serializer, value, ts):
+         signed = serializer.dumps(value)
+         assert serializer.loads(signed, return_timestamp=True) == (value, ts)
++
++
++class TestTimedSerializerBadSignature(FreezeMixin):
++    @pytest.mark.parametrize("serializer_cls", (TimedSerializer, URLSafeTimedSerializer))
++    def test_date_signed(self, serializer_cls, ts):
++        serializer = serializer_cls("secret_key")
++        value = {"id": 42}
++        signed = serializer.dumps(value)[:-1]
++
++        with pytest.raises(BadTimeSignature) as exc_info:
++            serializer.loads(signed)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc
++        assert serializer.load_payload(exc_info.value.payload) == value

@@ -1,0 +1,12 @@
+2026-10-24T10:23:02.349370Z  WARN codex_skills::interface: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:02.349471Z  WARN codex_skills::interface: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:02.357870Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
+2026-10-24T10:23:03.926767Z  WARN codex_skills::interface: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:03.927126Z  WARN codex_skills::interface: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-10-24T10:23:07.264021Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
+2026-10-24T10:23:33.444267Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (1/5 in 204ms)... turn_id=01a16d6f-7682-7901-8fb2-417af0665f4f retries=1 max_retries=5 sampling_error=request timed out
+2026-10-24T10:23:48.674569Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (2/5 in 377ms)... turn_id=01a16d6f-7682-7901-8fb2-417af0665f4f retries=2 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:04.072911Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (3/5 in 723ms)... turn_id=01a16d6f-7682-7901-8fb2-417af0665f4f retries=3 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:19.826031Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (4/5 in 1.628s)... turn_id=01a16d6f-7682-7901-8fb2-417af0665f4f retries=4 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:36.466897Z  WARN codex_core::responses_retry: stream disconnected - retrying sampling request (5/5 in 3.25s)... turn_id=01a16d6f-7682-7901-8fb2-417af0665f4f retries=5 max_retries=5 sampling_error=request timed out
+2026-10-24T10:24:54.748190Z  WARN codex_core::client: falling back to HTTP

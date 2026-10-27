@@ -1,0 +1,9 @@
+{
+  "version": "prototype-2-candidate",
+  "test_methods_run": 4,
+  "failures": 0,
+  "errors": 0,
+  "validation_calls_without_plugin": 0,
+  "validation_calls_with_plugin": 1,
+  "interpretation": "Targeted fresh-context rerun; validation call counts are diagnostics, not a general quality metric."
+}

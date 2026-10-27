@@ -1,0 +1,16 @@
+diff --git a/app.py b/app.py
+index a6a6eb1..576a423 100644
+--- a/app.py
++++ b/app.py
+@@ -28,6 +28,9 @@ def get_profile(store, user_id):
+     if not isinstance(user_id, str) or not user_id:
+         raise RequestError("invalid user id")
+     try:
+-        return normalize(store.fetch(user_id))
+-    except Exception:
++        record = store.fetch(user_id)
++    except MissingRecord:
+         return None
++    except StoreUnavailable as error:
++        raise ServiceUnavailable("storage unavailable") from error
++    return normalize(record)

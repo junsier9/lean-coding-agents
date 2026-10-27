@@ -1,0 +1,77 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 6451a4a..3c49273 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -824,7 +824,7 @@ class _ComplementSet:
+             if exc is None:  # - +
+                 return False
+             else:  # - -
+-                return self._excluded.issupserset(exc)
++                return self._excluded.issuperset(exc)
+         else:
+             if inc is None:  # + -
+                 return self._included.isdisjoint(exc)
+@@ -868,7 +868,7 @@ class _ComplementSet:
+             if inc is None:  # + -
+                 return False
+             else:  # + +
+-                return self._included.issupserset(inc)
++                return self._included.issuperset(inc)
+ 
+     def __gt__(self, other):
+         inc, exc = _norm_args_notimplemented(other)
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b98ee23..5e95ea6 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -159,6 +159,44 @@ def test_complement_set():
+     assert opsmash(cab, ops) == ops
+ 
+ 
++@mark.parametrize('set_type', [set, frozenset])
++@mark.parametrize('left, right', [
++    ('', ''), ('a', 'a'), ('ab', 'a'), ('a', 'ab'), ('ab', 'bc'),
++    ('', 'a'), ('a', ''),
++])
++def test_complement_set_inclusion(set_type, left, right):
++    left, right = set_type(left), set_type(right)
++    cleft, cright = complement(left), complement(right)
++
++    assert cleft <= cleft
++    assert cleft >= cleft
++    assert (cleft <= cright) is (right <= left)
++    assert (cleft >= cright) is (right >= left)
++    assert cleft.issubset(cright) is (right <= left)
++    assert cleft.issuperset(cright) is (right >= left)
++
++
++@mark.parametrize('set_type', [set, frozenset])
++@mark.parametrize('left, right', [
++    ('', ''), ('a', 'a'), ('ab', 'a'), ('a', 'ab'), ('ab', 'bc'),
++    ('', 'a'), ('a', ''),
++])
++def test_double_complement_set_inclusion(set_type, left, right):
++    left, right = set_type(left), set_type(right)
++    cleft = complement(complement(left))
++    cright = complement(complement(right))
++
++    assert cleft <= cleft
++    assert cleft >= cleft
++    for other in (right, cright):
++        assert (cleft <= other) is (left <= right)
++        assert (cleft >= other) is (left >= right)
++        assert cleft.issubset(other) is (left <= right)
++        assert cleft.issuperset(other) is (left >= right)
++        assert (other <= cleft) is (right <= left)
++        assert (other >= cleft) is (right >= left)
++
++
+ def test_iset_index_method():
+     original_list = list(range(8, 20)) + list(range(8))
+ 

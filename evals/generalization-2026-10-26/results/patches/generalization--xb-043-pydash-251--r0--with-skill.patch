@@ -1,0 +1,86 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 830942b..a85e8e4 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -209,7 +209,7 @@ def mean(collection):
+         collection: Collection to process.
+ 
+     Returns:
+-        Result of mean.
++        Result of mean, or ``NaN`` if the collection is empty.
+ 
+     Example:
+ 
+@@ -283,7 +283,7 @@ def mean_by(collection, iteratee=None):
+         iteratee: Iteratee applied per iteration.
+ 
+     Returns:
+-        Result of mean.
++        Result of mean, or ``NaN`` if the collection is empty.
+ 
+     Example:
+ 
+@@ -292,7 +292,9 @@ def mean_by(collection, iteratee=None):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    return sum_by(collection, iteratee) / len(collection)
++    total = sum_by(collection, iteratee)
++    length = len(collection)
++    return total / length if length else float("nan")
+ 
+ 
+ def ceil(x: NumberT, precision: int = 0) -> float:
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index e0c25ef..18edcf0 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -114,12 +114,19 @@ def test_max_default(collection, default, expected):
+     [
+         ([1, 2, 3, 4, 5], 3),
+         ([0, 0.5, 1], 0.5),
++        ([0, 0], 0),
++        ({"a": 1, "b": 3}, 2),
+     ],
+ )
+ def test_mean(case, expected):
+     assert _.mean(case) == expected
+ 
+ 
++@parametrize("collection", [[], {}])
++def test_mean_empty(collection):
++    assert math.isnan(_.mean(collection))
++
++
+ @parametrize(
+     "case,expected",
+     [
+@@ -133,6 +140,28 @@ def test_mean_by(case, expected):
+     assert _.mean_by(*case) == expected
+ 
+ 
++@parametrize("collection", [[], {}])
++@parametrize("iteratee", [None, "b"])
++def test_mean_by_empty(collection, iteratee):
++    assert math.isnan(_.mean_by(collection, iteratee))
++
++
++@parametrize("collection", [[], {}])
++def test_mean_by_empty_iteratee(collection):
++    def iteratee(value):
++        pytest.fail("An empty collection must not call the iteratee")
++
++    assert math.isnan(_.mean_by(collection, iteratee))
++
++
++def test_mean_by_iteratee_error():
++    def iteratee(value):
++        raise ZeroDivisionError("iteratee failed")
++
++    with pytest.raises(ZeroDivisionError, match="iteratee failed"):
++        _.mean_by([1], iteratee)
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,100 @@
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 4e7a37f..09c8a8b 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -623,10 +623,11 @@ def backoff_iter(start, stop, count=None, factor=2.0, jitter=False):
+         stop (float): Positive number for maximum.
+         count (int): Number of steps before stopping
+             iteration. Defaults to the number of steps between *start* and
+-            *stop*. Pass the string, `'repeat'`, to continue iteration
+-            indefinitely.
++            *stop*, or one if they are equal. Pass the string, `'repeat'`,
++            to continue iteration indefinitely.
+         factor (float): Rate of exponential increase. Defaults to `2.0`,
+-            e.g., `[1, 2, 4, 8, 16]`.
++            e.g., `[1, 2, 4, 8, 16]`. Must be at least `1.0`. When `1.0`,
++            *count* must be supplied unless *start* equals *stop*.
+         jitter (float): A factor between `-1.0` and `1.0`, used to
+             uniformly randomize and thus spread out timeouts in a distributed
+             system, avoiding rhythm effects. Positive values use the base
+@@ -647,9 +648,14 @@ def backoff_iter(start, stop, count=None, factor=2.0, jitter=False):
+     if stop < start:
+         raise ValueError('expected stop >= start, not %r' % stop)
+     if count is None:
+-        denom = start if start else 1
+-        count = 1 + math.ceil(math.log(stop/denom, factor))
+-        count = count if start else count + 1
++        if start == stop:
++            count = 1
++        elif factor == 1.0:
++            raise ValueError('cannot infer count with factor=1.0 when start < stop; specify count')
++        else:
++            denom = start if start else 1
++            count = 1 + math.ceil(math.log(stop/denom, factor))
++            count = count if start else count + 1
+     if count != 'repeat' and count < 0:
+         raise ValueError('count must be positive or "repeat", not %r' % count)
+     if jitter:
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index e62e36c..598e981 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -453,6 +453,58 @@ def test_backoff_basic():
+     assert backoff(2, 15) == [2.0, 4.0, 8.0, 15.0]
+ 
+ 
++@pytest.mark.parametrize('value', [0.25, 1, 5])
++@pytest.mark.parametrize('factor', [1.0, 2.0])
++def test_backoff_equal_endpoints(value, factor):
++    from boltons.iterutils import backoff, backoff_iter
++
++    assert backoff(value, value, factor=factor) == [float(value)]
++    assert list(backoff_iter(value, value, factor=factor)) == [float(value)]
++
++
++@pytest.mark.parametrize('start', [0, 1])
++def test_backoff_unit_factor_requires_count(start):
++    from boltons.iterutils import backoff, backoff_iter
++
++    for func in (backoff, backoff_iter):
++        with pytest.raises(ValueError, match='count'):
++            list(func(start, 16, factor=1.0))
++
++
++@pytest.mark.parametrize('start, stop, expected', [
++    (1, 16, [1.0, 1.0, 1.0, 1.0]),
++    (5, 5, [5.0, 5.0, 5.0, 5.0]),
++    (0, 16, [0.0, 1.0, 1.0, 1.0]),
++])
++@pytest.mark.parametrize('count', [0, 1, 4])
++def test_backoff_unit_factor_explicit_count(start, stop, expected, count):
++    from boltons.iterutils import backoff, backoff_iter
++
++    assert backoff(start, stop, count=count, factor=1.0) == expected[:count]
++    assert list(backoff_iter(start, stop, count=count, factor=1.0)) == expected[:count]
++
++
++@pytest.mark.parametrize('start, stop, expected', [
++    (1, 16, [1.0, 1.0, 1.0, 1.0]),
++    (5, 5, [5.0, 5.0, 5.0, 5.0]),
++    (0, 16, [0.0, 1.0, 1.0, 1.0]),
++])
++def test_backoff_unit_factor_repeat(start, stop, expected):
++    from itertools import islice
++    from boltons.iterutils import backoff_iter
++
++    assert list(islice(backoff_iter(start, stop, count='repeat', factor=1.0), 4)) == expected
++
++
++@pytest.mark.parametrize('kwargs', [{'factor': 0.5}, {'factor': 1.0, 'jitter': 20}])
++def test_backoff_equal_endpoints_validation(kwargs):
++    from boltons.iterutils import backoff, backoff_iter
++
++    for func in (backoff, backoff_iter):
++        with pytest.raises(ValueError):
++            list(func(5, 5, **kwargs))
++
++
+ def test_backoff_repeat():
+     from boltons.iterutils import backoff_iter
+ 

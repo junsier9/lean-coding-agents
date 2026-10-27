@@ -1,0 +1,155 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index a39c362..e786989 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -186,32 +186,25 @@ class BarrelList(list):
+         return islice(self, start, stop, step)
+ 
+     def del_slice(self, start, stop, step=None):
+-        if step is not None and abs(step) > 1:  # punt
+-            new_list = chain(self.iter_slice(0, start, step),
+-                             self.iter_slice(stop, None, step))
+-            self.lists[0][:] = new_list
++        start, stop, step = slice(start, stop, step).indices(len(self))
++        if not range(start, stop, step):
++            return
++        if step != 1:
++            tmp = list(self)
++            # A normalized negative stop denotes the open lower bound.
++            del tmp[start:stop if stop >= 0 else None:step]
++            self.lists[:] = [tmp]
+             self._balance_list(0)
+             return
+-        if start is None:
+-            start = 0
+-        if stop is None:
+-            stop = len(self)
+         start_list_idx, start_rel_idx = self._translate_index(start)
+-        stop_list_idx, stop_rel_idx = self._translate_index(stop)
+-        if start_list_idx is None:
+-            raise IndexError()
+-        if stop_list_idx is None:
+-            raise IndexError()
++        stop_list_idx, stop_rel_idx = self._translate_index(stop - 1)
+ 
+         if start_list_idx == stop_list_idx:
+-            del self.lists[start_list_idx][start_rel_idx:stop_rel_idx]
+-        elif start_list_idx < stop_list_idx:
+-            del self.lists[start_list_idx + 1:stop_list_idx]
+-            del self.lists[start_list_idx][start_rel_idx:]
+-            del self.lists[stop_list_idx][:stop_rel_idx]
++            del self.lists[start_list_idx][start_rel_idx:stop_rel_idx + 1]
+         else:
+-            assert False, ('start list index should never translate to'
+-                           ' greater than stop list index')
++            del self.lists[start_list_idx][start_rel_idx:]
++            del self.lists[stop_list_idx][:stop_rel_idx + 1]
++            del self.lists[start_list_idx + 1:stop_list_idx]
+ 
+     __delslice__ = del_slice
+ 
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index cf8d2f4..6343d2f 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -220,3 +222,92 @@ def test_barrellist_slicing_matches_list():
+             assert list(value[key]) == reference[key], key
+         with pytest.raises(ValueError):
+             value[::0]
++
++
++@pytest.mark.parametrize('key', [
++    slice(10, 50000),
++    slice(10000, 15000),
++    slice(10, 100000),
++    slice(10, None),
++    slice(10, 100100),
++    slice(None),
++    slice(-50000, -10),
++    slice(50000, 10),
++    slice(100100, None),
++])
++def test_barrel_list_delete_across_sublists(key):
++    bl = _multi_sublist_bl(100000)
++    reference = list(bl)
++
++    del reference[key]
++    del bl[key]
++
++    assert list(bl) == reference
++    assert len(bl) == len(reference)
++
++
++@pytest.mark.parametrize('size', (0, 1, 8, 32))
++def test_barrel_list_slice_deletion_matches_list(size):
++    import itertools
++
++    bounds = (None, -40, -2, 0, 2, 10, 40)
++    for start, stop, step in itertools.product(
++        bounds, bounds, (None, -3, -1, 1, 2, 3)
++    ):
++        reference = list(range(size))
++        bl = BarrelList(reference)
++        bl._size_factor = 2
++        bl._balance_list(0)
++        if size > 1:
++            assert len(bl.lists) > 1
++        key = slice(start, stop, step)
++
++        del reference[key]
++        del bl[key]
++
++        assert list(bl) == reference, key
++        assert len(bl) == len(reference), key
++        assert bl.lists
++
++
++@pytest.mark.parametrize('method', ('del_slice', '__delslice__'))
++def test_barrel_list_del_slice_call_forms(method):
++    bl = _multi_sublist_bl(100000)
++    reference = list(bl)
++
++    assert getattr(bl, method)(10, 50000) is None
++    del reference[10:50000]
++    assert list(bl) == reference
++    assert len(bl) == len(reference)
++
++    assert getattr(BarrelList, method)(self=bl, start=10, stop=None) is None
++    del reference[10:]
++    assert list(bl) == reference
++    assert len(bl) == len(reference)
++
++    getattr(bl, method)(None, None)
++    assert len(bl) == 0
++    bl.append('appended')
++    bl.insert(0, 'inserted')
++    assert list(bl) == ['inserted', 'appended']
++    assert bl.pop() == 'appended'
++    assert bl.pop() == 'inserted'
++    with pytest.raises(IndexError):
++        bl.pop()
++
++
++@pytest.mark.parametrize('key, error', [
++    (slice(None, None, 0), ValueError),
++    (slice(1.5, None), TypeError),
++    (slice(None, 1.5), TypeError),
++    (slice(None, None, 1.5), TypeError),
++])
++def test_barrel_list_invalid_slice_deletion(key, error):
++    bl = _multi_sublist_bl()
++    reference = list(bl)
++
++    with pytest.raises(error):
++        del bl[key]
++
++    assert list(bl) == reference
++    assert len(bl) == len(reference)

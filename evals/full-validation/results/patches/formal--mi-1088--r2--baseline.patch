@@ -1,0 +1,83 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c66c4cb..6a4efee 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3074,9 +3074,14 @@ def exactly_n(iterable, n, predicate=bool):
+         True
+ 
+     The iterable will be advanced until ``n + 1`` truthy items are encountered,
+-    so avoid calling it on infinite iterables.
++    or it is exhausted. Infinite iterables that never yield more than ``n``
++    truthy items will not terminate.
++
++    If ``n`` is negative, return ``False`` without advancing the iterable.
+ 
+     """
++    if n < 0:
++        return False
+     return ilen(islice(filter(predicate, iterable), n + 1)) == n
+ 
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 12033b8..19dd9dc 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3688,6 +3688,58 @@ class ExactlyNTests(TestCase):
+         self.assertTrue(mi.exactly_n([], 0))
+         self.assertFalse(mi.exactly_n([], 1))
+ 
++    def test_negative(self):
++        for n in (-1, -2, -10):
++            for iterable in (
++                [],
++                [False, False],
++                [True, False, True],
++                iter([True, False]),
++                repeat(True),
++                repeat(False),
++            ):
++                with self.subTest(n=n, iterable=iterable):
++                    self.assertFalse(mi.exactly_n(iterable, n))
++
++    def test_negative_does_not_consume(self):
++        for n in (-1, -2, -10):
++            with self.subTest(n=n):
++                iterable = iter([1, 2, 3])
++                predicate = mock.Mock(side_effect=AssertionError)
++                self.assertFalse(mi.exactly_n(iterable, n, predicate))
++                predicate.assert_not_called()
++                self.assertEqual(list(iterable), [1, 2, 3])
++
++    def test_zero(self):
++        iterable = iter([False, 0, True, False])
++        self.assertFalse(mi.exactly_n(iterable, 0))
++        self.assertEqual(list(iterable), [False])
++
++    def test_custom_predicate(self):
++        for n in range(5):
++            with self.subTest(n=n):
++                self.assertEqual(
++                    mi.exactly_n(range(6), n, lambda x: x % 2 == 0),
++                    n == 3,
++                )
++        self.assertTrue(mi.exactly_n(range(6), 0, lambda x: x > 10))
++
++    def test_short_circuit(self):
++        for n in (0, 1, 3, 100):
++            with self.subTest(n=n):
++                iterable = count(1)
++                self.assertFalse(mi.exactly_n(iterable, n))
++                self.assertEqual(next(iterable), n + 2)
++
++    def test_custom_predicate_short_circuit(self):
++        for n in (0, 1, 3, 100):
++            with self.subTest(n=n):
++                iterable = count()
++                predicate = mock.Mock(side_effect=lambda x: x % 2 == 0)
++                self.assertFalse(mi.exactly_n(iterable, n, predicate))
++                self.assertEqual(predicate.call_count, 2 * n + 1)
++                self.assertEqual(next(iterable), 2 * n + 1)
++
+ 
+ class AlwaysReversibleTests(TestCase):
+     """Tests for ``always_reversible()``"""

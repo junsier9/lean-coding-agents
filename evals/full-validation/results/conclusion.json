@@ -1,0 +1,38 @@
+{
+  "completed_at": "2026-10-24T18:46:49.723330+00:00",
+  "all_planned_phases_completed": true,
+  "tasks_per_confirmatory_batch": 20,
+  "underpowered_planning": false,
+  "stable_benefit_demonstrated": {
+    "token": false,
+    "time": false
+  },
+  "exact_usage_analysis_only_claims": {
+    "token": false,
+    "time": false
+  },
+  "token_inference": {
+    "formal": {
+      "method": "conservative_baseline_cost_bound",
+      "batch_criterion_met": false,
+      "actual_ratio_identified_from_exact_usage": false,
+      "missing_counts": {
+        "baseline": 1,
+        "with-skill": 0
+      }
+    },
+    "replication": {
+      "method": "exact_usage",
+      "batch_criterion_met": false,
+      "actual_ratio_identified_from_exact_usage": true,
+      "missing_counts": {
+        "baseline": 0,
+        "with-skill": 0
+      }
+    }
+  },
+  "conservative_bound_scope": "Pre-registered missing-usage exception only; preserves original nulls, uses baseline cost lower bound, never supplies an actual-ratio point estimate or two-sided CI.",
+  "scope": "Explicit frozen skill, configured Codex model/reasoning and curated Python maintenance corpus only.",
+  "protocol_sha256": "EEDE558723B8E998169624A387057A2386AD45FBE4FC58E4F64976C6A8E95DEE",
+  "skill_sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF"
+}

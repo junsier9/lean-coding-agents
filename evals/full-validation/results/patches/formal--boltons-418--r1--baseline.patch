@@ -1,0 +1,73 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 37c4569..ff2c56a 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -208,6 +208,8 @@ def singularize(word):
+     'Activity'
+     >>> singularize('Glasses')
+     'Glass'
++    >>> singularize('Glass')
++    'Glass'
+     >>> singularize('FEET')
+     'FOOT'
+ 
+@@ -219,7 +221,7 @@ def singularize(word):
+     irr_singular = _IRR_P2S.get(word)
+     if irr_singular:
+         singular = irr_singular
+-    elif not word.endswith('s'):
++    elif not word.endswith('s') or word.endswith('ss'):
+         return orig_word
+     elif len(word) == 2:
+         singular = word[:-1]  # or just return word?
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index b46081e..e9aaec5 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,46 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize('word', [
++    'glass', 'boss', 'address', 'class', 'grass', 'process', 'business',
++    'loss', 'ss', 'GlAsS', 'bOsS', 'AdDrEsS', ' glass ', '\tBoSS\n',
++])
++def test_singularize_double_s_singular(word):
++    result = word
++    for _ in range(3):
++        result = strutils.singularize(result)
++        assert result == word
++
++
++@pytest.mark.parametrize('case', [str.lower, str.upper, str.title])
++@pytest.mark.parametrize('singular,plural', [
++    ('glass', 'glasses'), ('boss', 'bosses'), ('address', 'addresses'),
++    ('class', 'classes'), ('grass', 'grasses'), ('process', 'processes'),
++    ('business', 'businesses'), ('loss', 'losses'),
++])
++def test_singularize_double_s_plural(singular, plural, case):
++    singular, plural = case(singular), case(plural)
++    assert strutils.pluralize(singular) == plural
++    assert strutils.singularize(plural) == singular
++    assert strutils.singularize(singular) == singular
++
++
++@pytest.mark.parametrize('word,expected', [
++    ('', ''), (' \t', ' \t'), ('cat', 'cat'), ('cats', 'cat'),
++    ('chances', 'chance'), ('Activities', 'Activity'), ('boys', 'boy'),
++    ('dogs', 'dog'), ('FEET', 'FOOT'), ('children', 'child'),
++    ('analysis', 'analysis'), ('analyses', 'analysis'), ('sheep', 'sheep'),
++    ('series', 'series'), ('as', 'a'),
++])
++def test_singularize_existing_behavior(word, expected):
++    assert strutils.singularize(word) == expected
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

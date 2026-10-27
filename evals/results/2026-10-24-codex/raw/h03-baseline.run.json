@@ -1,0 +1,41 @@
+{
+  "case": "h03",
+  "arm": "baseline",
+  "exit_code": 0,
+  "status": "completed",
+  "wall_seconds": 240.505,
+  "usage": [
+    {
+      "input_tokens": 218490,
+      "cached_input_tokens": 191104,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3218,
+      "reasoning_output_tokens": 751
+    }
+  ],
+  "completed_command_items": 8,
+  "completed_file_change_items": 1,
+  "error_items": [
+    "Falling back from WebSockets to HTTPS transport. request timed out"
+  ],
+  "terminal_errors": [
+    {
+      "type": "error",
+      "message": "Reconnecting... 2/5 (request timed out)"
+    },
+    {
+      "type": "error",
+      "message": "Reconnecting... 3/5 (request timed out)"
+    },
+    {
+      "type": "error",
+      "message": "Reconnecting... 4/5 (request timed out)"
+    },
+    {
+      "type": "error",
+      "message": "Reconnecting... 5/5 (request timed out)"
+    }
+  ],
+  "transport_override": null,
+  "model_override": null
+}

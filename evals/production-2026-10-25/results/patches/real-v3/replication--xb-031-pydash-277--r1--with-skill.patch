@@ -1,0 +1,199 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 4fc05cc..a2d64b6 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2576,33 +2576,35 @@ def xor_by(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor_by(
+-        uniq(
++    for other in lists:
++        other = list(other)
++        array = uniq(
+             difference_by(
+-                array + lists[0],
+-                intersection_by(array, lists[0], iteratee=iteratee),
++                array + other,
++                intersection_by(array, other, iteratee=iteratee),
+                 iteratee=iteratee,
+             )
+-        ),
+-        *lists[1:],
+-        iteratee=iteratee,
+-    )
++        )
++
++    return array
+ 
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++    array: t.Iterable[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+ ) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++    array: t.Iterable[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+ ) -> t.List[T]: ...
+ 
+ 
+@@ -2633,22 +2635,24 @@ def xor_with(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     comp, lists = parse_iteratee("comparator", *lists, **kwargs)
+ 
+-    return xor_with(
+-        uniq(
++    for other in lists:
++        other = list(other)
++        array = uniq(
+             difference_with(
+-                array + lists[0],
+-                intersection_with(array, lists[0], comparator=comp),
++                array + other,
++                intersection_with(array, other, comparator=comp),
+                 comparator=comp,
+             )
+-        ),
+-        *lists[1:],
+-        comparator=comp,
+-    )
++        )
++
++    return array
+ 
+ 
+ @t.overload
+diff --git a/src/pydash/chaining/all_funcs.pyi b/src/pydash/chaining/all_funcs.pyi
+index 7c0efa7..02e1b58 100644
+--- a/src/pydash/chaining/all_funcs.pyi
++++ b/src/pydash/chaining/all_funcs.pyi
+@@ -629,11 +629,11 @@ class AllFuncs:
+ 
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++        self: "Chain[t.Iterable[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++        self: "Chain[t.Iterable[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+     ) -> "Chain[t.List[T]]": ...
+     def xor_with(self, *lists, **kwargs):
+         return self._wrap(pyd.xor_with)(*lists, **kwargs)
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b618b3c..8771314 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1084,6 +1084,91 @@ def test_xor_with_multiple_arrays(arrays, expected):
+     assert _.xor_with(*arrays, comparator=comparator) == expected
+ 
+ 
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("other_factory", [list, tuple, iter, lambda values: (value for value in values)])
++def test_xor_iterable_inputs(name, factory, other_factory):
++    values = factory([1, 2, 2, 3])
++    others = other_factory([3, 4, 4, 5])
++    result = getattr(_, name)(values, others, iter([2, 3, 5, 6]))
++
++    assert result == [1, 4, 3, 6]
++    if factory is list:
++        assert values == [1, 2, 2, 3]
++    if other_factory is list:
++        assert others == [3, 4, 4, 5]
++
++
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("values", [[], [1, 2, 1]])
++def test_xor_single_iterable(name, factory, values):
++    array = factory(values)
++    result = getattr(_, name)(array)
++
++    assert isinstance(result, list)
++    assert result == values
++    assert result is not array
++
++
++@parametrize(
++    "name,keyword,callback",
++    [
++        ("xor_by", "iteratee", "id"),
++        ("xor_by", "iteratee", lambda value: value["id"]),
++        ("xor_with", "comparator", lambda left, right: left["id"] == right["id"]),
++    ],
++)
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("use_keyword", [False, True])
++@parametrize("count", [1, 2, 3, 4])
++def test_xor_iterable_callbacks(name, keyword, callback, factory, use_keyword, count):
++    first = {"id": 1}
++    shared = {"id": 2}
++    second = {"id": 3}
++    third = {"id": 4}
++    arrays = [
++        [first, shared, first],
++        [{"id": 2, "source": "second"}, second],
++        [{"id": 1, "source": "third"}, third],
++        [second, third],
++    ]
++    expected = ([first, shared, first], [first, second], [second, third], [])[count - 1]
++    snapshots = [list(array) for array in arrays]
++    inputs = [factory(array) for array in arrays[:count]]
++    function = getattr(_, name)
++
++    if use_keyword:
++        result = function(*inputs, **{keyword: callback})
++    else:
++        result = function(*inputs, callback)
++
++    assert result == expected
++    assert all(value is original for value, original in zip(result, expected))
++    assert arrays == snapshots
++    if factory is list:
++        assert inputs == snapshots[:count]
++
++
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++def test_xor_propagates_iteration_errors(name):
++    def broken_values():
++        yield 1
++        raise ValueError("iteration failed")
++
++    with pytest.raises(ValueError, match="iteration failed"):
++        getattr(_, name)([1, 2], broken_values())
++
++
++@parametrize("name", ["xor_by", "xor_with"])
++def test_xor_propagates_callback_errors(name):
++    def broken_callback(*args):
++        raise RuntimeError("callback failed")
++
++    with pytest.raises(RuntimeError, match="callback failed"):
++        getattr(_, name)(iter([1, 2]), iter([2, 3]), broken_callback)
++
++
+ @parametrize(
+     "case,expected",
+     [

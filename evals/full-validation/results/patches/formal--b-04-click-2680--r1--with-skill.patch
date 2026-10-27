@@ -1,0 +1,137 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index cb4136a..7c57c9f 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Close registered callbacks and resources before ``Context.exit()`` exits,
++    including when called during option parsing.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/src/click/core.py b/src/click/core.py
+index f17a8a8..c76a356 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -699,7 +699,14 @@ class Context:
+         raise Abort()
+ 
+     def exit(self, code: int = 0) -> t.NoReturn:
+-        """Exits the application with a given exit code."""
++        """Exits the application with a given exit code.
++
++        .. versionchanged:: 8.2
++            Callbacks and context managers registered with
++            :meth:`call_on_close` and :meth:`with_resource` are closed before
++            exiting.
++        """
++        self.close()
+         raise Exit(code)
+ 
+     def get_usage(self) -> str:
+diff --git a/tests/test_context.py b/tests/test_context.py
+index df8b497..6f3f1be 100644
+--- a/tests/test_context.py
++++ b/tests/test_context.py
+@@ -320,6 +320,99 @@ def test_exit_not_standalone():
+     assert cli.main([], "test_exit_not_standalone", standalone_mode=False) == 0
+ 
+ 
++@pytest.mark.parametrize("exit_code", [0, 7])
++@pytest.mark.parametrize("standalone_mode", [True, False])
++@pytest.mark.parametrize("exit_source", ["option", "command"])
++def test_exit_closes_resources(runner, exit_code, standalone_mode, exit_source):
++    active = []
++    closed = []
++
++    @contextmanager
++    def resource(ctx):
++        assert not active
++        active.append(ctx)
++        yield
++        assert click.get_current_context() is ctx
++        active.clear()
++        closed.append("resource")
++
++    def register_resource(ctx, param, value):
++        ctx.with_resource(resource(ctx))
++
++        @ctx.call_on_close
++        def close():
++            assert click.get_current_context() is ctx
++            assert active == [ctx]
++            closed.append("callback")
++
++    def exit_option(ctx, param, value):
++        if value:
++            ctx.exit(exit_code)
++
++    @click.command()
++    @click.option(
++        "--resource",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=register_resource,
++    )
++    @click.option(
++        "--exit",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=exit_option,
++    )
++    @click.pass_context
++    def cli(ctx):
++        assert exit_source == "command"
++        assert active == [ctx]
++        ctx.exit(exit_code)
++
++    args = ["--resource"]
++    if exit_source == "option":
++        args.append("--exit")
++
++    for _ in range(2):
++        closed.clear()
++        result = runner.invoke(cli, args, standalone_mode=standalone_mode)
++        assert result.exit_code == (exit_code if standalone_mode else 0)
++        if standalone_mode and exit_code:
++            assert isinstance(result.exception, SystemExit)
++        else:
++            assert result.exception is None
++        assert result.return_value == (None if standalone_mode else exit_code)
++        assert closed == ["callback", "resource"]
++        assert not active
++        assert click.get_current_context(silent=True) is None
++
++
++def test_exit_cleanup_error():
++    ctx = click.Context(click.Command("test"))
++    closed = []
++    error = RuntimeError("cleanup failed")
++
++    @ctx.call_on_close
++    def close():
++        assert click.get_current_context() is ctx
++        closed.append("close")
++
++    @ctx.call_on_close
++    def fail():
++        assert click.get_current_context() is ctx
++        closed.append("fail")
++        raise error
++
++    with pytest.raises(RuntimeError) as exc_info:
++        with ctx.scope(cleanup=False):
++            ctx.exit()
++
++    assert exc_info.value is error
++    assert closed == ["fail", "close"]
++    assert click.get_current_context(silent=True) is None
++
++
+ @pytest.mark.parametrize(
+     ("option_args", "invoke_args", "expect"),
+     [

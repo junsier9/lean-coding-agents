@@ -1,0 +1,290 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..a82c07f 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -5,6 +5,7 @@
+ __all__ = ()
+ 
+ import functools
++import inspect
+ import warnings
+ import weakref
+ 
+@@ -42,7 +43,7 @@ class _WrapperBase:
+         self.__lock = lock if lock is not None else _none
+         self.__cond = cond if cond is not None else _none
+ 
+-    def __call__(self, *args, **kwargs):
++    def __call__(self, /, *args, **kwargs):
+         raise NotImplementedError()  # pragma: no cover
+ 
+     def cache_clear(self):
+@@ -82,13 +83,21 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++
++            @functools.wraps(self.__wrapped__)  # type: ignore
++            def wrapper(*args, **kwargs):
++                if args:
++                    obj, *args = args
++                else:
++                    bound = inspect.signature(self.__wrapped__).bind(**kwargs)
++                    obj = kwargs.pop(next(iter(bound.arguments)))
++                return self.__get__(obj, objtype)(*args, **kwargs)
++
++            return wrapper
++
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+@@ -131,7 +140,7 @@ class _DeprecatedDescriptorBase(_DescriptorBase):
+         self.__cache_clear = cache_clear
+ 
+     # called for @classmethod with Python >= 3.13
+-    def __call__(self, *args, **kwargs):
++    def __call__(self, /, *args, **kwargs):
+         _warn_classmethod(stacklevel=3)
+         return self.__wrapper(*args, **kwargs)
+ 
+@@ -155,7 +164,7 @@ def _condition_info(method, cache, key, lock, cond, info):
+                 self.__hits = self.__misses = 0
+                 self.__pending = set()
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 cache = self.cache
+                 lock = self.cache_lock
+                 cond = self.cache_condition
+@@ -202,7 +211,7 @@ def _locked_info(method, cache, key, lock, info):
+                 super().__init__(obj, method, cache, key, lock)
+                 self.__hits = self.__misses = 0
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 cache = self.cache
+                 lock = self.cache_lock
+                 key = self.cache_key(*args, **kwargs)
+@@ -242,7 +251,7 @@ def _unlocked_info(method, cache, key, info):
+                 super().__init__(obj, method, cache, key)
+                 self.__hits = self.__misses = 0
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 cache = self.cache
+                 key = self.cache_key(*args, **kwargs)
+                 try:
+@@ -272,7 +281,7 @@ def _condition(method, cache, key, lock, cond):
+     # backward-compatible weakref dictionary for Python >= 3.13
+     pending = weakref.WeakKeyDictionary()
+ 
+-    def wrapper(self, pending, *args, **kwargs):
++    def wrapper(self, pending, /, *args, **kwargs):
+         c = cache(self)
+         k = key(self, *args, **kwargs)
+         with lock(self):
+@@ -299,7 +308,7 @@ def _condition(method, cache, key, lock, cond):
+         with lock(self):
+             c.clear()
+ 
+-    def classmethod_wrapper(self, *args, **kwargs):
++    def classmethod_wrapper(self, /, *args, **kwargs):
+         p = pending.setdefault(self, set())
+         return wrapper(self, p, *args, **kwargs)
+ 
+@@ -309,7 +318,7 @@ def _condition(method, cache, key, lock, cond):
+                 super().__init__(obj, method, cache, key, lock, cond)
+                 self.__pending = set()
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 return wrapper(self._obj, self.__pending, *args, **kwargs)
+ 
+             # objtype: backward-compatible @classmethod handling with Python < 3.13
+@@ -320,7 +329,7 @@ def _condition(method, cache, key, lock, cond):
+ 
+ 
+ def _locked(method, cache, key, lock):
+-    def wrapper(self, *args, **kwargs):
++    def wrapper(self, /, *args, **kwargs):
+         c = cache(self)
+         k = key(self, *args, **kwargs)
+         with lock(self):
+@@ -348,7 +357,7 @@ def _locked(method, cache, key, lock):
+             def __init__(self, obj):
+                 super().__init__(obj, method, cache, key, lock)
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 return wrapper(self._obj, *args, **kwargs)
+ 
+             # objtype: backward-compatible @classmethod handling with Python < 3.13
+@@ -359,7 +368,7 @@ def _locked(method, cache, key, lock):
+ 
+ 
+ def _unlocked(method, cache, key):
+-    def wrapper(self, *args, **kwargs):
++    def wrapper(self, /, *args, **kwargs):
+         c = cache(self)
+         k = key(self, *args, **kwargs)
+         try:
+@@ -382,7 +391,7 @@ def _unlocked(method, cache, key):
+             def __init__(self, obj):
+                 super().__init__(obj, method, cache, key)
+ 
+-            def __call__(self, *args, **kwargs):
++            def __call__(self, /, *args, **kwargs):
+                 return wrapper(self._obj, *args, **kwargs)
+ 
+             # objtype: backward-compatible @classmethod handling with Python < 3.13
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..8e299d9 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -442,6 +442,8 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+ 
+         with self.assertRaises(TypeError):
+             cached.get_info(42)
++        with self.assertRaises(TypeError):
++            Slots.get_info(cached, 42)  # type: ignore
+ 
+         with warnings.catch_warnings(record=True) as w:
+             warnings.simplefilter("always")
+@@ -479,6 +481,8 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+ 
+         with self.assertRaises(TypeError):
+             cached.get_info(42)
++        with self.assertRaises(TypeError):
++            Immutable.get_info(cached, 42)  # type: ignore
+ 
+         with warnings.catch_warnings(record=True) as w:
+             warnings.simplefilter("always")
+@@ -513,6 +517,119 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+ 
+         with self.assertRaises(TypeError):
+             cached.bar()  # type: ignore
++        with self.assertRaises(TypeError):
++            Cached.bar(cached)  # type: ignore
++
++
++class UnboundMethodTest(unittest.TestCase):
++    def test_unbound(self):
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                first = Unhashable({})
++                second = Unhashable({}, count=10)
++                unbound = getattr(Unhashable, name)
++
++                self.assertEqual(unbound(first, value=0), 0)
++                bound = getattr(first, name)
++                self.assertEqual(bound(value=0), 0)
++                self.assertEqual(unbound(first, value=0), 0)
++                self.assertEqual(unbound(self=first, value=0), 0)
++                self.assertEqual(unbound(second, value=0), 10)
++                other = getattr(second, name)
++                self.assertIsNot(bound, other)
++                self.assertIs(bound.cache, first.cache)
++                self.assertIs(other.cache, second.cache)
++                self.assertEqual((first.count, second.count), (1, 11))
++
++                if name.endswith("info"):
++                    self.assertEqual(bound.cache_info(), (3, 1, None, 1))
++                    self.assertEqual(other.cache_info(), (0, 1, None, 1))
++
++                bound.cache_clear()
++                self.assertEqual(first.cache, {})
++                self.assertEqual(unbound(second, value=0), 10)
++                self.assertEqual(unbound(first, value=0), 1)
++                if name.endswith("info"):
++                    self.assertEqual(bound.cache_info(), (0, 1, None, 1))
++                    self.assertEqual(other.cache_info(), (1, 1, None, 1))
++
++    def test_unbound_keywords(self):
++        for info in (False, True):
++            for lock, condition in (
++                (False, False),
++                (True, False),
++                (False, True),
++                (True, True),
++            ):
++                with self.subTest(info=info, lock=lock, condition=condition):
++
++                    class Keywords(Cached):
++                        @cachedmethod(
++                            lambda obj: obj.cache,
++                            key=lambda _, **kwargs: keys.hashkey(**kwargs),
++                            lock=(lambda obj: obj.lock) if lock else None,
++                            condition=(lambda obj: obj.cond) if condition else None,
++                            info=info,
++                        )
++                        def get(receiver, /, **kwargs):
++                            receiver.count += 1
++                            return kwargs
++
++                    cached = Keywords({})
++                    kwargs = {"self": 1, "obj": 2, "pending": 3}
++                    self.assertEqual(Keywords.get(cached, **kwargs), kwargs)  # type: ignore
++                    self.assertEqual(cached.get(**kwargs), kwargs)
++                    self.assertEqual(cached.count, 1)
++                    with self.assertRaises(TypeError):
++                        Keywords.get(receiver=cached, **kwargs)
++
++    def test_unbound_receiver_keyword(self):
++        class Renamed(Cached):
++            @cachedmethod(lambda obj: obj.cache, info=True)
++            def get(obj, value):
++                obj.count += 1
++                return value
++
++        cached = Renamed({})
++        self.assertEqual(Renamed.get(obj=cached, value=42), 42)  # type: ignore
++        self.assertEqual(cached.get(value=42), 42)
++        self.assertEqual(cached.count, 1)
++        self.assertEqual(cached.get.cache_info(), (1, 1, None, 1))
++        with self.assertRaises(TypeError):
++            Renamed.get(value=42)
++        with self.assertRaises(TypeError):
++            Renamed.get(obj=cached)  # type: ignore
++
++    def test_unbound_wrapped(self):
++        import inspect
++
++        unbound = getattr(Cached, "get")
++        self.assertIs(unbound.__wrapped__, Cached.__dict__["get"].__wrapped__)
++        self.assertEqual(unbound.__name__, "get")
++        self.assertEqual((unbound.__doc__ or "").strip(), "docstring")
++        self.assertEqual(
++            inspect.signature(unbound), inspect.signature(unbound.__wrapped__)
++        )
++
++    def test_unbound_error(self):
++        cached = Cached({})
++        for _ in range(2):
++            with self.assertRaisesRegex(ValueError, "test error"):
++                Cached.get_cond_error(cached, 0)  # type: ignore
++        with self.assertRaisesRegex(ValueError, "test error"):
++            cached.get_cond_error(0)
++        self.assertEqual(cached.cache, {})
++        self.assertEqual(cached.cond.notify_count, 3)
+ 
+ 
+ class CacheMethodTest(unittest.TestCase, MethodDecoratorTestMixin):

@@ -1,0 +1,21 @@
+{
+  "evidence_class": "revealed_regression_development_only",
+  "source_repo": "pallets/click",
+  "base_commit": "7f7bbe4569ea68e8dabee232eade069ef3310aea",
+  "historical_case": "xb-012-click-3152",
+  "historical_blind_pair": "05",
+  "initial_core_is_actual_historical_blinded_A_output": true,
+  "initial_core_sha256": "8A3980061D05367BA83A0377FE7DB93C9F41A61D4D9D32CDF6245AA0424C4D0C",
+  "base_parser_sha256": "437D691F416541912AF945C4FC0051CE5CA011FBF13D3B996D6361E317D79B3C",
+  "reference_is_new_independent_development_control_not_upstream_gold_fix": true,
+  "closed_v4_results_or_qualification_to_be_modified": false,
+  "case_sha256": "1A0EAE0354DA04B0526F84052661FE0DCB292523EAF149E9E1EFD608D3CFBC47",
+  "reference_report_sha256": "4BB503FDB6FF0C5C4D3D3B0D081EDF90186E93017E99DF222685AD303207F28E",
+  "reference_changed_files": [
+    "click/parser.py"
+  ],
+  "contract_sha256": "4BE12F198C3A0BAF0438A830733DDFF36C130665215288835B5EB7F28467477B",
+  "visible_example_sha256": "C2F174126BB466D21ED2104124BF49D4CAEF24A23AD7B7F50BD62D0C338D0B93",
+  "embedded_core_text_utf8_lf_sha256": "8A3980061D05367BA83A0377FE7DB93C9F41A61D4D9D32CDF6245AA0424C4D0C",
+  "text_adapter": "Source files are decoded as UTF-8 with universal newlines for the fixture JSON; materialization uses the host text-file newline convention. The original raw core hash is retained separately; byte identity across newline representations is not claimed."
+}

@@ -1,0 +1,60 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 3f07141..358d6d8 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4331,7 +4331,7 @@ def product_index(element, *args):
+     """
+     elements = tuple(element)
+     pools = tuple(map(tuple, args))
+-    if len(element) != len(args):
++    if len(elements) != len(args):
+         raise ValueError('element is not a product of args')
+ 
+     index = 0
+diff --git a/tests/test_more.py b/tests/test_more.py
+index a51481e..fd39c1b 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4918,6 +4918,42 @@ class ProductIndexTests(TestCase):
+             expected = first_index.setdefault(element, index)
+             self.assertEqual(actual, expected)
+ 
++    def test_iterable_inputs(self):
++        factories = (list, tuple, iter, lambda values: (v for v in values))
++        for target_type, first_type, second_type in product(factories, repeat=3):
++            with self.subTest(
++                target_type=target_type,
++                first_type=first_type,
++                second_type=second_type,
++            ):
++                actual = mi.product_index(
++                    target_type(['i', 'a']),
++                    first_type('ghi'),
++                    second_type('abcdef'),
++                )
++                self.assertEqual(actual, 12)
++
++    def test_iterator_multiplicity(self):
++        iterables = ['ab', 'bab', 'cab']
++        products = list(product(*iterables))
++        for element in products:
++            with self.subTest(element=element):
++                actual = mi.product_index(iter(element), *map(iter, iterables))
++                self.assertEqual(actual, products.index(element))
++
++    def test_iterator_empty_product(self):
++        self.assertEqual(mi.product_index(iter(())), 0)
++
++    def test_invalid_iterator_length(self):
++        for element in ('', 'ac', 'achi'):
++            with self.subTest(element=element), self.assertRaises(ValueError):
++                mi.product_index(iter(element), *map(iter, ('ab', 'cde', 'fghi')))
++
++    def test_invalid_iterator_match(self):
++        for pools in (('ab', 'cde', 'fghi'), ('ab', '', 'fghi')):
++            with self.subTest(pools=pools), self.assertRaises(ValueError):
++                mi.product_index(iter('axf'), *map(iter, pools))
++
+     def test_multiplicity(self):
+         iterables = ['ab', 'bab', 'cab']
+         first_index = {}

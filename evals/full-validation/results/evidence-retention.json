@@ -1,0 +1,14 @@
+{
+  "retained_at": "2026-10-24T18:56:33.600545+00:00",
+  "private_archive": ".local/full-validation-evidence.zip",
+  "bytes": 29298253,
+  "sha256": "7D9336460454D24E8270688FC1D9561A3942887A9D7716284E864DDA9968AD03",
+  "main_valid_runs": 300,
+  "used_pinned_source_archives": 94,
+  "untracked_files_retained": 0,
+  "private_raw_entries": 1936,
+  "contains_private_global_prompt_catalog": true,
+  "for_local_retention_only": true,
+  "not_to_be_uploaded_with_distributable_skill": true,
+  "scope": "Main raw traces/checkpoints, infrastructure retry traces, native smoke traces, used source archives and original metadata. Candidate complete work trees and unused source archives remain in the original runtime."
+}

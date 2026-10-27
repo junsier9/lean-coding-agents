@@ -1,0 +1,22 @@
+diff --git a/app.py b/app.py
+index b294607..0ede54f 100644
+--- a/app.py
++++ b/app.py
+@@ -1,9 +1,7 @@
+-from boundary import accept_request, validated_amounts
++from boundary import accept_request
+ 
+ 
+-def _sum_owned(amounts, audit):
+-    # At present summarize is the only caller.
+-    amounts = validated_amounts(amounts, audit)
++def _sum_owned(amounts):
+     return sum(amounts)
+ 
+ 
+@@ -15,4 +13,4 @@ def summarize(payload, audit=None):
+     The external list remains owned by the caller.
+     """
+     amounts = accept_request(payload, audit)
+-    return {"count": len(amounts), "total": _sum_owned(amounts, audit)}
++    return {"count": len(amounts), "total": _sum_owned(amounts)}

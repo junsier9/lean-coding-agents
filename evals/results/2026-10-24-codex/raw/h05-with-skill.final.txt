@@ -1,0 +1,8 @@
+已将 [app.py](C:/Users/ASUS/AppData/Local/Temp/lean-coding-codex-f7ea3a63d0934ee180513de15998925e/with-skill/h05/app.py:1) 的保存按钮文案从 `Save draft` 改为 `Save changes`。
+
+使用现有 Python 解释器依次运行，均通过：
+
+- `tools/check.py focused`
+- `tools/check.py dev-build`
+
+未完成项：无。未联网、安装依赖或委派任务。

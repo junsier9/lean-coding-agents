@@ -1,0 +1,594 @@
+{
+  "completed_at": "2026-10-24T20:13:06.337848+00:00",
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "model_runs": 9,
+  "included_in_efficiency_statistics": false,
+  "routing_qualified": true,
+  "cases": {
+    "implicit-d04": {
+      "key": "implicit-d04",
+      "phase": "routing",
+      "case_id": "implicit-d04",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\implicit-d04\\r0\\with-skill",
+      "started_at": "2026-10-24T20:10:13.130332+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 71.32799999997951,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 128350,
+          "cached_input_tokens": 116864,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2787,
+          "reasoning_output_tokens": 770
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 128350,
+      "output_tokens": 2787,
+      "total_tokens": 131137,
+      "cached_input_tokens": 116864,
+      "command_items": 10,
+      "command_failures": 1,
+      "skill_body_read_observed": true,
+      "thread_ids": [
+        "01a16f89-05e9-7d32-b6d5-c698aeef123c"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": true,
+      "changed_tracked_paths": [
+        "app.py"
+      ],
+      "untracked_paths": [
+        "test_app.py"
+      ],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "grade": {
+        "tests_collected": 22,
+        "tests_ran": 22,
+        "passed": 22,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.4380000000819564,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.125,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.3130000000819564,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "implicit-d05": {
+      "key": "implicit-d05",
+      "phase": "routing",
+      "case_id": "implicit-d05",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\implicit-d05\\r0\\with-skill",
+      "started_at": "2026-10-24T20:10:13.131327+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 82.76500000001397,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 116361,
+          "cached_input_tokens": 85120,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3333,
+          "reasoning_output_tokens": 852
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 116361,
+      "output_tokens": 3333,
+      "total_tokens": 119694,
+      "cached_input_tokens": 85120,
+      "command_items": 6,
+      "command_failures": 0,
+      "skill_body_read_observed": true,
+      "thread_ids": [
+        "01a16f89-05cd-7270-b03c-4af3aee7f777"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": true,
+      "changed_tracked_paths": [
+        "app.py"
+      ],
+      "untracked_paths": [
+        "test_app.py"
+      ],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "grade": {
+        "tests_collected": 24,
+        "tests_ran": 24,
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.43799999996554106,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 12,
+            "tests_ran": 12,
+            "passed": 12,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.125,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 12,
+            "tests_ran": 12,
+            "passed": 12,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.31299999996554106,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "implicit-d01": {
+      "key": "implicit-d01",
+      "phase": "routing",
+      "case_id": "implicit-d01",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\implicit-d01\\r0\\with-skill",
+      "started_at": "2026-10-24T20:10:13.131327+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 86.39099999994505,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 130087,
+          "cached_input_tokens": 117632,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2871,
+          "reasoning_output_tokens": 1223
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 130087,
+      "output_tokens": 2871,
+      "total_tokens": 132958,
+      "cached_input_tokens": 117632,
+      "command_items": 7,
+      "command_failures": 1,
+      "skill_body_read_observed": true,
+      "thread_ids": [
+        "01a16f89-05e9-7ac0-9607-ee8f9daffd84"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": true,
+      "changed_tracked_paths": [
+        "app.py"
+      ],
+      "untracked_paths": [
+        "test_app.py"
+      ],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "grade": {
+        "tests_collected": 22,
+        "tests_ran": 22,
+        "passed": 22,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.26599999994505197,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.0779999999795109,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.18799999996554106,
+            "command": [
+              "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-readme": {
+      "key": "negative-readme",
+      "phase": "routing",
+      "case_id": "negative-readme",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-readme\\r0\\with-skill",
+      "started_at": "2026-10-24T20:11:26.029830+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 34.18799999996554,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 88939,
+          "cached_input_tokens": 81536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 642,
+          "reasoning_output_tokens": 297
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 88939,
+      "output_tokens": 642,
+      "total_tokens": 89581,
+      "cached_input_tokens": 81536,
+      "command_items": 3,
+      "command_failures": 0,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-226b-76f2-89de-5a6457d63760"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [
+        "README.md"
+      ],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-explanation": {
+      "key": "negative-explanation",
+      "phase": "routing",
+      "case_id": "negative-explanation",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-explanation\\r0\\with-skill",
+      "started_at": "2026-10-24T20:11:37.453206+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 36.06299999996554,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 70855,
+          "cached_input_tokens": 63616,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 674,
+          "reasoning_output_tokens": 370
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 70855,
+      "output_tokens": 674,
+      "total_tokens": 71529,
+      "cached_input_tokens": 63616,
+      "command_items": 3,
+      "command_failures": 0,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-4f22-7bf3-a8bb-b8622d26203d"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-javascript": {
+      "key": "negative-javascript",
+      "phase": "routing",
+      "case_id": "negative-javascript",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-javascript\\r0\\with-skill",
+      "started_at": "2026-10-24T20:11:40.571982+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 36.54700000002049,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 107945,
+          "cached_input_tokens": 100224,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 804,
+          "reasoning_output_tokens": 162
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 107945,
+      "output_tokens": 804,
+      "total_tokens": 108749,
+      "cached_input_tokens": 100224,
+      "command_items": 5,
+      "command_failures": 1,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-5b3c-7c92-8e9c-db3bc64e73dd"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [
+        "main.js"
+      ],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-extra-01": {
+      "key": "negative-extra-01",
+      "phase": "routing",
+      "case_id": "negative-extra-01",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-extra-01\\r0\\with-skill",
+      "started_at": "2026-10-24T20:12:00.472095+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 35.26500000001397,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 79158,
+          "cached_input_tokens": 65536,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 550,
+          "reasoning_output_tokens": 162
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 79158,
+      "output_tokens": 550,
+      "total_tokens": 79708,
+      "cached_input_tokens": 65536,
+      "command_items": 3,
+      "command_failures": 1,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-a8f7-75c2-965f-74e79b4fd193"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-extra-02": {
+      "key": "negative-extra-02",
+      "phase": "routing",
+      "case_id": "negative-extra-02",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-extra-02\\r0\\with-skill",
+      "started_at": "2026-10-24T20:12:13.777128+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 41.51599999994505,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 89224,
+          "cached_input_tokens": 81664,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 930,
+          "reasoning_output_tokens": 285
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 89224,
+      "output_tokens": 930,
+      "total_tokens": 90154,
+      "cached_input_tokens": 81664,
+      "command_items": 4,
+      "command_failures": 0,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-dcfd-75e1-88b7-ac2dcdce94bb"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    },
+    "negative-extra-03": {
+      "key": "negative-extra-03",
+      "phase": "routing",
+      "case_id": "negative-extra-03",
+      "arm": "implicit",
+      "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+      "workspace": "C:\\Users\\ASUS\\Desktop\\Skills\\lean-coding-agents\\.local\\production-runtime\\routing-v3-python-v2\\work\\routing\\negative-extra-03\\r0\\with-skill",
+      "started_at": "2026-10-24T20:12:17.553544+00:00",
+      "cli_exit_code": 0,
+      "timeout": false,
+      "client_seconds": 48.67200000002049,
+      "cli_completed": true,
+      "usage": [
+        {
+          "input_tokens": 90459,
+          "cached_input_tokens": 74880,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1450,
+          "reasoning_output_tokens": 595
+        }
+      ],
+      "usage_complete": true,
+      "input_tokens": 90459,
+      "output_tokens": 1450,
+      "total_tokens": 91909,
+      "cached_input_tokens": 74880,
+      "command_items": 5,
+      "command_failures": 0,
+      "skill_body_read_observed": false,
+      "thread_ids": [
+        "01a16f8a-ebbd-7520-bdf0-e2db370013c3"
+      ],
+      "stream_errors": [],
+      "grading_attempts": [],
+      "expected_load": false,
+      "changed_tracked_paths": [],
+      "untracked_paths": [],
+      "separate_from_efficiency_study": true,
+      "skill_unchanged": true,
+      "operation_pass": true,
+      "routing_check_pass": true
+    }
+  },
+  "limitations": [
+    "Small functional routing sample; no reliability-rate estimate",
+    "Negative trace absence is not proof of invisible host nonactivation",
+    "Positive fixtures reuse development cases; not independent generalization evidence"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "raw_report_sha256": "4BB503FDB6FF0C5C4D3D3B0D081EDF90186E93017E99DF222685AD303207F28E",
+  "report": {
+    "status": "implemented_and_local_checks_passed",
+    "changed_implementation_files": [
+      "click/parser.py"
+    ],
+    "report_file": "control-report.json",
+    "change": "Preserve whether a value was attached to its long or short option, so optional-value lookahead only treats separate arguments as potential options.",
+    "requirements_used": [
+      "TASK.md",
+      "docs/options.md",
+      "current click package source"
+    ],
+    "interpreter": "{PYTHON_RUNTIME}/python.exe",
+    "checks": [
+      {
+        "name": "baseline_behavior_reproduction",
+        "command": "python.exe -B _control_check.py",
+        "result": {
+          "unittest_methods": 6,
+          "cli_invocations": 50,
+          "failures": 26,
+          "errors": 0,
+          "exit_code": 1
+        },
+        "examples": [
+          "--name=--other incorrectly activates --other",
+          "-n--unknown is rejected as an unknown option",
+          "--number=-2 is rejected as option -2"
+        ]
+      },
+      {
+        "name": "post_change_behavior",
+        "command": "python.exe -B _control_check.py",
+        "result": {
+          "unittest_methods": 6,
+          "cli_invocations": 53,
+          "failures": 0,
+          "errors": 0,
+          "exit_code": 0
+        },
+        "coverage": [
+          "String omission, bare long and short options, separated and attached explicit values, and empty strings.",
+          "Long equals and short attached values containing known or unknown option prefixes, --, -, and embedded equals.",
+          "Bare optional values followed by separate known flags; separate unknown options remain errors; short flag cluster with an attached value.",
+          "Integer defaults, bare flag_value, explicit negative integers, and following independent flags; invalid or empty integers reject before callbacks and command execution.",
+          "The value callback receives the original bound string; unrelated option side effects do not run; command side effects happen once.",
+          "Context.with_resource and call_on_close release in order on command success and ClickException; current Context is cleared.",
+          "Multiple optional values and slash-prefixed long and short attached values."
+        ],
+        "invocation_count_note": "The baseline stopped the multiple-values test at its first failing assertion, before three slash-prefix invocations. The successful run reached all 53 invocations."
+      },
+      {
+        "name": "parser_syntax",
+        "method": "stdlib ast.parse of click/parser.py",
+        "result": "passed"
+      },
+      {
+        "name": "temporary_artifact_cleanup",
+        "method": "remove temporary unittest script and scan this directory recursively for that script, __pycache__, and .pyc",
+        "result": "passed",
+        "remaining_artifacts": []
+      }
+    ],
+    "temporary_artifacts_cleaned": true,
+    "parser_sha256": "74817773a53841e3fb9a54ec4adb35cbc16f24249bb86ef43a9b8bd799457d31",
+    "limitations": [
+      "Local behavior checks only; no complete upstream test suite was provided or run.",
+      "The separate contract test was not available and was not run.",
+      "The temporary check script was removed as requested; its individual behaviors and aggregate outcomes are recorded here.",
+      "These results do not establish production qualification or any causal effect of a skill."
+    ],
+    "constraints_observed": [
+      "No network, installation, Codex CLI, delegation, or commits.",
+      "No skill, evaluator, historical result, candidate, or other project read outside this copy.",
+      "TASK.md, docs, and license were not changed."
+    ]
+  },
+  "reference_files": [
+    "click/parser.py"
+  ],
+  "not_a_native_skill_effectiveness_trial": true
+}

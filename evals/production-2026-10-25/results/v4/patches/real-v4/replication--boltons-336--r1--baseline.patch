@@ -1,0 +1,49 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index e46cddc..6bdc84e 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -215,6 +215,7 @@ def copy_function(orig, copy_dict=True):
+                        name=orig.__name__,
+                        argdefs=getattr(orig, "__defaults__", None),
+                        closure=getattr(orig, "__closure__", None))
++    ret.__kwdefaults__ = getattr(orig, "__kwdefaults__", None)
+     if copy_dict:
+         ret.__dict__.update(orig.__dict__)
+     return ret
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 634ad7d..1c17847 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -9,6 +9,32 @@ from boltons.funcutils import wraps, FunctionBuilder, update_wrapper
+ import boltons.funcutils as funcutils
+ 
+ 
++@pytest.mark.parametrize('copy_dict', (True, False))
++def test_copy_function_kwonly_defaults(copy_dict):
++    func = lambda x, *, y=2: x * y
++    func_copy = funcutils.copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy is not func
++    assert func_copy(21) == func(21) == 42
++    assert func_copy(21, y=3) == func(21, y=3) == 63
++    with pytest.raises(TypeError):
++        func_copy(21, 2)
++
++
++def test_copy_function_required_kwonly_arg():
++    default = []
++
++    def func(x=21, *, required, y=2, optional=None, shared=default):
++        return x * y, required, optional, shared
++
++    func_copy = funcutils.copy_function(func)
++
++    assert func_copy(required='value') == func(required='value')
++    assert func_copy(required='value')[3] is default
++    with pytest.raises(TypeError):
++        func_copy()
++
++
+ def wrappable_varkw_func(a, b, **kw):
+     return a, b
+ 

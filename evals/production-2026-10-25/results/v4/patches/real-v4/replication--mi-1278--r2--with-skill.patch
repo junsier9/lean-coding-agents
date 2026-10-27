@@ -1,0 +1,101 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index d435c2e..a7521a9 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4671,16 +4671,6 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     different lengths.
+     """
+ 
+-    def is_scalar(obj):
+-        if scalar_types and isinstance(obj, scalar_types):
+-            return True
+-        try:
+-            iter(obj)
+-        except TypeError:
+-            return True
+-        else:
+-            return False
+-
+     size = len(objects)
+     if not size:
+         return
+@@ -4688,10 +4678,15 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     new_item = [None] * size
+     iterables, iterable_positions = [], []
+     for i, obj in enumerate(objects):
+-        if is_scalar(obj):
++        if scalar_types and isinstance(obj, scalar_types):
++            new_item[i] = obj
++            continue
++        try:
++            iterator = iter(obj)
++        except TypeError:
+             new_item[i] = obj
+         else:
+-            iterables.append(iter(obj))
++            iterables.append(iterator)
+             iterable_positions.append(i)
+ 
+     if not iterables:
+diff --git a/tests/test_more.py b/tests/test_more.py
+index cc412ff..d906e2b 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5441,6 +5441,57 @@ class ChunkedEvenTests(TestCase):
+ 
+ 
+ class ZipBroadcastTests(TestCase):
++    def test_single_use_iterables(self):
++        class SingleUseIterable:
++            def __init__(self, items):
++                self.items = items
++                self.used = False
++
++            def __iter__(self):
++                if self.used:
++                    raise RuntimeError('iterator already requested')
++                self.used = True
++                return iter(self.items)
++
++        for strict in (False, True):
++            for left, right in [
++                ([], []),
++                ([1], [2]),
++                ([1, 2], [3, 4]),
++                ([], [1]),
++                ([1], []),
++                ([1], [2, 3]),
++                ([1, 2], [3]),
++            ]:
++                with self.subTest(strict=strict, left=left, right=right):
++                    actual = mi.zip_broadcast(
++                        0,
++                        SingleUseIterable(left),
++                        '_',
++                        SingleUseIterable(right),
++                        strict=strict,
++                    )
++                    if strict and len(left) != len(right):
++                        with self.assertRaises(ValueError):
++                            list(actual)
++                    else:
++                        expected = [
++                            (0, a, '_', b) for a, b in zip(left, right)
++                        ]
++                        self.assertEqual(list(actual), expected)
++
++    def test_iter_error(self):
++        class BrokenIterable:
++            def __iter__(self):
++                raise RuntimeError('cannot get iterator')
++
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                with self.assertRaisesRegex(
++                    RuntimeError, 'cannot get iterator'
++                ):
++                    list(mi.zip_broadcast(BrokenIterable(), strict=strict))
++
+     def test_zip(self):
+         for objects, zipped, strict_ok in [
+             # Empty

@@ -1,0 +1,82 @@
+{
+  "phase": "formal",
+  "task_count": 20,
+  "integrity": {
+    "ok": false,
+    "structure_ok": true,
+    "input_record_count": 120,
+    "selected_record_count": 120,
+    "other_phase_record_counts": {},
+    "task_count": 20,
+    "complete_task_count": 20,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 120,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 76,
+        "case_id": "xb-048-pydash-241"
+      }
+    ],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "metrics": {
+    "token": {
+      "available": false,
+      "batch_criterion_met": false
+    },
+    "time": {
+      "available": true,
+      "mode": "exact",
+      "actual_ratio": 1.001912005484791,
+      "observed_ratio_upper_bound": null,
+      "upper_one_sided_98_75": 1.1489590465663557,
+      "gain": -0.0019120054847909795,
+      "gain_lower_confidence_bound": -0.14895904656635572,
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "cost_total": {
+        "baseline": 13775.019999999997,
+        "with-skill": 14043.487
+      },
+      "cost_total_is_lower_bound": {
+        "baseline": false,
+        "with-skill": false
+      },
+      "batch_criterion_met": false,
+      "ratio_interval97_5": [
+        0.8707996303535264,
+        1.1489590465663557
+      ],
+      "gain_interval97_5": [
+        -0.14895904656635572,
+        0.12920036964647363
+      ]
+    }
+  },
+  "confidence": 0.9875,
+  "alpha": 0.0125,
+  "draws": 40000,
+  "seed": 20261025,
+  "sampling_unit": "complete paired task with both arms and all3 repeats",
+  "quality": {
+    "baseline_accepted": 57,
+    "skill_accepted": 58,
+    "runs_per_arm": 60,
+    "degraded_tasks": [],
+    "gate_pass": true
+  },
+  "missing_usage": [
+    {
+      "case_id": "xb-048-pydash-241",
+      "repeat": 0,
+      "arm": "with-skill"
+    }
+  ]
+}

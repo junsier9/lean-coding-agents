@@ -1,0 +1,40 @@
+{
+  "verified_at": "2026-10-24T23:14:59.016135+00:00",
+  "unit_tests_passed": 22,
+  "suites": [
+    {
+      "suite": "native_runner",
+      "passed_tests": 11,
+      "seconds": 10.132,
+      "raw_log_sha256": "59BC30058381139DBA582310F0872ED9FC03DFB7C6644D70F3E996361C5284C3",
+      "private_archive_log": "production-runner-tests-final.log",
+      "source_sha256": {
+        "runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+        "test_runner.py": "0CAD32D127C9C2BC9BC469D127AD040754504AC4593B75059BA8E9A57C639C4F"
+      }
+    },
+    {
+      "suite": "assessment_and_positive_gain",
+      "passed_tests": 11,
+      "seconds": 0.067,
+      "raw_log_sha256": "09FB3D6C90AB5450FC50AAE56B1949C8058C31ABAD24269DBA4FA7F576EF5D82",
+      "private_archive_log": "production-assessment-tests-v4.log",
+      "source_sha256": {
+        "assess.py": "123DAB93DF04CABE231FE1DB87E3EE856CFBA87FF42AC10A265B9D8A2B835B6A",
+        "benefit_gate.py": "2996BC9DA985458C5E7BA481A40B2458E8630CA0906AB2454633F2EEBB961AF9",
+        "test_assess.py": "93F4BE51F2A23D470EDDCB972A2C7810008C3328DF6D285E616F16DC42F95B5A"
+      }
+    }
+  ],
+  "unit_test_native_model_calls": 0,
+  "additional_actual_checks": [
+    "Four grading-only recoveries retained completed CLI results and all original failure cost",
+    "Frozen formal analysis reproduced byte-for-byte from exported real rows with matching original phase scope",
+    "Mixed development/routing input to phase replay is rejected",
+    "Incomplete private archive refused before write",
+    "Development/controller/routing refuse v4 model work until first240 real runs complete",
+    "Two-file RC2 archive extract/rollback/reinstall verified earlier"
+  ],
+  "frozen_assessment_source_unchanged": true,
+  "limits": "Harness checks support measurement implementation, not universal correctness of the skill or all generated code."
+}

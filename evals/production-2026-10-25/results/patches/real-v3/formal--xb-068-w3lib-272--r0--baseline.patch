@@ -1,0 +1,67 @@
+diff --git a/tests/test_url.py b/tests/test_url.py
+index 65d6b22..2afb26f 100644
+--- a/tests/test_url.py
++++ b/tests/test_url.py
+@@ -1432,6 +1432,43 @@ class TestCanonicalizeUrl:
+             == "http://user:pass@www.example.com/do?a=1#frag"
+         )
+ 
++    @pytest.mark.parametrize(
++        "url_factory", [str, str.encode, parse_url], ids=["str", "bytes", "parsed"]
++    )
++    @pytest.mark.parametrize("keep_fragments", [False, True])
++    @pytest.mark.parametrize(
++        ("url", "canonical", "fragment"),
++        [
++            (
++                "http://[::1]/?b=2&a=1#frag",
++                "http://[::1]/?a=1&b=2",
++                "frag",
++            ),
++            (
++                "https://UsEr:PaSs@[2001:DB8::1]:8443/path;params?b=2&a=1#section?x=3&y=4",
++                "https://UsEr:PaSs@[2001:db8::1]:8443/path;params?a=1&b=2",
++                "section?x=3&y=4",
++            ),
++            (
++                "http://[::1]?b=2&a=1#frag",
++                "http://[::1]/?a=1&b=2",
++                "frag",
++            ),
++            ("http://[::1]/?q=%23#frag", "http://[::1]/?q=%23", "frag"),
++            ("http://[::1]/?#frag", "http://[::1]/", "frag"),
++            ("http://[::1]/?a=1#", "http://[::1]/?a=1", ""),
++            ("http://[::1]/#frag", "http://[::1]/", "frag"),
++        ],
++    )
++    def test_ipv6_fragments(self, url_factory, keep_fragments, url, canonical, fragment):
++        url = url_factory(url)
++        expected = (
++            f"{canonical}#{fragment}" if keep_fragments and fragment else canonical
++        )
++        assert canonicalize_url(url, keep_fragments=keep_fragments) == expected
++        if not keep_fragments:
++            assert canonicalize_url(url) == expected
++
+     def test_dont_convert_safe_characters(self):
+         # dont convert safe characters to percent encoding representation
+         assert (
+diff --git a/w3lib/_url.py b/w3lib/_url.py
+index 0fc540d..f34ef2f 100644
+--- a/w3lib/_url.py
++++ b/w3lib/_url.py
+@@ -658,7 +658,13 @@ def _urlsplit(  # pylint: disable=too-many-locals,too-many-statements
+             open_br_pos = idx
+         elif char == "]" and closing_br_pos == -1:
+             closing_br_pos = idx
+-        if slash_pos != question_pos != hash_pos != open_br_pos != closing_br_pos != -1:
++        if (
++            slash_pos != -1
++            and question_pos != -1
++            and hash_pos != -1
++            and open_br_pos != -1
++            and closing_br_pos != -1
++        ):
+             break
+ 
+     if url[:2] == "//":

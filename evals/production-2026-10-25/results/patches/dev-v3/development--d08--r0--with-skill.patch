@@ -1,0 +1,17 @@
+diff --git a/app.py b/app.py
+index 464ca62..2d9fe1d 100644
+--- a/app.py
++++ b/app.py
+@@ -1,4 +1,4 @@
+-from policy import own_request
++from policy import own_request, validate
+ 
+ 
+ def process_charge(payload, charge, hook=None):
+@@ -11,5 +11,5 @@ def process_charge(payload, charge, hook=None):
+     owned = own_request(payload)
+     if hook is not None:
+         hook(owned)
+-    # The original request passed validation before reaching here.
++        validate(owned)
+     return charge(owned["amount"], owned["currency"])

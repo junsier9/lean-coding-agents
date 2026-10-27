@@ -1,0 +1,164 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index 7b38eb0..68f2852 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,9 +1,10 @@
+ from datetime import datetime, timedelta
++from inspect import signature
+ import time
+ import threading
+ from contextlib import suppress  # reexport
+ 
+-from .decorators import decorator, wraps, get_argnames, arggetter, contextmanager
++from .decorators import decorator, wraps, arggetter, contextmanager
+ 
+ 
+ __all__ = ['raiser', 'ignore', 'silent', 'suppress', 'nullcontext', 'reraise', 'retry', 'fallback',
+@@ -237,7 +238,7 @@ once.__doc__ = "Let function execute once, noop all subsequent calls."
+ 
+ def once_per_args(func):
+     """Call function once for every combination of values of its arguments."""
+-    return once_per(*get_argnames(func))(func)
++    return once_per(*signature(func).parameters)(func)
+ 
+ 
+ @decorator
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 8d5aa5e..1e58ee2 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -1,4 +1,5 @@
+ from datetime import timedelta
++from inspect import signature
+ from threading import Thread
+ import pytest
+ from funcy.flow import *
+@@ -266,6 +267,128 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++def test_once_per_args_keyword_only():
++    calls = []
++
++    @once_per_args
++    def call(n=1, *, mode='default'):
++        calls.append((n, mode))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1, mode='default') is None
++    assert call(1, mode='other') == 'called'
++    assert call(mode='other', n=1) is None
++    assert calls == [(1, 'default'), (1, 'other')]
++
++
++def test_once_per_args_varargs():
++    calls = []
++
++    @once_per_args
++    def call(n=1, *args):
++        calls.append((n, args))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1) is None
++    assert call(1, 2) == 'called'
++    assert call(1, 2) is None
++    assert call(1, 2, 3) == 'called'
++    assert call(1, 3, 2) == 'called'
++    assert calls == [(1, ()), (1, (2,)), (1, (2, 3)), (1, (3, 2))]
++
++
++def test_once_per_args_kwargs():
++    calls = []
++
++    @once_per_args
++    def call(n=1, **kwargs):
++        calls.append((n, kwargs))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(n=1) is None
++    assert call(1, a=2, b=3) == 'called'
++    assert call(b=3, n=1, a=2) is None
++    assert call(a=3, b=3) == 'called'
++    assert call(a=2, c=3) == 'called'
++    assert calls == [(1, {}), (1, {'a': 2, 'b': 3}),
++                     (1, {'a': 3, 'b': 3}), (1, {'a': 2, 'c': 3})]
++
++
++@pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
++def test_once_per_args_unhashable_keyword_and_variadic_arguments(make_value):
++    calls = []
++
++    @once_per_args
++    def call(*args, kwonly=None, **kwargs):
++        calls.append((args, kwonly, kwargs))
++        return 'called'
++
++    assert call(make_value()) == 'called'
++    assert call(make_value()) is None
++    assert call(kwonly=make_value()) == 'called'
++    assert call(kwonly=make_value()) is None
++    assert call(extra=make_value()) == 'called'
++    assert call(extra=make_value()) is None
++    assert calls == [((make_value(),), None, {}), ((), make_value(), {}),
++                     ((), None, {'extra': make_value()})]
++
++
++def test_once_per_args_method_call_forms():
++    calls = []
++
++    class Initializer:
++        @once_per_args
++        def initialize(receiver, n=1, *, mode='default'):
++            """Initialize this instance."""
++            calls.append((receiver, n, mode))
++            return 'called'
++
++    first, second = Initializer(), Initializer()
++    assert first.initialize() == 'called'
++    assert Initializer.initialize(receiver=first, n=1, mode='default') is None
++    assert Initializer.initialize(receiver=first, mode='other') == 'called'
++    assert first.initialize(1, mode='other') is None
++    assert second.initialize() == 'called'
++    assert calls == [(first, 1, 'default'), (first, 1, 'other'), (second, 1, 'default')]
++
++    method = Initializer.initialize
++    assert method.__name__ == 'initialize'
++    assert method.__doc__ == 'Initialize this instance.'
++    assert method.__original__ is method.__wrapped__
++    assert signature(method) == signature(method.__wrapped__)
++
++
++def test_once_per_args_required_keyword_only():
++    @once_per_args
++    def call(n, *, mode):
++        return n, mode
++
++    for _ in range(2):
++        with pytest.raises(TypeError):
++            call(1)
++    assert call(1, mode='default') == (1, 'default')
++    assert call(n=1, mode='default') is None
++
++
++def test_once_per_args_propagates_errors():
++    calls = []
++
++    @once_per_args
++    def call(*, mode='default'):
++        calls.append(mode)
++        raise MyError(mode)
++
++    with pytest.raises(MyError, match='default'):
++        call()
++    assert call(mode='default') is None
++    with pytest.raises(MyError, match='other'):
++        call(mode='other')
++    assert calls == ['default', 'other']
++
++
+ @pytest.mark.parametrize('decorate', [once_per('n'), once_per_args])
+ @pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
+ def test_once_per_unhashable_arguments(decorate, make_value):

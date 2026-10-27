@@ -1,0 +1,72 @@
+diff --git a/boltons/urlutils.py b/boltons/urlutils.py
+index 6016e8a..def8288 100644
+--- a/boltons/urlutils.py
++++ b/boltons/urlutils.py
+@@ -647,7 +647,7 @@ class URL(object):
+ 
+         .. _Section 6.2.2 of RFC 3986: https://tools.ietf.org/html/rfc3986#section-6.2.2
+         """
+-        self.path_parts = resolve_path_parts(self.path_parts)
++        self.path_parts = tuple(resolve_path_parts(self.path_parts))
+ 
+         if with_case:
+             self.scheme = self.scheme.lower()
+diff --git a/tests/test_urlutils.py b/tests/test_urlutils.py
+index a8e1539..25dbddb 100644
+--- a/tests/test_urlutils.py
++++ b/tests/test_urlutils.py
+@@ -313,6 +313,34 @@ def test_navigate():
+     assert navd.to_text() == _dest_text
+ 
+ 
++@pytest.mark.parametrize('dest_type', [str, URL])
++@pytest.mark.parametrize('first, second, expected', [
++    ('g', 'h', 'http://a/b/c/h'),
++    ('g/', 'h', 'http://a/b/c/g/h'),
++    ('/g', 'h', 'http://a/h'),
++    ('/g/', 'h/', 'http://a/g/h/'),
++    ('g/', '../h/', 'http://a/b/c/h/'),
++    ('g/', '/h/', 'http://a/h/'),
++    ('', 'h', 'http://a/b/c/h'),
++    ('g', '', 'http://a/b/c/g'),
++    ('g/', '', 'http://a/b/c/g/'),
++    ('', '', 'http://a/b/c/d;p?q'),
++    ('?x=1#frag', 'h', 'http://a/b/c/h'),
++    ('#frag', '', 'http://a/b/c/d;p?q'),
++])
++def test_chained_navigate(dest_type, first, second, expected):
++    original = URL(REL_URL_BASE)
++    first_url = original.navigate(dest_type(first))
++    first_text = first_url.to_text()
++    reconstructed = URL(first_text).navigate(dest_type(second))
++
++    chained = first_url.navigate(dest_type(second))
++
++    assert chained.to_text() == reconstructed.to_text() == expected
++    assert first_url.to_text() == first_text
++    assert original.to_text() == REL_URL_BASE
++
++
+ # TODO: RFC3986 6.2.3 (not just for query add, either)
+ # def test_add_query():
+ #     url = URL('http://www.example.com')
+@@ -326,6 +354,19 @@ def test_self_normalize():
+     assert url.to_text() == 'http://hatnote.com/b?k=v#hashtags'
+ 
+ 
++def test_navigate_normalized_urls():
++    url = URL('http://hatnote.com/a/./b/c')
++    dest = URL('./d/../e/')
++    url.normalize()
++    dest.normalize()
++
++    assert url.navigate('f').to_text() == 'http://hatnote.com/a/b/f'
++    assert URL('http://hatnote.com/a/b/c').navigate(dest).to_text() == (
++        'http://hatnote.com/a/b/e/')
++    assert url.navigate(dest).navigate('f').to_text() == (
++        'http://hatnote.com/a/b/e/f')
++
++
+ def test_normalize_with_case():
+     # from RFC 3986 Section 6.2.2
+     url1 = URL('example://a/b/c/%7Bfoo%7D')

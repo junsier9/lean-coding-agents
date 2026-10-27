@@ -1,0 +1,137 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c850a73..b61ef38 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -658,13 +658,17 @@ def one(iterable, too_short=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+-    raise too_short or ValueError('too few items in iterable (expected 1)')
++    if too_short is not None:
++        raise too_short
++    raise ValueError('too few items in iterable (expected 1)')
+ 
+ 
+ def raise_(exception, *args):
+@@ -3681,11 +3685,13 @@ def only(iterable, default=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+     return default
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4e5f27f..3563c9c 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -792,6 +792,93 @@ class OneTests(TestCase):
+         )
+ 
+ 
++class OneOnlyExceptionTests(TestCase):
++    def test_custom_exception_instances(self):
++        class FalsyError(Exception):
++            def __bool__(self):
++                return False
++
++        class EmptyError(Exception):
++            def __len__(self):
++                return 0
++
++        class NoBoolError(Exception):
++            def __bool__(self):
++                raise AssertionError('exception truthiness was evaluated')
++
++        cases = (
++            (mi.one, [], 'too_short'),
++            (mi.one, [1, 2, 3], 'too_long'),
++            (mi.only, [1, 2, 3], 'too_long'),
++        )
++        for function, items, keyword in cases:
++            for error_type in (
++                RuntimeError,
++                FalsyError,
++                EmptyError,
++                NoBoolError,
++            ):
++                with self.subTest(
++                    function=function.__name__,
++                    keyword=keyword,
++                    error_type=error_type,
++                ):
++                    error = error_type('custom error')
++                    iterator = iter(items)
++                    with self.assertRaises(error_type) as raised:
++                        function(iterator, **{keyword: error})
++                    self.assertIs(raised.exception, error)
++                    self.assertEqual(list(iterator), items[2:])
++
++    def test_too_long_repr(self):
++        class BadRepr:
++            def __repr__(self):
++                raise AssertionError('item repr was evaluated')
++
++        for function in (mi.one, mi.only):
++            for position in (0, 1):
++                for error in (None, RuntimeError, RuntimeError('custom')):
++                    with self.subTest(
++                        function=function.__name__,
++                        position=position,
++                        error=error,
++                    ):
++                        items = [0, 1, 2]
++                        items[position] = BadRepr()
++                        iterator = iter(items)
++                        expected = (
++                            AssertionError if error is None else RuntimeError
++                        )
++                        with self.assertRaises(expected) as raised:
++                            function(iterator, too_long=error)
++                        if isinstance(error, BaseException):
++                            self.assertIs(raised.exception, error)
++                        self.assertEqual(list(iterator), [2])
++
++    def test_explicit_none_uses_default_exception(self):
++        message = (
++            "Expected exactly one item in iterable, but got 'foo', "
++            "'bar', and perhaps more."
++        )
++        cases = (
++            (
++                mi.one,
++                [],
++                'too_short',
++                'too few items in iterable (expected 1)',
++            ),
++            (mi.one, ['foo', 'bar', 'baz'], 'too_long', message),
++            (mi.only, ['foo', 'bar', 'baz'], 'too_long', message),
++        )
++        for function, items, keyword, expected in cases:
++            with self.subTest(function=function.__name__, keyword=keyword):
++                iterator = iter(items)
++                with self.assertRaises(ValueError) as raised:
++                    function(iterator, **{keyword: None})
++                self.assertEqual(str(raised.exception), expected)
++                self.assertEqual(list(iterator), items[2:])
++
++
+ class IntersperseTest(TestCase):
+     """Tests for intersperse()"""
+ 

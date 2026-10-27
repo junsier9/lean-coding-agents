@@ -1,0 +1,146 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index d12acc4..1d4d183 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4198,7 +4198,7 @@ def nth_product(index, *iterables, repeat=1):
+ 
+     ``IndexError`` will be raised if the given *index* is invalid.
+     """
+-    pools = tuple(map(tuple, reversed(iterables * repeat)))
++    pools = tuple(map(tuple, reversed(iterables))) * repeat
+     ns = tuple(map(len, pools))
+ 
+     c = reduce(mul, ns)
+@@ -4362,7 +4362,7 @@ def product_index(element, *iterables, repeat=1):
+     of *args*.
+     """
+     elements = tuple(element)
+-    pools = tuple(map(tuple, iterables * repeat))
++    pools = tuple(map(tuple, iterables)) * repeat
+     if len(elements) != len(pools):
+         raise ValueError('element is not a product of args')
+ 
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index cc043b0..450d5fc 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -580,7 +580,7 @@ def random_product(*iterables, repeat=1):
+     ``itertools.product(*args, repeat=repeat)``.
+ 
+     """
+-    pools = tuple(map(tuple, iterables * repeat))
++    pools = tuple(map(tuple, iterables)) * repeat
+     return tuple(map(choice, pools))
+ 
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b675cd6..9ef6606 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4865,6 +4865,37 @@ class NthProductTests(TestCase):
+             mi.nth_product(123, 'AB', 'CD', 'EFG', 'AB', 'CD', 'EFG'),
+         )
+ 
++    def test_repeat_iterator_input(self):
++        for iterables in (('ba',), ('ba', (2, 0, 1))):
++            for repeat in (2, 3):
++                products = list(product(*iterables, repeat=repeat))
++                for index, expected in enumerate(products):
++                    with self.subTest(
++                        iterables=iterables, repeat=repeat, index=index
++                    ):
++                        self.assertEqual(
++                            mi.nth_product(
++                                index, *map(iter, iterables), repeat=repeat
++                            ),
++                            expected,
++                        )
++                        self.assertEqual(
++                            mi.nth_product(
++                                index - len(products),
++                                *((item for item in pool) for pool in iterables),
++                                repeat=repeat,
++                            ),
++                            expected,
++                        )
++
++    def test_repeat_iterator_invalid_index(self):
++        for iterable in ('abc', ''):
++            size = len(list(product(iterable, repeat=2)))
++            for index in (size, -size - 1):
++                with self.subTest(iterable=iterable, index=index):
++                    with self.assertRaises(IndexError):
++                        mi.nth_product(index, iter(iterable), repeat=2)
++
+ 
+ class NthCombinationWithReplacementTests(TestCase):
+     def test_basic(self):
+@@ -4983,6 +5014,31 @@ class ProductIndexTests(TestCase):
+             mi.product_index(target, 'AB', 'CD', 'EFG', 'AB', 'CD', 'EFG'),
+         )
+ 
++    def test_repeat_iterator_input(self):
++        for iterables in (('aba',), ('ba', ([2], [0], [2]))):
++            for repeat in (2, 3):
++                products = list(product(*iterables, repeat=repeat))
++                for element in products:
++                    with self.subTest(
++                        iterables=iterables, repeat=repeat, element=element
++                    ):
++                        self.assertEqual(
++                            mi.product_index(
++                                iter(element),
++                                *map(iter, iterables),
++                                repeat=repeat,
++                            ),
++                            products.index(element),
++                        )
++
++    def test_repeat_iterator_invalid_element(self):
++        for element in ('', 'axa', 'axaxa', 'axaz'):
++            with self.subTest(element=element):
++                with self.assertRaises(ValueError):
++                    mi.product_index(element, iter('ab'), iter('xy'), repeat=2)
++        with self.assertRaises(ValueError):
++            mi.product_index('aa', iter(''), repeat=2)
++
+ 
+ class CombinationIndexTests(TestCase):
+     def test_r_less_than_n(self):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index c6757c9..2ebe24a 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -568,6 +568,32 @@ class RandomProductTests(TestCase):
+         self.assertEqual(len(n), len(nums))
+         self.assertEqual(len(m), len(lets))
+ 
++    def test_repeat_iterator_input(self):
++        for iterables in (('aba',), ('ba', (2, 0, 2))):
++            for repeat in (2, 3):
++                with self.subTest(iterables=iterables, repeat=repeat):
++                    rng = random.Random(8675309)
++                    expected = tuple(
++                        rng.choice(pool) for pool in iterables * repeat
++                    )
++                    with patch(
++                        'more_itertools.recipes.choice',
++                        side_effect=random.Random(8675309).choice,
++                    ) as choice:
++                        actual = mi.random_product(
++                            *((item for item in pool) for pool in iterables),
++                            repeat=repeat,
++                        )
++                    self.assertEqual(actual, expected)
++                    self.assertEqual(
++                        [call.args[0] for call in choice.call_args_list],
++                        [tuple(pool) for pool in iterables * repeat],
++                    )
++
++    def test_repeat_empty_iterator(self):
++        with self.assertRaises(IndexError):
++            mi.random_product(iter('ab'), iter(''), repeat=2)
++
+ 
+ class RandomPermutationTests(TestCase):
+     """Tests for ``random_permutation()``"""

@@ -1,0 +1,50 @@
+diff --git a/tests/test_basic.py b/tests/test_basic.py
+index 3f73528..1e568fb 100644
+--- a/tests/test_basic.py
++++ b/tests/test_basic.py
+@@ -483,6 +483,45 @@ def test_choice_argument(runner):
+     assert "{foo|bar|baz}" in result.output
+ 
+ 
++@pytest.mark.parametrize("nargs", [1, 2, -1])
++@pytest.mark.parametrize(
++    ("type_", "required", "expected"),
++    [
++        (click.Choice(["foo", "bar"]), False, "[foo|bar]"),
++        (click.Choice(["foo", "bar"]), True, "{foo|bar}"),
++        (click.DateTime(["%Y-%m-%d", "%Y/%m/%d"]), False, "[%Y-%m-%d|%Y/%m/%d]"),
++        (click.DateTime(["%Y-%m-%d", "%Y/%m/%d"]), True, "[%Y-%m-%d|%Y/%m/%d]"),
++        (str, False, "[VALUE]"),
++        (str, True, "VALUE"),
++        (int, False, "[VALUE]"),
++        (int, True, "VALUE"),
++    ],
++)
++def test_argument_usage_metavar(runner, type_, required, expected, nargs):
++    @click.command()
++    @click.argument("value", type=type_, required=required, nargs=nargs)
++    def cli(value):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    suffix = "..." if nargs != 1 else ""
++    assert result.output.splitlines()[0] == f"Usage: cli [OPTIONS] {expected}{suffix}"
++
++
++@pytest.mark.parametrize("type_", [click.Choice(["foo", "bar"]), click.DateTime()])
++@pytest.mark.parametrize("metavar", ["ITEM", "[ITEM]"])
++def test_argument_usage_explicit_metavar(runner, type_, metavar):
++    @click.command()
++    @click.argument("value", type=type_, required=False, nargs=-1, metavar=metavar)
++    def cli(value):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert result.output.splitlines()[0] == f"Usage: cli [OPTIONS] {metavar}"
++
++
+ def test_choice_argument_enum(runner):
+     class MyEnum(str, enum.Enum):
+         FOO = "foo-value"

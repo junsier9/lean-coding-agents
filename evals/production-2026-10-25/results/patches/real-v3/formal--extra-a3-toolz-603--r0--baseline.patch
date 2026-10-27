@@ -1,0 +1,157 @@
+diff --git a/toolz/itertoolz.py b/toolz/itertoolz.py
+index 1ab5485..6209351 100644
+--- a/toolz/itertoolz.py
++++ b/toolz/itertoolz.py
+@@ -710,6 +710,9 @@ def partition_all(n, seq):
+ 
+     The final tuple may be shorter to accommodate extra elements.
+ 
++    If ``seq`` defines ``__len__``, its initial length must match the number
++    of elements; otherwise a ``LookupError`` is raised.
++
+     >>> list(partition_all(2, [1, 2, 3, 4]))
+     [(1, 2), (3, 4)]
+ 
+@@ -720,32 +723,46 @@ def partition_all(n, seq):
+         partition
+     """
+     args = [iter(seq)] * n
+-    it = zip_longest(*args, fillvalue=no_pad)
++    if not args:
++        return
++    try:
++        seq_len = len(seq)
++    except TypeError:
++        seq_len = None
++    pad = object()
++    it = zip_longest(*args, fillvalue=pad)
+     try:
+         prev = next(it)
+     except StopIteration:
++        if seq_len:
++            raise LookupError('Iterable length does not match its elements')
+         return
++    consumed = 0
+     for item in it:
++        consumed += n
+         yield prev
+         prev = item
+-    if prev[-1] is no_pad:
+-        try:
+-            # If seq defines __len__, then
+-            # we can quickly calculate where no_pad starts
+-            yield prev[:len(seq) % n]
+-        except TypeError:
+-            # Get first index of no_pad without using .index()
+-            # https://github.com/pytoolz/toolz/issues/387
+-            # Binary search from CPython's bisect module,
+-            # modified for identity testing.
+-            lo, hi = 0, n
+-            while lo < hi:
+-                mid = (lo + hi) // 2
+-                if prev[mid] is no_pad:
+-                    hi = mid
+-                else:
+-                    lo = mid + 1
+-            yield prev[:lo]
++    if seq_len is not None:
++        # Check both sides of the expected boundary before trimming padding.
++        tail_len = seq_len - consumed
++        if (not 0 < tail_len <= n
++                or prev[tail_len - 1] is pad
++                or (tail_len < n and prev[tail_len] is not pad)):
++            raise LookupError('Iterable length does not match its elements')
++        yield prev[:tail_len]
++    elif prev[-1] is pad:
++        # Get first index of pad without using .index()
++        # https://github.com/pytoolz/toolz/issues/387
++        # Binary search from CPython's bisect module,
++        # modified for identity testing.
++        lo, hi = 0, n
++        while lo < hi:
++            mid = (lo + hi) // 2
++            if prev[mid] is pad:
++                hi = mid
++            else:
++                lo = mid + 1
++        yield prev[:lo]
+     else:
+         yield prev
+ 
+diff --git a/toolz/tests/test_itertoolz.py b/toolz/tests/test_itertoolz.py
+index cd30280..8b3bd55 100644
+--- a/toolz/tests/test_itertoolz.py
++++ b/toolz/tests/test_itertoolz.py
+@@ -1,4 +1,5 @@
+ import itertools
++import pytest
+ from itertools import starmap
+ from toolz.utils import raises
+ from functools import partial
+@@ -356,6 +357,66 @@ def test_partition_all():
+     assert list(partition_all(4, iter([obj]*7))) == result
+ 
+ 
++@pytest.mark.parametrize('n', [1, 2, 3, 8])
++@pytest.mark.parametrize('actual_length, reported_length', [
++    (0, 1), (1, 0), (1, 2), (4, 3), (4, 5),
++    (5, 4), (5, 6), (5, 1), (5, 9),
++])
++def test_partition_all_inconsistent_length(n, actual_length, reported_length):
++    class WrongLength:
++        def __iter__(self):
++            return iter(range(actual_length))
++
++        def __len__(self):
++            return reported_length
++
++    with pytest.raises(LookupError):
++        list(partition_all(n, WrongLength()))
++
++
++@pytest.mark.parametrize('n', [1, 2, 3, 8])
++@pytest.mark.parametrize('length', range(9))
++def test_partition_all_valid_lengths(n, length):
++    items = list(range(length))
++    expected = [tuple(items[i:i + n]) for i in range(0, length, n)]
++    assert list(partition_all(n, items)) == expected
++    assert list(partition_all(n, tuple(items))) == expected
++    assert list(partition_all(n, range(length))) == expected
++    assert list(partition_all(n, iter(items))) == expected
++
++    class SizedIterator:
++        def __init__(self):
++            self.items = iter(items)
++            self.remaining = length
++
++        def __iter__(self):
++            return self
++
++        def __len__(self):
++            return self.remaining
++
++        def __next__(self):
++            item = next(self.items)
++            self.remaining -= 1
++            return item
++
++    assert list(partition_all(n, SizedIterator())) == expected
++
++
++def test_partition_all_padding_values():
++    from toolz.itertoolz import no_pad
++
++    items = [None, no_pad, no_pad]
++    expected = [(None, no_pad), (no_pad,)]
++    assert list(partition_all(2, items)) == expected
++    assert list(partition_all(2, iter(items))) == expected
++
++
++def test_partition_all_infinite_iterator():
++    chunks = partition_all(2, itertools.count())
++    assert list(itertools.islice(chunks, 3)) == [(0, 1), (2, 3), (4, 5)]
++
++
+ def test_count():
+     assert count((1, 2, 3)) == 3
+     assert count([]) == 0

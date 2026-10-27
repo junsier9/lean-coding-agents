@@ -1,0 +1,115 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 265ee07..6f1a302 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3726,8 +3726,6 @@ def _sample_counted(population, k, counts, strict):
+         reservoir = []
+         for _ in range(k):
+             reservoir.append(feed(0))
+-        if strict and len(reservoir) < k:
+-            raise ValueError('Sample larger than population')
+ 
+         W = 1.0
+         while True:
+@@ -3736,6 +3734,9 @@ def _sample_counted(population, k, counts, strict):
+             element = feed(skip)
+             reservoir[randrange(k)] = element
+ 
++    if strict and len(reservoir) < k:
++        raise ValueError('Sample larger than population')
++
+     shuffle(reservoir)
+     return reservoir
+ 
+@@ -3770,7 +3771,8 @@ def sample(iterable, k, weights=None, *, counts=None, strict=False):
+     does not match the behavior of :func:`random.sample`'s *counts*
+     parameter). Note that *weights* may not be used with *counts*.
+ 
+-    If the length of *iterable* is less than *k*,
++    If the population size (after expanding *counts*, if provided) is less
++    than *k*,
+     ``ValueError`` is raised if *strict* is ``True`` and
+     all elements are returned (in shuffled order) if *strict* is ``False``.
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b611b85..59a8e3d 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4257,6 +4257,77 @@ class SampleTests(TestCase):
+         expected = Counter({'u': 1, 'x': 4, 'y': 10, 'z': 20})
+         self.assertEqual(actual, expected)
+ 
++    def test_counts_strict(self):
++        for data, counts in [
++            ('ab', (4, 2)),
++            ('abc', (2, 0, 1)),
++            ('ab', (0, 0)),
++            ('', ()),
++        ]:
++            with self.subTest(data=data, counts=counts):
++                expanded = list(
++                    chain.from_iterable(
++                        repeat(item, n) for item, n in zip(data, counts)
++                    )
++                )
++                self.assertCountEqual(
++                    mi.sample(
++                        iter(data),
++                        len(expanded) + 1,
++                        counts=iter(counts),
++                        strict=False,
++                    ),
++                    expanded,
++                )
++                self.assertCountEqual(
++                    mi.sample(
++                        iter(data),
++                        len(expanded),
++                        counts=iter(counts),
++                        strict=True,
++                    ),
++                    expanded,
++                )
++                with self.assertRaisesRegex(
++                    ValueError, '^Sample larger than population$'
++                ):
++                    mi.sample(
++                        iter(data),
++                        len(expanded) + 1,
++                        counts=iter(counts),
++                        strict=True,
++                    )
++
++    def test_weights_strict(self):
++        for data, weights, k in [
++            ('ab', (1, 2), 3),
++            ('ab', (1,), 2),
++            ('ab', (), 1),
++            ('', (), 1),
++        ]:
++            with self.subTest(data=data, weights=weights, k=k):
++                with self.assertRaisesRegex(
++                    ValueError, '^Sample larger than population$'
++                ):
++                    mi.sample(
++                        iter(data), k, weights=iter(weights), strict=True
++                    )
++
++    def test_weights_and_counts_mutually_exclusive(self):
++        for strict in (False, True):
++            for weights, counts in [((), ()), ((1,), (1,))]:
++                with self.subTest(
++                    strict=strict, weights=weights, counts=counts
++                ):
++                    with self.assertRaises(TypeError):
++                        mi.sample(
++                            'a',
++                            1,
++                            weights=weights,
++                            counts=counts,
++                            strict=strict,
++                        )
++
+     def test_sampling_entire_iterable(self):
+         """If k=len(iterable), the sample contains the original elements."""
+         data = ["a", 2, "a", 4, (1, 2, 3)]

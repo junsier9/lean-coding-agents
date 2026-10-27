@@ -1,0 +1,525 @@
+{
+  "completed_at": "2026-10-25T19:37:25.107606+00:00",
+  "evidence_class": "offline_development_controls_only",
+  "native_model_calls": 0,
+  "initial_fails_reference_passes": true,
+  "all_negative_controls_rejected": true,
+  "cases": {
+    "d09": {
+      "case_id": "d09",
+      "case_sha256": "9A9537DAC44F277BDE53559EBC3F3DD0A0011CBDCE59BBEAA577BA4479D03312",
+      "base": {
+        "tests_collected": 30,
+        "tests_ran": 30,
+        "passed": 20,
+        "failed": 2,
+        "errors": 8,
+        "skipped": 0,
+        "seconds": 1.187000000034459,
+        "exit_code": 1,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 1,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 10,
+            "failed": 1,
+            "errors": 4,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.125,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 1,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 10,
+            "failed": 1,
+            "errors": 4,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 1.062000000034459,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "reference": {
+        "tests_collected": 30,
+        "tests_ran": 30,
+        "passed": 30,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.4220000000204891,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 15,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.125,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 15,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2970000000204891,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "tests_collected": 30,
+        "tests_ran": 30,
+        "passed": 30,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.4220000000204891,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 15,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.125,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 15,
+            "tests_ran": 15,
+            "passed": 15,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2970000000204891,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "qualified": true,
+      "grading_modes": [
+        "normal",
+        "optimized"
+      ]
+    },
+    "d10": {
+      "case_id": "d10",
+      "case_sha256": "8052C58F8A8547FCE9FD5FA3C808CE75A9106F0B988E7F2C6F869574C9921BDC",
+      "base": {
+        "tests_collected": 32,
+        "tests_ran": 32,
+        "passed": 0,
+        "failed": 42,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.9690000000409782,
+        "exit_code": 1,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 1,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 0,
+            "failed": 21,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.375,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 1,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 0,
+            "failed": 21,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.5940000000409782,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "reference": {
+        "tests_collected": 32,
+        "tests_ran": 32,
+        "passed": 32,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.8119999999180436,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 16,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.375,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 16,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.4369999999180436,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "tests_collected": 32,
+        "tests_ran": 32,
+        "passed": 32,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.8119999999180436,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 16,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.375,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 16,
+            "tests_ran": 16,
+            "passed": 16,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.4369999999180436,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "qualified": true,
+      "grading_modes": [
+        "normal",
+        "optimized"
+      ]
+    }
+  },
+  "negative_controls": {
+    "original_constructor": {
+      "tests_collected": 32,
+      "tests_ran": 32,
+      "passed": 8,
+      "failed": 24,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.8279999999795109,
+      "exit_code": 1,
+      "timeout": false,
+      "modes": {
+        "normal": {
+          "exit_code": 1,
+          "tests_collected": 16,
+          "tests_ran": 16,
+          "passed": 4,
+          "failed": 12,
+          "errors": 0,
+          "skipped": 0,
+          "timeout": false,
+          "seconds": 0.3910000000614673,
+          "command": [
+            "{PYTHON_RUNTIME}\\python.exe",
+            "-I",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            ".",
+            "-p",
+            "test_contract.py",
+            "-v"
+          ]
+        },
+        "optimized": {
+          "exit_code": 1,
+          "tests_collected": 16,
+          "tests_ran": 16,
+          "passed": 4,
+          "failed": 12,
+          "errors": 0,
+          "skipped": 0,
+          "timeout": false,
+          "seconds": 0.4369999999180436,
+          "command": [
+            "{PYTHON_RUNTIME}\\python.exe",
+            "-I",
+            "-B",
+            "-O",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            ".",
+            "-p",
+            "test_contract.py",
+            "-v"
+          ]
+        }
+      }
+    },
+    "consume_all_prefix_tokens": {
+      "tests_collected": 32,
+      "tests_ran": 32,
+      "passed": 26,
+      "failed": 6,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.8119999999180436,
+      "exit_code": 1,
+      "timeout": false,
+      "modes": {
+        "normal": {
+          "exit_code": 1,
+          "tests_collected": 16,
+          "tests_ran": 16,
+          "passed": 13,
+          "failed": 3,
+          "errors": 0,
+          "skipped": 0,
+          "timeout": false,
+          "seconds": 0.375,
+          "command": [
+            "{PYTHON_RUNTIME}\\python.exe",
+            "-I",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            ".",
+            "-p",
+            "test_contract.py",
+            "-v"
+          ]
+        },
+        "optimized": {
+          "exit_code": 1,
+          "tests_collected": 16,
+          "tests_ran": 16,
+          "passed": 13,
+          "failed": 3,
+          "errors": 0,
+          "skipped": 0,
+          "timeout": false,
+          "seconds": 0.4369999999180436,
+          "command": [
+            "{PYTHON_RUNTIME}\\python.exe",
+            "-I",
+            "-B",
+            "-O",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            ".",
+            "-p",
+            "test_contract.py",
+            "-v"
+          ]
+        }
+      }
+    }
+  }
+}

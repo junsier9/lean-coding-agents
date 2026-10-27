@@ -1,0 +1,15 @@
+test_anonymous_warm_cache (test_contract.Contract.test_anonymous_warm_cache) ... ok
+test_authorized (test_contract.Contract.test_authorized) ... ok
+test_authorizer_every_request (test_contract.Contract.test_authorizer_every_request) ... ok
+test_denied_before_repository (test_contract.Contract.test_denied_before_repository) ... ok
+test_fresh_cache_no_repository (test_contract.Contract.test_fresh_cache_no_repository) ... ok
+test_invalid_keys (test_contract.Contract.test_invalid_keys) ... ok
+test_none_cached (test_contract.Contract.test_none_cached) ... ok
+test_repository_failure_not_cached (test_contract.Contract.test_repository_failure_not_cached) ... ok
+test_revoke_warm_cache (test_contract.Contract.test_revoke_warm_cache) ... ok
+test_tenant_collision (test_contract.Contract.test_tenant_collision) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK

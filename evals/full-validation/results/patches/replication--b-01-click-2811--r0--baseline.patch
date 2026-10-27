@@ -1,0 +1,120 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index df4e5c7..41b4259 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Help options configured with ``help_option_names`` follow the order
++    of eager options on the command line.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index c623764..3c86513 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -378,6 +378,7 @@ class Context:
+ 
+         #: The names for the help options.
+         self.help_option_names: t.List[str] = help_option_names
++        self._help_option: t.Optional[Option] = None
+ 
+         if token_normalize_func is None and parent is not None:
+             token_normalize_func = parent.token_normalize_func
+@@ -1288,16 +1289,23 @@ class Command(BaseCommand):
+         """Returns the help option object.
+ 
+         Unless ``add_help_option`` is ``False``.
++
++        .. versionchanged:: 8.1.8
++            The help option is cached per context to preserve the order
++            of eager callbacks.
+         """
+         help_options = self.get_help_option_names(ctx)
+ 
+         if not help_options or not self.add_help_option:
+             return None
+ 
+-        # Avoid circular import.
+-        from .decorators import HelpOption
++        if ctx._help_option is None:
++            # Avoid circular import.
++            from .decorators import HelpOption
++
++            ctx._help_option = HelpOption(help_options)
+ 
+-        return HelpOption(help_options)
++        return ctx._help_option
+ 
+     def make_parser(self, ctx: Context) -> OptionParser:
+         """Creates the underlying option parser for this command."""
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ed9d96f..01420ba 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -105,6 +105,63 @@ def test_no_args_is_help(runner):
+     assert "Show this message and exit." in result.output
+ 
+ 
++@pytest.mark.parametrize("help_option_names", [None, ["--assist"], ["-h", "--help"]])
++@pytest.mark.parametrize("help_first", [True, False])
++def test_help_option_eager_order(runner, help_option_names, help_first):
++    called = []
++
++    def eager_callback(ctx, param, value):
++        if value:
++            called.append("eager")
++            click.echo("eager")
++            ctx.exit()
++
++    @click.command(context_settings={"help_option_names": help_option_names})
++    @click.option(
++        "--eager",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=eager_callback,
++    )
++    @click.argument("required")
++    def cli(required):
++        called.append("command")
++
++    help_names = help_option_names if help_option_names is not None else ["--help"]
++
++    for help_name in help_names:
++        args = [help_name, "--eager"] if help_first else ["--eager", help_name]
++        result = runner.invoke(cli, args)
++        assert result.exit_code == 0
++
++        if help_first:
++            assert result.output.startswith("Usage: cli ")
++            assert "Show this message and exit." in result.output
++            assert called == []
++        else:
++            assert result.output == "eager\n"
++            assert called == ["eager"]
++
++        called.clear()
++
++
++def test_help_option_names_per_context(runner):
++    @click.command()
++    @click.version_option("1.0")
++    def cli():
++        pytest.fail("The command callback should not run.")
++
++    for help_name in ["-h", "--assist", "--help"]:
++        result = runner.invoke(
++            cli, [help_name, "--version"], help_option_names=[help_name]
++        )
++        assert result.exit_code == 0
++        assert result.output.startswith("Usage: cli ")
++        assert f"{help_name} " in result.output
++        assert "Show this message and exit." in result.output
++
++
+ def test_default_maps(runner):
+     @click.group()
+     def cli():

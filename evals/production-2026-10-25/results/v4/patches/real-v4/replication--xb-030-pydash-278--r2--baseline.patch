@@ -1,0 +1,67 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index 22c498d..cb86ecd 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -2003,7 +2003,7 @@ def sample_size(collection: t.Sequence[T], n: t.Union[int, None] = None) -> t.Li
+ 
+     Args:
+         collection: Collection to iterate over.
+-        n: Number of random samples to return.
++        n: Number of random samples to return. Defaults to 1 when omitted or ``None``.
+ 
+     Returns:
+         List of `n` sampled collection values.
+@@ -2014,10 +2014,12 @@ def sample_size(collection: t.Sequence[T], n: t.Union[int, None] = None) -> t.Li
+         >>> results = sample_size(items, 2)
+         >>> assert len(results) == 2
+         >>> assert set(items).intersection(results) == set(results)
++        >>> sample_size(items, 0)
++        []
+ 
+     .. versionadded:: 4.0.0
+     """
+-    num = min(n or 1, len(collection))
++    num = min(1 if n is None else n, len(collection))
+     return random.sample(collection, num)
+ 
+ 
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 83173e8..21002fa 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -931,9 +931,18 @@ def test_sample(case):
+ @parametrize(
+     "case",
+     [
++        ([1, 2, 3, 4, 5, 6], 0),
++        ([1, 2, 3, 4, 5, 6], 1),
+         ([1, 2, 3, 4, 5, 6], 2),
+         ([1, 2, 3, 4, 5, 6], 3),
+         ([1, 2, 3, 4, 5, 6], 4),
++        ([1, 2, 3, 4, 5, 6], 6),
++        ([1, 2, 3, 4, 5, 6], 8),
++        ([], 0),
++        ([], 2),
++        ((1, 2, 3), 0),
++        ("abc", 0),
++        (range(3), 0),
+     ],
+ )
+ def test_sample_size(case):
+@@ -945,6 +954,16 @@ def test_sample_size(case):
+     assert set(sample_n).issubset(collection)
+ 
+ 
++@parametrize("collection", [[], [1, 2, 3]])
++@parametrize("args", [(), (None,)])
++def test_sample_size_default(collection, args):
++    sample_n = _.sample_size(collection, *args)
++
++    assert isinstance(sample_n, list)
++    assert len(sample_n) == min(1, len(collection))
++    assert set(sample_n).issubset(collection)
++
++
+ @parametrize("case", [[1, 2, 3, 4, 5, 6], {"one": 1, "two": 2, "three": 3}])
+ def test_shuffle(case):
+     shuffled = _.shuffle(case)

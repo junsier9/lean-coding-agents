@@ -1,0 +1,16 @@
+diff --git a/app.py b/app.py
+index 0af89f5..36cd152 100644
+--- a/app.py
++++ b/app.py
+@@ -8,7 +8,8 @@ async def read_page(source, limit):
+     try:
+         for unused in range(limit):
+             values.append(await source.read())
+-    except BaseException:
+-        return []
+-    await source.close()
++    except StopAsyncIteration:
++        pass
++    finally:
++        await source.close()
+     return values

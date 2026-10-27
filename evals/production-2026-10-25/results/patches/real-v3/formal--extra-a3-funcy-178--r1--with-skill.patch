@@ -1,0 +1,80 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index d6dbb2a..3ce95c8 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,4 +1,3 @@
+-from collections.abc import Hashable
+ from datetime import datetime, timedelta
+ import time
+ import threading
+@@ -220,10 +219,12 @@ def once_per(*argnames):
+         def wrapper(*args, **kwargs):
+             with lock:
+                 values = tuple(get_arg(name, args, kwargs) for name in argnames)
+-                if isinstance(values, Hashable):
+-                    done, add = done_set, done_set.add
+-                else:
++                try:
++                    hash(values)
++                except TypeError:
+                     done, add = done_list, done_list.append
++                else:
++                    done, add = done_set, done_set.add
+ 
+                 if values not in done:
+                     add(values)
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 2dfeb7b..6297555 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -241,6 +241,50 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++@pytest.mark.parametrize('decorate', [once_per('n'), once_per_args],
++                         ids=['once_per', 'once_per_args'])
++@pytest.mark.parametrize('first,equal,different', [
++    ([1], [1], [2]),
++    ({'a': 1, 'b': 2}, {'b': 2, 'a': 1}, {'a': 2, 'b': 2}),
++    ({1, 2}, {2, 1}, {1, 3}),
++    (([1],), ([1],), ([2],)),
++    ((({'items': [1]},),), (({'items': [1]},),), (({'items': [2]},),)),
++], ids=['list', 'dict', 'set', 'tuple', 'nested_tuple'])
++def test_once_per_unhashable_values(decorate, first, equal, different):
++    calls = []
++
++    @decorate
++    def call(n, x=None):
++        calls.append(n)
++        return n
++
++    assert first is not equal
++    assert call(first) is first
++    assert call(n=equal) is None
++    assert call(different) is different
++    assert call(equal) is None
++    assert calls == [first, different]
++
++
++@pytest.mark.parametrize('decorate', [once_per('n'), once_per_args],
++                         ids=['once_per', 'once_per_args'])
++@pytest.mark.parametrize('value', [1, []], ids=['hashable', 'unhashable'])
++def test_once_per_function_error(decorate, value):
++    calls = []
++    error = TypeError('target failed')
++
++    @decorate
++    def call(n):
++        calls.append(n)
++        raise error
++
++    with pytest.raises(TypeError) as exc:
++        call(value)
++    assert exc.value is error
++    assert call(value) is None
++    assert calls == [value]
++
++
+ def test_wrap_with():
+     calls = []
+ 

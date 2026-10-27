@@ -1,0 +1,87 @@
+{
+  "experiment": "lean-coding-python-production-2026-10-25",
+  "status": "preregistered_before_new_solver_runs",
+  "user_selected_scope": "Codex + Python production maintenance",
+  "excluded_platform": "Claude validation remains skipped at user request",
+  "model": "gpt-6.1-sol",
+  "reasoning": "xhigh",
+  "transport": "Process-local existing-auth lean_eval_http; no global configuration changes",
+  "runtime": "Durable ignored project .local/production-runtime; not system Temp",
+  "baseline": "Same task, initial sources, tools and grading; no extra skill",
+  "treatment": "Frozen candidate as native repository .agents/skills/lean-coding with explicit invocation",
+  "skill_location_during_development": "candidates/v3/SKILL.md; canonical v2 remains unchanged until qualification",
+  "development": {
+    "cases": 8,
+    "candidate_repeats": 2,
+    "purpose": "Find concrete rule or grader defects; not efficiency confirmation",
+    "holdout_hidden_until_candidate_frozen": true,
+    "changes": "A demonstrated failure may produce a new version/hash; retain all versions and outcomes"
+  },
+  "production_contract_holdout": {
+    "cases": 12,
+    "repeats_per_arm": 3,
+    "arms": [
+      "baseline",
+      "with-skill"
+    ],
+    "admission": "Accurate standalone request; original fails at least one behavioral test, reference passes all nonzero tests before solver runs",
+    "qualification": "All frozen treatment contract tests pass in all repeats; no skill-induced unsafe boundary behavior in review",
+    "failure_handling": "Never remove or soften a failed case after outcomes. A revealed case used for a fix becomes regression evidence, not a fresh holdout."
+  },
+  "real_maintenance_confirmation": {
+    "eligible_pool": "127 previously unexecuted qualified public upstream cases; exclude all 50 prior evaluated tasks",
+    "allocation": "Seed20261025 repository-stratified interleaving;20 formal and20 disjoint replication cases selected before any new real solver result",
+    "tasks_per_batch": 20,
+    "repeats_per_arm": 3,
+    "quality_gate": "Treatment observed accepted rate>=baseline in each batch and no task with fewer accepted treatment runs; not a population noninferiority proof",
+    "hidden_grading": "Unchanged pinned upstream whole-file guard suite and frozen overlay hashes; source paths relocated only",
+    "outcome_based_reallocation": false
+  },
+  "efficiency": {
+    "primary": "All reported input+output tokens, including failed attempts, divided by accepted attempts",
+    "secondary": "All CLI client+independent grade seconds, including failed attempts, divided by accepted attempts",
+    "time_scope": "Includes CLI service waits, tools and local retries; excludes controller queue, copying/setup and external review. Failed grading time retained.",
+    "minimum_material_gain": 0.1,
+    "same_metric_must_pass_both_batches": true,
+    "maximum_confirmatory_candidates": 2,
+    "familywise_alpha_budget_across_candidates_and_metrics": 0.05,
+    "per_metric_per_candidate_alpha": 0.0125,
+    "one_sided_confidence": 0.9875,
+    "criterion": "Quality gate AND paired task-cluster bootstrap upper cost ratio<0.90 in both disjoint batches",
+    "bootstrap_draws": 40000,
+    "bootstrap_seed": 20261025,
+    "quantile": "inverted_cdf; whole tasks with both arms and all3 repeats; no undefined draw deletion",
+    "missing_usage": "Never zero-impute. Actual ratio remains unidentified with any unknown usage. Conservative baseline-only bound may be separately reported under the same draw/quantile, never a fabricated point estimate.",
+    "sample_size_limit": "Fixed20 tasks per batch. Previous pilot informs feasibility, not guaranteed power for this candidate or smaller effects. No enlargement based on new real outcomes.",
+    "no_optional_stopping": true,
+    "no_threshold_relaxation_after_results": true,
+    "token_is_not_billing": true
+  },
+  "execution": {
+    "fresh_context_per_attempt": true,
+    "balanced_seeded_pair_order": true,
+    "maximum_simultaneous_solver_processes": 3,
+    "cli_timeout_seconds": 600,
+    "grade_timeout_seconds": 60,
+    "paid_cli_checkpoint_before_grade": true,
+    "recover_grading_without_repeating_model": true,
+    "preserve_unknown_measurements": true,
+    "forbid_solver_network_install_delegation_commit_and_cross_run_access": true,
+    "synthetic_grade_modes": [
+      "normal",
+      "optimized (-O)"
+    ],
+    "synthetic_grade_modes_scope": "Same frozen public contracts in both Python modes; no -O extension to upstream real projects"
+  },
+  "release_decision": {
+    "production_assistant_qualified": "Frozen production-contract pass, real-task quality gate, native loading/routing checks, independent patch review and reproducible installation/rollback package",
+    "efficiency_claim_separate": "Stable>=10% only when both held-out batches pass the frozen efficiency criterion; a functionality-qualified release must disclose any unproven efficiency claim",
+    "scope": "Coding assistance inside existing project checks/review; not unattended deployment authorization or universal future correctness",
+    "publication": "Prepare locally. No external publication or global installation during comparison.",
+    "minimum_observed_real_skill_acceptance_rate_per_batch": 0.95
+  },
+  "official_sources": [
+    "https://developers.openai.com/blog/eval-skills",
+    "https://learn.chatgpt.com/docs/build-skills"
+  ]
+}

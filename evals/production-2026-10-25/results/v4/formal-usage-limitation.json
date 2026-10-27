@@ -1,0 +1,24 @@
+{
+  "recorded_at": "2026-10-25T05:06:13.086563+00:00",
+  "study": "v4",
+  "key": "formal--xb-048-pydash-241--r0--with-skill",
+  "contract_grading_accepted": true,
+  "native_client_timeout": true,
+  "native_client_seconds": 600.406,
+  "native_exit_code": 1,
+  "usage_complete": false,
+  "usage_is_unknown_not_zero": true,
+  "turn_completed_usage_events_observed": 0,
+  "raw_artifact_sha256": {
+    "record.json": "E6505C10FBD16F4D114B4CE75A8280B0A4C44F200075228F593046517C7F02C9",
+    "cli-checkpoint.json": "4111717E491320EBA5010CB3F036D97E0C545EC78517E1C4DCB7F6869CA9460E",
+    "events.jsonl": "944A4D63C213CD0CFBD75F4A2585948E05268589F0A440B78DF366F7DE796CB5",
+    "stderr.txt": "48AE44FFCF85DFAD3F9C02531AB41D336085AAC3C1F07DE519987F9155E2FC0B"
+  },
+  "stderr_observation": "Remote plugin catalog and available-model refresh failures/timeouts appear in stderr; this observation does not establish the cause of the client timeout.",
+  "token_inference": "Frozen formal analysis correctly reports exact token comparison unavailable. No imputation or failed-run removal.",
+  "paid_model_reruns": 0,
+  "native_artifacts_retained": true,
+  "frozen_time_cost_includes_client_timeout": true,
+  "protocol_or_thresholds_changed": false
+}

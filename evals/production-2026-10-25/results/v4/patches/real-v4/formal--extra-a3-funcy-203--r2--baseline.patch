@@ -1,0 +1,124 @@
+diff --git a/funcy/decorators.py b/funcy/decorators.py
+index e001629..0804b90 100644
+--- a/funcy/decorators.py
++++ b/funcy/decorators.py
+@@ -103,7 +103,13 @@ def has_1pos_and_kwonly(func):
+ 
+ def get_argnames(func):
+     func = getattr(func, '__original__', None) or unwrap(func)
+-    return func.__code__.co_varnames[:func.__code__.co_argcount]
++    code = func.__code__
++    n = code.co_argcount + code.co_kwonlyargcount
++    if code.co_flags & inspect.CO_VARARGS:
++        n += 1
++    if code.co_flags & inspect.CO_VARKEYWORDS:
++        n += 1
++    return code.co_varnames[:n]
+ 
+ def arggetter(func, _cache={}):
+     if func in _cache:
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 8d5aa5e..6b81a7d 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -266,6 +266,100 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++def test_once_per_args_keyword_only():
++    calls = []
++
++    @once_per_args
++    def call(*, required, optional=None):
++        calls.append((required, optional))
++        return 'called'
++
++    assert call(required=1) == 'called'
++    assert call(optional=None, required=1) is None
++    assert call(required=2) == 'called'
++    assert call(required=1, optional=42) == 'called'
++    assert call(optional=42, required=1) is None
++    assert calls == [(1, None), (2, None), (1, 42)]
++
++
++def test_once_per_args_varargs():
++    calls = []
++
++    @once_per_args
++    def call(*args):
++        calls.append(args)
++        return 'called'
++
++    for args in [(), (1,), (1, 2), (2, 1)]:
++        assert call(*args) == 'called'
++        assert call(*args) is None
++    assert calls == [(), (1,), (1, 2), (2, 1)]
++
++
++def test_once_per_args_varkw():
++    calls = []
++
++    @once_per_args
++    def call(**kwargs):
++        calls.append(kwargs)
++        return 'called'
++
++    assert call() == 'called'
++    assert call() is None
++    assert call(a=1, b=2) == 'called'
++    assert call(b=2, a=1) is None
++    assert call(a=1, b=3) == 'called'
++    assert call(a=1, b=2, kwargs=3) == 'called'
++    assert calls == [{}, {'a': 1, 'b': 2}, {'a': 1, 'b': 3}, {'a': 1, 'b': 2, 'kwargs': 3}]
++
++
++def test_once_per_args_mixed_arguments():
++    calls = []
++
++    @once_per_args
++    def call(n=1, *args, enabled=True, **kwargs):
++        calls.append((n, args, enabled, kwargs))
++        return 'called'
++
++    assert call() == 'called'
++    assert call(1) is None
++    assert call(enabled=True, n=1) is None
++    assert call(2) == 'called'
++    assert call(1, 3) == 'called'
++    assert call(1, 3, enabled=False) == 'called'
++    assert call(1, 3, enabled=False, extra=4, other=5) == 'called'
++    assert call(1, 3, other=5, extra=4, enabled=False) is None
++    assert calls == [
++        (1, (), True, {}),
++        (2, (), True, {}),
++        (1, (3,), True, {}),
++        (1, (3,), False, {}),
++        (1, (3,), False, {'extra': 4, 'other': 5}),
++    ]
++
++
++@pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
++def test_once_per_args_unhashable_extra_arguments(make_value):
++    calls = []
++
++    @once_per_args
++    def call(*args, option=None, **kwargs):
++        calls.append((args, option, kwargs))
++        return 'called'
++
++    assert call(option=make_value()) == 'called'
++    assert call(option=make_value()) is None
++    assert call(make_value()) == 'called'
++    assert call(make_value()) is None
++    assert call(extra=make_value()) == 'called'
++    assert call(extra=make_value()) is None
++    assert calls == [
++        ((), make_value(), {}),
++        ((make_value(),), None, {}),
++        ((), None, {'extra': make_value()}),
++    ]
++
++
+ @pytest.mark.parametrize('decorate', [once_per('n'), once_per_args])
+ @pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
+ def test_once_per_unhashable_arguments(decorate, make_value):

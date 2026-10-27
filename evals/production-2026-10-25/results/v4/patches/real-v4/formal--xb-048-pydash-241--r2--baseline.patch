@@ -1,0 +1,266 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index de2638d..8f5e752 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -14,7 +14,7 @@ import typing as t
+ 
+ import pydash as pyd
+ 
+-from .helpers import base_get, iteriteratee, parse_iteratee
++from .helpers import base_get, callit, getargcount, iterator, iteriteratee, parse_iteratee
+ from .types import IterateeObjT
+ 
+ 
+@@ -414,20 +414,20 @@ def drop_right_while(array, predicate=None):
+ 
+ @t.overload
+ def drop_while(
+-    array: t.Sequence[T], predicate: t.Callable[[T, int, t.List[T]], t.Any]
++    array: t.Iterable[T], predicate: t.Callable[[T, int, t.Iterable[T]], t.Any]
+ ) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def drop_while(array: t.Sequence[T], predicate: t.Callable[[T, int], t.Any]) -> t.List[T]: ...
++def drop_while(array: t.Iterable[T], predicate: t.Callable[[T, int], t.Any]) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def drop_while(array: t.Sequence[T], predicate: t.Callable[[T], t.Any]) -> t.List[T]: ...
++def drop_while(array: t.Iterable[T], predicate: t.Callable[[T], t.Any]) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def drop_while(array: t.Sequence[T], predicate: None = None) -> t.List[T]: ...
++def drop_while(array: t.Iterable[T], predicate: None = None) -> t.List[T]: ...
+ 
+ 
+ def drop_while(array, predicate=None):
+@@ -437,7 +437,7 @@ def drop_while(array, predicate=None):
+     index, array)``.
+ 
+     Args:
+-        array: List to process.
++        array: Iterable to process.
+         predicate: Predicate called per iteration
+ 
+     Returns:
+@@ -450,14 +450,23 @@ def drop_while(array, predicate=None):
+ 
+     .. versionadded:: 1.1.0
+     """
++    items = iter(iterator(array))
++    cbk = pyd.iteratee(predicate)
++    argcount = getargcount(cbk, maxargs=3)
+     n = 0
+-    for is_true, _, _, _ in iteriteratee(array, predicate):
+-        if is_true:
++    remaining = []
++    for index, item in items:
++        if callit(cbk, item, index, array, argcount=argcount):
+             n += 1
+         else:
++            remaining.append(item)
+             break
+ 
+-    return array[n:]
++    try:
++        return array[n:]
++    except TypeError:
++        remaining.extend(item for _, item in items)
++        return remaining
+ 
+ 
+ def duplicates(
+@@ -2058,20 +2067,20 @@ def take_right_while(array, predicate=None):
+ 
+ @t.overload
+ def take_while(
+-    array: t.Sequence[T], predicate: t.Callable[[T, int, t.List[T]], t.Any]
++    array: t.Iterable[T], predicate: t.Callable[[T, int, t.Iterable[T]], t.Any]
+ ) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def take_while(array: t.Sequence[T], predicate: t.Callable[[T, int], t.Any]) -> t.List[T]: ...
++def take_while(array: t.Iterable[T], predicate: t.Callable[[T, int], t.Any]) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def take_while(array: t.Sequence[T], predicate: t.Callable[[T], t.Any]) -> t.List[T]: ...
++def take_while(array: t.Iterable[T], predicate: t.Callable[[T], t.Any]) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+-def take_while(array: t.Sequence[T], predicate: None = None) -> t.List[T]: ...
++def take_while(array: t.Iterable[T], predicate: None = None) -> t.List[T]: ...
+ 
+ 
+ def take_while(array, predicate=None):
+@@ -2081,7 +2090,7 @@ def take_while(array, predicate=None):
+     array)``.
+ 
+     Args:
+-        array: List to process.
++        array: Iterable to process.
+         predicate: Predicate called per iteration
+ 
+     Returns:
+@@ -2094,14 +2103,17 @@ def take_while(array, predicate=None):
+ 
+     .. versionadded:: 1.1.0
+     """
+-    n = 0
+-    for is_true, _, _, _ in iteriteratee(array, predicate):
++    taken = []
++    for is_true, item, _, _ in iteriteratee(array, predicate):
+         if is_true:
+-            n += 1
++            taken.append(item)
+         else:
+             break
+ 
+-    return array[:n]
++    try:
++        return array[: len(taken)]
++    except TypeError:
++        return taken
+ 
+ 
+ @t.overload
+diff --git a/src/pydash/chaining/all_funcs.pyi b/src/pydash/chaining/all_funcs.pyi
+index 7c0efa7..9b2a5b7 100644
+--- a/src/pydash/chaining/all_funcs.pyi
++++ b/src/pydash/chaining/all_funcs.pyi
+@@ -130,18 +130,18 @@ class AllFuncs:
+ 
+     @t.overload
+     def drop_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T, int, t.List[T]], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T, int, t.Iterable[T]], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def drop_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T, int], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T, int], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def drop_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+-    def drop_while(self: "Chain[t.Sequence[T]]", predicate: None = None) -> "Chain[t.List[T]]": ...
++    def drop_while(self: "Chain[t.Iterable[T]]", predicate: None = None) -> "Chain[t.List[T]]": ...
+     def drop_while(self, predicate=None):
+         return self._wrap(pyd.drop_while)(predicate)
+ 
+@@ -498,18 +498,18 @@ class AllFuncs:
+ 
+     @t.overload
+     def take_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T, int, t.List[T]], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T, int, t.Iterable[T]], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def take_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T, int], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T, int], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def take_while(
+-        self: "Chain[t.Sequence[T]]", predicate: t.Callable[[T], t.Any]
++        self: "Chain[t.Iterable[T]]", predicate: t.Callable[[T], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+-    def take_while(self: "Chain[t.Sequence[T]]", predicate: None = None) -> "Chain[t.List[T]]": ...
++    def take_while(self: "Chain[t.Iterable[T]]", predicate: None = None) -> "Chain[t.List[T]]": ...
+     def take_while(self, predicate=None):
+         return self._wrap(pyd.take_while)(predicate)
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index 56905d2..e0174ce 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1,3 +1,4 @@
++from collections import deque
+ import math
+ 
+ import pytest
+@@ -110,6 +111,76 @@ def test_drop_while(case, expected):
+     assert _.drop_while(*case) == expected
+ 
+ 
++@parametrize("func,result_index", [(_.take_while, 0), (_.drop_while, 1)])
++@parametrize(
++    "make_iterable",
++    [iter, lambda values: (value for value in values), deque],
++    ids=["iterator", "generator", "deque"],
++)
++@parametrize(
++    "values,predicate,expected",
++    [
++        ([], lambda value: value < 3, ([], [])),
++        ([1, 2, 3, 1], lambda value: value < 3, ([1, 2], [3, 1])),
++        ([3, 1, 2], lambda value: value < 3, ([], [3, 1, 2])),
++        ([1, 2], lambda value: value < 3, ([1, 2], [])),
++        ([1, 2, 0, 3], None, ([1, 2], [0, 3])),
++        ([0, 1], None, ([], [0, 1])),
++        ([1, 2, 3], lambda value, index: index < 2, ([1, 2], [3])),
++        (
++            [{"active": True}, {"active": False}, {"active": True}],
++            "active",
++            ([{"active": True}], [{"active": False}, {"active": True}]),
++        ),
++    ],
++)
++def test_while_non_sliceable_iterables(func, result_index, make_iterable, values, predicate, expected):
++    assert func(make_iterable(values), predicate) == expected[result_index]
++
++
++@parametrize("func,expected", [(_.take_while, [1, 2]), (_.drop_while, [3, 1])])
++def test_while_iterable_predicate_arguments(func, expected):
++    values = iter([1, 2, 3, 1])
++    calls = []
++
++    def predicate(value, index, array):
++        assert array is values
++        calls.append((value, index))
++        return value < 3
++
++    assert func(values, predicate) == expected
++    assert calls == [(1, 0), (2, 1), (3, 2)]
++
++
++def test_take_while_stops_consuming_at_first_false():
++    def values():
++        yield 1
++        yield 2
++        yield 3
++        pytest.fail("take_while consumed beyond the first false predicate")
++
++    assert _.take_while(values(), lambda value: value < 3) == [1, 2]
++
++
++@parametrize("func,expected", [(_.take_while, [1, 2]), (_.drop_while, [3, 1])])
++def test_while_iterates_input_once(func, expected):
++    class IterableOnce:
++        def __init__(self):
++            self.iterated = False
++
++        def __iter__(self):
++            assert not self.iterated
++            self.iterated = True
++            return iter([1, 2, 3, 1])
++
++    assert func(IterableOnce(), lambda value: value < 3) == expected
++
++
++@parametrize("func,expected", [(_.take_while, (1, 2)), (_.drop_while, (3, 1))])
++def test_while_preserves_sequence_type(func, expected):
++    assert func((1, 2, 3, 1), lambda value: value < 3) == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

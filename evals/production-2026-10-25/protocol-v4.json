@@ -1,0 +1,95 @@
+{
+  "experiment": "lean-coding-python-production-confirmation-slot2",
+  "status": "planned_before_any_v4_native_model_calls",
+  "parent_protocol": "protocol.json",
+  "parent_protocol_sha256": "BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F",
+  "parent_release_requirements": "results/release-requirements.json",
+  "confirmation_slot": 2,
+  "maximum_confirmatory_candidates_in_this_study": 2,
+  "scope": "User-selected Codex + Python production maintenance; Claude remains excluded",
+  "first_confirmation_must_complete_before_v4_model_work": true,
+  "candidate": {
+    "initial_draft": "candidates/v4-python-draft/SKILL.md",
+    "initial_draft_sha256": "086AD88F21493E879D3C64F7A5AED6D7FF049F1BA74F88F02492C59DAE55A67F",
+    "status": "Development draft; final body and metadata frozen after all development gates, before first new real case",
+    "reason": "Reproducible legal class-call compatibility failures in a revealed first-round case; preserve public signatures/call forms/protocols and metadata explicitly",
+    "not_selected_using_interim_efficiency_metrics": true,
+    "no_real_case_specific_names_or_magic_error_messages_in_rules": true,
+    "keep_all_development_versions_and_outcomes": true,
+    "no_changes_after_real_confirmation_begins": true
+  },
+  "development": {
+    "cases": ["New independent development-next/d09.json", "Revealed cachetools436 first-round source and unchanged whole-file guard"],
+    "candidate_repeats_per_case": 3,
+    "planned_calls_per_development_iteration": 6,
+    "gate": "All accepted and all skill bodies read; synthetic d09 normal and -O counts both match nonzero reference",
+    "purpose": "Development only; neither task is a fresh production holdout or efficiency confirmation",
+    "refinement": "Only concrete behavior or oracle-fidelity failures justify revisions; preserve every version and cost. No real confirmation outcome is available for the new40 cases."
+  },
+  "critical_regression": {
+    "source": "Unchanged holdout-sealed-v2 twelve contracts, previously tested in slot1",
+    "case_manifest_sha256": "7FEEF291F22A0ABFA65E8B098157687BB6F4CFFF8247C951AD11120220EAC65A",
+    "arms": ["with-skill"],
+    "repeats_per_case": 3,
+    "planned_calls": 36,
+    "gate": "All36 accepted; all normal and optimized counts match frozen nonzero reference; all bodies read",
+    "baseline_context": "Previous unchanged no-skill arm passed36/36; no new comparative efficiency claim from these regressions",
+    "not_a_new_independent_holdout": true
+  },
+  "routing_regression": {
+    "requests": "Same nine frozen relevant-edit and negative-scope requests used for v3-python-v2",
+    "planned_calls": 9,
+    "gate": "Three related edits load final rule body and pass contracts; six negatives satisfy original no-body-read and intended-scope checks",
+    "not_a_population_false_positive_rate_estimate": true,
+    "any_metadata_revision_before_real_calls_requires_new_hash_and_preserved_routing_history": true
+  },
+  "new_real_confirmation": {
+    "selection": "results/second-corpus-selection.json",
+    "selection_rule": "First40 adequate cases in the previously frozen87-case reserve order; independent outcome-blind contract review",
+    "all_cases_previously_unexecuted": true,
+    "no_overlap_with_prior50_or_first_confirmation40": true,
+    "tasks_per_batch": 20,
+    "batches": ["formal", "replication"],
+    "arms": ["baseline", "with-skill"],
+    "repeats_per_arm": 3,
+    "planned_calls": 240,
+    "grading": "Same unchanged pinned upstream whole-file guard and overlay hashes",
+    "all_failed_costs_retained": true,
+    "both_batches_complete_even_if_formal_release_or_material_gain_gate_fails": true,
+    "outcome_based_case_replacement_or_resizing": false
+  },
+  "unchanged_efficiency_inference": {
+    "assessment": "assess.py, same frozen implementation as slot1",
+    "unit": "Complete paired task, both arms and all3 repeats",
+    "draws": 40000,
+    "seed": 20261025,
+    "quantile": "inverted_cdf",
+    "per_endpoint_alpha_for_this_second_slot": 0.0125,
+    "one_sided_confidence": 0.9875,
+    "credible_positive_release": "Same endpoint upper ratio<1.00 in both batches",
+    "stable_at_least10percent_claim": "Same endpoint upper ratio<0.90 in both batches",
+    "quality": "Each batch treatment>=95%, accepted>=baseline and no task-level accepted-count loss",
+    "missing_usage": "No zero fill or fabricated point estimate; original baseline-only conservative bound policy unchanged",
+    "alpha_budget": "Consumes remaining original slot. No new alpha or additional confirmatory candidate. Coverage remains approximate, scoped to this study."
+  },
+  "unchanged_execution": {
+    "configured_model": "gpt-6.1-sol",
+    "reasoning": "xhigh",
+    "maximum_simultaneous_native_solver_processes": 3,
+    "fresh_context_and_workspace_per_attempt": true,
+    "balanced_seeded_pair_order": true,
+    "cli_timeout_seconds": 600,
+    "grade_timeout_seconds": 60,
+    "paid_cli_checkpoint_before_grade": true,
+    "grading_recovery_never_repeats_model": true,
+    "no_global_config_changes_or_model_substitution": true,
+    "forbid_solver_network_install_delegation_commit_and_cross_run_access": true,
+    "resource_limit": "On an actual provider limit, stop queued model launches; do not purchase, reset or substitute. Partial cohorts do not establish the fixed-sample claim."
+  },
+  "release": {
+    "requires": ["Development and critical regressions", "Native routing", "Both fresh real quality gates", "Same credible-positive endpoint in both batches", "Eight prespecified blinded pair reviews", "Package install and rollback", "Raw/data integrity and statistical reproduction"],
+    "review_selection": "Four pairs per batch, repeat0, seed20261026; random A/B labels seed20261027; freeze before model work",
+    "not_universal_correctness_or_unattended_deployment_authorization": true,
+    "no_external_publication_during_comparison": true
+  }
+}

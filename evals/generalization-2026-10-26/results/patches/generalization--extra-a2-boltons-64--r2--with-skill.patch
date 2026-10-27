@@ -1,0 +1,58 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index af255cd..a5866d4 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -700,7 +700,7 @@ def is_uuid(obj, version=4):
+     if not isinstance(obj, uuid.UUID):
+         try:
+             obj = uuid.UUID(obj)
+-        except (TypeError, ValueError):
++        except (TypeError, ValueError, AttributeError):
+             return False
+     if version and obj.version != int(version):
+         return False
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index bdc9993..c0332bf 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -1,5 +1,9 @@
+ # -*- coding: utf-8 -*-
+ 
++import uuid
++
++import pytest
++
+ from boltons import strutils
+ 
+ 
+@@ -14,3 +18,30 @@ def test_indent():
+     to_indent = '\nabc\ndef\n\nxyz\n'
+     ref = '\n  abc\n  def\n\n  xyz\n'
+     assert strutils.indent(to_indent, '  ') == ref
++
++
++@pytest.mark.parametrize('obj', [
++    None, False, 0, 1, 1.5, object(), [], {}, (), '', 'not-a-uuid', 'g' * 32,
++])
++def test_is_uuid_invalid(obj):
++    assert strutils.is_uuid(obj) is False
++
++
++@pytest.mark.parametrize('text, version', [
++    ('e682ccca-5a4c-4ef2-9711-73f9ad1e15ea', 4),
++    ('0221f0d9-d4b9-11e5-a478-10ddb1c2feb9', 1),
++])
++@pytest.mark.parametrize('as_uuid', [False, True])
++def test_is_uuid_valid(text, version, as_uuid):
++    obj = uuid.UUID(text) if as_uuid else text
++    assert strutils.is_uuid(obj) is (version == 4)
++    assert strutils.is_uuid(obj, version=version) is True
++    assert strutils.is_uuid(obj, version=str(version)) is True
++    assert strutils.is_uuid(obj, version=0) is True
++    assert strutils.is_uuid(obj, version=1 if version == 4 else 4) is False
++
++
++def test_is_uuid_invalid_version():
++    with pytest.raises(ValueError):
++        strutils.is_uuid('e682ccca-5a4c-4ef2-9711-73f9ad1e15ea',
++                         version='invalid')

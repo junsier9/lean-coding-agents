@@ -1,0 +1,110 @@
+diff --git a/src/cachetools/_descriptor.py b/src/cachetools/_descriptor.py
+index e85d8fc..2317811 100644
+--- a/src/cachetools/_descriptor.py
++++ b/src/cachetools/_descriptor.py
+@@ -103,7 +103,11 @@ class _MethodDescriptor:
+             def unbound(self, *args, **kwargs):
+                 return descriptor.__get__(self)(*args, **kwargs)
+ 
+-            self.__unbound = unbound  # type: ignore
++            # A callable object avoids autospec treating this descriptor as a
++            # function whose self argument still needs to be supplied.
++            self.__unbound = functools.update_wrapper(
++                functools.partial(unbound), self.__wrapped__  # type: ignore
++            )
+         return self.__unbound
+ 
+ 
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 4bbf2dc..a501339 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -770,6 +770,31 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(Cached.get_info(other, 1), 10)
+         self.assertEqual(cached.get_info(1), 0)
+ 
++    def test_class_call_keyword_self(self):
++        for name in ("get", "get_info", "get_lock", "get_cond"):
++            with self.subTest(method=name):
++                cached = Cached(Cache(2))
++                method = getattr(Cached, name)
++                self.assertEqual(method(self=cached, value=1), 0)
++                self.assertEqual(getattr(cached, name)(value=1), 0)
++                self.assertEqual(cached.count, 1)
++
++    def test_class_call_errors(self):
++        cached = Cached(Cache(2))
++        with self.assertRaises(TypeError):
++            Cached.get(value=1)  # type: ignore
++        with self.assertRaises(TypeError):
++            Cached.get(cached)  # type: ignore
++        with self.assertRaises(TypeError):
++            Cached.get(cached, self=cached, value=1)  # type: ignore
++        self.assertEqual(cached.count, 0)
++        self.assertEqual(len(cached.cache), 0)
++
++        for _ in range(2):
++            with self.assertRaisesRegex(ValueError, "test error"):
++                Cached.get_cond_error(cached, 1)
++        self.assertEqual(cached.cond.notify_count, 2)
++
+     def test_base_class_call(self):
+         cached = Unhashable(Cache(2))
+         self.assertEqual(Cached.get(cached, 1), 0)
+@@ -783,10 +808,16 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertIsNot(Cached.get, Cached.get_info)
+ 
+     def test_wrapped_method(self):
++        import inspect
++
+         cached = Cached(Cache(2))
+         self.assertIs(Cached.get.__wrapped__, cached.get.__wrapped__)
+         self.assertEqual(Cached.get.__name__, "get")
+         self.assertEqual(Cached.get.__qualname__, "Cached.get")
++        self.assertEqual(Cached.get.__doc__, cached.get.__doc__)
++        self.assertEqual(
++            inspect.signature(Cached.get), inspect.signature(Cached.get.__wrapped__)
++        )
+         self.assertEqual(Cached.get.__wrapped__(cached, 1), 0)
+         self.assertEqual(Cached.get.__wrapped__(cached, 1), 1)
+         self.assertEqual(len(cached.cache), 0)
+@@ -798,3 +829,39 @@ class UnboundMethodTest(unittest.TestCase):
+             warnings.simplefilter("always")
+             unittest.mock.create_autospec(Cached, instance=True)
+         self.assertEqual(len(w), 0)
++
++    def test_autospec_call(self):
++        import unittest.mock
++
++        mock = unittest.mock.create_autospec(Cached, instance=True)
++        for name in (
++            "get",
++            "get_typed",
++            "get_info",
++            "get_lock",
++            "get_lock_info",
++            "get_cond",
++            "get_cond_info",
++            "get_lock_cond",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                method = getattr(mock, name)
++                self.assertIs(method(1), method.return_value)
++                method.assert_called_once_with(1)
++                self.assertIs(method(value=2), method.return_value)
++                method.assert_called_with(value=2)
++
++    def test_autospec_call_no_args(self):
++        import unittest.mock
++
++        class NoArgs:
++            cache = {}
++
++            @cachedmethod(lambda self: self.cache)
++            def get(self):
++                return 42
++
++        mock = unittest.mock.create_autospec(NoArgs, instance=True)
++        self.assertIs(mock.get(), mock.get.return_value)
++        mock.get.assert_called_once_with()

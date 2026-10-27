@@ -1,0 +1,99 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index aba1bbe..2f283ef 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Show empty string defaults as ``""`` in help text when
++    ``show_default=True``.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/docs/options.rst b/docs/options.rst
+index 5c23bad..a94fcea 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -109,6 +109,9 @@ To show the default values when showing command help, use ``show_default=True``
+ 
+    invoke(dots, args=['--help'])
+ 
++An empty string default is shown as ``""`` to distinguish it from an
++option without a default value.
++
+ For single option boolean flags, the default remains hidden if the default
+ value is False.
+ 
+diff --git a/src/click/core.py b/src/click/core.py
+index f205c79..b187056 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2447,6 +2447,7 @@ class Option(Parameter):
+         :attr:`Context.show_default` is ``True``. If this value is a
+         string, it shows that string in parentheses instead of the
+         actual value. This is particularly useful for dynamic options.
++        Empty strings are shown as ``""``.
+         For single option boolean flags, the default remains hidden if
+         its value is ``False``.
+     :param show_envvar: Controls if an environment variable should be
+@@ -2481,6 +2482,9 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.1.8
++        The default value is shown as ``""`` if it is an empty string.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2804,6 +2808,8 @@ class Option(Parameter):
+                 )[1]
+             elif self.is_bool_flag and not self.secondary_opts and not default_value:
+                 default_string = ""
++            elif isinstance(default_value, str) and default_value == "":
++                default_string = '""'
+             else:
+                 default_string = str(default_value)
+ 
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 91249b2..c682d6f 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -786,6 +786,36 @@ def test_show_default_string(runner):
+     assert "[default: (unlimited)]" in message
+ 
+ 
++@pytest.mark.parametrize("default_map", [None, {"arg": ""}])
++@pytest.mark.parametrize(
++    ("show_default", "context_show_default", "expect"),
++    [
++        (True, None, 'Value.  [default: ""]'),
++        (True, False, 'Value.  [default: ""]'),
++        (None, True, 'Value.  [default: ""]'),
++        (False, True, "Value."),
++        (None, None, "Value."),
++        ("empty", None, "Value.  [default: (empty)]"),
++    ],
++)
++def test_show_default_empty_string(
++    runner, default_map, show_default, context_show_default, expect
++):
++    @click.command(context_settings={"show_default": context_show_default})
++    @click.option(
++        "--arg",
++        default="" if default_map is None else "fallback",
++        show_default=show_default,
++        help="Value.",
++    )
++    def cmd(arg):
++        pass
++
++    result = runner.invoke(cmd, ["--help"], default_map=default_map)
++    assert result.exit_code == 0
++    assert f"--arg TEXT  {expect}\n" in result.output
++
++
+ def test_do_not_show_no_default(runner):
+     """When show_default is True and no default is set do not show None."""
+     opt = click.Option(["--limit"], show_default=True)

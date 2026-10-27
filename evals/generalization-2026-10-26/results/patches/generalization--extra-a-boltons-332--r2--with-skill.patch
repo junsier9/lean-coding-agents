@@ -1,0 +1,120 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index b295f1c..1c2082b 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -682,6 +682,7 @@ def fix_print_exception():
+ _frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)'
+                        r', in (?P<funcname>.+)$')
+ _se_frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)')
++_column_marker_re = re.compile(r'^[ \t]+[~^][ \t~^]*$')
+ 
+ 
+ # TODO: ParsedException generator over large bodies of text
+@@ -728,7 +729,7 @@ class ParsedException(object):
+         as returned by the traceback module.
+ 
+         ``ParsedException.from_string(text).to_string()`` should yield
+-        ``text``.
++        ``text``, except that column indicators are omitted.
+         """
+         lines = [u'Traceback (most recent call last):']
+ 
+@@ -810,6 +811,9 @@ class ParsedException(object):
+                 else:
+                     frame_dict['source_line'] = next_line_stripped
+                     line_no += 1
++                    while (line_no + 1 < len(tb_lines) and
++                           _column_marker_re.match(tb_lines[line_no + 1])):
++                        line_no += 1
+             else:
+                 break
+             line_no += 1
+diff --git a/tests/test_tbutils_parsed_exc.py b/tests/test_tbutils_parsed_exc.py
+index b28727e..03db8c0 100644
+--- a/tests/test_tbutils_parsed_exc.py
++++ b/tests/test_tbutils_parsed_exc.py
+@@ -1,3 +1,4 @@
++import pytest
+ 
+ from boltons.tbutils import ParsedException
+ 
+@@ -21,6 +22,79 @@ NameError: name 'plarp' is not defined"""
+     assert parsed_tb.to_string() == _tb_str
+ 
+ 
++@pytest.mark.parametrize('indicator', ['^', '^^^^', '~~~~', '~~~^^~~~',
++                                      '^^^  ~~~\t^^'])
++def test_parsed_exc_column_indicators(indicator):
++    expected = u"""\
++Traceback (most recent call last):
++  File "example.py", line 2, in <module>
++    worker()
++  File "<generated>", line 1, in call
++  File "example.py", line 7, in worker
++    return ~value ^ other
++  File "example.py", line 11, in fail
++    values['missing']
++KeyError: missing: detail
++    ^^^
++    ~~~"""
++    tb_str = expected.replace('    worker()\n',
++                              '    worker()\n    %s\n' % indicator)
++    tb_str = tb_str.replace("    values['missing']\n",
++                            "    values['missing']\n    %s\n" % indicator)
++
++    parsed_tb = ParsedException.from_string(tb_str)
++
++    assert parsed_tb.frames == [
++        {'filepath': 'example.py', 'lineno': '2', 'funcname': '<module>',
++         'source_line': 'worker()'},
++        {'filepath': '<generated>', 'lineno': '1', 'funcname': 'call',
++         'source_line': ''},
++        {'filepath': 'example.py', 'lineno': '7', 'funcname': 'worker',
++         'source_line': 'return ~value ^ other'},
++        {'filepath': 'example.py', 'lineno': '11', 'funcname': 'fail',
++         'source_line': "values['missing']"},
++    ]
++    assert parsed_tb.exc_type == 'KeyError'
++    assert parsed_tb.exc_msg == 'missing: detail\n    ^^^\n    ~~~'
++    assert parsed_tb.to_string() == expected
++
++
++def test_parsed_exc_column_indicator_no_message_bytes():
++    tb_str = u"""\
++Traceback (most recent call last):
++  File "example.py", line 2, in fail
++    raise RuntimeError('\u00e9')
++    ~~~~~~^^^^^^^^^^^^^^^^^
++RuntimeError"""
++
++    parsed_tb = ParsedException.from_string(tb_str.encode('utf-8'))
++
++    assert parsed_tb.exc_type == 'RuntimeError'
++    assert parsed_tb.exc_msg == ''
++    assert parsed_tb.frames == [
++        {'filepath': 'example.py', 'lineno': '2', 'funcname': 'fail',
++         'source_line': u"raise RuntimeError('\u00e9')"},
++    ]
++    assert parsed_tb.to_string() == tb_str.replace(
++        '\n    ~~~~~~^^^^^^^^^^^^^^^^^', '')
++
++
++def test_parsed_exc_syntax_error_indicator():
++    tb_str = u"""\
++  File "example.py", line 2
++    ~~~
++      ^
++SyntaxError: invalid syntax"""
++
++    parsed_tb = ParsedException.from_string(tb_str)
++
++    assert parsed_tb.exc_type == 'SyntaxError'
++    assert parsed_tb.exc_msg == 'invalid syntax'
++    assert parsed_tb.frames == [
++        {'filepath': 'example.py', 'lineno': '2', 'source_line': '~~~'},
++    ]
++
++
+ def test_parsed_exc_nosrcline():
+     """just making sure that everything can be parsed even if there is
+     a line without source and also if the exception has no message"""

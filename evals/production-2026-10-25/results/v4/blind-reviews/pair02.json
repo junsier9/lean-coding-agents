@@ -1,0 +1,947 @@
+{
+  "pair": "02",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "limit_error_rate 使用0.5秒等小数timeout时，在首次被拦截的调用上抛TypeError，而不是预期的ErrorRateExceeded。请使浮点秒数与等价timedelta的阻止和到期恢复行为一致，保留整数秒支持。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair02.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B"
+    ],
+    "rubric": [
+      "保留题面与既有源码公开调用及必要失败路径",
+      "新增 guard/copy/wrapper/retry 须有当前需求",
+      "不用代码行数或测试数量评分",
+      "区分已确认问题与未知边界，并用局部行为探针佐证"
+    ],
+    "not_accessed_for_this_review": [
+      "父任务结果",
+      "原生模型记录",
+      "计时或成本",
+      "skill 正文",
+      "私有标签或分组",
+      "隐藏 grader",
+      "固定生产解或参考修复",
+      "第一轮揭盲"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false
+  },
+  "comparison": "A/B 的 funcy/flow.py 忽略文档字符串后完整 AST 相同。两侧都在原有秒数归一化边界中加入 float，没有改写失败计数、阻止判断、异常传播、调用转发或状态所有权。局部行为一致，B 增补公开 timeout 文档，不构成运行时优劣依据。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整目标生产文件 AST 比较，忽略文档字符串和位置属性",
+    "equal": true,
+    "raw_file_bytes_equal": false
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "02-A-timeout-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+          "line": 139,
+          "title": "小数秒在已有秒数边界归一化，与显式 timedelta 使用相同时间精度",
+          "evidence": "只扩展原有 isinstance(timeout,int) 的允许类型为 (int,float)，随后直接调用 timedelta(seconds=timeout)。这修复了后续 elapsed timedelta 与原始 float 比较的 TypeError，并沿用标准库微秒舍入，整数秒仍走原路径，显式 timedelta 仍不转换。不存在无需求的通用数值强制转换或字符串解析。",
+          "probe_ids": [
+            "fractional_seconds_timedelta_equivalence_expiry",
+            "integer_seconds_timedelta_and_bool_preserved",
+            "zero_negative_duration_equivalence"
+          ]
+        },
+        {
+          "id": "02-A-necessary-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+          "line": 151,
+          "title": "原始失败保持传播，阻止调用保持指定异常与无底层副作用",
+          "evidence": "发生底层异常时仍累计失败并原样 raise；探针确认 ValueError、RuntimeError 与 KeyboardInterrupt 的同一异常对象继续传播。阻止阶段仍直接抛默认 ErrorRateExceeded、自定义异常类或文档示例支持的异常实例，原函数调用次数不增加，没有重试、额外等待或错误包装。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+              "line": 145
+            }
+          ],
+          "probe_ids": [
+            "public_positional_keyword_exception_instance_metadata_method",
+            "no_retry_sleep_blocked_side_effects",
+            "baseexception_identity_propagates"
+          ]
+        },
+        {
+          "id": "02-A-state-expiry",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+          "line": 158,
+          "title": "连续失败、成功清零、到期恢复与再次阻止的既有状态机保留",
+          "evidence": "成功仍清零计数，未到期的拦截不改变失败计数或 blocked 时间；恰好到期允许一次原函数调用。到期后原函数再次失败会按原计数逻辑重新阻止，随后成功会清零并恢复。复用一个工厂装饰两个函数时，各 wrapper 的 fails/blocked 独立；没有新增共享状态或复制。",
+          "probe_ids": [
+            "fractional_seconds_timedelta_equivalence_expiry",
+            "success_resets_consecutive_failures_expiry_failure_reblocks",
+            "factory_reuse_independent_state_ignore_composition"
+          ]
+        },
+        {
+          "id": "02-A-public-calling-forms",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+          "line": 136,
+          "title": "公开位置/关键字调用、自定义异常实例、方法绑定与组合装饰保留",
+          "evidence": "工厂位置参数和关键字参数均可用，原函数的位置/关键字参数与返回值原样转发；wraps 保留名称、文档和 __wrapped__，绑定方法的 self 正常传递。文档中的 ignore(ErrorRateExceeded,default=...) 组合仍只在阻止期间给出调用方设定的 fallback，未触发额外原函数调用。",
+          "original_documentation_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\base\\docs\\flow.rst",
+              "line": 136
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\base\\docs\\flow.rst",
+              "line": 144
+            }
+          ],
+          "probe_ids": [
+            "public_positional_keyword_exception_instance_metadata_method",
+            "factory_reuse_independent_state_ignore_composition"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "02-A-undeclared-nonfinite-duration",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\A\\funcy\\flow.py",
+          "line": 139,
+          "title": "非有限浮点值的拒绝时间变化已观察，题面没有要求支持其语义",
+          "evidence": "base 对 NaN/Infinity 直到阻止调用才抛 TypeError；两侧由于使用原有 timedelta 构造，分别在工厂创建时抛 ValueError/OverflowError。数字字符串和 None 两侧都仍在实际比较时抛 TypeError，没有被静默转零或吞错。NaN/Infinity 不能构造等价 timedelta，不能据此宣称本任务要求其成功运行；当前也没有调用者依赖旧拒绝时机的证据。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "undeclared_timeout_inputs_observation"
+          ]
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "02-B-timeout-boundary",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+          "line": 140,
+          "title": "小数秒在已有秒数边界归一化，与显式 timedelta 使用相同时间精度",
+          "evidence": "只扩展原有 isinstance(timeout,int) 的允许类型为 (int,float)，随后直接调用 timedelta(seconds=timeout)。这修复了后续 elapsed timedelta 与原始 float 比较的 TypeError，并沿用标准库微秒舍入，整数秒仍走原路径，显式 timedelta 仍不转换。不存在无需求的通用数值强制转换或字符串解析。",
+          "probe_ids": [
+            "fractional_seconds_timedelta_equivalence_expiry",
+            "integer_seconds_timedelta_and_bool_preserved",
+            "zero_negative_duration_equivalence"
+          ]
+        },
+        {
+          "id": "02-B-necessary-errors",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+          "line": 152,
+          "title": "原始失败保持传播，阻止调用保持指定异常与无底层副作用",
+          "evidence": "发生底层异常时仍累计失败并原样 raise；探针确认 ValueError、RuntimeError 与 KeyboardInterrupt 的同一异常对象继续传播。阻止阶段仍直接抛默认 ErrorRateExceeded、自定义异常类或文档示例支持的异常实例，原函数调用次数不增加，没有重试、额外等待或错误包装。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+              "line": 146
+            }
+          ],
+          "probe_ids": [
+            "public_positional_keyword_exception_instance_metadata_method",
+            "no_retry_sleep_blocked_side_effects",
+            "baseexception_identity_propagates"
+          ]
+        },
+        {
+          "id": "02-B-state-expiry",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+          "line": 159,
+          "title": "连续失败、成功清零、到期恢复与再次阻止的既有状态机保留",
+          "evidence": "成功仍清零计数，未到期的拦截不改变失败计数或 blocked 时间；恰好到期允许一次原函数调用。到期后原函数再次失败会按原计数逻辑重新阻止，随后成功会清零并恢复。复用一个工厂装饰两个函数时，各 wrapper 的 fails/blocked 独立；没有新增共享状态或复制。",
+          "probe_ids": [
+            "fractional_seconds_timedelta_equivalence_expiry",
+            "success_resets_consecutive_failures_expiry_failure_reblocks",
+            "factory_reuse_independent_state_ignore_composition"
+          ]
+        },
+        {
+          "id": "02-B-public-calling-forms",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+          "line": 136,
+          "title": "公开位置/关键字调用、自定义异常实例、方法绑定与组合装饰保留",
+          "evidence": "工厂位置参数和关键字参数均可用，原函数的位置/关键字参数与返回值原样转发；wraps 保留名称、文档和 __wrapped__，绑定方法的 self 正常传递。文档中的 ignore(ErrorRateExceeded,default=...) 组合仍只在阻止期间给出调用方设定的 fallback，未触发额外原函数调用。",
+          "original_documentation_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\base\\docs\\flow.rst",
+              "line": 136
+            },
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\base\\docs\\flow.rst",
+              "line": 144
+            }
+          ],
+          "probe_ids": [
+            "public_positional_keyword_exception_instance_metadata_method",
+            "factory_reuse_independent_state_ignore_composition"
+          ]
+        },
+        {
+          "id": "02-B-public-doc-update",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\docs\\flow.rst",
+          "line": 142,
+          "title": "公开文档说明本次新增的小数秒调用形式",
+          "evidence": "文档说明 timeout 可以给秒数（含小数）或 timedelta，与题面新增类型吻合；该文档差异不是新的运行时检查或包装，未把存在文档补充本身作为判优依据。",
+          "probe_ids": [
+            "fractional_seconds_timedelta_equivalence_expiry"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "02-B-undeclared-nonfinite-duration",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\02\\B\\funcy\\flow.py",
+          "line": 140,
+          "title": "非有限浮点值的拒绝时间变化已观察，题面没有要求支持其语义",
+          "evidence": "base 对 NaN/Infinity 直到阻止调用才抛 TypeError；两侧由于使用原有 timedelta 构造，分别在工厂创建时抛 ValueError/OverflowError。数字字符串和 None 两侧都仍在实际比较时抛 TypeError，没有被静默转零或吞错。NaN/Infinity 不能构造等价 timedelta，不能据此宣称本任务要求其成功运行；当前也没有调用者依赖旧拒绝时机的证据。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "undeclared_timeout_inputs_observation"
+          ]
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "将对应 base/A/B 的 funcy 包分别复制到本审查员的独立临时目录；每份使用单独 python -B 子进程，以 PYTHONPATH、PROBE_COPY 和 PYTHONDONTWRITEBYTECODE=1 隔离，断言实际导入来自该副本。只在探针进程内替换 datetime 为确定性时钟，并用会失败的 sleep 替身确认没有等待。没有真实项目源码修改。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "import json\nimport os\nfrom datetime import datetime, timedelta\nfrom pathlib import Path\nfrom funcy import flow\n\nassert Path(flow.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\nresults = []\n\n\nclass Clock:\n    current = datetime(2026, 1, 1, 12)\n\n    @classmethod\n    def now(cls):\n        return cls.current\n\n\nflow.datetime = Clock\n\n\ndef eq(actual, expected):\n    assert actual == expected, (repr(actual), repr(expected))\n\n\ndef raises(expected, function, same=None):\n    try:\n        function()\n    except expected as exc:\n        if same is not None:\n            assert exc is same\n        return exc\n    else:\n        raise AssertionError(f'{expected.__name__} not raised')\n\n\ndef check(name, function):\n    try:\n        detail = function()\n        results.append({'id': name, 'status': 'pass', 'detail': detail})\n    except Exception as exc:\n        results.append({'id': name, 'status': 'fail', 'error': type(exc).__name__, 'message': str(exc)})\n\n\ndef timed_trace(timeout, seconds):\n    Clock.current = datetime(2026, 1, 1, 12)\n    start = Clock.current\n    duration = timedelta(seconds=seconds)\n    calls = []\n    failure = ValueError('original failure')\n\n    @flow.limit_error_rate(2, timeout)\n    def limited(mode, *, payload):\n        calls.append((mode, payload))\n        if mode == 'fail':\n            raise failure\n        return payload\n\n    raises(ValueError, lambda: limited('fail', payload='first'), failure)\n    eq((limited.fails, limited.blocked), (1, None))\n    raises(ValueError, lambda: limited('fail', payload='second'), failure)\n    eq((limited.fails, limited.blocked), (2, start))\n    raises(flow.ErrorRateExceeded, lambda: limited('ok', payload='blocked'))\n    Clock.current = start + duration - timedelta(microseconds=1)\n    raises(flow.ErrorRateExceeded, lambda: limited('ok', payload='still-blocked'))\n    eq(len(calls), 2)\n    eq((limited.fails, limited.blocked), (2, start))\n    Clock.current = start + duration\n    eq(limited('ok', payload='recovered'), 'recovered')\n    eq((limited.fails, limited.blocked), (0, None))\n    Clock.current += timedelta(microseconds=1)\n    eq(limited('ok', payload='continued'), 'continued')\n    eq(calls, [('fail', 'first'), ('fail', 'second'), ('ok', 'recovered'), ('ok', 'continued')])\n    return {'calls': calls, 'counter': limited.fails, 'blocked': limited.blocked}\n\n\ndef fractional_equivalence():\n    durations = (0.5, 0.125, 1.25, 0.000003, 0.4999999)\n    for seconds in durations:\n        eq(timed_trace(seconds, seconds), timed_trace(timedelta(seconds=seconds), seconds))\n    return {'durations_seconds': durations, 'expiry_rule': 'blocked strictly before, allowed exactly at timedelta expiry'}\n\n\ndef integer_equivalence():\n    for seconds in (1, 3, True):\n        eq(timed_trace(seconds, seconds), timed_trace(timedelta(seconds=seconds), seconds))\n    return {'durations_seconds': [1, 3, True]}\n\n\ndef success_reset_and_reblock():\n    Clock.current = datetime(2026, 1, 1, 12)\n    failure = RuntimeError('work failure')\n    calls = []\n\n    @flow.limit_error_rate(fails=2, timeout=0.5)\n    def limited(ok):\n        calls.append(ok)\n        if not ok:\n            raise failure\n        return 'ok'\n\n    raises(RuntimeError, lambda: limited(False), failure)\n    eq(limited(True), 'ok')\n    eq(limited.fails, 0)\n    raises(RuntimeError, lambda: limited(False), failure)\n    eq(limited.blocked, None)\n    raises(RuntimeError, lambda: limited(False), failure)\n    first_blocked = limited.blocked\n    raises(flow.ErrorRateExceeded, lambda: limited(True))\n    Clock.current += timedelta(seconds=0.5)\n    raises(RuntimeError, lambda: limited(False), failure)\n    eq(limited.fails, 3)\n    eq(limited.blocked, Clock.current)\n    assert limited.blocked > first_blocked\n    raises(flow.ErrorRateExceeded, lambda: limited(True))\n    Clock.current += timedelta(seconds=0.5)\n    eq(limited(True), 'ok')\n    eq((limited.fails, limited.blocked), (0, None))\n    eq(calls, [False, True, False, False, False, True])\n\n\ndef public_forms_metadata_and_methods():\n    Clock.current = datetime(2026, 1, 1, 12)\n\n    class Blocked(Exception):\n        pass\n\n    blocked = Blocked('blocked instance')\n    calls = []\n    def work(a, *, b):\n        'Work docstring.'\n        calls.append((a, b))\n        raise LookupError('failed')\n\n    limited = flow.limit_error_rate(fails=1, timeout=0.5, exception=blocked)(work)\n    eq((limited.__name__, limited.__doc__), (work.__name__, work.__doc__))\n    assert limited.__wrapped__ is work\n    raises(LookupError, lambda: limited(1, b=2))\n    raises(Blocked, lambda: limited(3, b=4), blocked)\n    eq(calls, [(1, 2)])\n\n    class Service:\n        def __init__(self):\n            self.calls = []\n\n        @flow.limit_error_rate(1, 0.5, Blocked)\n        def run(self, value, *, tag):\n            self.calls.append((value, tag))\n            if value < 0:\n                raise LookupError('method failure')\n            return value, tag\n\n    service = Service()\n    raises(LookupError, lambda: service.run(-1, tag='failure'))\n    raises(Blocked, lambda: service.run(2, tag='blocked'))\n    Clock.current += timedelta(seconds=0.5)\n    eq(service.run(3, tag='recovered'), (3, 'recovered'))\n    eq(service.calls, [(-1, 'failure'), (3, 'recovered')])\n\n\ndef no_retry_sleep_or_blocked_effect():\n    Clock.current = datetime(2026, 1, 1, 12)\n    calls = []\n    original_sleep = flow.time.sleep\n    def no_sleep(*args, **kwargs):\n        raise AssertionError('limit_error_rate must not sleep')\n    flow.time.sleep = no_sleep\n    try:\n        @flow.limit_error_rate(1, 0.5)\n        def limited():\n            calls.append('attempt')\n            raise OSError('one attempt')\n        raises(OSError, limited)\n        eq(calls, ['attempt'])\n        for unused in range(3):\n            raises(flow.ErrorRateExceeded, limited)\n        eq(calls, ['attempt'])\n        eq(limited.fails, 1)\n    finally:\n        flow.time.sleep = original_sleep\n\n\ndef immediate_expiry():\n    def trace(timeout):\n        Clock.current = datetime(2026, 1, 1, 12)\n        calls = []\n        @flow.limit_error_rate(1, timeout)\n        def limited(ok):\n            calls.append(ok)\n            if not ok:\n                raise RuntimeError('failed')\n            return 'recovered'\n        raises(RuntimeError, lambda: limited(False))\n        eq(limited(True), 'recovered')\n        eq((limited.fails, limited.blocked), (0, None))\n        return calls\n    for seconds in (0.0, -0.5, 0, -1):\n        eq(trace(seconds), trace(timedelta(seconds=seconds)))\n\n\ndef baseexception_propagation():\n    Clock.current = datetime(2026, 1, 1, 12)\n    failure = KeyboardInterrupt('stop')\n    calls = []\n    @flow.limit_error_rate(1, 0.5)\n    def limited():\n        calls.append('attempt')\n        raise failure\n    raises(KeyboardInterrupt, limited, failure)\n    eq(limited.fails, 1)\n    raises(flow.ErrorRateExceeded, limited)\n    eq(calls, ['attempt'])\n\n\ndef independent_wrappers_and_ignore():\n    Clock.current = datetime(2026, 1, 1, 12)\n    decorate = flow.limit_error_rate(1, 0.5)\n    calls = []\n    @decorate\n    def left():\n        calls.append('left')\n        raise ValueError('left failure')\n    @decorate\n    def right():\n        calls.append('right')\n        return 'right result'\n    raises(ValueError, left)\n    eq(right(), 'right result')\n    eq(right.blocked, None)\n    ignored = flow.ignore(flow.ErrorRateExceeded, default='fallback')(left)\n    eq(ignored(), 'fallback')\n    eq(calls, ['left', 'right'])\n\n\ndef undeclared_input_observation():\n    observed = {}\n    for label, timeout in [('numeric_string', '0.5'), ('none', None), ('nan', float('nan')), ('infinity', float('inf'))]:\n        Clock.current = datetime(2026, 1, 1, 12)\n        stage = 'factory'\n        try:\n            factory = flow.limit_error_rate(1, timeout)\n            def work():\n                raise RuntimeError('work failure')\n            limited = factory(work)\n            stage = 'first_underlying_failure'\n            raises(RuntimeError, limited)\n            stage = 'blocked_call'\n            limited()\n        except Exception as exc:\n            observed[label] = {'stage': stage, 'error': type(exc).__name__}\n        else:\n            observed[label] = {'stage': stage, 'accepted': True}\n    return observed\n\n\ncheck('fractional_seconds_timedelta_equivalence_expiry', fractional_equivalence)\ncheck('integer_seconds_timedelta_and_bool_preserved', integer_equivalence)\ncheck('success_resets_consecutive_failures_expiry_failure_reblocks', success_reset_and_reblock)\ncheck('public_positional_keyword_exception_instance_metadata_method', public_forms_metadata_and_methods)\ncheck('no_retry_sleep_blocked_side_effects', no_retry_sleep_or_blocked_effect)\ncheck('zero_negative_duration_equivalence', immediate_expiry)\ncheck('baseexception_identity_propagates', baseexception_propagation)\ncheck('factory_reuse_independent_state_ignore_composition', independent_wrappers_and_ignore)\ncheck('undeclared_timeout_inputs_observation', undeclared_input_observation)\nprint(json.dumps({'module': flow.__file__, 'results': results}, ensure_ascii=True))\n",
+    "source_sha256": "1b1e16ce424f3abce69ef804c6064f63739d6d282c1e287e2fa0af75278aa7f4",
+    "reproduction": "将 source 保存为 probe.py，并将目标 funcy 包复制到独立目录；设置 PROBE_COPY 与 PYTHONPATH 指向该目录，用 Python 3.12 -B 运行。无需外部服务、真实睡眠或额外安装。"
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\base\\funcy\\flow.py",
+        "results": [
+          {
+            "id": "fractional_seconds_timedelta_equivalence_expiry",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "integer_seconds_timedelta_and_bool_preserved",
+            "status": "pass",
+            "detail": {
+              "durations_seconds": [
+                1,
+                3,
+                true
+              ]
+            }
+          },
+          {
+            "id": "success_resets_consecutive_failures_expiry_failure_reblocks",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "public_positional_keyword_exception_instance_metadata_method",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "no_retry_sleep_blocked_side_effects",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "zero_negative_duration_equivalence",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "baseexception_identity_propagates",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "factory_reuse_independent_state_ignore_composition",
+            "status": "fail",
+            "error": "TypeError",
+            "message": "'<' not supported between instances of 'datetime.timedelta' and 'float'"
+          },
+          {
+            "id": "undeclared_timeout_inputs_observation",
+            "status": "pass",
+            "detail": {
+              "numeric_string": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "none": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "nan": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "infinity": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\A\\funcy\\flow.py",
+        "results": [
+          {
+            "id": "fractional_seconds_timedelta_equivalence_expiry",
+            "status": "pass",
+            "detail": {
+              "durations_seconds": [
+                0.5,
+                0.125,
+                1.25,
+                3e-06,
+                0.4999999
+              ],
+              "expiry_rule": "blocked strictly before, allowed exactly at timedelta expiry"
+            }
+          },
+          {
+            "id": "integer_seconds_timedelta_and_bool_preserved",
+            "status": "pass",
+            "detail": {
+              "durations_seconds": [
+                1,
+                3,
+                true
+              ]
+            }
+          },
+          {
+            "id": "success_resets_consecutive_failures_expiry_failure_reblocks",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_positional_keyword_exception_instance_metadata_method",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "no_retry_sleep_blocked_side_effects",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "zero_negative_duration_equivalence",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "baseexception_identity_propagates",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "factory_reuse_independent_state_ignore_composition",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "undeclared_timeout_inputs_observation",
+            "status": "pass",
+            "detail": {
+              "numeric_string": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "none": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "nan": {
+                "stage": "factory",
+                "error": "ValueError"
+              },
+              "infinity": {
+                "stage": "factory",
+                "error": "OverflowError"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair02-review-2svpuhx2\\B\\funcy\\flow.py",
+        "results": [
+          {
+            "id": "fractional_seconds_timedelta_equivalence_expiry",
+            "status": "pass",
+            "detail": {
+              "durations_seconds": [
+                0.5,
+                0.125,
+                1.25,
+                3e-06,
+                0.4999999
+              ],
+              "expiry_rule": "blocked strictly before, allowed exactly at timedelta expiry"
+            }
+          },
+          {
+            "id": "integer_seconds_timedelta_and_bool_preserved",
+            "status": "pass",
+            "detail": {
+              "durations_seconds": [
+                1,
+                3,
+                true
+              ]
+            }
+          },
+          {
+            "id": "success_resets_consecutive_failures_expiry_failure_reblocks",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_positional_keyword_exception_instance_metadata_method",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "no_retry_sleep_blocked_side_effects",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "zero_negative_duration_equivalence",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "baseexception_identity_propagates",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "factory_reuse_independent_state_ignore_composition",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "undeclared_timeout_inputs_observation",
+            "status": "pass",
+            "detail": {
+              "numeric_string": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "none": {
+                "stage": "blocked_call",
+                "error": "TypeError"
+              },
+              "nan": {
+                "stage": "factory",
+                "error": "ValueError"
+              },
+              "infinity": {
+                "stage": "factory",
+                "error": "OverflowError"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 8,
+    "observational_groups_per_variant": 1,
+    "A_functional_passed": 8,
+    "B_functional_passed": 8,
+    "base_functional_passed": 1,
+    "observations": "三份均正常完成探针程序；观测组不按输入策略评分。base 的小数 timeout 在实际拦截时复现 timedelta 与 float 比较的 TypeError，整数/等价 timedelta 控制组通过。两侧五种有限正小数与 timedelta 的完整调用轨迹一致，包括到期前一微秒拦截、恰好到期恢复。",
+    "not_used_as_quality_score": "组数仅说明本次覆盖，未按候选测试数量、代码长短或执行时间选择任何一侧。"
+  },
+  "source_immutability": {
+    "files_verified": 208,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair02.json": "7f0924d8944ad32cd518b2098ce6b426fa8ad190f004ed0c25fe68f5dced5802",
+      "02\\task.json": "f1fe9f71723d55f409258bda62d35f7472b2888deb0cdb23fe37c8e22741cec5",
+      "02\\A.patch": "61d8437160aa026424248679272120d5b2a27fd9756c9d86c454ff3c8e75c0c6",
+      "02\\B.patch": "59b3c241c18f1623d68127405f099ad92d85aef5500957d43ee66de4be646297",
+      "02\\base\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\base\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\base\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\base\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\base\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\base\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\base\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\base\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\base\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\base\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\base\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\base\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\base\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\base\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\base\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\base\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\base\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\base\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\base\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\base\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\base\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\base\\docs\\flow.rst": "e38bf229c51f00d8c82557c459b5cd09e50f0ffd111199a5632aedbf17013333",
+      "02\\base\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\base\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\base\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\base\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\base\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\base\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\base\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\base\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\base\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\base\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\base\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\base\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\base\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\base\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\base\\funcy\\flow.py": "ec87e223b9a8583a32fae7cc7350b7df95987dbd982f4d01d3631a0a855bce47",
+      "02\\base\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\base\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\base\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\base\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\base\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\base\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\base\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\base\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\base\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\base\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\base\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\base\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\base\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\base\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\base\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\base\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\base\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\base\\tests\\test_flow.py": "aefe40a0ea2c19420d8c56a5c5bc7b8006f9d8707f0e3566e18d01cc20636b57",
+      "02\\base\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\base\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\base\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\base\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\base\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\base\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\base\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\base\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\base\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\base\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\base\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\base\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7",
+      "02\\A\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\A\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\A\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\A\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\A\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\A\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\A\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\A\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\A\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\A\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\A\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\A\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\A\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\A\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\A\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\A\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\A\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\A\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\A\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\A\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\A\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\A\\docs\\flow.rst": "e38bf229c51f00d8c82557c459b5cd09e50f0ffd111199a5632aedbf17013333",
+      "02\\A\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\A\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\A\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\A\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\A\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\A\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\A\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\A\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\A\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\A\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\A\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\A\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\A\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\A\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\A\\funcy\\flow.py": "0185161fc1ad629fdb0f621b6a00a30b1f5de6e950d46c20eff42269053a2231",
+      "02\\A\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\A\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\A\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\A\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\A\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\A\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\A\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\A\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\A\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\A\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\A\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\A\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\A\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\A\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\A\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\A\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\A\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\A\\tests\\test_flow.py": "e1fdcb791b3b7984463ab039f05cd82a6016258fe9ff20cbad8b6d2f6b2b1358",
+      "02\\A\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\A\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\A\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\A\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\A\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\A\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\A\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\A\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\A\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\A\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\A\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\A\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7",
+      "02\\B\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\B\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\B\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\B\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\B\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\B\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\B\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\B\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\B\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\B\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\B\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\B\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\B\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\B\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\B\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\B\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\B\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\B\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\B\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\B\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\B\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\B\\docs\\flow.rst": "e0ed6325de58e89d30c10e671c3304e2feb9afa141735e0d6cff0d65ed8aa7e2",
+      "02\\B\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\B\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\B\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\B\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\B\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\B\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\B\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\B\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\B\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\B\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\B\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\B\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\B\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\B\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\B\\funcy\\flow.py": "426c4dc395f6cde5782403c50b54adb00cb101dea9d40a004e4ff5d7274ffb9d",
+      "02\\B\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\B\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\B\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\B\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\B\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\B\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\B\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\B\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\B\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\B\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\B\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\B\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\B\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\B\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\B\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\B\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\B\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\B\\tests\\test_flow.py": "a0198de1e2b5f812a5e8a49a15f5a25072682db19490f8dc865360b37fae8ad2",
+      "02\\B\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\B\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\B\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\B\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\B\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\B\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\B\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\B\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\B\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\B\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\B\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\B\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7"
+    },
+    "source_hashes_after": {
+      "tasks-pair02.json": "7f0924d8944ad32cd518b2098ce6b426fa8ad190f004ed0c25fe68f5dced5802",
+      "02\\task.json": "f1fe9f71723d55f409258bda62d35f7472b2888deb0cdb23fe37c8e22741cec5",
+      "02\\A.patch": "61d8437160aa026424248679272120d5b2a27fd9756c9d86c454ff3c8e75c0c6",
+      "02\\B.patch": "59b3c241c18f1623d68127405f099ad92d85aef5500957d43ee66de4be646297",
+      "02\\base\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\base\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\base\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\base\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\base\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\base\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\base\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\base\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\base\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\base\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\base\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\base\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\base\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\base\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\base\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\base\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\base\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\base\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\base\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\base\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\base\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\base\\docs\\flow.rst": "e38bf229c51f00d8c82557c459b5cd09e50f0ffd111199a5632aedbf17013333",
+      "02\\base\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\base\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\base\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\base\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\base\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\base\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\base\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\base\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\base\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\base\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\base\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\base\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\base\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\base\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\base\\funcy\\flow.py": "ec87e223b9a8583a32fae7cc7350b7df95987dbd982f4d01d3631a0a855bce47",
+      "02\\base\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\base\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\base\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\base\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\base\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\base\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\base\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\base\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\base\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\base\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\base\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\base\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\base\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\base\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\base\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\base\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\base\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\base\\tests\\test_flow.py": "aefe40a0ea2c19420d8c56a5c5bc7b8006f9d8707f0e3566e18d01cc20636b57",
+      "02\\base\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\base\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\base\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\base\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\base\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\base\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\base\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\base\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\base\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\base\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\base\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\base\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7",
+      "02\\A\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\A\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\A\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\A\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\A\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\A\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\A\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\A\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\A\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\A\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\A\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\A\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\A\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\A\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\A\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\A\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\A\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\A\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\A\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\A\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\A\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\A\\docs\\flow.rst": "e38bf229c51f00d8c82557c459b5cd09e50f0ffd111199a5632aedbf17013333",
+      "02\\A\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\A\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\A\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\A\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\A\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\A\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\A\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\A\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\A\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\A\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\A\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\A\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\A\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\A\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\A\\funcy\\flow.py": "0185161fc1ad629fdb0f621b6a00a30b1f5de6e950d46c20eff42269053a2231",
+      "02\\A\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\A\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\A\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\A\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\A\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\A\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\A\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\A\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\A\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\A\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\A\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\A\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\A\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\A\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\A\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\A\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\A\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\A\\tests\\test_flow.py": "e1fdcb791b3b7984463ab039f05cd82a6016258fe9ff20cbad8b6d2f6b2b1358",
+      "02\\A\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\A\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\A\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\A\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\A\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\A\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\A\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\A\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\A\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\A\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\A\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\A\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7",
+      "02\\B\\.gitignore": "fd6081595f7cfe2c2f2507d117e17b1791b956001b96fbcec679a25564f9965c",
+      "02\\B\\.readthedocs.yaml": "afc5c50a648c5770affaa2e840fe3c136fe0b8656c575d04946ebfb94feb56e7",
+      "02\\B\\CHANGELOG": "99ca1ba8455ca4f6dc7e9870fb02e898a27a7e84d84f444def82c852cfaa996d",
+      "02\\B\\LICENSE": "dcf5a6e8e22fe9756fbf60446a5ca2e694af6eab3037b6e83543e27ba16d56a3",
+      "02\\B\\MANIFEST.in": "ef2c0fa8a10454a5ba8b3bcdd553936d6a70ce625c8a0ab9265c4e0f7eaae5e2",
+      "02\\B\\publish.sh": "583269a1838b5c9845aff8829ec5aabc3f1e6ba1bd7d81f6dc9a88c5e20572f2",
+      "02\\B\\README.rst": "0fab80a59696c3489c0b4d7915f88517fbce45540699902392f9da3786dc1a14",
+      "02\\B\\setup.cfg": "cda75b9adb3accd6d0d994428abe8bc699d2d6d886bc9991203accf63ffe9f48",
+      "02\\B\\setup.py": "50da1e558d49dd40eb494accb2d247c64a25e88a2b797a148ddcdd5c5e4688e6",
+      "02\\B\\test_requirements.txt": "13254b3427beac77a3922a1ec98b6c6fbf675767da189a79ba3af604df7fb10e",
+      "02\\B\\TODO.rst": "c09e83d90fd4f957ff928a453dce83be4077ae334ebcb64e517ed4dc14f6a35a",
+      "02\\B\\tox.ini": "76f7714cb00b2c16deb70b18506b55b1fd7460e7cf8a844fc10ad65ac22dc167",
+      "02\\B\\VERSION": "bf8bd8826b985abf5e6347211af927ee7130a5df00cfed5f1517cbcc1134b0c3",
+      "02\\B\\docs\\calc.rst": "c19e37d0842b2e94e7582b4a81268a06f04f1ca4f39f51d8b1b6f9bfd8471eee",
+      "02\\B\\docs\\cheatsheet.rst": "1971dcacd9a6872a3fa90a16aa304f81571222fb97f13f99600afbe238997124",
+      "02\\B\\docs\\colls.rst": "30392a625e24a7c1b4ffe6f7c95f1b0780bcaae6f2b190920edc3f84cb7be189",
+      "02\\B\\docs\\conf.py": "a2aacee4eb2224809043b3862b1d9b4a0da8a0f7f85569a8e146876b761a3c63",
+      "02\\B\\docs\\debug.rst": "87f750fca1d0565492124c0d73c6be0b8cf907cf43f67e105b2e5d8cf9c3d964",
+      "02\\B\\docs\\decorators.rst": "1d78e18c04208f8b5c99e4e72d5253a813dd69d3969c440878810e6479891567",
+      "02\\B\\docs\\descriptions.html": "ed0ba187fe69741f481c8efc15e3fcbc01062021b486d474980352366217823a",
+      "02\\B\\docs\\extended_fns.rst": "a7a268e441e8c4d744686f29eb9b1116a65f31337d6bfb664a1bb2c7e8420b86",
+      "02\\B\\docs\\flow.rst": "e0ed6325de58e89d30c10e671c3304e2feb9afa141735e0d6cff0d65ed8aa7e2",
+      "02\\B\\docs\\funcs.rst": "a9ae416e91c8a701507d9514f0cc893ecc62eef86c74541133863e5d921024ce",
+      "02\\B\\docs\\index.rst": "df9a2d28a3e4c060325f6f719418d2d9b055e8b44b52c64b098ef6a253302119",
+      "02\\B\\docs\\Makefile": "6ae06a298e982b92138e08e3fc2d9b72071148e054daf4e378900969ccb8590c",
+      "02\\B\\docs\\objects.rst": "60f5eadc74906937078865d270d9c28149b3909e7a79c7fa7723a7effa2dd448",
+      "02\\B\\docs\\overview.rst": "6d8db66e4ce59af93c811d05368560ec4c28403bef410c0a44c92b4d0b9db93e",
+      "02\\B\\docs\\primitives.rst": "7b459f5dc6869ade7f5c35e858f7993d25ff3c136e466475809075e6ce1bf877",
+      "02\\B\\docs\\requirements.txt": "9149135b7d716a90eb2aa46b5b0a2fe1648e4ffe5bbd7d533cddfef0a3896609",
+      "02\\B\\docs\\seqs.rst": "1775587a8701990c2c3b83bbb9e16d0b45c805844c8664a55045b637a6d534fd",
+      "02\\B\\docs\\strings.rst": "e130abd6a8426623b959c108544715de8f6b4be4eea3bd6f3a2887df1d797302",
+      "02\\B\\docs\\types.rst": "746a027aedd4c34010bead1cd9b4c5ea498518529b8306faf213a35865e640ec",
+      "02\\B\\funcy\\calc.py": "7bda55e1351480dc7e4846ecf993a32cdda48fc33bc71ee50344d963c4945062",
+      "02\\B\\funcy\\colls.py": "7adc67e84df7242c1953b4f99ae8901c5c7578f88b969e79b26adf15d10709ed",
+      "02\\B\\funcy\\debug.py": "a4436fdf3ca18a7a49b9b93b3a9689da3bbfb91b738e4f66d429bf6f40fcf0bb",
+      "02\\B\\funcy\\decorators.py": "57fe29540df40ecd8a3d9494ee428e382b6d54c3f4e747e0d4c579e9316deab6",
+      "02\\B\\funcy\\flow.py": "426c4dc395f6cde5782403c50b54adb00cb101dea9d40a004e4ff5d7274ffb9d",
+      "02\\B\\funcy\\funcmakers.py": "fbeb456d7e8cc22c2c3b3cf965329d2a1222fc3b3e6d47aae892aae5245cf953",
+      "02\\B\\funcy\\funcolls.py": "7df238435d650138fc3fe06ed4f46485776623f46ef6d4e4ec077ffe5506ceef",
+      "02\\B\\funcy\\funcs.py": "82aa2df77c9c5d862ba16e0401d1cffe52c59be53a5cbb883b27a9587d25960d",
+      "02\\B\\funcy\\objects.py": "d0f279974ec82e2c173a34f2b3cedc2d8d8b6b7dc1ffd273e0a471a81716c2b4",
+      "02\\B\\funcy\\primitives.py": "67dd4be73f3063797d0dac6934427aa5030448514134a34a08c6a5c37a96c9df",
+      "02\\B\\funcy\\seqs.py": "d514d8cc3e3bf88fa1bd95962ef310d00655d61a720cea08130abe763b56252d",
+      "02\\B\\funcy\\strings.py": "20a6e850f4d1305452461a46a06fedf44b7a4b162995771e1938319434085745",
+      "02\\B\\funcy\\tree.py": "48df6aec601171de7fa7291c1ccae51f88259271d974c822ffff009f62302a8a",
+      "02\\B\\funcy\\types.py": "bf44df1be7a5390e70c1578de1066f78e14c469ad57c1d608e23c0b4d2744ae3",
+      "02\\B\\funcy\\_inspect.py": "95490944cb3e38a2e6f5af05f759d712ce6e1fb21028a8b5452f4463e167aa9a",
+      "02\\B\\funcy\\__init__.py": "2993c479a7a312a76a30565e50e30492058930081ef83dabf71ec891a6479a8f",
+      "02\\B\\tests\\py38_decorators.py": "ae2ec5e2c46db03799e033087ce1091d11d7f34cd5cfa6741df14a4a3bdc813c",
+      "02\\B\\tests\\py38_funcs.py": "a8dca288cf72955007c6fc5bfb91dac1a83f6d19bfa54224954252faaad15e3b",
+      "02\\B\\tests\\test_calc.py": "bfb2e4a6965ec49a914f3edf3cf25ee860fe2739dc1935c6ea19bddfed233b17",
+      "02\\B\\tests\\test_colls.py": "db67fb6059bd1f04f0f22377a5f685182f02bc876f045c8833307d33870ab560",
+      "02\\B\\tests\\test_debug.py": "9d8b1f8a3eed71bcc1f033e8cc17a457b563ca16e47f2e46ed0b2bfd6f7d5b57",
+      "02\\B\\tests\\test_decorators.py": "dfdef1ca0ba43f5f1be84032355ec6ec6b1b97fa83b83c7f25a3ec7edb0c3e54",
+      "02\\B\\tests\\test_flow.py": "a0198de1e2b5f812a5e8a49a15f5a25072682db19490f8dc865360b37fae8ad2",
+      "02\\B\\tests\\test_funcmakers.py": "86a083740ac7a65e157d8c1e3fef52a46caa86cb9163e741c5c572a0584f7f99",
+      "02\\B\\tests\\test_funcolls.py": "0eea959fffcfc28c61857c0670d93711a92e4850a83a6fb02ce5f580783a2bf2",
+      "02\\B\\tests\\test_funcs.py": "029d347b603b75b5f90d16f09aed50727ce284921e09f74aaa378eb9f5b290c4",
+      "02\\B\\tests\\test_interface.py": "f9e6bbe58755ebcf14c4f9c1393d92757b8575f66bdd10b9c01f080191ebf97f",
+      "02\\B\\tests\\test_objects.py": "0dcc8a8dbe8ff1da3e05889dc49aebecd1d72d85251edbfb475d170e3fec65b1",
+      "02\\B\\tests\\test_seqs.py": "e2f4bb0ec8c7977608c0c7ca6cedba44f0cd685b0ef98585322879f98e03e732",
+      "02\\B\\tests\\test_strings.py": "4ce203e5e6f402b6ed1d583830890d6f15c48a88ff8ec4a6cc7eea5ea200f9f9",
+      "02\\B\\tests\\test_tree.py": "3b2f651178110b0588b0fe89882ecf566f3644df8e3f23ac9a2e6ceb41c25832",
+      "02\\B\\tests\\test_types.py": "e01647bdec2e902d4b09d644f39ab3c8e25dde23a379c6b7328833323d99fd26",
+      "02\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "02\\B\\.github\\workflows\\test.yml": "643ed6f86f5fa9dcf54e96d95198144a32bdec21d892ec41fe80caa2b5312913",
+      "02\\B\\docs\\_static\\nhpup_1.1.js": "8a4b8bacfb9a373950a0c176c44ae091317d610f7dbf20a5552e6f269b7cce24",
+      "02\\B\\docs\\_static\\overrides.css": "f3388e9eb6f64cba85146dcd3c505e6e0a38b365e6e397c32641d8c5b6d10dd7"
+    },
+    "includes": "仅本 pair 的 base/A/B 全部常规文件、task.json、A.patch、B.patch 与 tasks-pair02.json；列举全部文件只用于字节校验。"
+  },
+  "limitations": [
+    "这是指定公开题面和源码上的局部盲审，没有运行候选测试套件、隐藏 grader 或全项目认证；未调用模型 CLI、网络或委派。",
+    "本轮未读取其他成绩、skill、私有标签或第一轮揭盲。审查员先前参与开发案例及其他匿名 pair 审阅，存在工作记忆，因此不声称从未接触整个项目背景；没有使用跨 pair 或跨轮信息推断本轮 A/B 分组。",
+    "只在 Python 3.12.14 的确定性单线程时钟探针中验证所列路径。原实现的墙上时钟变化、共享装饰方法的跨实例状态或并发竞争没有在本任务中重新定义，也未被无证据记录为新增缺陷。",
+    "正常支持范围按题面为 int、float 和 timedelta；未建立 Decimal、Fraction、任意 __float__ 对象或无限时间语义的新契约。"
+  ]
+}

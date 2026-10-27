@@ -1,0 +1,79 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 95f8e12..c9f6d44 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -662,7 +662,7 @@ def gzip_bytes(bytestring, level=6):
+ 
+ 
+ 
+-_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\x2028|\x2029)',
++_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\u2028|\u2029)',
+                              re.UNICODE)
+ 
+ 
+@@ -671,8 +671,10 @@ def iter_splitlines(text):
+     instead of a list. Also similar to :meth:`file.next`, as that also
+     lazily reads and yields lines from a file.
+ 
+-    This function works with a variety of line endings, but as always,
+-    be careful when mixing line endings within a file.
++    This function works with a variety of line endings, including Unicode
++    line and paragraph separators. Unlike :meth:`str.splitlines`, a
++    trailing line ending produces a final empty line. Empty input yields
++    no lines.
+ 
+     >>> list(iter_splitlines('\nhi\nbye\n'))
+     ['', 'hi', 'bye', '']
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1da050a..c5f0d6a 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -52,6 +52,48 @@ def test_indent():
+     assert strutils.indent(to_indent, '  ') == ref
+ 
+ 
++@pytest.mark.parametrize(('text', 'expected'), [
++    ('', []),
++    ('January 28, February 29, 2028 2029',
++     ['January 28, February 29, 2028 2029']),
++    (' \t28 29 2028 2029\t ', [' \t28 29 2028 2029\t ']),
++])
++def test_iter_splitlines_without_line_endings(text, expected):
++    lines = strutils.iter_splitlines(text)
++    assert iter(lines) is lines
++    assert list(lines) == expected
++    assert strutils.indent(text, '>') == ('>' + text if text else '')
++
++
++@pytest.mark.parametrize('separator', [
++    '\r\n', '\n', '\x0b', '\f', '\r', '\x85', '\u2028', '\u2029',
++])
++def test_iter_splitlines_line_endings(separator):
++    assert list(strutils.iter_splitlines(separator)) == ['', '']
++    assert list(strutils.iter_splitlines(separator * 2)) == ['', '', '']
++    assert list(strutils.iter_splitlines('first' + separator + 'last')) == [
++        'first', 'last',
++    ]
++    text = separator + 'January 28' + separator * 2 + 'February 29' + separator
++    assert list(strutils.iter_splitlines(text)) == [
++        '', 'January 28', '', 'February 29', '',
++    ]
++    assert strutils.indent(text, '>') == '\n>January 28\n\n>February 29\n'
++    assert strutils.indent(text, '>', newline='|', key=lambda line: True) == (
++        '>|>January 28|>|>February 29|>'
++    )
++
++
++def test_iter_splitlines_mixed_line_endings():
++    text = '\r\nJanuary 28\u2028\u2029February 29\rMarch 28\n2028\x85\x0b\f2029\r\n'
++    expected = ['', 'January 28', '', 'February 29', 'March 28', '2028', '', '', '2029', '']
++    assert list(strutils.iter_splitlines(text)) == expected
++    assert strutils.indent(text, '  ', newline='\r\n') == (
++        '\r\n  January 28\r\n\r\n  February 29\r\n  March 28\r\n'
++        '  2028\r\n\r\n\r\n  2029\r\n'
++    )
++
++
+ def test_is_uuid():
+     assert strutils.is_uuid(uuid.uuid4()) == True
+     assert strutils.is_uuid(uuid.uuid4(), version=1) == False

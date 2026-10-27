@@ -1,0 +1,907 @@
+{
+  "checked_at": "2026-10-24T18:33:46.485924+00:00",
+  "cases": 177,
+  "files_checked": 4086,
+  "problems": [
+    {
+      "case_id": "mi-1305",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1269",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1279",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1278",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1270",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1253",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1251",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1200",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1193",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1308",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-458",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-424",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-406",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-403",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-401",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-410",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-416",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-onetoone-empty",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-336",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-302",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1260",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1276",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1261",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1248",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1211",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1128",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1125",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1088",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1082",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "mi-1028",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-428",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-418",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-438",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-443-table",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-389",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-404",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-474",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "boltons-pearson-zero",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "b-12-itsdangerous-296",
+      "path": "tests/test_itsdangerous/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "b-14-itsdangerous-154",
+      "path": "tests/test_itsdangerous/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "b-15-itsdangerous-133",
+      "path": "tests/test_itsdangerous/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1294",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1285",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1223",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1216",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1194",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1182",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1153",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1119",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1118",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-1117",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-944",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-650",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-mi-917",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-513",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-475",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-472",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-468",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-467",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-462",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-450",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-445",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-437",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-407",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-349",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-338",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-332",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-298",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-178",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-144",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-114",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-128",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-247",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a-boltons-451",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-boltons-32",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-boltons-64",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3884",
+      "path": "tests/test_exceptions/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3884",
+      "path": "tests/test_types/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3884",
+      "path": "tests/test_utils/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3865",
+      "path": "tests/test_exceptions/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3865",
+      "path": "tests/test_types/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3865",
+      "path": "tests/test_utils/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3805",
+      "path": "tests/test_utils/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a2-click-3678",
+      "path": "tests/test_utils/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-024-pydash-295",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-024-pydash-295",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-025-pydash-294",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-025-pydash-294",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-026-pydash-293",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-026-pydash-293",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-027-pydash-292",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-027-pydash-292",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-028-pydash-283",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-028-pydash-283",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-029-pydash-279",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-029-pydash-279",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-030-pydash-278",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-030-pydash-278",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-031-pydash-277",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-031-pydash-277",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-032-pydash-266",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-032-pydash-266",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-033-pydash-265",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-033-pydash-265",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-034-pydash-263",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-034-pydash-263",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-035-pydash-262",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-035-pydash-262",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-036-pydash-261",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-036-pydash-261",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-037-pydash-260",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-037-pydash-260",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-038-pydash-258",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-038-pydash-258",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-039-pydash-256",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-039-pydash-256",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-040-pydash-254",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-040-pydash-254",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-041-pydash-253",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-041-pydash-253",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-042-pydash-252",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-042-pydash-252",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-043-pydash-251",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-043-pydash-251",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-044-pydash-250",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-044-pydash-250",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-045-pydash-248",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-045-pydash-248",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-046-pydash-246",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-046-pydash-246",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-047-pydash-243",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-047-pydash-243",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-048-pydash-241",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-048-pydash-241",
+      "path": "tests/pytest_mypy_testing/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-067-w3lib-253",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-068-w3lib-272",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-069-w3lib-85",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "xb-070-w3lib-40",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-toolz-635",
+      "path": "toolz/tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-toolz-603",
+      "path": "toolz/tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-211",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-204",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-203",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-197",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-190",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-187",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-182",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-178",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-93",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case_id": "extra-a3-funcy-207",
+      "path": "tests/__init__.py",
+      "problem": "FileNotFoundError",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+test_acquire_failure_no_handler (test_contract.Contract.test_acquire_failure_no_handler) ... ok
+test_cancelled_error_propagates (test_contract.Contract.test_cancelled_error_propagates) ... FAIL
+test_existing_lease_preserved (test_contract.Contract.test_existing_lease_preserved) ... ok
+test_expected_rejection (test_contract.Contract.test_expected_rejection) ... FAIL
+test_invalid_job (test_contract.Contract.test_invalid_job) ... ok
+test_metrics_not_reset (test_contract.Contract.test_metrics_not_reset) ... ok
+test_reacquire_after_failure (test_contract.Contract.test_reacquire_after_failure) ... ERROR
+test_real_task_cancellation (test_contract.Contract.test_real_task_cancellation) ... FAIL
+test_success (test_contract.Contract.test_success) ... ok
+test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates) ... FAIL
+
+======================================================================
+ERROR: test_reacquire_after_failure (test_contract.Contract.test_reacquire_after_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\test_contract.py", line 80, in test_reacquire_after_failure
+    self.assertEqual(await run_job(self.pool, succeed, "A", self.metrics), 3)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\app.py", line 6, in run_job
+    lease = await pool.acquire(job)
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\leases.py", line 36, in acquire
+    raise LeaseBusy(job)
+leases.LeaseBusy: A
+
+======================================================================
+FAIL: test_cancelled_error_propagates (test_contract.Contract.test_cancelled_error_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\test_contract.py", line 37, in test_cancelled_error_propagates
+    with self.assertRaises(asyncio.CancelledError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CancelledError not raised
+
+======================================================================
+FAIL: test_expected_rejection (test_contract.Contract.test_expected_rejection)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\test_contract.py", line 22, in test_expected_rejection
+    self.assertEqual(self.pool.released, ["A"])
+AssertionError: Lists differ: [] != ['A']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'A'
+
+- []
++ ['A']
+
+======================================================================
+FAIL: test_real_task_cancellation (test_contract.Contract.test_real_task_cancellation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\test_contract.py", line 50, in test_real_task_cancellation
+    with self.assertRaises(asyncio.CancelledError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CancelledError not raised
+
+======================================================================
+FAIL: test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h09\initial\test_contract.py", line 29, in test_unexpected_propagates
+    with self.assertRaises(RuntimeError) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.046s
+
+FAILED (failures=4, errors=1)

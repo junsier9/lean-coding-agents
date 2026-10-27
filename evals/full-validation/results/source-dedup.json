@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-24T12:49:07.973729+00:00",
+  "candidate_count": 250,
+  "priority_order": [
+    "sources-a.json",
+    "sources-b.json",
+    "sources-extra-a.json",
+    "sources-extra-a2.json",
+    "sources-extra-b.json",
+    "sources-extra-a3.json"
+  ],
+  "duplicates": [
+    {
+      "id": "boltons-443-jsonl",
+      "source": "sources-a.json",
+      "prior_id": "boltons-443-table",
+      "url": "https://github.com/mahmoud/boltons/pull/443",
+      "fix_sha": "f1034b07ddf71f4d9285134a47a4ade16fe40789"
+    },
+    {
+      "id": "xb-001-click-3884",
+      "source": "sources-extra-b.json",
+      "prior_id": "extra-a2-click-3884",
+      "url": "https://github.com/pallets/click/pull/3884",
+      "fix_sha": "8c73ff134480f436faa0d041bd19aaf949aac22c"
+    },
+    {
+      "id": "xb-002-click-3865",
+      "source": "sources-extra-b.json",
+      "prior_id": "extra-a2-click-3865",
+      "url": "https://github.com/pallets/click/pull/3865",
+      "fix_sha": "70689853e39c30e36eb0d83d586cc914a74db9d3"
+    },
+    {
+      "id": "xb-003-click-3805",
+      "source": "sources-extra-b.json",
+      "prior_id": "extra-a2-click-3805",
+      "url": "https://github.com/pallets/click/pull/3805",
+      "fix_sha": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d"
+    },
+    {
+      "id": "xb-004-click-3678",
+      "source": "sources-extra-b.json",
+      "prior_id": "extra-a2-click-3678",
+      "url": "https://github.com/pallets/click/pull/3678",
+      "fix_sha": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a"
+    },
+    {
+      "id": "xb-006-click-3578",
+      "source": "sources-extra-b.json",
+      "prior_id": "extra-a2-click-3578",
+      "url": "https://github.com/pallets/click/pull/3578",
+      "fix_sha": "09195f6a92972c4e1bbb5493686456e6ba624520"
+    }
+  ],
+  "source_sha256": {
+    "sources-a.json": "7767F517D8A38238A532FF2C9F5CAACC208F1763FF86A43551A96137D8CE42E3",
+    "sources-b.json": "29470B4A442D0DCC01D24E3B59D04E78151DAE0EEAE827FDEDB088CDF8982C74",
+    "sources-extra-a.json": "F5A7C2AF808306F4464F1AD368A81ECF80404FF37DC2D7BF17692A85B5773B9A",
+    "sources-extra-a2.json": "DBAAFEDFD1103BE834B27D3FB1E2F6C9870597087DACCEB444CE32E8177055EE",
+    "sources-extra-b.json": "4BDE6A639CF697EB9CA85B5A0D44BE25A973553265E8F5B5183386E17E7795D1",
+    "sources-extra-a3.json": "A03E760BBD31D4C290E2684EC26FD01651CE7A01C2BB789E6683A9C05364F986"
+  },
+  "selection_independent_of_solver_outcomes": true
+}

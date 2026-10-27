@@ -1,0 +1,96 @@
+{
+  "phases": {
+    "pilot": {
+      "runs": 60,
+      "commands": 895,
+      "event_types": {
+        "thread.started": 60,
+        "turn.started": 60,
+        "item.completed": 1299,
+        "item.started": 1042,
+        "turn.completed": 60
+      },
+      "item_types": {
+        "agent_message": 257,
+        "command_execution": 895,
+        "file_change": 147
+      },
+      "malformed_trace_lines": 0,
+      "skill_body_visible": {
+        "with-skill": 30,
+        "baseline": 0
+      },
+      "skill_file_successful_reads": {
+        "with-skill": 30,
+        "baseline": 0
+      },
+      "potential_flags": {},
+      "unique_thread_ids": 60,
+      "one_unique_thread_per_run": true
+    },
+    "formal": {
+      "runs": 120,
+      "commands": 1823,
+      "event_types": {
+        "thread.started": 120,
+        "turn.started": 120,
+        "item.completed": 2617,
+        "item.started": 2101,
+        "turn.completed": 119
+      },
+      "item_types": {
+        "agent_message": 516,
+        "command_execution": 1823,
+        "file_change": 278
+      },
+      "malformed_trace_lines": 0,
+      "skill_body_visible": {
+        "baseline": 0,
+        "with-skill": 60
+      },
+      "skill_file_successful_reads": {
+        "baseline": 0,
+        "with-skill": 60
+      },
+      "potential_flags": {
+        "external_reference_or_download": 1
+      },
+      "unique_thread_ids": 120,
+      "one_unique_thread_per_run": true
+    },
+    "replication": {
+      "runs": 120,
+      "commands": 1812,
+      "event_types": {
+        "thread.started": 120,
+        "turn.started": 120,
+        "item.completed": 2610,
+        "item.started": 2094,
+        "turn.completed": 120
+      },
+      "item_types": {
+        "agent_message": 516,
+        "command_execution": 1812,
+        "file_change": 282
+      },
+      "malformed_trace_lines": 0,
+      "skill_body_visible": {
+        "with-skill": 60,
+        "baseline": 0
+      },
+      "skill_file_successful_reads": {
+        "with-skill": 60,
+        "baseline": 0
+      },
+      "potential_flags": {},
+      "unique_thread_ids": 120,
+      "one_unique_thread_per_run": true
+    }
+  },
+  "distinct_threads_across_valid_runs": true,
+  "valid_runs_scanned": 300,
+  "potential_flag_count": 1,
+  "flags_are_not_automatic_exclusions": true,
+  "scope": "Only emitted model tool commands/events are inspected; built-in model/provider/catalog traffic is not interpreted as task reference browsing.",
+  "limitation": "This is a trace audit, not a security proof or a test of model attention. Keyword hits require human adjudication."
+}

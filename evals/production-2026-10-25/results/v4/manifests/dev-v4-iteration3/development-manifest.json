@@ -1,0 +1,63 @@
+{
+  "phase": "development",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "cases": {
+    "d09": "9A9537DAC44F277BDE53559EBC3F3DD0A0011CBDCE59BBEAA577BA4479D03312",
+    "xb-059-cachetools-436": "1CE00BB61B2C63B8FAAEA99571E3C30F4313E379A1BFC3F2C18F79E5CCF3BC30"
+  },
+  "seed": 20261025,
+  "repeats": 3,
+  "arms": [
+    "with-skill"
+  ],
+  "workers": 3,
+  "schedule": [
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d09",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d09",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "d09",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    }
+  ],
+  "grading_contract": "synthetic-unittest-normal-and-O-v1;upstream-frozen"
+}

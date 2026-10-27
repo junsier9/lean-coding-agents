@@ -1,0 +1,110 @@
+diff --git a/boltons/tableutils.py b/boltons/tableutils.py
+index 899ee98..09de658 100644
+--- a/boltons/tableutils.py
++++ b/boltons/tableutils.py
+@@ -287,10 +287,7 @@ class Table:
+             self._width = 0
+         if self._width:
+             return
+-        if self.headers:
+-            self._width = len(self.headers)
+-            return
+-        self._width = max([len(d) for d in self._data])
++        self._width = max([len(self.headers)] + [len(d) for d in self._data])
+ 
+     def _fill(self):
+         width, filler = self._width, [None]
+@@ -565,15 +562,19 @@ class Table:
+         """
+         lines = []
+         widths = []
+-        headers = list(self.headers)
++        headers = []
++        if with_headers and self.headers:
++            headers.extend(self.headers)
++            headers.extend([None] * (self._width - len(self.headers)))
++            headers = [to_text(h, maxlen=maxlen) for h in headers]
+         text_data = [[to_text(cell, maxlen=maxlen) for cell in row]
+                      for row in self._data]
+-        for idx in range(self._width):
++        for idx in range(max(self._width, len(headers))):
+             cur_widths = [len(row[idx]) for row in text_data]
+-            if with_headers:
+-                cur_widths.append(len(to_text(headers[idx], maxlen=maxlen)))
+-            widths.append(max(cur_widths))
+-        if with_headers:
++            if headers:
++                cur_widths.append(len(headers[idx]))
++            widths.append(max(cur_widths, default=0))
++        if headers:
+             lines.append(' | '.join([h.center(widths[i])
+                                      for i, h in enumerate(headers)]))
+             lines.append('-|-'.join(['-' * w for w in widths]))
+diff --git a/tests/test_tableutils.py b/tests/test_tableutils.py
+index 4524386..a8026d2 100644
+--- a/tests/test_tableutils.py
++++ b/tests/test_tableutils.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from boltons.tableutils import Table
+ 
+ 
+@@ -52,3 +54,57 @@ def test_table_obj():
+     t4 = Table.from_object(TestType())
+     assert len(t4) == 1
+     assert 'greeting' in t4.headers
++
++
++@pytest.mark.parametrize('data', [None, [], [[]], [[], []]])
++def test_table_text_empty(data):
++    table = Table(data)
++    assert table.to_text() == ''
++    assert table.to_text(with_headers=False) == ''
++
++
++@pytest.mark.parametrize('headers', [None, []])
++def test_table_text_without_headers(headers):
++    table = Table([[1, 2], [3]], headers=headers)
++    expected = '1 |  2  \n3 | None'
++    assert table.to_text() == expected
++    assert table.to_text(with_headers=False) == expected
++    assert table.headers == []
++
++
++def test_table_text_non_string_headers():
++    table = Table([[None, 7]], headers=[None, 7])
++    assert table.to_text() == 'None | 7\n-----|--\nNone | 7'
++    assert table.to_text(with_headers=False) == 'None | 7'
++    assert table.headers == [None, 7]
++
++
++def test_table_text_maxlen():
++    table = Table([['long value', None]], headers=['long header', None])
++    assert table.to_text(maxlen=4) == 'l... | None\n-----|-----\nl... | None'
++
++
++@pytest.mark.parametrize('shorten_headers', [False, True])
++def test_table_text_short_headers(shorten_headers):
++    headers = ['id', None] if shorten_headers else ['id']
++    table = Table([[1, 2], [3]], headers=headers)
++    if shorten_headers:
++        headers.pop()
++    expected = Table([[1, 2], [3]], headers=['id', None])
++    assert table.to_text() == expected.to_text()
++    assert table.to_text(with_headers=False) == '1 |  2  \n3 | None'
++    assert table.to_html(orientation='horizontal') == expected.to_html(orientation='horizontal')
++    assert table.headers == ['id']
++
++
++@pytest.mark.parametrize('data', [None, [], [['id', None]]])
++def test_table_text_headers_only(data):
++    table = Table(data) if data else Table(data, headers=['id', None])
++    assert table.to_text() == 'id | None\n---|-----'
++    assert table.to_text(with_headers=False) == ''
++
++
++def test_table_text_layout():
++    table = Table([[1, 2], [3, 4]], headers=['a', 'b'])
++    assert table.to_text() == 'a | b\n--|--\n1 | 2\n3 | 4'
++    assert table.to_text(with_headers=False) == '1 | 2\n3 | 4'

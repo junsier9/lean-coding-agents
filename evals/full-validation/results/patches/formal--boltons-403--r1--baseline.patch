@@ -1,0 +1,75 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 9763fc0..9141e47 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -557,13 +557,17 @@ def bytes2human(nbytes, ndigits=0):
+     '126K'
+     >>> bytes2human(100001221)
+     '95M'
++    >>> bytes2human(1024)
++    '1K'
+     >>> bytes2human(0, 2)
+     '0.00B'
+     """
+     abs_bytes = abs(nbytes)
+     for (size, symbol), (next_size, next_symbol) in _SIZE_RANGES:
+-        if abs_bytes <= next_size:
++        if abs_bytes < next_size:
+             break
++    else:
++        size, symbol = _SIZE_BOUNDS[-1]
+     hnbytes = float(nbytes) / size
+     return '{hnbytes:.{ndigits}f}{symbol}'.format(hnbytes=hnbytes,
+                                                   ndigits=ndigits,
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1ffa916..4daf431 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,47 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize('power, symbol', enumerate('KMGTPEZY', start=1))
++@pytest.mark.parametrize('sign', [1, -1])
++@pytest.mark.parametrize('ndigits', [0, 2])
++def test_bytes2human_exact_boundaries(power, symbol, sign, ndigits):
++    expected = ('-' if sign < 0 else '') + ('1.00' if ndigits else '1') + symbol
++    assert strutils.bytes2human(sign * 1024 ** power, ndigits) == expected
++
++
++@pytest.mark.parametrize('power, symbol', enumerate('BKMGTPEZ', start=1))
++@pytest.mark.parametrize('sign', [1, -1])
++@pytest.mark.parametrize('ndigits', [0, 2])
++def test_bytes2human_below_boundaries(power, symbol, sign, ndigits):
++    amount = '1023' if power == 1 else '1024'
++    expected = ('-' if sign < 0 else '') + amount + ('.00' if ndigits else '') + symbol
++    assert strutils.bytes2human(sign * (1024 ** power - 1), ndigits) == expected
++
++
++@pytest.mark.parametrize('nbytes, ndigits, expected', [
++    (0, 0, '0B'),
++    (0, 2, '0.00B'),
++    (1, 0, '1B'),
++    (-1, 2, '-1.00B'),
++    (1025, 0, '1K'),
++    (-1025, 2, '-1.00K'),
++    (1536, 1, '1.5K'),
++    (-1536, 3, '-1.500K'),
++    (128991, 0, '126K'),
++    (100001221, 0, '95M'),
++    (1024 ** 8 + 1, 2, '1.00Y'),
++    (3 * 1024 ** 8 // 2, 1, '1.5Y'),
++    (-1024 ** 9, 2, '-1024.00Y'),
++])
++def test_bytes2human_values(nbytes, ndigits, expected):
++    assert strutils.bytes2human(nbytes, ndigits) == expected
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

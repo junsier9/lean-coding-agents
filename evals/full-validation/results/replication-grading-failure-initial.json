@@ -1,0 +1,13 @@
+{
+  "phase": "replication",
+  "finished_at": "2026-10-24T18:30:06.460717+00:00",
+  "status": "incomplete",
+  "failed_pairs": [
+    {
+      "case_id": "mi-1253",
+      "repeat": 1,
+      "error_type": "FileNotFoundError",
+      "error": "[Errno 2] No such file or directory: 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\snapshots\\\\mi-1253\\\\fix\\\\tests\\\\__init__.py'"
+    }
+  ]
+}

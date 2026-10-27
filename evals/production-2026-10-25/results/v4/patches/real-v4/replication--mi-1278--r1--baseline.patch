@@ -1,0 +1,126 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index d435c2e..a7521a9 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4671,16 +4671,6 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     different lengths.
+     """
+ 
+-    def is_scalar(obj):
+-        if scalar_types and isinstance(obj, scalar_types):
+-            return True
+-        try:
+-            iter(obj)
+-        except TypeError:
+-            return True
+-        else:
+-            return False
+-
+     size = len(objects)
+     if not size:
+         return
+@@ -4688,10 +4678,15 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     new_item = [None] * size
+     iterables, iterable_positions = [], []
+     for i, obj in enumerate(objects):
+-        if is_scalar(obj):
++        if scalar_types and isinstance(obj, scalar_types):
++            new_item[i] = obj
++            continue
++        try:
++            iterator = iter(obj)
++        except TypeError:
+             new_item[i] = obj
+         else:
+-            iterables.append(iter(obj))
++            iterables.append(iterator)
+             iterable_positions.append(i)
+ 
+     if not iterables:
+diff --git a/tests/test_more.py b/tests/test_more.py
+index cc412ff..e13265a 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5441,6 +5441,82 @@ class ChunkedEvenTests(TestCase):
+ 
+ 
+ class ZipBroadcastTests(TestCase):
++    class OneShotIterable:
++        def __init__(self, values):
++            self.values = values
++            self.iter_calls = 0
++
++        def __iter__(self):
++            self.iter_calls += 1
++            if self.iter_calls > 1:
++                raise RuntimeError('Iterator already requested')
++            return iter(self.values)
++
++    def test_one_shot_iterables(self):
++        for strict in (False, True):
++            for values in ([], [1], [1, 2, 3]):
++                with self.subTest(strict=strict, values=values):
++                    iterable = self.OneShotIterable(values)
++                    self.assertEqual(
++                        list(mi.zip_broadcast(iterable, strict=strict)),
++                        list(zip(values, strict=strict)),
++                    )
++                    self.assertEqual(iterable.iter_calls, 1)
++
++                    left = self.OneShotIterable(values)
++                    right = self.OneShotIterable(values)
++                    self.assertEqual(
++                        list(
++                            mi.zip_broadcast(
++                                0, left, 'ab', right, b'cd', strict=strict
++                            )
++                        ),
++                        [(0, x, 'ab', y, b'cd') for x, y in zip(values, values)],
++                    )
++                    self.assertEqual(left.iter_calls, 1)
++                    self.assertEqual(right.iter_calls, 1)
++
++    def test_one_shot_iterables_different_lengths(self):
++        for strict in (False, True):
++            for left, right in (
++                ([], [1]),
++                ([1], []),
++                ([1], [2, 3]),
++                ([1, 2], [3]),
++            ):
++                with self.subTest(strict=strict, left=left, right=right):
++                    result = mi.zip_broadcast(
++                        self.OneShotIterable(left),
++                        '_',
++                        self.OneShotIterable(right),
++                        strict=strict,
++                    )
++                    for x, y in zip(left, right):
++                        self.assertEqual(next(result), (x, '_', y))
++                    if strict:
++                        with self.assertRaises(ValueError):
++                            next(result)
++                    else:
++                        with self.assertRaises(StopIteration):
++                            next(result)
++
++    def test_one_shot_scalar_type(self):
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                scalar = self.OneShotIterable([1, 2, 3])
++                self.assertEqual(
++                    list(
++                        mi.zip_broadcast(
++                            scalar,
++                            [10, 20],
++                            scalar_types=self.OneShotIterable,
++                            strict=strict,
++                        )
++                    ),
++                    [(scalar, 10), (scalar, 20)],
++                )
++                self.assertEqual(scalar.iter_calls, 0)
++
+     def test_zip(self):
+         for objects, zipped, strict_ok in [
+             # Empty

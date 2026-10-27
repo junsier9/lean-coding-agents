@@ -1,0 +1,161 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index d4dd1db..1464088 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -68,6 +68,7 @@ thanks to `Mark Williams`_ for all his help.
+ """
+ 
+ from collections.abc import KeysView, ValuesView, ItemsView
++from copy import deepcopy
+ from itertools import zip_longest
+ 
+ try:
+@@ -266,6 +267,17 @@ class OrderedMultiDict(dict):
+         "Return a shallow copy of the dictionary."
+         return self.__class__(self.iteritems(multi=True))
+ 
++    def __copy__(self):
++        return self.copy()
++
++    def __deepcopy__(self, memo):
++        ret = self.__class__()
++        # Register the copy before copying items that may refer back to self.
++        memo[id(self)] = ret
++        for k, v in self.iteritems(multi=True):
++            ret.add(deepcopy(k, memo), deepcopy(v, memo))
++        return ret
++
+     @classmethod
+     def fromkeys(cls, keys, default=None):
+         """Create a dictionary from a list of keys, with all the values
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index b9df65f..406ae20 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -1,7 +1,9 @@
++import copy
+ import sys
+ import pytest
+ 
+ from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
++from boltons.dictutils import FastIterOrderedMultiDict
+ 
+ 
+ _ITEMSETS = [[],
+@@ -86,6 +88,87 @@ def test_copy():
+     return
+ 
+ 
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('copy_func', [copy.copy, copy.deepcopy])
++@pytest.mark.parametrize('itemset', _ITEMSETS)
++def test_omd_copy_protocol(dict_type, copy_func, itemset):
++    omd = dict_type(itemset)
++    copied = copy_func(omd)
++
++    assert type(copied) is dict_type
++    assert copied is not omd
++    assert copied.items(multi=True) == itemset
++    for key in omd:
++        assert copied.getlist(key) == omd.getlist(key)
++
++    if itemset:
++        copied.poplast(itemset[0][0])
++    copied.add('extra', [])
++    assert omd.items(multi=True) == itemset
++    copied.clear()
++    assert omd.items(multi=True) == itemset
++
++
++def test_omd_shallow_copy_values():
++    early = [0]
++    shared = {'nested': [1]}
++    omd = OMD([('a', early), ('b', shared), ('a', shared)])
++    copied = copy.copy(omd)
++
++    assert copied.getlist('a')[0] is early
++    assert copied['a'] is copied['b'] is shared
++    copied.getlist('a')[0].append(2)
++    copied['b']['nested'].append(3)
++    assert omd.getlist('a') == [[0, 2], {'nested': [1, 3]}]
++    copied.poplast('a')
++    assert len(omd.getlist('a')) == 2
++
++
++def test_omd_deepcopy_values():
++    early = [0]
++    shared = {'nested': [1]}
++    omd = OMD([('a', early), ('b', shared), ('a', shared)])
++    copied = copy.deepcopy(omd)
++
++    assert copied.items(multi=True) == omd.items(multi=True)
++    assert copied.getlist('a')[0] is not early
++    assert copied['a'] is copied['b']
++    assert copied['a'] is not shared
++    copied.getlist('a')[0].append(2)
++    copied['b']['nested'].append(3)
++    assert early == [0]
++    assert shared == {'nested': [1]}
++
++
++def test_omd_deepcopy_keys():
++    key = object()
++    omd = OMD([(key, [key]), ('b', key), (key, 2)])
++    copied = copy.deepcopy(omd)
++
++    copied_key = copied.keys(multi=True)[0]
++    assert copied_key is not key
++    assert copied.keys(multi=True)[2] is copied_key
++    assert copied.getlist(copied_key)[0][0] is copied_key
++    assert copied['b'] is copied_key
++    assert copied.getlist(copied_key)[1] == 2
++
++
++def test_omd_deepcopy_cycles():
++    omd = OMD([('a', 0)])
++    cycle = [omd]
++    cycle.append(cycle)
++    omd.add('self', omd)
++    omd.add('a', cycle)
++    copied = copy.deepcopy(omd)
++
++    assert copied is not omd
++    assert copied['self'] is copied
++    assert copied.getlist('a')[0] == 0
++    assert copied['a'] is not cycle
++    assert copied['a'][0] is copied
++    assert copied['a'][1] is copied['a']
++
++
+ def test_omd_pickle():
+     import pickle
+ 
+@@ -101,6 +184,28 @@ def test_omd_pickle():
+     assert roundtripped.getlist('b') == [2, 3]
+ 
+ 
++@pytest.mark.parametrize('itemset', _ITEMSETS[1:])
++def test_omd_pickle_protocols(itemset):
++    import pickle
++
++    omd = OMD(itemset)
++    for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
++        roundtripped = pickle.loads(pickle.dumps(omd, protocol=protocol))
++        assert roundtripped is not omd
++        assert roundtripped.items(multi=True) == itemset
++        for key in omd:
++            assert roundtripped.getlist(key) == omd.getlist(key)
++
++
++def test_omd_pickle_empty_protocols():
++    import pickle
++
++    # Protocols 0 and 1 do not initialize an empty OMD's linked list.
++    for protocol in range(2, pickle.HIGHEST_PROTOCOL + 1):
++        roundtripped = pickle.loads(pickle.dumps(OMD(), protocol=protocol))
++        assert roundtripped.items(multi=True) == []
++
++
+ 
+ def test_clear():
+     for itemset in _ITEMSETS:

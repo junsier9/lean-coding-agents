@@ -1,0 +1,170 @@
+{
+  "role": "development_contract_validation_not_new_generalization_evidence",
+  "created_at": "2026-10-27T09:11:15.209799+00:00",
+  "interpreter": "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+  "stdlib_only": true,
+  "cases": [
+    {
+      "case_id": "case-01",
+      "valid": true,
+      "violations": [],
+      "inputs_sha256": "EDFBD83DF7FEB0D86734CF53D18EEEA94E6A509B858151519F363725E81339C0",
+      "contract_sha256": "6F127612428F06118AD82BB666888CB3EB77311E7200052877886E65C93F7B18",
+      "check_report_sha256": "2ABAEC42555CE3953298E1A3E5C23841206DE88A93359B6FC37ACB7236B0E790",
+      "runs": [
+        {
+          "variant": "initial",
+          "mode": "normal",
+          "tests_run": 11,
+          "success": false,
+          "problem_count": 10,
+          "failed_methods": [
+            "test_contract.CompatibilityContract.test_identity_precedes_equality",
+            "test_contract.CompatibilityContract.test_negative_and_mixed_index_protocol",
+            "test_contract.CompatibilityContract.test_positive_bounds_are_lazy_and_leave_the_tail",
+            "test_contract.CompatibilityContract.test_positive_index_protocol_start_and_stop"
+          ]
+        },
+        {
+          "variant": "reference",
+          "mode": "normal",
+          "tests_run": 11,
+          "success": true,
+          "problem_count": 0,
+          "failed_methods": []
+        },
+        {
+          "variant": "base",
+          "mode": "normal",
+          "tests_run": 11,
+          "success": false,
+          "problem_count": 698,
+          "failed_methods": [
+            "test_contract.CompatibilityContract.test_comparison_business_exception_is_preserved",
+            "test_contract.CompatibilityContract.test_identity_precedes_equality",
+            "test_contract.CompatibilityContract.test_iteration_business_exception_is_preserved",
+            "test_contract.CompatibilityContract.test_negative_and_mixed_index_protocol",
+            "test_contract.OriginalMaintenanceContract.test_negative_bounds_match_absolute_slice_indices",
+            "test_contract.OriginalMaintenanceContract.test_no_matches_and_empty_intervals"
+          ]
+        },
+        {
+          "variant": "initial",
+          "mode": "-O",
+          "tests_run": 11,
+          "success": false,
+          "problem_count": 10,
+          "failed_methods": [
+            "test_contract.CompatibilityContract.test_identity_precedes_equality",
+            "test_contract.CompatibilityContract.test_negative_and_mixed_index_protocol",
+            "test_contract.CompatibilityContract.test_positive_bounds_are_lazy_and_leave_the_tail",
+            "test_contract.CompatibilityContract.test_positive_index_protocol_start_and_stop"
+          ]
+        },
+        {
+          "variant": "reference",
+          "mode": "-O",
+          "tests_run": 11,
+          "success": true,
+          "problem_count": 0,
+          "failed_methods": []
+        },
+        {
+          "variant": "base",
+          "mode": "-O",
+          "tests_run": 11,
+          "success": false,
+          "problem_count": 698,
+          "failed_methods": [
+            "test_contract.CompatibilityContract.test_comparison_business_exception_is_preserved",
+            "test_contract.CompatibilityContract.test_identity_precedes_equality",
+            "test_contract.CompatibilityContract.test_iteration_business_exception_is_preserved",
+            "test_contract.CompatibilityContract.test_negative_and_mixed_index_protocol",
+            "test_contract.OriginalMaintenanceContract.test_negative_bounds_match_absolute_slice_indices",
+            "test_contract.OriginalMaintenanceContract.test_no_matches_and_empty_intervals"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "case-03",
+      "valid": true,
+      "violations": [],
+      "inputs_sha256": "EBB9D6C07939CD0F7E402FB208B4C851BBDC3B4C656F3E9E8B4FF0469F701505",
+      "contract_sha256": "3A4094E6B80AB539849E6439F4DB276CBE1F06D1E73E55C9FFA03BF08AD5C897",
+      "check_report_sha256": "A4674EBCAA3AC49CA71E695744E8F371983A7F08E65F1AAB61BEB35B783CF78D",
+      "runs": [
+        {
+          "variant": "initial",
+          "mode": "normal",
+          "tests_run": 16,
+          "success": false,
+          "problem_count": 9,
+          "failed_methods": [
+            "test_contract.FallbackCompatibilityContract.test_fallback_then_business_exception_is_same_object",
+            "test_contract.FallbackCompatibilityContract.test_ordinary_exception_in_optional_metadata_preserves_forwarding"
+          ]
+        },
+        {
+          "variant": "reference",
+          "mode": "normal",
+          "tests_run": 16,
+          "success": true,
+          "problem_count": 0,
+          "failed_methods": []
+        },
+        {
+          "variant": "base",
+          "mode": "normal",
+          "tests_run": 16,
+          "success": false,
+          "problem_count": 7,
+          "failed_methods": [
+            "test_contract.OriginalMaintenanceContract.test_async_forwarding_and_business_error_identity",
+            "test_contract.OriginalMaintenanceContract.test_callable_object_and_bound_method",
+            "test_contract.OriginalMaintenanceContract.test_outer_metadata_and_expected_injected_parameters",
+            "test_contract.OriginalMaintenanceContract.test_required_and_defaulted_parameters_with_varargs",
+            "test_contract.OriginalMaintenanceContract.test_required_keyword_only_and_reverse",
+            "test_contract.OriginalMaintenanceContract.test_target_wrapped_metadata_does_not_hide_real_parameters"
+          ]
+        },
+        {
+          "variant": "initial",
+          "mode": "-O",
+          "tests_run": 16,
+          "success": false,
+          "problem_count": 9,
+          "failed_methods": [
+            "test_contract.FallbackCompatibilityContract.test_fallback_then_business_exception_is_same_object",
+            "test_contract.FallbackCompatibilityContract.test_ordinary_exception_in_optional_metadata_preserves_forwarding"
+          ]
+        },
+        {
+          "variant": "reference",
+          "mode": "-O",
+          "tests_run": 16,
+          "success": true,
+          "problem_count": 0,
+          "failed_methods": []
+        },
+        {
+          "variant": "base",
+          "mode": "-O",
+          "tests_run": 16,
+          "success": false,
+          "problem_count": 7,
+          "failed_methods": [
+            "test_contract.OriginalMaintenanceContract.test_async_forwarding_and_business_error_identity",
+            "test_contract.OriginalMaintenanceContract.test_callable_object_and_bound_method",
+            "test_contract.OriginalMaintenanceContract.test_outer_metadata_and_expected_injected_parameters",
+            "test_contract.OriginalMaintenanceContract.test_required_and_defaulted_parameters_with_varargs",
+            "test_contract.OriginalMaintenanceContract.test_required_keyword_only_and_reverse",
+            "test_contract.OriginalMaintenanceContract.test_target_wrapped_metadata_does_not_hide_real_parameters"
+          ]
+        }
+      ]
+    }
+  ],
+  "all_valid": true,
+  "inputs_a_sha256": "1A44C9731D61B894901E8DFB099A652D73705AC039DBA27F4F4792C9A240131F"
+}

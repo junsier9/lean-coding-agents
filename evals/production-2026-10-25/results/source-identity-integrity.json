@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-24T22:32:25.529700+00:00",
+  "selected_cases": 130,
+  "prior_cases": 50,
+  "first_confirmation_cases": 40,
+  "contingent_second_confirmation_cases": 40,
+  "unique_repo_fix_pairs": 130,
+  "unique_source_urls_without_fragment_or_query": 130,
+  "duplicate_fix_groups": [],
+  "duplicate_source_url_groups": [],
+  "v4_native_model_calls_at_check": 0,
+  "limits": "Distinct commits and URLs do not prove statistical independence between related tasks or exclude training-data contamination."
+}

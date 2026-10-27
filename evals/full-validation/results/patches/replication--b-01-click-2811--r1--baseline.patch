@@ -1,0 +1,122 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index df4e5c7..14d4c09 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.8
+ 
+ Unreleased
+ 
++-   Fix callback ordering for help options configured with
++    ``help_option_names`` when used with other eager options.
+ -   Fix an issue with type hints for ``click.open_file()``. :issue:`2717`
+ -   Fix issue where error message for invalid ``click.Path`` displays on
+     multiple lines. :issue:`2697`
+diff --git a/src/click/core.py b/src/click/core.py
+index c623764..64ed2e3 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1223,6 +1223,7 @@ class Command(BaseCommand):
+         self.options_metavar = options_metavar
+         self.short_help = short_help
+         self.add_help_option = add_help_option
++        self._help_option: t.Optional[Option] = None
+         self.no_args_is_help = no_args_is_help
+         self.hidden = hidden
+         self.deprecated = deprecated
+@@ -1294,10 +1295,14 @@ class Command(BaseCommand):
+         if not help_options or not self.add_help_option:
+             return None
+ 
+-        # Avoid circular import.
+-        from .decorators import HelpOption
++        # Reuse the option so parsing and callback ordering use the same object.
++        if self._help_option is None or set(self._help_option.opts) != set(help_options):
++            # Avoid circular import.
++            from .decorators import HelpOption
+ 
+-        return HelpOption(help_options)
++            self._help_option = HelpOption(help_options)
++
++        return self._help_option
+ 
+     def make_parser(self, ctx: Context) -> OptionParser:
+         """Creates the underlying option parser for this command."""
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ed9d96f..8e4fce1 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -105,6 +105,74 @@ def test_no_args_is_help(runner):
+     assert "Show this message and exit." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("help_option_names", "help_name"),
++    [
++        (None, "--help"),
++        (["-h", "--help"], "-h"),
++        (["-h", "--help"], "--help"),
++        (["--assist"], "--assist"),
++    ],
++)
++@pytest.mark.parametrize("eager_first", [False, True])
++@pytest.mark.parametrize("eager_exits", [False, True])
++def test_help_option_eager_order(
++    runner, help_option_names, help_name, eager_first, eager_exits
++):
++    called = []
++
++    def eager_callback(ctx, param, value):
++        if value:
++            called.append("eager")
++            click.echo("eager")
++            if eager_exits:
++                ctx.exit(3)
++
++    @click.command(context_settings={"help_option_names": help_option_names})
++    @click.option(
++        "--eager",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=eager_callback,
++    )
++    @click.option("--required", required=True)
++    def cli(required):
++        """Command help."""
++        raise AssertionError("The command should not be invoked.")
++
++    args = ["--eager", help_name] if eager_first else [help_name, "--eager"]
++    result = runner.invoke(cli, args)
++
++    assert called == (["eager"] if eager_first else [])
++    if eager_first and eager_exits:
++        assert result.exit_code == 3
++        assert result.output == "eager\n"
++    else:
++        assert result.exit_code == 0
++        assert "Usage: cli" in result.output
++        assert "Command help." in result.output
++        assert result.output.startswith("eager\n") == eager_first
++
++
++def test_help_option_names_per_invocation(runner):
++    @click.command()
++    def cli():
++        click.echo("command")
++
++    for help_names in (["--first"], ["-h", "--help"], [], ["--second"]):
++        result = runner.invoke(cli, help_names[:1], help_option_names=help_names)
++        assert result.exit_code == 0
++        if help_names:
++            assert "Show this message and exit." in result.output
++            assert all(name in result.output for name in help_names)
++        else:
++            assert result.output == "command\n"
++
++        result = runner.invoke(cli, ["--first"], help_option_names=help_names)
++        assert result.exit_code == (0 if "--first" in help_names else 2)
++
++
+ def test_default_maps(runner):
+     @click.group()
+     def cli():

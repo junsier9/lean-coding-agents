@@ -1,0 +1,49 @@
+test_budget_exhaustion (test_contract.Contract.test_budget_exhaustion) ... ok
+test_bug_not_retried (test_contract.Contract.test_bug_not_retried) ... FAIL
+test_decline_not_retried (test_contract.Contract.test_decline_not_retried) ... FAIL
+test_invalid_amount (test_contract.Contract.test_invalid_amount) ... ok
+test_invalid_budget (test_contract.Contract.test_invalid_budget) ... ok
+test_missing_key_before_io (test_contract.Contract.test_missing_key_before_io) ... ok
+test_one_attempt (test_contract.Contract.test_one_attempt) ... ok
+test_stable_key (test_contract.Contract.test_stable_key) ... FAIL
+test_success_without_wait (test_contract.Contract.test_success_without_wait) ... ok
+test_two_retries (test_contract.Contract.test_two_retries) ... ok
+
+======================================================================
+FAIL: test_bug_not_retried (test_contract.Contract.test_bug_not_retried)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h05\initial\test_contract.py", line 42, in test_bug_not_retried
+    with self.assertRaises(ValueError) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_decline_not_retried (test_contract.Contract.test_decline_not_retried)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h05\initial\test_contract.py", line 34, in test_decline_not_retried
+    with self.assertRaises(DeclinedError) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: DeclinedError not raised
+
+======================================================================
+FAIL: test_stable_key (test_contract.Contract.test_stable_key)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h05\initial\test_contract.py", line 24, in test_stable_key
+    self.assertEqual(transport.calls, [(100, "caller-key"), (100, "caller-key")])
+AssertionError: Lists differ: [(100, '596fbd7b-75df-4593-865d-decf18b33bc0'), ([40 chars]4e')] != [(100, 'caller-key'), (100, 'caller-key')]
+
+First differing element 0:
+(100, '596fbd7b-75df-4593-865d-decf18b33bc0')
+(100, 'caller-key')
+
++ [(100, 'caller-key'), (100, 'caller-key')]
+- [(100, '596fbd7b-75df-4593-865d-decf18b33bc0'),
+-  (100, '7351604f-133d-49b2-9e53-af0c419a5d4e')]
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+FAILED (failures=3)

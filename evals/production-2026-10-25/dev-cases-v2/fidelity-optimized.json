@@ -1,0 +1,338 @@
+{
+  "tests_ran": 12,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "optimize": 1,
+  "sqlite_version": "3.53.1",
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "compared_actual_repaired_Tracked_class": true,
+  "real_connections_use_isolation_level_None": true,
+  "model_calls": 0,
+  "observations": {
+    "active_success": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": null,
+        "exception_message": null,
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "COMMIT"
+        ],
+        "rows_after_context": [
+          [
+            1
+          ]
+        ],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": null,
+        "exception_message": null,
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "COMMIT"
+        ],
+        "rows_after_context": [
+          [
+            1
+          ]
+        ],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 0,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "autocommit_write_then_error": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "RuntimeError",
+        "exception_message": "body failed",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [],
+        "rows_after_context": [
+          [
+            1
+          ]
+        ],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "RuntimeError",
+        "exception_message": "body failed",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [],
+        "rows_after_context": [
+          [
+            1
+          ]
+        ],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 0,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "close_inside": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "ProgrammingError",
+        "exception_message": "Cannot operate on a closed database.",
+        "original_body_exception_propagated": null,
+        "open_after_context": false,
+        "transaction_sql": [],
+        "rows_after_context": null,
+        "active_transaction_after_context": null,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "ProgrammingError",
+        "exception_message": "Cannot operate on a closed database.",
+        "original_body_exception_propagated": null,
+        "open_after_context": false,
+        "transaction_sql": [],
+        "rows_after_context": null,
+        "active_transaction_after_context": null,
+        "proxy_close_calls_before_explicit_close": 1,
+        "proxy_rollback_calls": 0,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "already_closed_enter": {
+      "real": {
+        "entered_returns_self": null,
+        "exception_type": "ProgrammingError",
+        "exception_message": "Cannot operate on a closed database.",
+        "original_body_exception_propagated": null,
+        "open_after_context": false,
+        "transaction_sql": [],
+        "rows_after_context": null,
+        "active_transaction_after_context": null,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": null,
+        "exception_type": "ProgrammingError",
+        "exception_message": "Cannot operate on a closed database.",
+        "original_body_exception_propagated": null,
+        "open_after_context": false,
+        "transaction_sql": [],
+        "rows_after_context": null,
+        "active_transaction_after_context": null,
+        "proxy_close_calls_before_explicit_close": 1,
+        "proxy_rollback_calls": 0,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "fail_commit_context": {
+      "exception_type": "OperationalError",
+      "exception_message": "commit rejected",
+      "commit_calls_through_existing_fault_hook": 1,
+      "caught_commit_exception_is_original": true,
+      "rows_after_context": [],
+      "active_transaction_after_context": false,
+      "close_calls_before_explicit_close": 0,
+      "rollback_calls": 1,
+      "total_close_calls": 1
+    },
+    "fail_commit_explicit": {
+      "exception_type": "OperationalError",
+      "exception_message": "commit rejected",
+      "commit_calls_through_existing_fault_hook": 1,
+      "caught_commit_exception_is_original": true,
+      "rows_after_context": [],
+      "active_transaction_after_context": false,
+      "close_calls_before_explicit_close": 0,
+      "rollback_calls": 1,
+      "total_close_calls": 1
+    },
+    "keyboard_interrupt": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "KeyboardInterrupt",
+        "exception_message": "body interrupted",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "KeyboardInterrupt",
+        "exception_message": "body interrupted",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 1,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "authorizer_commit_failure": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "DatabaseError",
+        "exception_message": "not authorized",
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "DatabaseError",
+        "exception_message": "not authorized",
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 1,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "deferred_commit_failure": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "IntegrityError",
+        "exception_message": "FOREIGN KEY constraint failed",
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "COMMIT",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "IntegrityError",
+        "exception_message": "FOREIGN KEY constraint failed",
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "COMMIT",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 1,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "fail_commit_inactive": {
+      "exception_type": null,
+      "exception_message": null,
+      "commit_calls_through_existing_fault_hook": 0,
+      "caught_commit_exception_is_original": false,
+      "rows_after_context": [],
+      "active_transaction_after_context": false,
+      "close_calls_before_explicit_close": 0,
+      "rollback_calls": 0,
+      "total_close_calls": 1
+    },
+    "no_active_transaction": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": null,
+        "exception_message": null,
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": null,
+        "exception_message": null,
+        "original_body_exception_propagated": null,
+        "open_after_context": true,
+        "transaction_sql": [],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 0,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    },
+    "runtime_error": {
+      "real": {
+        "entered_returns_self": true,
+        "exception_type": "RuntimeError",
+        "exception_message": "body failed",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "explicit_close_is_effective": true
+      },
+      "double": {
+        "entered_returns_self": true,
+        "exception_type": "RuntimeError",
+        "exception_message": "body failed",
+        "original_body_exception_propagated": true,
+        "open_after_context": true,
+        "transaction_sql": [
+          "BEGIN IMMEDIATE",
+          "ROLLBACK"
+        ],
+        "rows_after_context": [],
+        "active_transaction_after_context": false,
+        "proxy_close_calls_before_explicit_close": 0,
+        "proxy_rollback_calls": 1,
+        "explicit_close_is_effective": true,
+        "proxy_total_close_calls": 1
+      }
+    }
+  }
+}

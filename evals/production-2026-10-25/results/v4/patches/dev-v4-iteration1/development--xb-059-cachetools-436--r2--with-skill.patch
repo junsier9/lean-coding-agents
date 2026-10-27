@@ -1,0 +1,124 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..13395ae 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -82,13 +82,18 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++
++            @functools.wraps(self.__wrapped__)  # type: ignore
++            def wrapper(obj, /, *args, **kwargs):
++                return self.__get_wrapper(obj)(*args, **kwargs)
++
++            return wrapper
++        return self.__get_wrapper(obj)
++
++    def __get_wrapper(self, obj):
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..1c056c4 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -93,6 +93,66 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+         cached.cache.clear()
+         self.assertEqual(cached.get(1), 2)
+ 
++    def test_decorator_unbound(self):
++        for cls in (Cached, Unhashable):
++            for name in (
++                "get",
++                "get_typed",
++                "get_info",
++                "get_lock",
++                "get_lock_info",
++                "get_cond",
++                "get_cond_info",
++                "get_lock_cond",
++                "get_lock_cond_info",
++            ):
++                cache = self.cache(2)
++                cached = cls(cache)
++                other = cls(self.cache(2), count=10)
++                unbound = getattr(cls, name)
++
++                self.assertEqual(unbound(cached, 0), 0)
++                bound = getattr(cached, name)
++                self.assertEqual(bound(0), 0)
++                self.assertEqual(unbound(cached, value=1), 1)
++                self.assertEqual(getattr(cls, name)(cached, value=1), 1)
++                self.assertEqual(getattr(other, name)(0), 10)
++                self.assertEqual(unbound(other, 0), 10)
++                self.assertIs(getattr(cached, name), bound)
++                self.assertIs(bound.cache, cache)
++                self.assertIs(unbound.__wrapped__, bound.__wrapped__)
++                self.assertEqual(unbound.__name__, bound.__name__)
++                self.assertEqual(unbound.__doc__, bound.__doc__)
++                self.assertEqual(cached.count, 2)
++                self.assertEqual(other.count, 11)
++
++                if name.endswith("_info"):
++                    maxsize = cache.maxsize if isinstance(cache, Cache) else None
++                    other_bound = getattr(other, name)
++                    self.assertEqual(bound.cache_info(), (2, 2, maxsize, 2))
++                    self.assertEqual(other_bound.cache_info(), (1, 1, maxsize, 1))
++                    bound.cache_clear()
++                    self.assertEqual(bound.cache_info(), (0, 0, maxsize, 0))
++                    self.assertEqual(other_bound.cache_info(), (1, 1, maxsize, 1))
++                    self.assertEqual(unbound(cached, 0), 2)
++                    self.assertEqual(bound.cache_info(), (0, 1, maxsize, 1))
++
++    def test_decorator_unbound_keywords(self):
++        class Cached:
++            def __init__(self, cache):
++                self.cache = cache
++
++            @cachedmethod(lambda self: self.cache)
++            def get(self, obj):
++                return obj
++
++        cached = Cached(self.cache(2))
++        unbound = getattr(Cached, "get")
++
++        self.assertEqual(unbound(cached, obj=42), 42)
++        self.assertEqual(cached.get(obj=42), 42)
++        self.assertEqual(len(cached.cache), 1)
++
+     def test_decorator_typed(self):
+         cached = Cached(self.cache(3))
+ 
+@@ -350,6 +410,23 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+         self.assertEqual(cached.cond.wait_count, 2)
+         self.assertEqual(cached.cond.notify_count, 2)
+ 
++    def test_decorator_cond_error_unbound(self):
++        cached = Cached(self.cache(2))
++        unbound = getattr(Cached, "get_cond_error")
++
++        for count in (1, 2):
++            with self.assertRaisesRegex(ValueError, "test error"):
++                unbound(cached, 0)
++            self.assertEqual(cached.cond.count, 2 * count)
++            self.assertEqual(cached.cond.wait_count, count)
++            self.assertEqual(cached.cond.notify_count, count)
++
++        with self.assertRaisesRegex(ValueError, "test error"):
++            cached.get_cond_error(0)
++        self.assertEqual(cached.cond.count, 6)
++        self.assertEqual(cached.cond.wait_count, 3)
++        self.assertEqual(cached.cond.notify_count, 3)
++
+     def test_decorator_wrapped(self):
+         cache = self.cache(2)
+         cached = Cached(cache)

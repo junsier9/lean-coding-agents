@@ -1,0 +1,23 @@
+diff --git a/app.py b/app.py
+index 97fe5ae..988dacf 100644
+--- a/app.py
++++ b/app.py
+@@ -3,11 +3,10 @@ from leases import JobRejected, LeaseBusy
+ async def run_job(pool, handler, job, metrics):
+     if not isinstance(job, str) or not job.strip():
+         raise ValueError("job")
+-    lease = await pool.acquire(job)
+-    try:
+-        result = await handler(job)
+-    except BaseException:
+-        return {"status": "rejected"}
+-    metrics["success"] = metrics.get("success", 0) + 1
+-    await lease.close()
+-    return result
++    async with await pool.acquire(job):
++        try:
++            result = await handler(job)
++        except JobRejected:
++            return {"status": "rejected"}
++        metrics["success"] = metrics.get("success", 0) + 1
++        return result

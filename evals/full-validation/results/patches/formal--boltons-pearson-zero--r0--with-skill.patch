@@ -1,0 +1,56 @@
+diff --git a/boltons/statsutils.py b/boltons/statsutils.py
+index b00fa09..640b64c 100644
+--- a/boltons/statsutils.py
++++ b/boltons/statsutils.py
+@@ -466,7 +466,10 @@ class Stats:
+         elif round(c2, precision) == 0:
+             return 3  # Gamma
+         else:
+-            k = c1 ** 2 / (4 * c0 * c2)
++            denominator = 4 * c0 * c2
++            if denominator == 0:
++                return 6  # Type VI: infinite Pearson criterion
++            k = c1 ** 2 / denominator
+             if k < 0:
+                 return 1  # Beta
+             elif round(k, precision) == 1:
+diff --git a/tests/test_statsutils.py b/tests/test_statsutils.py
+index 6c55053..4237190 100644
+--- a/tests/test_statsutils.py
++++ b/tests/test_statsutils.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from boltons.statsutils import Stats, mode
+ 
+ 
+@@ -20,6 +22,29 @@ def test_pearson_type_covers_kappa_ge_zero():
+         assert Stats(data).pearson_type in (0, 1, 2, 3, 4, 5, 6, 7)
+ 
+ 
++@pytest.mark.parametrize('skewness, kurtosis, precision, expected', [
++    (1.0, 6.0, 12, 4),
++    (1.5, 54 / 7, 12, 5),
++    (1.0, 4.75, 12, 6),
++    (2.0, 3.0, 12, 6),  # c0 = 0: infinite Pearson criterion
++    (-2.0, 3.0, 12, 6),
++    (2.0, 3.01, 12, 1),  # A small nonzero denominator still gives Type I.
++    (0.0, 0.0, 12, 2),  # Symmetric classification precedes c0 = 0.
++    (0.0, 3.0, 12, 0),  # Normal classification precedes c2 = 0.
++    (0.0, 4.0, 12, 7),
++    (2.0, 9.0, 12, 3),  # Gamma classification precedes c2 = 0.
++    (0.01, 3.01, 0, 0),  # Preserve rounded Normal and Gamma boundaries.
++    (2.0, 9.1, 0, 3),
++])
++def test_pearson_type_moment_boundaries(skewness, kurtosis, precision, expected):
++    stats = Stats([0])
++    # Supply exact moments directly to avoid sample-estimation noise.
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    stats._pearson_precision = precision
++    assert stats.pearson_type == expected
++
++
+ def test_mode():
+     assert Stats([2, 1, 3, 1]).mode == 1
+     # ties resolve to the value seen first in the data

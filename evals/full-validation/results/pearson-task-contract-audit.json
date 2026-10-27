@@ -1,0 +1,77 @@
+{
+  "case_id": "boltons-pearson-zero",
+  "audit_kind": "冻结题面的独立契约复核；仅作解释",
+  "scope": {
+    "task_source": "sources-a.json:832-843",
+    "task": "Stats.pearson_type 在有效的精确矩边界上可能抛 ZeroDivisionError。请使该属性对公开回归样例正常返回 Pearson 分类，覆盖 Type IV、V、VI 及零分母边界，并保持正态和 Gamma 边界的既有优先行为。",
+    "base_sha": "3913220988e1e7c80620796fdcb4f74eb598d179",
+    "fix_sha": "73e22c90de25aaae3e6aed57f7438ffe57349339",
+    "first_parent_verified": true,
+    "method": "静态阅读固定 base/fix 源码、上游测试、公开提交和维护者评审；未运行测试或模型，未读取 solver 输出、runs、records，也未推定实际 solver 可见的提示包装。"
+  },
+  "conclusion": "题面部分充分。正常分类与 Gamma 优先顺序清楚且与原实现一致；零分母返回而非抛异常的方向也明确。但关键人工矩状态应返回 Type I 的确切契约没有写明，且将它称为有效的精确矩容易误导。未来应补充可观察的输入/输出和人工状态的适用范围。",
+  "aligned": [
+    {
+      "finding": "(skewness=0, kurtosis=3) 返回 0（Normal）不是修复新增规则。base 已先检查 c1 的零边界，再返回 Normal；即便 c2 同时为零也不会转到 Gamma。题面要求保留正态优先行为，足以覆盖这条断言。",
+      "evidence": ["task", "base_pearson", "fix_boundary_test"]
+    },
+    {
+      "finding": "(2,9) 返回 3（Gamma）是既有行为：c1=24、c2=0，走 base 的 Gamma 分支。该断言是题面明确要求的保留控制。",
+      "evidence": ["task", "base_pearson", "fix_boundary_test"]
+    },
+    {
+      "finding": "IV/V/VI 三个具体样例分别断言 4/5/6，与题面指定的类别一致；这些分类分支在 base 已存在，fix 仅强化了具体回归断言，没有重新定义正常样本的分类算法。",
+      "evidence": ["base_pearson", "base_category_test", "fix_category_test", "commit"]
+    },
+    {
+      "finding": "(2,3) 在 base 中使 c0=0、c1=12、c2=-12，最终除以零。题面所述 ZeroDivisionError 与固定源码的控制流一致。fix 测试要求此状态正常返回，符合题面的大方向。以上为静态代入，不是运行结果。",
+      "evidence": ["base_pearson", "fix_boundary_test"]
+    }
+  ],
+  "underspecified_or_added_requirements": [
+    {
+      "finding": "题面未列出零分母人工状态 (2,3)，也未明确返回 Type I/1；它枚举 IV/V/VI，却遗漏了唯一新增零分母断言要求的 Type I。仅要求返回 Pearson 分类不能唯一确定返回 1。公开维护者评审给过具体分类建议，也允许提供清楚的异常；固定提交最终选择了返回分类，测试由此收窄了可接受行为。",
+      "classification": "方向已表达，精确返回值欠明确；公开来源可以补足，但题面并非自包含",
+      "evidence": ["task", "maintainer_review", "fix_pearson", "fix_boundary_test"]
+    },
+    {
+      "finding": "测试通过 Stats([0]) 后直接赋值 skewness/kurtosis 注入精确状态，未从实际样本估计这些矩。按可追溯文献对标准化总体矩的定义，(2,3) 违反 kurtosis >= skewness^2 + 1，因为 3 < 5，不能称为可实现分布的有效总体矩。它仍可以是上游选择支持的人工属性状态。库自身估计式含 len(data)-1 因子，因此这里不把总体矩不等式无条件推广为该库经验估计量的全域断言。",
+      "classification": "有效一词与测试构造欠一致；应明确人工属性状态而非声称真实分布边界",
+      "evidence": ["task", "fix_boundary_test", "moment_estimators", "moment_domain_paper"]
+    },
+    {
+      "finding": "题面只泛称公开回归样例，没有在 task 字段列出三组 IV/V/VI 数据及精确矩表。V 样例还依赖 base 的 round(k, _pearson_precision) 规则，默认 precision=0；维护者明确承认该规则扩大 Type V 边界。这是现有库契约，而不是必须凭领域常识推导出的精确数学边界。未来题面应要求保持该精度行为并给出观测样例。",
+      "classification": "可发现性与精度约定欠明确；不是新引入算法",
+      "evidence": ["task", "base_precision", "base_pearson", "fix_category_test", "maintainer_review"]
+    }
+  ],
+  "boundary_contract": [
+    {"skewness": 2.0, "kurtosis": 3.0, "c0": 0, "c1": 12, "c2": -12, "upstream_expected": 1, "base_static_behavior": "ZeroDivisionError", "task_adequacy": "未明确 Type I/1"},
+    {"skewness": 2.0, "kurtosis": 9.0, "c0": 24, "c1": 24, "c2": 0, "upstream_expected": 3, "base_static_behavior": "Gamma/3", "task_adequacy": "保留要求明确"},
+    {"skewness": 0.0, "kurtosis": 3.0, "c0": 12, "c1": 0, "c2": 0, "upstream_expected": 0, "base_static_behavior": "Normal/0 先于 Gamma", "task_adequacy": "保留要求明确"}
+  ],
+  "future_prompt_improvement": {
+    "recommended": true,
+    "suggestion": "将有效的精确矩改为上游支持的人工精确矩属性状态；列明 (skewness,kurtosis)->分类为 (2,3)->1、(2,9)->3、(0,3)->0，以及测试中三组普通样本对应 4/5/6；说明保留现有精度规则及 Normal/Gamma 优先顺序。只陈述可观察行为，不指定补丁写法。"
+  },
+  "evidence": {
+    "task": {"path": "C:/Users/ASUS/Desktop/Skills/lean-coding-agents/evals/full-validation/sources-a.json", "lines": [832, 843]},
+    "base_precision": {"url": "https://github.com/mahmoud/boltons/blob/3913220988e1e7c80620796fdcb4f74eb598d179/boltons/statsutils.py#L187"},
+    "base_pearson": {"url": "https://github.com/mahmoud/boltons/blob/3913220988e1e7c80620796fdcb4f74eb598d179/boltons/statsutils.py#L445-L479"},
+    "base_category_test": {"url": "https://github.com/mahmoud/boltons/blob/3913220988e1e7c80620796fdcb4f74eb598d179/tests/test_statsutils.py#L14-L20"},
+    "fix_pearson": {"url": "https://github.com/mahmoud/boltons/blob/73e22c90de25aaae3e6aed57f7438ffe57349339/boltons/statsutils.py#L445-L483"},
+    "fix_category_test": {"url": "https://github.com/mahmoud/boltons/blob/73e22c90de25aaae3e6aed57f7438ffe57349339/tests/test_statsutils.py#L14-L17"},
+    "fix_boundary_test": {"url": "https://github.com/mahmoud/boltons/blob/73e22c90de25aaae3e6aed57f7438ffe57349339/tests/test_statsutils.py#L30-L39"},
+    "moment_estimators": {"url": "https://github.com/mahmoud/boltons/blob/3913220988e1e7c80620796fdcb4f74eb598d179/boltons/statsutils.py#L413-L443"},
+    "commit": {"url": "https://github.com/mahmoud/boltons/commit/73e22c90de25aaae3e6aed57f7438ffe57349339", "note": "GitHub 原始提交 metadata 的第一父 SHA 与冻结 base_sha 相符；生产 diff 为新增 4 行。"},
+    "maintainer_review": {"url": "https://github.com/mahmoud/boltons/pull/434#pullrequestreview-4886698209", "author": "mahmoud", "note": "仅采用维护者评审意见；未采用贡献者或 agent 的答题输出。"},
+    "moment_domain_paper": {"url": "https://onlinelibrary.wiley.com/doi/full/10.1111/insr.70007", "title": "Klaassen and van Es (2025), Inference via the Skewness-Kurtosis Set", "location": "Section 1, definitions and inequality (1.1); Section 2.1, Theorem 2.1", "doi": "10.1111/insr.70007", "note": "标准化第三/第四总体矩的定义及可实现区域；关于 (2,3) 的比较是本审查在该定义下的推论。"}
+  },
+  "frozen_experiment_effect": {
+    "exclude_case": false,
+    "change_task_source": false,
+    "change_groups_or_scoring": false,
+    "change_skill_or_results": false,
+    "note": "结论只用于解释与未来题面改进，当前冻结实验保持原样。"
+  }
+}

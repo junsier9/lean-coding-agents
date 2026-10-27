@@ -1,0 +1,31 @@
+{
+  "recorded_at": "2026-10-25T03:22:20.775094+00:00",
+  "study": "v4",
+  "observed_key": "formal--xb-020-click-2509--r0--baseline",
+  "observed_error": "Windows access denied copying model-created pytest runtime output",
+  "only_additional_copy_exclusion": ".tmp-maintenance",
+  "workspace_original_tracked_sources_below_any_same_named_directory": false,
+  "not_a_symlink_or_junction": true,
+  "native_client_completed": true,
+  "usage_complete": true,
+  "checkpoint_sha256_before_recovery": "8B88FF85EE6A7BD0E68CDBC265F6C4EB9830C0FA1B5CDD83D068D2DF5E6F6CEE",
+  "failed_grading_seconds_retained": 0.18700000003445894,
+  "new_model_calls_for_recovery": 0,
+  "recovery_status": "pending until current native queue finishes and controller releases locks",
+  "grader_source_or_hidden_guard_changes": false,
+  "setup_commands": [
+    {
+      "raw_command_sha256": "FB2409AD73B5942CF7E85AA7597A2D90F82DC33AF2B1EA0AC101D99781563246",
+      "command_template": "\"{USER_HOME}\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command 'New-Item -ItemType Directory -Path .tmp-maintenance -Force | Out-Null\n$env:TEMP = (Resolve-Path -LiteralPath .tmp-maintenance).Path\n$env:TMP = $env:TEMP\n$env:PYTHONPATH = '\"'src;.benchmark-deps'\n& '{PYTHON_RUNTIME}\\\\python.exe' -m pytest -q -o addopts= -p no:cacheprovider -p pytest_timeout --timeout=60 --basetemp=.tmp-maintenance/pytest tests\""
+    },
+    {
+      "raw_command_sha256": "0E44E007AE62852AA108C1E35595E7DEB01E12728008DF7CBDFD726B7584B58F",
+      "command_template": "\"{USER_HOME}\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command 'Get-Item -LiteralPath .tmp-maintenance | Select-Object FullName, Attributes\nGet-ChildItem -LiteralPath .tmp-maintenance -Force -Recurse | Select-Object -First 15 FullName, Attributes'"
+    },
+    {
+      "raw_command_sha256": "B20718D372CA11F317D771BE67B6F8650D77360852D99B346693FE52217674E4",
+      "command_template": "\"{USER_HOME}\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\powershell\\\\pwsh.exe\" -Command '(Resolve-Path -LiteralPath .tmp-maintenance).Path\nGet-ChildItem -LiteralPath .tmp-maintenance -Force -Recurse | Group-Object Attributes | Select-Object Name, Count | ConvertTo-Json -Compress'"
+    }
+  ],
+  "rule": "Only this observed untracked output directory may be excluded in a recovery-only process; no completed record is regraded, no paid model call repeated."
+}

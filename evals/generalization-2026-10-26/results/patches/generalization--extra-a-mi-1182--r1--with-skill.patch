@@ -1,0 +1,147 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index b984d86..4d75733 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -875,6 +875,12 @@ def iter_index(iterable, value, start=0, stop=None):
+     >>> list(iter_index('AABCADEAF', 'A', 1, 7))  # stop index is not inclusive
+     [1, 4]
+ 
++    Negative bounds count from the end. General iterables with negative bounds
++    are consumed and cached, so they must be finite.
++
++    >>> list(iter_index(iter('AABCADEAF'), 'A', -8, -2))
++    [1, 4]
++
+     The behavior for non-scalar *values* matches the built-in Python types.
+ 
+     >>> list(iter_index('ABCDABCD', 'AB'))
+@@ -891,6 +897,18 @@ def iter_index(iterable, value, start=0, stop=None):
+     seq_index = getattr(iterable, 'index', None)
+     if seq_index is None:
+         # Slow path for general iterables
++        try:
++            start_index = _index(start)
++            stop_index = None if stop is None else _index(stop)
++        except TypeError:
++            # Leave invalid bounds to the existing islice/enumerate validation.
++            pass
++        else:
++            if start_index < 0 or (stop_index is not None and stop_index < 0):
++                iterable = list(iterable)
++                start, stop, _ = slice(start_index, stop_index).indices(
++                    len(iterable)
++                )
+         iterator = islice(iterable, start, stop)
+         for i, element in enumerate(iterator, start):
+             if element is value or element == value:
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 90a16d8..92f5cf5 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -1026,6 +1026,106 @@ class IterIndexTests(TestCase):
+         expected = [0, 1, 4]
+         self.assertEqual(actual, expected)
+ 
++    def test_negative_bounds(self):
++        for start, stop, expected in [
++            (-4, None, [7]),
++            (0, -2, [0, 1, 4]),
++            (-8, -2, [1, 4]),
++            (-5, 7, [4]),
++            (-2, -4, []),
++            (-20, None, [0, 1, 4, 7]),
++            (-20, 20, [0, 1, 4, 7]),
++            (0, -20, []),
++            (20, -1, []),
++        ]:
++            for wrapper in (list, iter):
++                with self.subTest(start=start, stop=stop, wrapper=wrapper):
++                    actual = list(
++                        mi.iter_index(wrapper('AABCADEAF'), 'A', start, stop)
++                    )
++                    self.assertEqual(actual, expected)
++
++    def test_no_matches(self):
++        for iterable in ('', 'BCDEF'):
++            for start, stop in ((0, None), (-20, None), (0, -1), (-4, -1)):
++                for wrapper in (list, iter):
++                    with self.subTest(
++                        iterable=iterable,
++                        start=start,
++                        stop=stop,
++                        wrapper=wrapper,
++                    ):
++                        self.assertEqual(
++                            list(
++                                mi.iter_index(
++                                    wrapper(iterable), 'A', start, stop
++                                )
++                            ),
++                            [],
++                        )
++
++    def test_index_bounds(self):
++        class Index:
++            def __init__(self, value):
++                self.value = value
++
++            def __index__(self):
++                return self.value
++
++        for start, stop, expected in [(1, 7, [1, 4]), (-8, -2, [1, 4])]:
++            with self.subTest(start=start, stop=stop):
++                self.assertEqual(
++                    list(
++                        mi.iter_index(
++                            iter('AABCADEAF'), 'A', Index(start), Index(stop)
++                        )
++                    ),
++                    expected,
++                )
++
++    def test_invalid_bounds(self):
++        for start, stop in [(1.5, None), (0, 1.5), (-1, 1.5)]:
++            with self.subTest(start=start, stop=stop):
++                with self.assertRaises(ValueError):
++                    list(mi.iter_index(iter('AABCADEAF'), 'A', start, stop))
++
++    def test_positive_bounds_remain_lazy(self):
++        consumed = []
++
++        def source():
++            for element in 'AABCADEAF':
++                consumed.append(element)
++                yield element
++
++        iterator = source()
++        indices = mi.iter_index(iterator, 'A', 1, 5)
++        self.assertEqual(consumed, [])
++        self.assertEqual(next(indices), 1)
++        self.assertEqual(consumed, ['A', 'A'])
++        self.assertEqual(list(indices), [4])
++        self.assertEqual(consumed, list('AABCA'))
++        self.assertEqual(next(iterator), 'D')
++
++    def test_negative_bounds_preserve_identity_and_equality(self):
++        value = float('nan')
++        iterable = [None, value, [1], value, [1]]
++        for wrapper in (list, iter):
++            with self.subTest(wrapper=wrapper):
++                self.assertEqual(
++                    list(mi.iter_index(wrapper(iterable), value, -4)), [1, 3]
++                )
++                self.assertEqual(
++                    list(mi.iter_index(wrapper(iterable), [1], -4)), [2, 4]
++                )
++
++    def test_negative_bounds_propagate_iterator_error(self):
++        def source():
++            yield 'A'
++            raise ValueError('source failed')
++
++        with self.assertRaisesRegex(ValueError, 'source failed'):
++            list(mi.iter_index(source(), 'A', -1))
++
+ 
+ class SieveTests(TestCase):
+     def test_basic(self):

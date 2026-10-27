@@ -1,0 +1,7 @@
+{
+  "includes_local_history_through": "c5dd09d0fe5ef6e01e272aa385f5bd5282414414",
+  "bundle_sha256": "6832A7DE8024E8E8FF5818E6FD9884E3FD57F4CA16FFBB8440E84E7A2F4B1895",
+  "bundle_bytes": 4717809,
+  "scope": "Tracked public source and existing commits only; .local/private evidence is not included",
+  "github_publication_method": "API snapshot due native HTTPS connection failures; bundle retains historical local commit identities"
+}

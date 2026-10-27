@@ -1,0 +1,77 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 15b14a3..c80dda4 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -137,9 +137,13 @@ class BarrelList(list):
+             self.lists[0].insert(index, item)
+             self._balance_list(0)
+         else:
+-            list_idx, rel_idx = self._translate_index(index)
+-            if list_idx is None:
+-                raise IndexError()
++            if index >= len(self):
++                list_idx = len(self.lists) - 1
++                rel_idx = len(self.lists[-1])
++            else:
++                list_idx, rel_idx = self._translate_index(index)
++                if list_idx is None:
++                    list_idx, rel_idx = 0, 0
+             self.lists[list_idx].insert(rel_idx, item)
+             self._balance_list(list_idx)
+         return
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index b70977b..e5e283a 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -59,6 +61,43 @@ def test_sort_barrel_list():
+     assert bl[0] == 0
+     assert bl[-1] == 99999
+ 
++
++@pytest.mark.parametrize('size, fragmented', [(0, False), (100, False), (100, True)])
++@pytest.mark.parametrize('index', [
++    -1000000, -101, -100, -99, -50, -1, 0, 1, 50, 99, 100, 101, 1000000,
++])
++def test_barrel_list_insert_bounds(size, fragmented, index):
++    expected = list(range(size))
++    bl = BarrelList(expected)
++    if fragmented:
++        bl._size_factor = 4
++        bl._balance_list(0)
++        assert len(bl.lists) > 1
++
++    item = object()
++    expected.insert(index, item)
++    assert bl.insert(index, item) is None
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++
++
++def test_barrel_list_insert_negative_overflow_rebalances():
++    expected = list(range(100))
++    bl = BarrelList(expected)
++    bl._size_factor = 4
++    bl._balance_list(0)
++    initial_segments = len(bl.lists)
++    assert initial_segments > 1
++
++    for item in range(-50, 0):
++        expected.insert(-1000000, item)
++        assert bl.insert(-1000000, item) is None
++        assert list(bl) == expected
++        assert len(bl) == len(expected)
++
++    assert len(bl.lists) > initial_segments
++
++
+ # roughly increasing random integers
+ # [ord(i) * x for i, x in zip(os.urandom(1024), range(1024))]
+ TEST_INTS = [0, 74, 96, 183, 456, 150, 1098, 665, 1752, 1053, 190,

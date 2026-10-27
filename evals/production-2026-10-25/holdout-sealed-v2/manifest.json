@@ -1,0 +1,96 @@
+{
+  "schema_version": 2,
+  "purpose": "Sealed independent production-maintenance holdout",
+  "case_count": 12,
+  "reference_tests": 121,
+  "cases": [
+    {
+      "id": "h01",
+      "family": "parse-and-single-validation",
+      "checks": 10,
+      "file": "h01.json",
+      "sha256": "9C756C449642F00A801EF8D44B2DE65CCF34206C49000B186B6610FD606A040A"
+    },
+    {
+      "id": "h02",
+      "family": "trusted-and-bypass-paths",
+      "checks": 10,
+      "file": "h02.json",
+      "sha256": "9E46F5A72FEE6237CF8B4AB429F9F17629AC8FF8645C4FC7226CF2034B374D05"
+    },
+    {
+      "id": "h03",
+      "family": "owned-snapshot",
+      "checks": 10,
+      "file": "h03.json",
+      "sha256": "C040A8042C93CE76381A5D4ADA1CF6AE880EAF98B1187B574AA94BD2767A24ED"
+    },
+    {
+      "id": "h04",
+      "family": "cache-error-semantics",
+      "checks": 10,
+      "file": "h04.json",
+      "sha256": "6C836A386357204C0C4918FFFAD06C4225B701EBB2FEC3F35D396F8C1B52178B"
+    },
+    {
+      "id": "h05",
+      "family": "bounded-idempotent-retry",
+      "checks": 10,
+      "file": "h05.json",
+      "sha256": "D10E89AA88C91339D9D2E2689D24EDCBF2A21A7710CADAFD0CDEF8815690464A"
+    },
+    {
+      "id": "h06",
+      "family": "nonrepeatable-side-effect",
+      "checks": 11,
+      "file": "h06.json",
+      "sha256": "E3A1F3C08ECDF246B6081F3E922F4C3B99B8F5E428015FE8894537EE1A719A56"
+    },
+    {
+      "id": "h07",
+      "family": "sqlite-transaction-atomicity",
+      "checks": 10,
+      "file": "h07.json",
+      "sha256": "977F23A382F0E0B1238EDC6617690D52AE819AB9988E0ED6A441D4CA58DE718D"
+    },
+    {
+      "id": "h08",
+      "family": "resource-and-atomic-file-lifecycle",
+      "checks": 10,
+      "file": "h08.json",
+      "sha256": "04891CDBE64B10CB0D84A7D285DD8106A577D65159A0ED0EF544E1E29971770D"
+    },
+    {
+      "id": "h09",
+      "family": "async-cancellation-and-release",
+      "checks": 10,
+      "file": "h09.json",
+      "sha256": "356A7CF541836330BCCF1663B956E1EEC11BA287D0836214F9FA5329B782FDEC"
+    },
+    {
+      "id": "h10",
+      "family": "mutable-plugin-boundary",
+      "checks": 10,
+      "file": "h10.json",
+      "sha256": "E79AD58D04ABF6B6259FB1AC8844484872BECD9C24B8E0AAB5AD2C1DF4EB88AA"
+    },
+    {
+      "id": "h11",
+      "family": "tenant-authorization-before-cache",
+      "checks": 10,
+      "file": "h11.json",
+      "sha256": "896C116E07E32F4F3658675B84D285F20EBAA750874C2D1B6D525989E5268D53"
+    },
+    {
+      "id": "h12",
+      "family": "lazy-consumption-and-failure-timing",
+      "checks": 10,
+      "file": "h12.json",
+      "sha256": "76613536E081B7681978AAF453500A03D9C4EC8310DC72BFE961E13A91E8F7A7"
+    }
+  ],
+  "preflight_sha256": "C30CF04DA4331F91EDF4BB01323541805DBD7CD786AE9EBB2BD81B1CF8E031E6",
+  "all_eligible": true,
+  "source": "New hand-authored task contracts, not selected from model outcomes; synthetic production patterns, not field-production evidence.",
+  "repair_of_manifest_sha256": "32372B611FE2B5309257336EFF66B25364774B220274B8301E6F7B89B48C1B8A"
+}

@@ -1,0 +1,82 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index b430da7..fcfcf08 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2552,7 +2552,7 @@ def xor_by(array, *lists, **kwargs):
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor(
++    return xor_by(
+         uniq(
+             difference_by(
+                 array + lists[0],
+@@ -2561,6 +2561,7 @@ def xor_by(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        iteratee=iteratee,
+     )
+ 
+ 
+@@ -2617,6 +2618,7 @@ def xor_with(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        comparator=comp,
+     )
+ 
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index 73dd87d..0c2cac8 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -940,14 +940,46 @@ def test_xor(case, expected):
+     assert _.xor(*case) == expected
+ 
+ 
+-@parametrize("case,expected", [(([1, 2, 3], [5, 4], lambda val: val % 3), [3])])
++@parametrize(
++    "case,expected",
++    [
++        (([1, 2, 3], [5, 4], lambda val: val % 3), [3]),
++        (([1, 2, 3], [5, 4], [6, 7], lambda val: val % 3), [7]),
++        (([1, 2, 3], [5, 4], [6, 7], [10, 11], lambda val: val % 3), [11]),
++        (([1], [4], [7], lambda val: val % 3), [7]),
++        (([1, 2], [], [4, 6], lambda val: val % 3), [2, 6]),
++    ],
++)
+ def test_xor_by(case, expected):
+     assert _.xor_by(*case) == expected
++    assert _.xor_by(*case[:-1], iteratee=case[-1]) == expected
++
++
++def test_xor_by_multiple_arrays_property():
++    arrays = [
++        [{"x": 1, "name": "first"}, {"x": 2}],
++        [{"x": 3}],
++        [{"x": 1, "name": "third"}, {"x": 4}],
++    ]
++    expected = [arrays[0][1], arrays[1][0], arrays[2][1]]
++
++    assert _.xor_by(*arrays, "x") == expected
++    assert _.xor_by(*arrays, iteratee="x") == expected
+ 
+ 
+-@parametrize("case,expected", [(([1, 2, 3], [5, 4], lambda a, b: a <= b), [5, 4])])
++@parametrize(
++    "case,expected",
++    [
++        (([1, 2, 3], [5, 4], lambda a, b: a <= b), [5, 4]),
++        (([1, 2, 3], [5, 4], [6, 7], lambda a, b: a % 3 == b % 3), [7]),
++        (([1, 2, 3], [5, 4], [6, 7], [10, 11], lambda a, b: a % 3 == b % 3), [11]),
++        (([1], [4], [7], lambda a, b: a % 3 == b % 3), [7]),
++        (([1, 2], [], [4, 6], lambda a, b: a % 3 == b % 3), [2, 6]),
++    ],
++)
+ def test_xor_with(case, expected):
+     assert _.xor_with(*case) == expected
++    assert _.xor_with(*case[:-1], comparator=case[-1]) == expected
+ 
+ 
+ @parametrize(

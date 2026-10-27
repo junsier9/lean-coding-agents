@@ -1,0 +1,68 @@
+diff --git a/src/click/formatting.py b/src/click/formatting.py
+index d9075ca..55d7c46 100644
+--- a/src/click/formatting.py
++++ b/src/click/formatting.py
+@@ -161,7 +161,13 @@ class HelpFormatter:
+         if prefix is None:
+             prefix = "{usage} ".format(usage=_("Usage:"))
+ 
+-        usage_prefix = f"{prefix:>{self.current_indent}}{prog} "
++        usage_prefix = f"{prefix:>{self.current_indent}}{prog}"
++
++        if not args:
++            self.write(f"{usage_prefix}\n")
++            return
++
++        usage_prefix += " "
+         text_width = self.width - self.current_indent
+ 
+         if text_width >= (term_len(usage_prefix) + 20):
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 3e85688..c26524d 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -436,6 +436,44 @@ def test_help_formatter_write_text():
+     assert actual == expected
+ 
+ 
++@pytest.mark.parametrize("width", [10, 80])
++@pytest.mark.parametrize("prog", ["cli", "a-very-long-command-name" * 3])
++@pytest.mark.parametrize(
++    ("prefix", "expected_prefix"),
++    [
++        (None, "Usage: "),
++        ("", ""),
++        ("Run: ", "Run: "),
++        ("\x1b[31mUsage: \x1b[0m", "\x1b[31mUsage: \x1b[0m"),
++    ],
++)
++def test_write_usage_without_args(width, prog, prefix, expected_prefix):
++    formatter = click.HelpFormatter(width=width)
++    formatter.write_usage(prog, prefix=prefix)
++    assert formatter.getvalue() == f"{expected_prefix}{prog}\n"
++
++
++def test_write_usage_without_args_indented():
++    formatter = click.HelpFormatter(width=10)
++    formatter.current_indent = 12
++    click.HelpFormatter.write_usage(self=formatter, prog="cli", args="", prefix="Run: ")
++    assert formatter.getvalue() == "       Run: cli\n"
++
++
++@pytest.mark.parametrize("width", [10, 80])
++def test_formatting_usage_without_args(runner, width):
++    cli = click.Command("cli", options_metavar="", add_help_option=False)
++    with click.Context(cli, info_name="cli", terminal_width=width) as ctx:
++        assert ctx.get_usage() == "Usage: cli"
++        assert ctx.get_help() == "Usage: cli"
++
++    result = runner.invoke(cli, ["unexpected"], terminal_width=width)
++    assert result.exit_code == 2
++    assert result.output == (
++        "Usage: cli\n\nError: Got unexpected extra argument (unexpected)\n"
++    )
++
++
+ @pytest.mark.parametrize(
+     ("body", "width", "initial_indent"),
+     [

@@ -1,0 +1,52 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 2229563..d8891f8 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4414,9 +4414,11 @@ def value_chain(*args):
+             yield value
+             continue
+         try:
+-            yield from value
++            iterator = iter(value)
+         except TypeError:
+             yield value
++        else:
++            yield from iterator
+ 
+ 
+ def product_index(element, *iterables, repeat=1):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 03b1206..466f373 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5061,6 +5061,30 @@ class ValueChainTests(TestCase):
+         expected = [1, 2, 3, 4]
+         self.assertEqual(actual, expected)
+ 
++    def test_iteration_type_error(self):
++        for values, expected in (([5], []), (['ab', 'cde', 5], [2, 3])):
++            with self.subTest(values=values):
++                actual = mi.value_chain(map(len, values), 'after')
++                for value in expected:
++                    self.assertEqual(next(actual), value)
++                with self.assertRaises(TypeError):
++                    next(actual)
++
++    def test_sequence_type_error(self):
++        error = TypeError('sequence access failed')
++
++        class Sequence:
++            def __getitem__(self, index):
++                if index == 0:
++                    return 'first'
++                raise error
++
++        actual = mi.value_chain(Sequence())
++        self.assertEqual(next(actual), 'first')
++        with self.assertRaises(TypeError) as caught:
++            next(actual)
++        self.assertIs(caught.exception, error)
++
+     def test_complex(self):
+         obj = object()
+         actual = list(

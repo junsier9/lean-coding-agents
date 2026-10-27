@@ -1,0 +1,520 @@
+{
+  "phase": "formal",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "cases": {
+    "boltons-389": "68898008A394615675A9D3117402E5BEE4D8702DE84EB79A071EFA53F3E352C4",
+    "extra-a-boltons-462": "62FFEE218550C136C8AC41A4221541B4ED5FECD92C6ABDF20102D198DF4C381B",
+    "extra-a-boltons-513": "18DA393F39FDFED0A14F6B8A90A0A8D860DC63D19EDB22EB0DD6EA8A9BFF304D",
+    "extra-a-mi-1118": "50CF23F37BA92DFB8EF7C0687512C7A849137D3A047F3FB061C9DF4D16D3B5E7",
+    "extra-a-mi-1194": "637016494E4DFFCD2F5F09CD6C23A6D2E71C77FFA2F500BB182C6E3931B0614E",
+    "extra-a-mi-1294": "4BEB0D1AD4AB96711DE4771C881CD18CE3E9AEFDBA9C6A2E565783753C3EEA7D",
+    "extra-a-mi-917": "FDCE8461631AB596EAB5F8024CE642C375AF97C364B5C0580AD51860CDDF1CB8",
+    "extra-a3-funcy-187": "32C6379D92DE999F88F358DDF3ADD774D39EED801C901048C076B80363DB4829",
+    "extra-a3-funcy-203": "E75D57F77A77034315FDC3475F76B20F323AB03D5C572D944DE054D9C611797F",
+    "extra-a3-funcy-211": "8F3976986A513A28982E37DE0506C56C0A2D7D183DD8A347A841C4B14E579A63",
+    "xb-009-click-3299": "92F92E5B3E8F96BD59B3BE81FB14D1E7DA9D261148B865CC3947497526E86871",
+    "xb-015-click-2935": "7C04F2BF7BB47C25A47F3C212BD1DC44556C4D9298C2FB293618A00662F75FF2",
+    "xb-020-click-2509": "661E7DAD6A23212E0D1634C9CA706E0F88DAD47162E98FAEAA2852E7BA9A3173",
+    "xb-027-pydash-292": "B8FD548B454C97DBD80D291ED459BD67158764D1D2FEAEA7524F0AB3BF33BDF7",
+    "xb-029-pydash-279": "BDB29591D1C40B02ED47AF6136EBB32105D5C38D629098E98CFAD6940F054A4B",
+    "xb-033-pydash-265": "83F071FD1C041354FC00604DFA552C3C8A7730C53C0F00AD4C7CD7F47B1BAB47",
+    "xb-045-pydash-248": "FFFCF993985432C4CB5E48A473B5323E5DA56424D415E7F5F788A2CBC2021F83",
+    "xb-048-pydash-241": "37E1A46464D6AFB83BE34D69863EEE875E04F9F81863DAE0933144A806FC2D5E",
+    "xb-057-cachetools-445": "786848794FE45260B23881D6DFD3441F83F12ECA1446EBDC8FE3156E059B50EF",
+    "xb-064-cachetools-388": "D6F11625C929E07176A013BB6A428BF90B2D48EAD40AFBB5490D8E42929E9462"
+  },
+  "seed": 20261025,
+  "repeats": 3,
+  "arms": [
+    "baseline",
+    "with-skill"
+  ],
+  "workers": 3,
+  "schedule": [
+    {
+      "case_id": "extra-a3-funcy-203",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-187",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-203",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-029-pydash-279",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1194",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1294",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-187",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1118",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-009-click-3299",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-009-click-3299",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-048-pydash-241",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-057-cachetools-445",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-211",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-917",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-027-pydash-292",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-187",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-211",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "boltons-389",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-045-pydash-248",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-020-click-2509",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1194",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-203",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-048-pydash-241",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-015-click-2935",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-015-click-2935",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-027-pydash-292",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-015-click-2935",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "boltons-389",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-462",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-029-pydash-279",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-462",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-033-pydash-265",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-020-click-2509",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1118",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-064-cachetools-388",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-211",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-513",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-045-pydash-248",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-048-pydash-241",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-045-pydash-248",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-057-cachetools-445",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "boltons-389",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-033-pydash-265",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-917",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-513",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-513",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-020-click-2509",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-064-cachetools-388",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-057-cachetools-445",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-064-cachetools-388",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-009-click-3299",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1194",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-033-pydash-265",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-462",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1294",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1118",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-027-pydash-292",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-917",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1294",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-029-pydash-279",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    }
+  ],
+  "grading_contract": "synthetic-unittest-normal-and-O-v1;upstream-frozen"
+}

@@ -1,0 +1,64 @@
+diff --git a/boltons/cacheutils.py b/boltons/cacheutils.py
+index 27a19cb..169294a 100644
+--- a/boltons/cacheutils.py
++++ b/boltons/cacheutils.py
+@@ -235,9 +235,9 @@ class LRI(dict):
+                 else:
+                     evicted = self._set_key_and_evict_last_in_ll(key, value)
+                     super(LRI, self).__delitem__(evicted)
+-                super(LRI, self).__setitem__(key, value)
+             else:
+                 link[VALUE] = value
++            super(LRI, self).__setitem__(key, value)
+ 
+     def __getitem__(self, key):
+         with self._lock:
+diff --git a/tests/test_cacheutils.py b/tests/test_cacheutils.py
+index 91ebcf9..3b24fd7 100644
+--- a/tests/test_cacheutils.py
++++ b/tests/test_cacheutils.py
+@@ -100,6 +100,44 @@ def test_cache_sizes_on_repeat_insertions():
+         assert initial_list_size == list_size_after_inserts
+ 
+ 
++@pytest.mark.parametrize('cache_type', (LRI, LRU))
++@pytest.mark.parametrize('max_size', (1, 3))
++def test_cache_overwrite_mapping_views(cache_type, max_size):
++    cache = cache_type(max_size=max_size, values=[('key', 'old')])
++
++    for value in ('new', None, object()):
++        cache['key'] = value
++        assert cache['key'] is value
++        assert dict(cache) == {'key': value}
++        assert list(cache.values()) == [value]
++        assert list(cache.items()) == [('key', value)]
++        assert len(cache) == 1
++
++    assert cache.copy()['key'] is value
++    assert cache.pop('key') is value
++    assert not cache
++    with pytest.raises(KeyError):
++        cache['key']
++
++
++@pytest.mark.parametrize('cache_type', (LRI, LRU))
++def test_cache_overwrite_preserves_eviction(cache_type):
++    cache = cache_type(max_size=3,
++                       values=[('a', 'old'), ('b', 'B'), ('c', 'C')])
++    cache['a'] = 'new'
++    assert len(cache) == 3
++    assert dict(cache) == {'a': 'new', 'b': 'B', 'c': 'C'}
++
++    assert cache['b'] == 'B'
++    cache['d'] = 'D'
++    if cache_type is LRI:
++        expected = {'a': 'new', 'c': 'C', 'd': 'D'}
++    else:
++        expected = {'a': 'new', 'b': 'B', 'd': 'D'}
++    assert dict(cache) == expected
++    assert sorted(cache.values()) == sorted(expected.values())
++
++
+ def test_lru_basic():
+     lru = LRU(max_size=1)
+     repr(lru)                   # sanity

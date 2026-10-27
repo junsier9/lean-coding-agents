@@ -1,0 +1,112 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index c60c12a..7afa335 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Return the registered class from ``shell_completion.add_completion_class``
++    so it can be used as a class decorator.
+ -   Improve type hinting for decorators and give all generic types parameters.
+     :issue:`2398`
+ 
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index c17a8e6..934fc8f 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -389,6 +389,8 @@ class FishComplete(ShellComplete):
+         return f"{item.type},{item.value}"
+ 
+ 
++ShellCompleteType = t.TypeVar("ShellCompleteType", bound=ShellComplete)
++
+ _available_shells: t.Dict[str, t.Type[ShellComplete]] = {
+     "bash": BashComplete,
+     "fish": FishComplete,
+@@ -397,21 +399,26 @@ _available_shells: t.Dict[str, t.Type[ShellComplete]] = {
+ 
+ 
+ def add_completion_class(
+-    cls: t.Type[ShellComplete], name: t.Optional[str] = None
+-) -> None:
++    cls: t.Type[ShellCompleteType], name: t.Optional[str] = None
++) -> t.Type[ShellCompleteType]:
+     """Register a :class:`ShellComplete` subclass under the given name.
+     The name will be provided by the completion instruction environment
+-    variable during completion.
++    variable during completion. Returns the class, so this can be used
++    as a decorator.
+ 
+     :param cls: The completion class that will handle completion for the
+         shell.
+     :param name: Name to register the class under. Defaults to the
+         class's ``name`` attribute.
++
++    .. versionchanged:: 8.1.4
++        The registered class is returned.
+     """
+     if name is None:
+         name = cls.name
+ 
+     _available_shells[name] = cls
++    return cls
+ 
+ 
+ def get_completion_class(shell: str) -> t.Optional[t.Type[ShellComplete]]:
+diff --git a/tests/test_shell_completion.py b/tests/test_shell_completion.py
+index 57729f5..f4b4b0f 100644
+--- a/tests/test_shell_completion.py
++++ b/tests/test_shell_completion.py
+@@ -4,7 +4,9 @@ from click.core import Argument
+ from click.core import Command
+ from click.core import Group
+ from click.core import Option
++from click.shell_completion import add_completion_class
+ from click.shell_completion import CompletionItem
++from click.shell_completion import get_completion_class
+ from click.shell_completion import ShellComplete
+ from click.types import Choice
+ from click.types import File
+@@ -286,6 +288,41 @@ def test_completion_item_data():
+     assert c.b is None
+ 
+ 
++@pytest.mark.parametrize("name", [None, "custom", ""])
++def test_add_completion_class(monkeypatch, name):
++    monkeypatch.setattr("click.shell_completion._available_shells", {})
++
++    class CustomComplete(ShellComplete):
++        name = "custom-shell"
++
++    assert add_completion_class(CustomComplete, name) is CustomComplete
++    assert CustomComplete.name == "custom-shell"
++
++    if name is None:
++        assert get_completion_class("custom-shell") is CustomComplete
++    else:
++        assert get_completion_class(name) is CustomComplete
++        assert get_completion_class("custom-shell") is None
++
++
++def test_add_completion_class_decorator(monkeypatch, runner):
++    monkeypatch.setattr("click.shell_completion._available_shells", {})
++
++    @add_completion_class
++    class CustomComplete(ShellComplete):
++        name = "custom-shell"
++        source_template = "source for %(prog_name)s"
++
++    assert issubclass(CustomComplete, ShellComplete)
++    assert get_completion_class("custom-shell") is CustomComplete
++    comp = CustomComplete(Command("cli"), {}, "cli", "_CLI_COMPLETE")
++    assert comp.source() == "source for cli"
++
++    result = runner.invoke(Command("cli"), env={"_CLI_COMPLETE": "custom-shell_source"})
++    assert result.exit_code == 0
++    assert result.output == "source for cli\n"
++
++
+ @pytest.fixture()
+ def _patch_for_completion(monkeypatch):
+     monkeypatch.setattr(

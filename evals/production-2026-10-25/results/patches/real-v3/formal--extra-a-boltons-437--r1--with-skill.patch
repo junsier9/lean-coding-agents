@@ -1,0 +1,61 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 1367a54..ae3ecd9 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -161,7 +161,7 @@ class Bits:
+             raise ValueError('Bits cannot represent negative values')
+         if len_ is None:
+             len_ = len(f'{val:b}')
+-        if val > 2 ** len_:
++        if val >= 2 ** len_:
+             raise ValueError(f'value {val} cannot be represented with {len_} bits')
+         self.val = val  # data is stored internally as integer
+         self.len = len_
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 4187a6b..3ee9721 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -110,3 +110,37 @@ def test_bits():
+             ).as_int()
+         ),
+         Bits('101'))
++
++
++@mark.parametrize('width', [1, 2, 8, 64])
++def test_bits_explicit_width_bounds(width):
++    maximum = 2 ** width - 1
++    bits = Bits(maximum, width)
++    assert bits.as_int() == maximum
++    assert bits.as_bin() == '1' * width
++    assert len(bits.as_bin()) == len(bits) == width
++
++    for value in (maximum + 1, maximum + 2):
++        with raises(ValueError, match=f'value {value} cannot be represented with {width} bits'):
++            Bits(value, width)
++
++
++@mark.parametrize('value', ['100', '0x4', b'100', [True, False, False]])
++def test_bits_converted_value_overflow(value):
++    with raises(ValueError, match='value 4 cannot be represented with 2 bits'):
++        Bits(value, 2)
++
++
++@mark.parametrize(('value', 'binary'), [
++    (0, '0'),
++    (1, '1'),
++    (3, '11'),
++    (4, '100'),
++    (256, '100000000'),
++    (2 ** 64, '1' + '0' * 64),
++])
++def test_bits_inferred_width(value, binary):
++    bits = Bits(value)
++    assert bits.as_int() == value
++    assert bits.as_bin() == binary
++    assert len(bits) == len(binary)

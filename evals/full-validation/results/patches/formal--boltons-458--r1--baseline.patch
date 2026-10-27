@@ -1,0 +1,161 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index 12c58de..533f401 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -225,6 +225,8 @@ class OrderedMultiDict(dict):
+         Called ``addlist`` for consistency with :meth:`getlist`, but
+         tuples and other sequences and iterables work.
+         """
++        # Snapshot once so both internal structures see the same values.
++        v = list(v)
+         if not v:
+             return
+         self_insert = self._insert
+diff --git a/boltons/urlutils.py b/boltons/urlutils.py
+index 59f11e3..79cdd07 100644
+--- a/boltons/urlutils.py
++++ b/boltons/urlutils.py
+@@ -1123,6 +1123,8 @@ class OrderedMultiDict(dict):
+         Called ``addlist`` for consistency with :meth:`getlist`, but
+         tuples and other sequences and iterables work.
+         """
++        # Snapshot once so both internal structures see the same values.
++        v = list(v)
+         if not v:
+             return
+         self_insert = self._insert
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index c82a4a2..b587afa 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -2,6 +2,7 @@ import sys
+ import pytest
+ 
+ from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
++from boltons.dictutils import FastIterOrderedMultiDict
+ 
+ 
+ _ITEMSETS = [[],
+@@ -270,6 +271,52 @@ def test_addlist():
+     assert len(list(e_omd.iteritems(multi=True))) == 0
+ 
+ 
++@pytest.mark.parametrize('omd_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('make_values', [list, tuple, iter, lambda v: (x for x in v)],
++                         ids=['list', 'tuple', 'iterator', 'generator'])
++def test_addlist_iterables(omd_type, make_values):
++    omd = omd_type([('a', 0), ('b', 9)])
++    omd.addlist('a', make_values([1, 2, 1]))
++    omd.addlist('c', make_values([3, 4]))
++
++    assert omd.items(multi=True) == [('a', 0), ('b', 9), ('a', 1),
++                                     ('a', 2), ('a', 1), ('c', 3), ('c', 4)]
++    assert omd.keys() == list(omd.viewkeys()) == ['a', 'b', 'c']
++    assert len(omd) == 3
++    assert omd.getlist('a') == [0, 1, 2, 1]
++    assert omd.getlist('c') == [3, 4]
++    assert omd.get('a') == omd['a'] == 1
++    assert omd.get('c') == omd['c'] == 4
++    assert omd.todict(multi=True) == {'a': [0, 1, 2, 1], 'b': [9], 'c': [3, 4]}
++
++    assert omd.poplast('a') == 1
++    assert omd.getlist('a') == [0, 1, 2]
++    assert omd.popall('c') == [3, 4]
++    assert omd.items(multi=True) == [('a', 0), ('b', 9), ('a', 1), ('a', 2)]
++
++
++@pytest.mark.parametrize('omd_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('make_values', [list, tuple, iter, lambda v: (x for x in v)],
++                         ids=['list', 'tuple', 'iterator', 'generator'])
++@pytest.mark.parametrize('items', [[], [('a', 0), ('b', 9)]])
++def test_addlist_empty_iterables(omd_type, make_values, items):
++    omd = omd_type(items)
++    omd.addlist('a', make_values([]))
++    omd.addlist('missing', make_values([]))
++
++    assert omd.items(multi=True) == items
++    assert omd.keys() == list(omd.viewkeys()) == [k for k, v in items]
++    assert len(omd) == len(items)
++    assert ('a' in omd) == bool(items)
++    assert omd.getlist('a') == ([0] if items else [])
++    assert omd.get('a', 'default') == (0 if items else 'default')
++    assert 'missing' not in omd
++    assert omd.getlist('missing') == []
++    assert omd.get('missing', 'default') == 'default'
++    with pytest.raises(KeyError):
++        omd['missing']
++
++
+ def test_pop_all():
+     omd = OMD()
+     omd.add('even', 0)
+diff --git a/tests/test_urlutils.py b/tests/test_urlutils.py
+index d4f17a6..84dd555 100644
+--- a/tests/test_urlutils.py
++++ b/tests/test_urlutils.py
+@@ -1,3 +1,5 @@
++import importlib.util
++
+ import pytest
+ 
+ from boltons import urlutils
+@@ -112,6 +114,59 @@ def test_query_param_dict_eq_with_dict():
+     assert not (qpd == {'a': '999', 'b': '2'})
+ 
+ 
++@pytest.fixture(scope='module', params=['package', 'standalone'])
++def urlutils_module(request):
++    if request.param == 'package':
++        return urlutils
++    # Loading without a package exercises the embedded OrderedMultiDict.
++    spec = importlib.util.spec_from_file_location('standalone_urlutils', urlutils.__file__)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++@pytest.mark.parametrize('make_values', [iter, lambda v: (x for x in v)],
++                         ids=['iterator', 'generator'])
++def test_query_param_addlist_iterables(urlutils_module, make_values):
++    url = urlutils_module.URL('https://example.com/?a=0&b=keep&a=1')
++    qp = url.query_params
++    qp.addlist('a', make_values(['2', '3']))
++    qp.addlist('c', make_values(['4', '5']))
++
++    assert qp.getlist('a') == ['0', '1', '2', '3']
++    assert qp.getlist('c') == ['4', '5']
++    assert qp.get('a') == qp['a'] == '3'
++    assert qp.get('c') == qp['c'] == '5'
++    assert qp.keys() == list(qp.viewkeys()) == ['a', 'b', 'c']
++    assert len(qp) == 3
++    text = 'a=0&b=keep&a=1&a=2&a=3&c=4&c=5'
++    assert qp.to_text() == text
++    assert url.to_text() == 'https://example.com/?' + text
++    assert urlutils_module.QueryParamDict.from_text(text) == qp
++
++
++@pytest.mark.parametrize('make_values', [iter, lambda v: (x for x in v)],
++                         ids=['iterator', 'generator'])
++def test_query_param_addlist_empty_iterables(urlutils_module, make_values):
++    qp = urlutils_module.QueryParamDict()
++    qp.addlist('missing', make_values([]))
++    assert len(qp) == 0
++    assert qp.keys() == list(qp.viewkeys()) == []
++    assert 'missing' not in qp
++    assert qp.get('missing', 'default') == 'default'
++    assert qp.to_text() == ''
++
++    qp.add('a', '0')
++    qp.addlist('a', make_values([]))
++    qp.addlist('missing', make_values([]))
++    assert len(qp) == 1
++    assert qp.keys() == ['a']
++    assert qp.getlist('a') == ['0']
++    assert qp.get('a') == '0'
++    assert 'missing' not in qp
++    assert qp.to_text() == 'a=0'
++
++
+ def test_iri_query():
+     url = URL('http://minerals.mountain.ore/?rock=\N{SHAMROCK}')
+     assert url.query_params['rock'] == '\N{SHAMROCK}'

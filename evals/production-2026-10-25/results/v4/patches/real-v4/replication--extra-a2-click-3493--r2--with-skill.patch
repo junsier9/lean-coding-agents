@@ -1,0 +1,82 @@
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 223d6b8..d7d5d21 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -294,7 +294,7 @@ def echo(
+         out = message
+ 
+     if nl:
+-        out = out or ""
++        out = out or (b"" if isinstance(out, bytes) else "")
+         if isinstance(out, str):
+             out += "\n"
+         else:
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index a16493b..70e50c7 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -8,6 +8,7 @@ from contextlib import nullcontext
+ from decimal import Decimal
+ from fractions import Fraction
+ from functools import partial
++from io import BytesIO
+ from io import StringIO
+ from unittest.mock import patch
+ 
+@@ -92,10 +93,53 @@ def test_echo(runner):
+         assert outstreams[0].getvalue() == b"\x1b[31mx\x1b[39m"
+ 
+ 
+-def test_echo_custom_file():
++@pytest.mark.parametrize("message", [b"", b"\xf6"])
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_binary_file(message, nl):
++    f = BytesIO()
++    click.echo(message, file=f, nl=nl)
++    assert f.getvalue() == message + (b"\n" if nl else b"")
++
++
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_bytearray(nl):
++    message = bytearray(b"\xf6")
++    f = BytesIO()
++    click.echo(message, file=f, nl=nl)
++    expected = b"\xf6\n" if nl else b"\xf6"
++    assert f.getvalue() == expected
++    assert message == expected
++
++
++@pytest.mark.parametrize(
++    ("message", "expected"),
++    [("hello", "hello"), ("", ""), (None, ""), (42, "42"), (bytearray(), "")],
++)
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_custom_file(message, expected, nl):
+     f = StringIO()
+-    click.echo("hello", file=f)
+-    assert f.getvalue() == "hello\n"
++    click.echo(message, file=f, nl=nl)
++    assert f.getvalue() == expected + ("\n" if nl else "")
++    if isinstance(message, bytearray):
++        assert message == bytearray()
++
++
++@pytest.mark.parametrize("text", ["hello", ""])
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_custom_object(text, nl):
++    class Message:
++        def __str__(self):
++            return text
++
++    f = StringIO()
++    click.echo(Message(), file=f, nl=nl)
++    assert f.getvalue() == text + ("\n" if nl else "")
++
++
++@pytest.mark.parametrize("message", [b"", b"hello"])
++def test_echo_bytes_to_text_only_file(message):
++    with pytest.raises(TypeError):
++        click.echo(message, file=StringIO())
+ 
+ 
+ def test_echo_no_streams(monkeypatch, runner):

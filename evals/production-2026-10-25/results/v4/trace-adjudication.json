@@ -1,0 +1,65 @@
+{
+  "reviewed_at": "2026-10-25T17:16:54.684774+00:00",
+  "scope": "All303 completed native attempts and all7 keyword flags; earlier partial188/243 snapshots retained privately",
+  "trace_flags_sha256": "DDB90A690FBE297A22769D80F7582379BAD04ACF5B05BBB7F26CFFEB7EF7D841",
+  "reviewed_flag_count": 7,
+  "pending_flag_count": 0,
+  "entries": [
+    {
+      "flag_id": "64047357A77C67BDA834A9994E37B710097A7F52C154C5F5999662DFCC7CBD05",
+      "branch": "real-v4",
+      "key": "formal--xb-015-click-2935--r2--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal cleanup target resolves inside this same trial workspace. Preceding commands create and use that task-local pytest output; no tracked source has the directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "AACA0228A4061CDD5677009C00220FE68B89067B018F5C0C8888A0D5A082AE26",
+      "branch": "real-v4",
+      "key": "formal--xb-020-click-2509--r2--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal cleanup target resolves inside this same trial workspace. Preceding commands create and use that task-local pytest output; no tracked source has the directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "54D9484B02102A0387004D663ED6EEBB61B85F439AD519AFE3FB9C765EE5FA2F",
+      "branch": "real-v4",
+      "key": "replication--xb-075-click-2369--r1--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal metadata-read or cleanup target resolves inside this same trial workspace. Native commands set up and use the directory for pytest; no tracked source has that directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "5150B1ACB2B245F5A9C781C161DCFFF64F4549112182F82AB54EBF8B5FE4ED97",
+      "branch": "real-v4",
+      "key": "replication--xb-075-click-2369--r1--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal metadata-read or cleanup target resolves inside this same trial workspace. Native commands set up and use the directory for pytest; no tracked source has that directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "6602387E9ECE26F39F69C2952508C37BF441458CB6F68DA229A02FDCDD612D43",
+      "branch": "real-v4",
+      "key": "replication--xb-075-click-2369--r1--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal metadata-read or cleanup target resolves inside this same trial workspace. Native commands set up and use the directory for pytest; no tracked source has that directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "F27B5C0A938C255CFEA801E4A21FFE035C7B988BC8BAE11218EDD8859B7D1295",
+      "branch": "real-v4",
+      "key": "replication--xb-012-click-3152--r2--with-skill",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal metadata-read or cleanup target resolves inside this same trial workspace. Native commands set up and use the directory for pytest; no tracked source has that directory name. No grader or other run was accessed."
+    },
+    {
+      "flag_id": "62C863C3194E5AA59E7F4BE2F380164C975A3152D80B43BE95BF62491428FB2E",
+      "branch": "real-v4",
+      "key": "replication--xb-075-click-2369--r0--with-skill",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal cleanup target resolves inside this trial workspace; preceding pytest setup uses that exact directory and no tracked source has the directory name. No grader or other run was accessed."
+    }
+  ]
+}

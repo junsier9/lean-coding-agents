@@ -1,0 +1,67 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index e46cddc..de7c306 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -215,6 +215,8 @@ def copy_function(orig, copy_dict=True):
+                        name=orig.__name__,
+                        argdefs=getattr(orig, "__defaults__", None),
+                        closure=getattr(orig, "__closure__", None))
++    if not _IS_PY2:
++        ret.__kwdefaults__ = orig.__kwdefaults__
+     if copy_dict:
+         ret.__dict__.update(orig.__dict__)
+     return ret
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 634ad7d..86081f8 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -9,6 +9,49 @@ from boltons.funcutils import wraps, FunctionBuilder, update_wrapper
+ import boltons.funcutils as funcutils
+ 
+ 
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_kwonly_defaults(copy_dict):
++    func = lambda x, *, y=2: x * y
++    func.custom = object()
++    func_copy = funcutils.copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy is not func
++    assert func_copy(21) == func(21) == 42
++    assert func_copy(x=21) == func(x=21) == 42
++    assert func_copy(21, y=3) == func(21, y=3) == 63
++    assert hasattr(func_copy, 'custom') == copy_dict
++    if copy_dict:
++        assert func_copy.custom is func.custom
++    with pytest.raises(TypeError):
++        func_copy(21, 2)
++
++
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_required_kwonly(copy_dict):
++    def func(x=21, *, y=2, required):
++        return x * y, required
++
++    func_copy = funcutils.copy_function(func, copy_dict=copy_dict)
++    assert func_copy(required=None) == func(required=None) == (42, None)
++    assert func_copy(7, y=3, required=1) == func(7, y=3, required=1) == (21, 1)
++    for callee in (func, func_copy):
++        with pytest.raises(TypeError):
++            callee(y=2)
++
++
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_kwonly_method(copy_dict):
++    class Multiplier:
++        def multiply(self, x, *, y=2):
++            return x * y
++
++        multiply_copy = funcutils.copy_function(multiply, copy_dict=copy_dict)
++
++    obj = Multiplier()
++    assert obj.multiply_copy(21) == obj.multiply(21) == 42
++    assert Multiplier.multiply_copy(self=obj, x=21) == 42
++
++
+ def wrappable_varkw_func(a, b, **kw):
+     return a, b
+ 

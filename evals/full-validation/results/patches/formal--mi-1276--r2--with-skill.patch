@@ -1,0 +1,65 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 83131cb..178aac1 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2458,14 +2458,9 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
+-        # Empty iterator
+-        try:
+-            start = self._get_by_index(-1)
+-        except IndexError:
+-            return iter([])
+-
+-        return iter(
+-            numeric_range(start, self._start - self._step, -self._step)
++        # Keep the forward calculation's rounding and avoid an extra endpoint.
++        return (
++            self._start + i * self._step for i in range(self._len - 1, -1, -1)
+         )
+ 
+     def count(self, value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 3896451..7c5fdf1 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3185,6 +3185,38 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_matches_forward_items(self):
++        for args in [
++            (0.0, 1.0, 0.1),
++            (1.0, 0.0, -0.1),
++            (0.1, 1.0, 0.2),
++            (0.9, 0.0, -0.2),
++            (2.1, 5.1, 0.5),
++            (-8.732, -13.532, -2.4),
++            (4.51, 10.375, 0.255),
++            (-69.37276490678778, -29.8339073344664, 4.942357196540172),
++            (32.50227965239458, 9.003418351482358, -1.9582384417426848),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual(list(r)[::-1], list(reversed(r)))
++
++    def test_reversed_datetime_boundaries(self):
++        for start, step in [
++            (datetime.min, timedelta(days=1)),
++            (datetime.max, timedelta(days=-1)),
++        ]:
++            for size in (0, 1, 3):
++                with self.subTest(start=start, step=step, size=size):
++                    r = mi.numeric_range(start, start + size * step, step)
++                    self.assertEqual(list(r)[::-1], list(reversed(r)))
++
++    def test_reversed_large_range(self):
++        r = reversed(mi.numeric_range(10**30))
++        self.assertIs(iter(r), r)
++        self.assertEqual(next(r), 10**30 - 1)
++        self.assertEqual(next(r), 10**30 - 2)
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

@@ -1,0 +1,90 @@
+diff --git a/funcy/calc.py b/funcy/calc.py
+index 2c98382..54af297 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -123,7 +123,7 @@ def cache(timeout, key_func=None):
+             return result
+ 
+         def invalidate(*args, **kwargs):
+-            cache.pop(key_func(*args, **kwargs))
++            cache.pop(key_func(*args, **kwargs), None)
+         wrapper.invalidate = invalidate
+ 
+         def invalidate_all():
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index fa1b1fe..31a42b6 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -119,14 +119,72 @@ def test_cache():
+         calls.append(x)
+         return x + 1
+ 
++    assert inc.invalidate(0) is None
++    assert inc.invalidate(0) is None
++    assert calls == []
++
+     assert inc(0) == 1
+     assert inc(1) == 2
+     assert inc(0) == 1
+     inc.invalidate(0)
++    assert inc.invalidate(0) is None
++    assert calls == [0, 1]
+     assert inc(0) == 1
++    assert inc(1) == 2
+     assert calls == [0, 1, 0]
+ 
+ 
++def test_cache_invalidate_custom_key():
++    calls = []
++
++    @cache(timeout=60, key_func=lambda x, by=1: x)
++    def mul(x, by=1):
++        calls.append((x, by))
++        return x * by
++
++    assert mul(2, by=3) == 6
++    assert mul(2, by=4) == 6
++    assert mul.invalidate(x=2, by=4) is None
++    assert mul.invalidate(2, by=3) is None
++    assert calls == [(2, 3)]
++    assert mul(2, by=4) == 8
++    assert calls == [(2, 3), (2, 4)]
++
++
++def test_cache_invalidate_key_error():
++    error = KeyError('invalid key')
++
++    def key_func(x):
++        raise error
++
++    @cache(timeout=60, key_func=key_func)
++    def inc(x):
++        return x + 1
++
++    with pytest.raises(KeyError) as exc:
++        inc.invalidate(0)
++    assert exc.value is error
++
++
++def test_cache_invalidate_all():
++    calls = []
++
++    @cache(timeout=60)
++    def inc(x):
++        calls.append(x)
++        return x + 1
++
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert inc.invalidate_all() is None
++    assert inc.invalidate_all() is None
++    assert inc.invalidate(0) is None
++    assert calls == [0, 1]
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert calls == [0, 1, 0, 1]
++
++
+ def test_cache_mixed_args():
+     @cache(timeout=60)
+     def add(x, y):

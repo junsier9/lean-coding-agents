@@ -1,0 +1,88 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 4bb779c..53e0c2e 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -2025,7 +2025,9 @@ def truncate(
+ ) -> str:
+     """
+     Truncates `text` if it is longer than the given maximum string length. The last characters of
+-    the truncated string are replaced with the omission string which defaults to ``...``.
++    the truncated string are replaced with the omission string which defaults to ``...``. If
++    truncation is needed and `length` is no greater than the omission length, only the full
++    omission string is returned.
+ 
+     Args:
+         text: String to truncate.
+@@ -2057,14 +2059,18 @@ def truncate(
+     if len(text) <= length:
+         return text
+ 
+-    omission_len = len(omission)
+-    text_len = length - omission_len
++    text_len = length - len(omission)
++    if text_len <= 0:
++        return omission
++
+     text = text[:text_len]
+ 
+     trunc_len = len(text)
+ 
+     if pyd.is_string(separator):
+-        trunc_len = text.rfind(separator)
++        separator_index = text.rfind(separator)
++        if separator_index != -1:
++            trunc_len = separator_index
+     elif pyd.is_reg_exp(separator):
+         last = None
+         for match in separator.finditer(text):
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 58680f2..b537898 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1082,6 +1082,21 @@ def test_trim_end(case, expected):
+         (("hi-diddly-ho there, neighborino", 30, " [...]"), "hi-diddly-ho there, neig [...]"),
+         (("123456789", 9), "123456789"),
+         (("123456789", 8), "12345..."),
++        (("abcdef", 5, "...", "missing"), "ab..."),
++        (("abcdef", 5, "...", re.compile("missing")), "ab..."),
++        (("abcdef", 5, "...", ""), "ab..."),
++        (("abcdef", 5, "...", re.compile("")), "ab..."),
++        (("abcdef", 5, "...", "a"), "..."),
++        (("abcdef", 5, "...", re.compile("a")), "..."),
++        (("ab cd ef gh", 10, "...", " "), "ab cd..."),
++        (("ab cd ef gh", 10, "...", re.compile(r"\s+")), "ab cd..."),
++        (("ab::cd::ef", 9, "...", "::"), "ab..."),
++        (("ab::cd::ef", 9, "...", re.compile("::")), "ab..."),
++        (("abcdef", 3, ""), "abc"),
++        ((123456, 5), "12..."),
++        (("abc", 3, "[more]", "a"), "abc"),
++        (("", 0), ""),
++        ((None, 0), ""),
+         (("x",), "x"),
+         ((" ",), " "),
+         (("",), ""),
+@@ -1092,6 +1107,24 @@ def test_truncate(case, expected):
+     assert _.truncate(*case) == expected
+ 
+ 
++@parametrize("separator", [None, " ", "missing", "", re.compile(r"\s+"), re.compile("")])
++@parametrize(
++    "length,omission",
++    [
++        (-5, "..."),
++        (0, "..."),
++        (1, "..."),
++        (2, "..."),
++        (3, "..."),
++        (4, "[more]"),
++        (0, ""),
++        (-1, ""),
++    ],
++)
++def test_truncate_short_length(length, omission, separator):
++    assert _.truncate("alpha beta gamma delta", length, omission, separator) == omission
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,86 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 37646a9..165acf6 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Fix the ``Group.command`` decorator without parentheses when a custom
++    ``command_class`` is set.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/core.py b/src/click/core.py
+index a6fc501..3fd224d 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1863,6 +1863,10 @@ class Group(MultiCommand):
+         To customize the command class used, set the
+         :attr:`command_class` attribute.
+ 
++        .. versionchanged:: 8.1.4
++            This decorator works without parentheses when
++            :attr:`command_class` is set.
++
+         .. versionchanged:: 8.1
+             This decorator can be applied without parentheses.
+ 
+@@ -1871,9 +1875,6 @@ class Group(MultiCommand):
+         """
+         from .decorators import command
+ 
+-        if self.command_class and kwargs.get("cls") is None:
+-            kwargs["cls"] = self.command_class
+-
+         func: t.Optional[t.Callable[..., t.Any]] = None
+ 
+         if args and callable(args[0]):
+@@ -1883,6 +1884,9 @@ class Group(MultiCommand):
+             (func,) = args
+             args = ()
+ 
++        if self.command_class and kwargs.get("cls") is None:
++            kwargs["cls"] = self.command_class
++
+         def decorator(f: t.Callable[..., t.Any]) -> Command:
+             cmd: Command = command(*args, **kwargs)(f)
+             self.add_command(cmd)
+diff --git a/tests/test_command_decorators.py b/tests/test_command_decorators.py
+index 9d54d7b..156bf50 100644
+--- a/tests/test_command_decorators.py
++++ b/tests/test_command_decorators.py
+@@ -37,6 +37,33 @@ def test_group_no_parens(runner):
+     assert result.output == "grp1\ngrp2\ncmd2\n"
+ 
+ 
++def test_group_command_class_no_parens(runner):
++    class CustomCommand(click.Command):
++        def invoke(self, ctx):
++            click.echo("custom command")
++            return super().invoke(ctx)
++
++    class CustomGroup(click.Group):
++        command_class = CustomCommand
++
++    @click.group(cls=CustomGroup)
++    def grp():
++        pass
++
++    @grp.command
++    @click.option("--name", required=True)
++    def say_hello(name):
++        click.echo(f"hello {name}")
++
++    assert type(say_hello) is CustomCommand
++    assert grp.commands["say-hello"] is say_hello
++
++    result = runner.invoke(grp, ["say-hello", "--name", "Click"])
++    assert result.exception is None
++    assert result.exit_code == 0
++    assert result.output == "custom command\nhello Click\n"
++
++
+ def test_params_argument(runner):
+     opt = click.Argument(["a"])
+ 

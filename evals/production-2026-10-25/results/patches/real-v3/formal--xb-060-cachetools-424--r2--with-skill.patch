@@ -1,0 +1,69 @@
+diff --git a/src/cachetools/__init__.py b/src/cachetools/__init__.py
+index 3e043a8..185cb2c 100644
+--- a/src/cachetools/__init__.py
++++ b/src/cachetools/__init__.py
+@@ -358,12 +358,10 @@ class RRCache(Cache):
+ 
+     def popitem(self):
+         """Remove and return a random `(key, value)` pair."""
+-        try:
+-            key = self.__choice(self.__keys)
+-        except IndexError:
++        if not self.__keys:
+             raise KeyError("%s is empty" % type(self).__name__) from None
+-        else:
+-            return (key, self.pop(key))
++        key = self.__choice(self.__keys)
++        return (key, self.pop(key))
+ 
+     def clear(self):
+         Cache.clear(self)
+diff --git a/tests/test_rr.py b/tests/test_rr.py
+index 43917d7..80dff27 100644
+--- a/tests/test_rr.py
++++ b/tests/test_rr.py
+@@ -1,5 +1,6 @@
+ import random
+ import unittest
++from unittest.mock import Mock
+ 
+ from cachetools import RRCache
+ 
+@@ -68,6 +69,37 @@ class RRCacheTest(unittest.TestCase, CacheTestMixin):
+         self.assertIn(3, cache)
+         self.assertNotIn(1, cache)
+ 
++    def test_rr_popitem_empty(self):
++        for choice in (random.choice, min, max, lambda seq: next(iter(seq))):
++            with self.subTest(choice=choice):
++                choose = Mock(wraps=choice)
++                cache = RRCache[int, int](maxsize=2, choice=choose)
++
++                with self.assertRaises(KeyError) as cm:
++                    cache.popitem()
++                self.assertEqual(("RRCache is empty",), cm.exception.args)
++                self.assertIsNone(cm.exception.__cause__)
++                self.assertTrue(cm.exception.__suppress_context__)
++                choose.assert_not_called()
++
++                cache[1] = 1
++                self.assertEqual((1, 1), cache.popitem())
++                with self.assertRaises(KeyError):
++                    cache.popitem()
++                choose.assert_called_once()
++
++    def test_rr_popitem_choice_error(self):
++        for error in (ValueError("test error"), StopIteration(), IndexError("test error")):
++            with self.subTest(error=type(error)):
++                cache = RRCache[int, int](maxsize=2, choice=Mock(side_effect=error))
++                cache[1] = 1
++
++                with self.assertRaises(type(error)) as cm:
++                    cache.popitem()
++                self.assertIs(error, cm.exception)
++                self.assertEqual({1: 1}, dict(cache))
++                self.assertEqual(1, cache.currsize)
++
+     def test_rr_bad_choice(self):
+         def bad_choice(seq):
+             raise ValueError("test error")

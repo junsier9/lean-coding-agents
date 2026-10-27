@@ -1,0 +1,128 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index 7b38eb0..68f2852 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,9 +1,10 @@
+ from datetime import datetime, timedelta
++from inspect import signature
+ import time
+ import threading
+ from contextlib import suppress  # reexport
+ 
+-from .decorators import decorator, wraps, get_argnames, arggetter, contextmanager
++from .decorators import decorator, wraps, arggetter, contextmanager
+ 
+ 
+ __all__ = ['raiser', 'ignore', 'silent', 'suppress', 'nullcontext', 'reraise', 'retry', 'fallback',
+@@ -237,7 +238,7 @@ once.__doc__ = "Let function execute once, noop all subsequent calls."
+ 
+ def once_per_args(func):
+     """Call function once for every combination of values of its arguments."""
+-    return once_per(*get_argnames(func))(func)
++    return once_per(*signature(func).parameters)(func)
+ 
+ 
+ @decorator
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 8d5aa5e..2b88b08 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -266,6 +266,98 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++def test_once_per_args_keyword_only():
++    @once_per_args
++    def call(n=1, *, flag=False):
++        return n, flag
++
++    assert call() == (1, False)
++    assert call(1, flag=False) is None
++    assert call(n=1) is None
++    assert call(flag=True) == (1, True)
++    assert call(n=1, flag=True) is None
++
++
++def test_once_per_args_varargs():
++    @once_per_args
++    def call(n=1, *args):
++        return n, args
++
++    assert call() == (1, ())
++    assert call(n=1) is None
++    assert call(1, 2) == (1, (2,))
++    assert call(1, 3) == (1, (3,))
++    assert call(1, 2, 3) == (1, (2, 3))
++    assert call(1, 2) is None
++
++
++def test_once_per_args_kwargs():
++    @once_per_args
++    def call(n=1, *args, flag=False, **kwargs):
++        return n, args, flag, kwargs
++
++    assert call() == (1, (), False, {})
++    assert call(n=1, flag=False) is None
++    assert call(x=2, y=3) == (1, (), False, {'x': 2, 'y': 3})
++    assert call(1, y=3, x=2, flag=False) is None
++    assert call(x=2, y=4) == (1, (), False, {'x': 2, 'y': 4})
++    assert call(1, 2, flag=True, x=3) == (1, (2,), True, {'x': 3})
++    assert call(1, 2, x=3, flag=True) is None
++    assert call(args=(), kwargs={}) == (1, (), False, {'args': (), 'kwargs': {}})
++    assert call(kwargs={}, args=()) is None
++
++
++@pytest.mark.parametrize('location', ['keyword_only', 'varargs', 'kwargs'])
++@pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
++def test_once_per_args_unhashable_full_arguments(location, make_value):
++    @once_per_args
++    def call(*args, value=None, **kwargs):
++        return 'called'
++
++    def invoke(value):
++        if location == 'keyword_only':
++            return call(value=value)
++        elif location == 'varargs':
++            return call(value)
++        else:
++            return call(extra=value)
++
++    assert invoke(make_value()) == 'called'
++    assert invoke(make_value()) is None
++    assert invoke('other') == 'called'
++    assert invoke('other') is None
++
++
++def test_once_per_args_method_call_forms():
++    class Initializer:
++        @once_per_args
++        def initialize(receiver, *args, enabled=False, **kwargs):
++            return receiver, args, enabled, kwargs
++
++    instance = Initializer()
++    other = Initializer()
++    assert instance.initialize() == (instance, (), False, {})
++    assert Initializer.initialize(receiver=instance, enabled=False) is None
++    assert Initializer.initialize(receiver=instance, enabled=True) == (instance, (), True, {})
++    assert instance.initialize(enabled=True) is None
++    assert other.initialize() == (other, (), False, {})
++    assert instance.initialize(1, option=2) == (instance, (1,), False, {'option': 2})
++    assert Initializer.initialize(instance, 1, option=2) is None
++
++
++def test_once_per_args_missing_keyword_only():
++    @once_per_args
++    def call(*, value):
++        return value
++
++    with pytest.raises(TypeError):
++        call()
++    assert call(value=1) == 1
++    assert call(value=1) is None
++    with pytest.raises(TypeError):
++        call()
++
++
+ @pytest.mark.parametrize('decorate', [once_per('n'), once_per_args])
+ @pytest.mark.parametrize('make_value', [list, dict, set, lambda: ([],)])
+ def test_once_per_unhashable_arguments(decorate, make_value):

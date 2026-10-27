@@ -1,0 +1,106 @@
+diff --git a/funcy/calc.py b/funcy/calc.py
+index d55b6b0..9d3baa4 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -128,12 +128,12 @@ def _make_lookuper(silent):
+                 f.__name__ = '%s(%s)' % (func.__name__, ', '.join(map(str, args)))
+                 return make_lookuper(f)
+         else:
+-            memory = {}
++            memory = None
+ 
+             def wrapper(arg):
+-                if not memory:
+-                    memory[object()] = None # prevent continuos memory refilling
+-                    memory.update(func())
++                nonlocal memory
++                if memory is None:
++                    memory = dict(func())
+ 
+                 if silent:
+                     return memory.get(arg)
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index a9c4614..fb584fe 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -179,6 +179,80 @@ def test_silnent_lookuper_nested():
+     assert function_table(cos)(-1) is None
+ 
+ 
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('nested', [False, True], ids=['direct', 'nested'])
++@pytest.mark.parametrize('failure', ['builder', 'generator'])
++def test_lookuper_retries_failed_initialization(deco, nested, failure):
++    calls = []
++    error = RuntimeError('building failed')
++
++    def broken_pairs():
++        yield 'partial', 1
++        raise error
++
++    def build():
++        calls.append(None)
++        if len(calls) <= 2:
++            if failure == 'builder':
++                raise error
++            return broken_pairs()
++        return {'ready': 2}
++
++    if nested:
++        @deco
++        def table(group):
++            return build()
++        lookup = table('group')
++    else:
++        lookup = deco(build)
++
++    assert calls == []
++    for attempt in range(2):
++        with pytest.raises(RuntimeError) as exc:
++            lookup('partial')
++        assert exc.value is error
++        assert len(calls) == attempt + 1
++
++    assert lookup('ready') == 2
++    if deco is silent_lookuper:
++        assert lookup('partial') is None
++    else:
++        with pytest.raises(LookupError):
++            lookup('partial')
++    assert lookup('ready') == 2
++    assert len(calls) == 3
++    if nested:
++        assert table('group') is lookup
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('nested', [False, True], ids=['direct', 'nested'])
++@pytest.mark.parametrize('empty', [{}, ()], ids=['mapping', 'pairs'])
++def test_lookuper_initializes_empty_table_once(deco, nested, empty):
++    calls = []
++
++    def build():
++        calls.append(None)
++        return empty
++
++    if nested:
++        @deco
++        def table(group):
++            return build()
++        lookup = table('group')
++    else:
++        lookup = deco(build)
++
++    assert calls == []
++    for key in ('missing', 'another', 'missing'):
++        if deco is silent_lookuper:
++            assert lookup(key) is None
++        else:
++            with pytest.raises(LookupError):
++                lookup(key)
++    assert len(calls) == 1
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_cache(typ):

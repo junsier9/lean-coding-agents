@@ -1,0 +1,79 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 4d4853a..f21fdf7 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -1329,8 +1329,11 @@ def pull_all_with(
+ 
+ def pull_at(array: t.List[T], *indexes: int) -> t.List[T]:
+     """
+-    Removes elements from `array` corresponding to the specified indexes and returns a list of the
+-    removed elements. Indexes may be specified as a list of indexes or as individual arguments.
++    Removes elements from `array` corresponding to the specified indexes and returns the modified
++    array. Indexes may be specified as a list of indexes or as individual arguments.
++
++    Indexes refer to positions in the original array, with negative indexes counting from the end.
++    Out-of-range indexes are ignored, and each position is removed only once.
+ 
+     Args:
+         array: List to pull from.
+@@ -1346,11 +1349,21 @@ def pull_at(array: t.List[T], *indexes: int) -> t.List[T]:
+ 
+         >>> pull_at([1, 2, 3, 4], 0, 2)
+         [2, 4]
++        >>> pull_at([1, 2, 3], 1, 1, 3)
++        [1, 3]
++        >>> pull_at([1, 2, 3, 4], 3, -2)
++        [1, 2]
+ 
+     .. versionadded:: 1.1.0
+     """
+-    flat_indexes = flatten(indexes)
+-    for index in sorted(flat_indexes, reverse=True):
++    length = len(array)
++    # Normalize negative indexes before deletion so they refer to the original positions.
++    unique_indexes = {
++        index if index >= 0 else length + index
++        for index in flatten(indexes)
++        if -length <= index < length
++    }
++    for index in sorted(unique_indexes, reverse=True):
+         del array[index]
+ 
+     return array
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index aea4d50..1bed2dc 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -480,10 +480,31 @@ def test_pull_all_with(case, values, iteratee, expected):
+         (([1, 2, 3, 1, 2, 3], [2, 3]), [1, 2, 2, 3]),
+         (([1, 2, 3, 1, 2, 3], [3, 2]), [1, 2, 2, 3]),
+         (([1, 2, 3, 1, 2, 3], 3, 2), [1, 2, 2, 3]),
++        (([],), []),
++        (([], 0, -1, 10), []),
++        (([1, 2, 3],), [1, 2, 3]),
++        (([1, 2, 3], []), [1, 2, 3]),
++        (([1, 2, 3], 3, 100, -4, -100), [1, 2, 3]),
++        (([1, 2, 3], 100, 1, -100), [1, 3]),
++        (([1, 2, 3], 0, 0), [2, 3]),
++        (([1, 2, 3], 1, 1), [1, 3]),
++        (([1, 2, 3], 2, 2), [1, 2]),
++        (([1, 2, 3], [2, 0, 2, 0]), [2]),
++        (([1, 2, 3], [1, 3, 1], 1, 100), [1, 3]),
++        (([1, 2, 3], [2, 0, 1, 2, 3]), []),
++        (([1, 2, 3], -1), [1, 2]),
++        (([1, 2, 3], -3), [2, 3]),
++        (([1, 2, 3], -1, -1), [1, 2]),
++        (([1, 2, 3], 2, -1), [1, 2]),
++        (([1, 2, 3], 0, -3), [2, 3]),
++        (([1, 2, 3, 4], 3, -2), [1, 2]),
++        (([1, 2, 3, 4], [-1, -3, -5], 4), [1, 3]),
+     ],
+ )
+ def test_pull_at(case, expected):
+-    assert _.pull_at(*case) == expected
++    array = case[0]
++    assert _.pull_at(*case) is array
++    assert array == expected
+ 
+ 
+ @parametrize(

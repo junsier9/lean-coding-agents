@@ -1,0 +1,25 @@
+{
+  "recorded_at": "2026-10-25T02:32:29.976985+00:00",
+  "amendment_type": "Implementation-only repair after fresh cohort start; original requirements and original timestamp retained",
+  "original_code_sha256": "B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00",
+  "original_control_sha256": "964CB06663B4307157EEA42914F55F779E8176B9C3320F324979A5692208901B",
+  "fixed_code_sha256": "5B3263CEA6936E263B34B7C82AE110CF606FDAF2AD27957F109AC53716CD6D03",
+  "predeclared_requirements_sha256": "76BA888F7E756FEF188BE5EAD488CC8E065B5D5B0F04962E5E58A2AA53365797",
+  "thresholds_changed": false,
+  "model_inputs_grader_or_statistics_changed": false,
+  "original_independent_review_raw_sha256": "3DED57ABDFC385387470E33203CAB009BF4011B29A4F2D3A43E3A2E048B89292",
+  "original_independent_review_public_sha256": "FFE1ADF0D2A77C3CD41D864F1EA8B4ADA8C4B4EE29CA99819398655A76353F21",
+  "independent_fix_review_sha256": "A9D65E3509594482DE5A6E6CCE9B21293978BDF2F62328692039E7194AF49D15",
+  "independent_fix_review_status": "Passed independent60 synthetic scenarios:3valid accepted,57invalid rejected; no unresolved reproduced implementation defect",
+  "reason": "43 isolated synthetic scenarios found12 inconsistent or invalid report combinations accepted by summary-only logic; no assertion that current real data was affected",
+  "fixes": [
+    "Call the existing complete native-evidence verifier at final qualification, rather than trust an earlier verification boolean",
+    "Recompute both phase analyses from current240 real rows using the unchanged frozen replay; bind treatment candidate identity",
+    "Bind last development/critical/routing reports to frozen hashes and candidate; enforce reviewer blinding flag",
+    "Reject duplicate ZIP entries and check actual retained private archive identity, byte size, entry count and CRC assertion",
+    "Derive material benefit from its numeric frozen bound and criterion together"
+  ],
+  "chronology": "The original pre-model control is unchanged. This amendment is recorded after cohort start; its original and fixed implementations and independent counterexamples are retained. No backfilled pre-model timestamp.",
+  "independent_fix_review_raw_sha256": "3CC0D5D181A93126D932DC9F4FF7DBD7BA5C72122A06149BD91F46C212D97505",
+  "fix_review_recorded_at": "2026-10-25T02:48:28.763131+00:00"
+}

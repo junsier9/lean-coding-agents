@@ -1,0 +1,15 @@
+test_budget_exhaustion (test_contract.Contract.test_budget_exhaustion) ... ok
+test_bug_not_retried (test_contract.Contract.test_bug_not_retried) ... ok
+test_decline_not_retried (test_contract.Contract.test_decline_not_retried) ... ok
+test_invalid_amount (test_contract.Contract.test_invalid_amount) ... ok
+test_invalid_budget (test_contract.Contract.test_invalid_budget) ... ok
+test_missing_key_before_io (test_contract.Contract.test_missing_key_before_io) ... ok
+test_one_attempt (test_contract.Contract.test_one_attempt) ... ok
+test_stable_key (test_contract.Contract.test_stable_key) ... ok
+test_success_without_wait (test_contract.Contract.test_success_without_wait) ... ok
+test_two_retries (test_contract.Contract.test_two_retries) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

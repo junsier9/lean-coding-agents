@@ -1,0 +1,38 @@
+test_bad_container (test_contract.Contract.test_bad_container) ... ok
+test_cart_alias (test_contract.Contract.test_cart_alias) ... FAIL
+test_catalog_alias (test_contract.Contract.test_catalog_alias) ... ERROR
+test_empty (test_contract.Contract.test_empty) ... ok
+test_frozen (test_contract.Contract.test_frozen) ... ok
+test_input_not_changed (test_contract.Contract.test_input_not_changed) ... ok
+test_missing_sku (test_contract.Contract.test_missing_sku) ... ok
+test_prices (test_contract.Contract.test_prices) ... ok
+test_quantities (test_contract.Contract.test_quantities) ... ok
+test_values (test_contract.Contract.test_values) ... ok
+
+======================================================================
+ERROR: test_catalog_alias (test_contract.Contract.test_catalog_alias)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h03\optimized_initial\test_contract.py", line 27, in test_catalog_alias
+    self.assertEqual(quote.lines[0], Line("A", 10, 2))
+                     ^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h03\optimized_initial\app.py", line 11, in lines
+    return tuple(Line(row["sku"], self.catalog[row["sku"]], row["quantity"]) for row in self.cart)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h03\optimized_initial\app.py", line 11, in <genexpr>
+    return tuple(Line(row["sku"], self.catalog[row["sku"]], row["quantity"]) for row in self.cart)
+                                  ~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'A'
+
+======================================================================
+FAIL: test_cart_alias (test_contract.Contract.test_cart_alias)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h03\optimized_initial\test_contract.py", line 20, in test_cart_alias
+    self.assertEqual(quote.total, 27)
+AssertionError: 0 != 27
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+FAILED (failures=1, errors=1)

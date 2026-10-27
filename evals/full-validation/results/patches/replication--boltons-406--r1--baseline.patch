@@ -1,0 +1,53 @@
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 433eaf5..2b04095 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -127,8 +127,9 @@ def split_iter(src, sep=None, maxsplit=None):
+       * a single-argument callable that returns True when a separator is
+         encountered
+ 
+-    ``split_iter()`` yields lists of non-separator values. A separator will
+-    never appear in the output.
++    ``split_iter()`` yields lists of non-separator values until *maxsplit*
++    is reached. If *maxsplit* is 0, it yields a single list containing all
++    input values, including separators.
+ 
+     >>> list(split_iter(['hi', 'hello', None, None, 'sup', None, 'soap', None]))
+     [['hi', 'hello'], ['sup'], ['soap']]
+@@ -158,7 +159,7 @@ def split_iter(src, sep=None, maxsplit=None):
+     if maxsplit is not None:
+         maxsplit = int(maxsplit)
+         if maxsplit == 0:
+-            yield [src]
++            yield list(src)
+             return
+ 
+     if callable(sep):
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index f56468a..4ab269e 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -4,6 +4,8 @@ import pytest
+ 
+ from boltons.dictutils import OMD
+ from boltons.iterutils import (first,
++                               split,
++                               split_iter,
+                                pairwise,
+                                pairwise_iter,
+                                windowed,
+@@ -24,6 +26,14 @@ even = lambda x: isint(x) and x % 2 == 0
+ is_meaning_of_life = lambda x: x == 42
+ 
+ 
++@pytest.mark.parametrize('split_func', [split, split_iter])
++@pytest.mark.parametrize('src_factory', [list, iter])
++@pytest.mark.parametrize('values', [[], [None, 1, None, None, 2, None]])
++@pytest.mark.parametrize('sep', [None, [None]])
++def test_split_maxsplit_zero(split_func, src_factory, values, sep):
++    assert list(split_func(src_factory(values), sep=sep, maxsplit=0)) == [values]
++
++
+ class TestFirst:
+     def test_empty_iterables(self):
+         """

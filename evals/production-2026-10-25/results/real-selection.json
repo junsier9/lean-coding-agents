@@ -1,0 +1,473 @@
+{
+  "seed": 20261025,
+  "protocol_sha256": "BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F",
+  "untouched_pool": 127,
+  "old_case_ids_excluded": [
+    "b-01-click-2811",
+    "b-02-click-2730",
+    "b-03-click-2724",
+    "b-04-click-2680",
+    "b-05-click-2421",
+    "b-06-click-2417",
+    "b-09-click-2058",
+    "b-12-itsdangerous-296",
+    "b-14-itsdangerous-154",
+    "b-15-itsdangerous-133",
+    "b-16-pluggy-545",
+    "b-24-click-1566",
+    "b-25-click-1551",
+    "b-26-click-1478",
+    "b-29-click-1142",
+    "b-31-click-999",
+    "b-32-click-994",
+    "b-33-click-874",
+    "b-34-click-794",
+    "boltons-302",
+    "boltons-401",
+    "boltons-403",
+    "boltons-404",
+    "boltons-406",
+    "boltons-410",
+    "boltons-416",
+    "boltons-418",
+    "boltons-424",
+    "boltons-428",
+    "boltons-438",
+    "boltons-443-table",
+    "boltons-458",
+    "boltons-474",
+    "boltons-onetoone-empty",
+    "boltons-pearson-zero",
+    "mi-1028",
+    "mi-1082",
+    "mi-1088",
+    "mi-1125",
+    "mi-1128",
+    "mi-1193",
+    "mi-1211",
+    "mi-1248",
+    "mi-1251",
+    "mi-1253",
+    "mi-1261",
+    "mi-1269",
+    "mi-1276",
+    "mi-1305",
+    "mi-1308"
+  ],
+  "formal": [
+    "extra-a3-funcy-190",
+    "extra-a3-toolz-635",
+    "extra-a-boltons-437",
+    "extra-a2-click-3805",
+    "mi-1200",
+    "xb-034-pydash-263",
+    "xb-068-w3lib-272",
+    "xb-051-pluggy-731",
+    "xb-060-cachetools-424",
+    "extra-a3-toolz-603",
+    "extra-a-boltons-475",
+    "xb-059-cachetools-436",
+    "xb-013-click-3079",
+    "xb-053-pluggy-646",
+    "xb-041-pydash-253",
+    "xb-069-w3lib-85",
+    "extra-a-mi-944",
+    "extra-a3-funcy-178",
+    "extra-a-mi-1223",
+    "extra-a3-funcy-93"
+  ],
+  "replication": [
+    "xb-023-pydash-333",
+    "xb-058-cachetools-441",
+    "xb-067-w3lib-253",
+    "xb-054-pluggy-504",
+    "extra-a2-click-3884",
+    "extra-a-boltons-114",
+    "extra-a3-funcy-197",
+    "extra-a-mi-1153",
+    "extra-a2-click-3678",
+    "extra-a-boltons-407",
+    "xb-070-w3lib-40",
+    "xb-074-cachetools-ec0b97b8a4",
+    "xb-038-pydash-258",
+    "xb-052-pluggy-728",
+    "extra-a3-funcy-182",
+    "extra-a2-click-3484",
+    "xb-031-pydash-277",
+    "extra-a-boltons-468",
+    "extra-a-mi-650",
+    "xb-072-cachetools-462e867950"
+  ],
+  "remaining_reserve": [
+    "extra-a-mi-917",
+    "xb-009-click-3299",
+    "xb-057-cachetools-445",
+    "extra-a3-funcy-211",
+    "extra-a-boltons-513",
+    "xb-045-pydash-248",
+    "xb-033-pydash-265",
+    "extra-a-boltons-451",
+    "xb-020-click-2509",
+    "extra-a3-funcy-203",
+    "extra-a-mi-1294",
+    "xb-064-cachetools-388",
+    "mi-1270",
+    "extra-a3-funcy-204",
+    "boltons-389",
+    "xb-048-pydash-241",
+    "xb-015-click-2935",
+    "xb-029-pydash-279",
+    "extra-a-mi-1118",
+    "b-08-click-2219",
+    "extra-a3-funcy-207",
+    "extra-a-boltons-462",
+    "extra-a-boltons-467",
+    "xb-027-pydash-292",
+    "extra-a-mi-1216",
+    "xb-005-click-3582",
+    "extra-a3-funcy-187",
+    "extra-a-mi-1194",
+    "boltons-336",
+    "xb-030-pydash-278",
+    "extra-a2-click-3865",
+    "extra-a-boltons-144",
+    "mi-1278",
+    "xb-075-click-2369",
+    "xb-047-pydash-243",
+    "extra-a-boltons-247",
+    "mi-1279",
+    "xb-042-pydash-252",
+    "b-28-click-1304",
+    "xb-076-click-2217",
+    "xb-046-pydash-246",
+    "extra-a-boltons-298",
+    "extra-a-mi-1285",
+    "extra-a2-click-3493",
+    "extra-a-boltons-128",
+    "xb-024-pydash-295",
+    "extra-a-mi-1117",
+    "xb-012-click-3152",
+    "extra-a-boltons-349",
+    "extra-a-mi-1182",
+    "xb-022-pydash-348",
+    "xb-008-click-3434",
+    "extra-a-mi-1119",
+    "xb-044-pydash-250",
+    "extra-a-boltons-445",
+    "extra-a-boltons-332",
+    "xb-080-click-2041",
+    "mi-1260",
+    "xb-025-pydash-294",
+    "xb-021-click-2365",
+    "extra-a-boltons-178",
+    "xb-028-pydash-283",
+    "xb-043-pydash-251",
+    "extra-a-boltons-472",
+    "extra-a2-click-3578",
+    "extra-a-boltons-450",
+    "xb-011-click-3208",
+    "xb-039-pydash-256",
+    "xb-037-pydash-260",
+    "xb-019-click-2550",
+    "extra-a-boltons-338",
+    "extra-a2-boltons-64",
+    "xb-040-pydash-254",
+    "xb-007-click-3509",
+    "xb-016-click-2930",
+    "xb-032-pydash-266",
+    "extra-a2-boltons-32",
+    "b-07-click-2333",
+    "xb-026-pydash-293",
+    "xb-036-pydash-261",
+    "xb-010-click-3225",
+    "xb-014-click-3004",
+    "xb-035-pydash-262",
+    "xb-018-click-2788",
+    "xb-078-click-1990",
+    "b-27-click-1354",
+    "xb-017-click-2816"
+  ],
+  "selection_independent_of_new_model_outcomes": true,
+  "cases": [
+    {
+      "id": "extra-a3-funcy-190",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/190",
+      "base_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+      "fix_sha": "91098f4ea6eb54ffabfdac886baefa5260866091"
+    },
+    {
+      "id": "extra-a3-toolz-635",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/635",
+      "base_sha": "55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+      "fix_sha": "d2eba0374a452c2b18fe188b04527e22bda3548c"
+    },
+    {
+      "id": "extra-a-boltons-437",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/437",
+      "base_sha": "e66cade323f5c11cebb4bd0f099e634b245adccd",
+      "fix_sha": "c1c25da365cf14878cf5317147e7a09b5d124df5"
+    },
+    {
+      "id": "extra-a2-click-3805",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3805",
+      "base_sha": "3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+      "fix_sha": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d"
+    },
+    {
+      "id": "mi-1200",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1200",
+      "base_sha": "8ff2d60e1462a6857f5a9b153d7be474f82da8b5",
+      "fix_sha": "c2859de7ae7b791b77c33462a58f81f9a4d9d5d6"
+    },
+    {
+      "id": "xb-034-pydash-263",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/263",
+      "base_sha": "938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+      "fix_sha": "2dfcc0130d28ce8da795bdef8e90fc66ff98b179"
+    },
+    {
+      "id": "xb-068-w3lib-272",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/272",
+      "base_sha": "012208453dfcc26ba0f7adc96f5b4981b9fd3687",
+      "fix_sha": "5fd294ccf210389a89243870e989aaf6d15d3212"
+    },
+    {
+      "id": "xb-051-pluggy-731",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/731",
+      "base_sha": "87e45202858dbb725c2ea7d6472a11c1a2624518",
+      "fix_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f"
+    },
+    {
+      "id": "xb-060-cachetools-424",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/424",
+      "base_sha": "5877d83c7ab53639f1cfb8664173219e5e5cfbf1",
+      "fix_sha": "cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993"
+    },
+    {
+      "id": "extra-a3-toolz-603",
+      "repo": "pytoolz/toolz",
+      "issue_or_pr_url": "https://github.com/pytoolz/toolz/pull/603",
+      "base_sha": "1fb2b9f1b69ab664a264944f4eafc290acce127d",
+      "fix_sha": "5a7e078c941c990dcaca53ac6920e5d5c0b1475f"
+    },
+    {
+      "id": "extra-a-boltons-475",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/475",
+      "base_sha": "1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+      "fix_sha": "45a251181fba4c5a4ecc05e838da1c394e1ed0e4"
+    },
+    {
+      "id": "xb-059-cachetools-436",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/436",
+      "base_sha": "0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6",
+      "fix_sha": "c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974"
+    },
+    {
+      "id": "xb-013-click-3079",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3079",
+      "base_sha": "2ed395b0b5ac4d56553ff715335f456f812cdc78",
+      "fix_sha": "27aaed3fe5bcd6adedd6e91de234914af9859cf1"
+    },
+    {
+      "id": "xb-053-pluggy-646",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/646",
+      "base_sha": "6e1d0f13a259776bbf137f90bd7ab8b4474f68e7",
+      "fix_sha": "20d8143f127a4d7526dbbea441857b4b80ec8bdd"
+    },
+    {
+      "id": "xb-041-pydash-253",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/253",
+      "base_sha": "e3e12e4909f7627c17939c1a4496114c5d8669ae",
+      "fix_sha": "39e0464597527c3009bab4f3c7369457ccfdb276"
+    },
+    {
+      "id": "xb-069-w3lib-85",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/85",
+      "base_sha": "f46b4c4140dfd0081d34327d91f496f7a221bed7",
+      "fix_sha": "e2b7feb17edefea23d0b1591ddf669697984fe4b"
+    },
+    {
+      "id": "extra-a-mi-944",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/944",
+      "base_sha": "18225d856665bfc3bfdfcdbfa585290f92645daf",
+      "fix_sha": "7b9889c0b7de2189e7dd77688f7a811ce43337cc"
+    },
+    {
+      "id": "extra-a3-funcy-178",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/178",
+      "base_sha": "19e9617383cd48dfbc4074dab11df9157ece98b0",
+      "fix_sha": "c72bfae84581458ac17fa3da3d9b92a8962ba682"
+    },
+    {
+      "id": "extra-a-mi-1223",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1223",
+      "base_sha": "516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f",
+      "fix_sha": "9ddc55c57390707d97d96302eea1992919c8d930"
+    },
+    {
+      "id": "extra-a3-funcy-93",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/93",
+      "base_sha": "c33f69dc7cf811f524a791a477775228ce7025cc",
+      "fix_sha": "d79eaec8976402ccdee03b56283d123397f4fa61"
+    },
+    {
+      "id": "xb-023-pydash-333",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/333",
+      "base_sha": "9637faab0d583b5aeb859dae3ecac2f4eb2e6db9",
+      "fix_sha": "deed72d4964675fee282f368addc5acd6d724d17"
+    },
+    {
+      "id": "xb-058-cachetools-441",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/441",
+      "base_sha": "f4f288579dc3c8f82f62d0eaca7774303d9d3768",
+      "fix_sha": "39f9dd234aabc0859c703e7d9747fbefe7133f4c"
+    },
+    {
+      "id": "xb-067-w3lib-253",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/253",
+      "base_sha": "61db33b20f611b8d0a7a3dde3842d65f5f91d8d0",
+      "fix_sha": "1ed46a8af01a5f445197322ce920b620b7ff2130"
+    },
+    {
+      "id": "xb-054-pluggy-504",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/504",
+      "base_sha": "313eace19509f6d5cff75836cad12a58e895c07e",
+      "fix_sha": "56085d7dd20aa200999c2c711e9dd9d1908cf577"
+    },
+    {
+      "id": "extra-a2-click-3884",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3884",
+      "base_sha": "bb695aaecdef95832d167fc1d508921745aa824e",
+      "fix_sha": "8c73ff134480f436faa0d041bd19aaf949aac22c"
+    },
+    {
+      "id": "extra-a-boltons-114",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/114",
+      "base_sha": "14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365",
+      "fix_sha": "f749174abed72b0982b15f29c3819480e0b8fa7c"
+    },
+    {
+      "id": "extra-a3-funcy-197",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/197",
+      "base_sha": "40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7",
+      "fix_sha": "e0ecd3a5927051e1a90514eac64763aeeb6b5a35"
+    },
+    {
+      "id": "extra-a-mi-1153",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/1153",
+      "base_sha": "247e15b3a489d5805375c95dfa79486c9bd0eb1b",
+      "fix_sha": "1806a75b836b9eff4a7885a96ece6183f5fb6409"
+    },
+    {
+      "id": "extra-a2-click-3678",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3678",
+      "base_sha": "8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+      "fix_sha": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a"
+    },
+    {
+      "id": "extra-a-boltons-407",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/407",
+      "base_sha": "4aa77cddb5d06def130df6f09aefab4018fa487c",
+      "fix_sha": "25e8d6b18ecba58d358c8f46a5cea554f99bdfb2"
+    },
+    {
+      "id": "xb-070-w3lib-40",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/40",
+      "base_sha": "21ff68ddcf35e106be60da21af2a64b44ec13baa",
+      "fix_sha": "3489ad5f6307983d2740e4516450aacb15620508"
+    },
+    {
+      "id": "xb-074-cachetools-ec0b97b8a4",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+      "base_sha": "aa73a19299432530eb9b1c0f9acecde6ad96c9e0",
+      "fix_sha": "ec0b97b8a43dbd61fa83d702dadd2ff21131bd26"
+    },
+    {
+      "id": "xb-038-pydash-258",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/258",
+      "base_sha": "531825d188c430ce2fdaddcaa49d8fd9e95925b0",
+      "fix_sha": "08dec5c0300f6310efe4826881d1d2fa28498b70"
+    },
+    {
+      "id": "xb-052-pluggy-728",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/728",
+      "base_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+      "fix_sha": "d70fe1840d01c78b7d85f693cfef01ccdf2f80a6"
+    },
+    {
+      "id": "extra-a3-funcy-182",
+      "repo": "Suor/funcy",
+      "issue_or_pr_url": "https://github.com/Suor/funcy/pull/182",
+      "base_sha": "cdf432835a57260ec703d468e9e8ea01e0f15663",
+      "fix_sha": "0eab928c371264cb85fb022bf13b4e9d86037f5f"
+    },
+    {
+      "id": "extra-a2-click-3484",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3484",
+      "base_sha": "4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+      "fix_sha": "d42f15b71757de791a5781fb179fd972da9169f5"
+    },
+    {
+      "id": "xb-031-pydash-277",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/277",
+      "base_sha": "6e3d9538d776bcac359858004e2d2f172d2d9460",
+      "fix_sha": "5e6e680797ebe685ee7bdd138f0bb5bdecf0c100"
+    },
+    {
+      "id": "extra-a-boltons-468",
+      "repo": "mahmoud/boltons",
+      "issue_or_pr_url": "https://github.com/mahmoud/boltons/pull/468",
+      "base_sha": "5eb6cc045560abf320712f262346ae95fb66d448",
+      "fix_sha": "efff866a3b66fdafc817894390742e1d8bc025e5"
+    },
+    {
+      "id": "extra-a-mi-650",
+      "repo": "more-itertools/more-itertools",
+      "issue_or_pr_url": "https://github.com/more-itertools/more-itertools/pull/650",
+      "base_sha": "d63ed69ad4299d594513d38b1adb018059fb776d",
+      "fix_sha": "7e910e00b5d227527699861040b12f50d3c70fae"
+    },
+    {
+      "id": "xb-072-cachetools-462e867950",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/462e867950883c8ffbcfff715efd767b20c6c749",
+      "base_sha": "3e5fe022716b0263488ef8146e18e162b2bcbe96",
+      "fix_sha": "462e867950883c8ffbcfff715efd767b20c6c749"
+    }
+  ]
+}

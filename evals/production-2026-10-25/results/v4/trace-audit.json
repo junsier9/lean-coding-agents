@@ -1,0 +1,130 @@
+{
+  "audited_at": "2026-10-25T17:15:06.356063+00:00",
+  "study_version": "v4",
+  "actual_native_runs": 303,
+  "planned_native_runs": 303,
+  "all_planned_runs_present": true,
+  "branches": {
+    "dev-v4-iteration1": {
+      "expected_runs": 6,
+      "actual_runs": 6,
+      "commands": 89,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "with-skill": 6
+      },
+      "runs_by_arm": {
+        "with-skill": 6
+      },
+      "potential_flags": {},
+      "item_types": {
+        "agent_message": 26,
+        "command_execution": 89,
+        "file_change": 15
+      }
+    },
+    "dev-v4-iteration2": {
+      "expected_runs": 6,
+      "actual_runs": 6,
+      "commands": 85,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "with-skill": 6
+      },
+      "runs_by_arm": {
+        "with-skill": 6
+      },
+      "potential_flags": {},
+      "item_types": {
+        "agent_message": 26,
+        "command_execution": 85,
+        "file_change": 17
+      }
+    },
+    "dev-v4-iteration3": {
+      "expected_runs": 6,
+      "actual_runs": 6,
+      "commands": 78,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "with-skill": 6
+      },
+      "runs_by_arm": {
+        "with-skill": 6
+      },
+      "potential_flags": {},
+      "item_types": {
+        "agent_message": 25,
+        "command_execution": 78,
+        "file_change": 14
+      }
+    },
+    "routing-v4-iteration3": {
+      "expected_runs": 9,
+      "actual_runs": 9,
+      "commands": 51,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "implicit": 3
+      },
+      "runs_by_arm": {
+        "implicit": 9
+      },
+      "potential_flags": {},
+      "item_types": {
+        "agent_message": 24,
+        "command_execution": 51,
+        "file_change": 6
+      }
+    },
+    "safety-v4-iteration3": {
+      "expected_runs": 36,
+      "actual_runs": 36,
+      "commands": 301,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "with-skill": 36
+      },
+      "runs_by_arm": {
+        "with-skill": 36
+      },
+      "potential_flags": {},
+      "item_types": {
+        "agent_message": 119,
+        "command_execution": 301,
+        "file_change": 63
+      }
+    },
+    "real-v4": {
+      "expected_runs": 240,
+      "actual_runs": 240,
+      "commands": 3250,
+      "malformed_lines": 0,
+      "body_visible_by_arm": {
+        "baseline": 0,
+        "with-skill": 114
+      },
+      "runs_by_arm": {
+        "baseline": 120,
+        "with-skill": 120
+      },
+      "potential_flags": {
+        "grader_or_other_run_reference": 7
+      },
+      "item_types": {
+        "agent_message": 937,
+        "command_execution": 3250,
+        "file_change": 523
+      }
+    }
+  },
+  "distinct_thread_per_run": true,
+  "integrity_issues": [],
+  "potential_flag_count": 7,
+  "flags_are_not_automatic_exclusions": true,
+  "limits": [
+    "Emitted events do not reveal unlogged host activity or model attention.",
+    "Keyword matches require source or command review and do not change inclusion.",
+    "Read-only routing negatives remain valid only if the prespecified routing check passes."
+  ]
+}

@@ -1,0 +1,144 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 95395eb..23c36ba 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.3.x
+ 
+ Unreleased
+ 
++-   Flags sharing a parameter name use the declared default regardless of
++    declaration order.
+ -   Don't discard pager arguments by correctly using ``subprocess.Popen``. :issue:`3039`
+     :pr:`3055`
+ -   Replace ``Sentinel.UNSET`` default values by ``None`` as they're passed through
+diff --git a/src/click/core.py b/src/click/core.py
+index cd8052f..5739980 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2833,6 +2833,30 @@ class Option(Parameter):
+         )
+         return info_dict
+ 
++    def get_default(
++        self, ctx: Context, call: bool = True
++    ) -> t.Any | t.Callable[[], t.Any] | None:
++        value = super().get_default(ctx, call=False)
++
++        # Flags sharing a name share the declared default, regardless of order.
++        # False, None, and other false values are valid defaults, so only skip UNSET.
++        if value is UNSET and self.is_flag and not self.is_bool_flag:
++            for param in ctx.command.params:
++                if (
++                    isinstance(param, Option)
++                    and param.is_flag
++                    and not param.is_bool_flag
++                    and param.name == self.name
++                    and param.default is not UNSET
++                ):
++                    value = param.default
++                    break
++
++        if call and callable(value):
++            value = value()
++
++        return value
++
+     def get_error_hint(self, ctx: Context) -> str:
+         result = super().get_error_hint(ctx)
+         if self.show_envvar and self.envvar is not None:
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 3f293e8..bc89501 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -61,6 +63,85 @@ def test_multiple_flag_default(runner):
+     assert result.return_value == ((True, False), (True,), (1, -1))
+ 
+ 
++@pytest.mark.parametrize("reverse", [False, True])
++@pytest.mark.parametrize(
++    ("default", "expected_default"),
++    [
++        (True, "upper"),
++        ("lower", "lower"),
++        (False, "False"),
++        (0, "0"),
++        ("", ""),
++        (None, None),
++        (lambda: "dynamic", "dynamic"),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "expected"),
++    [
++        ([], None),
++        (["--upper"], "upper"),
++        (["--lower"], "lower"),
++        (["--upper", "--lower"], "lower"),
++        (["--lower", "--upper"], "upper"),
++    ],
++)
++def test_shared_flag_default(runner, reverse, default, expected_default, args, expected):
++    def cli(case):
++        return case
++
++    options = [
++        click.option("--upper", "case", flag_value="upper", default=default),
++        click.option("--lower", "case", flag_value="lower"),
++    ]
++    if reverse:
++        options.reverse()
++
++    for option in options:
++        cli = option(cli)
++    cli = click.command()(cli)
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == (expected if args else expected_default)
++
++
++@pytest.mark.parametrize("default", ["mapped", None, lambda: "mapped"])
++@pytest.mark.parametrize("args", [[], ["--upper"], ["--lower"]])
++def test_shared_flag_default_map(runner, default, args):
++    @click.command()
++    @click.option("--lower", "case", flag_value="lower")
++    @click.option("--upper", "case", flag_value="upper", default=True)
++    def cli(case):
++        return case
++
++    result = runner.invoke(
++        cli, args, default_map={"case": default}, standalone_mode=False
++    )
++    assert result.exception is None
++    expected = default() if callable(default) else default
++    if args:
++        expected = args[0][2:]
++    assert result.return_value == expected
++
++
++def test_shared_flag_callable_default():
++    calls = []
++
++    def default():
++        calls.append(True)
++        return "upper"
++
++    lower = click.Option(["--lower", "case"], flag_value="lower")
++    upper = click.Option(["--upper", "case"], flag_value="upper", default=default)
++    ctx = click.Context(click.Command("cli", params=[lower, upper]))
++
++    assert lower.get_default(ctx, call=False) is default
++    assert calls == []
++    assert lower.get_default(ctx) == "upper"
++    assert calls == [True]
++
++
+ def test_flag_default_map(runner):
+     """test flag with default map"""
+ 

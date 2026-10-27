@@ -1,0 +1,55 @@
+test_audit_failure_rolls_back (test_contract.Contract.test_audit_failure_rolls_back) ... FAIL
+test_bad_amounts (test_contract.Contract.test_bad_amounts) ... ok
+test_connection_owned_by_caller (test_contract.Contract.test_connection_owned_by_caller) ... ok
+test_database_error_propagates (test_contract.Contract.test_database_error_propagates) ... FAIL
+test_existing_transaction_preserved (test_contract.Contract.test_existing_transaction_preserved) ... FAIL
+test_insufficient (test_contract.Contract.test_insufficient) ... ok
+test_missing_destination_rolls_back (test_contract.Contract.test_missing_destination_rolls_back) ... FAIL
+test_missing_source (test_contract.Contract.test_missing_source) ... ok
+test_same_account (test_contract.Contract.test_same_account) ... ok
+test_success (test_contract.Contract.test_success) ... ok
+
+======================================================================
+FAIL: test_audit_failure_rolls_back (test_contract.Contract.test_audit_failure_rolls_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h07\initial\test_contract.py", line 26, in test_audit_failure_rolls_back
+    self.assertEqual((balance(self.conn, "alice"), balance(self.conn, "bob")), (100, 20))
+AssertionError: Tuples differ: (90, 30) != (100, 20)
+
+First differing element 0:
+90
+100
+
+- (90, 30)
++ (100, 20)
+
+======================================================================
+FAIL: test_database_error_propagates (test_contract.Contract.test_database_error_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h07\initial\test_contract.py", line 66, in test_database_error_propagates
+    self.assertEqual(balance(self.conn, "alice"), 100)
+AssertionError: 99 != 100
+
+======================================================================
+FAIL: test_existing_transaction_preserved (test_contract.Contract.test_existing_transaction_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h07\initial\test_contract.py", line 50, in test_existing_transaction_preserved
+    with self.assertRaises(TransferError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: TransferError not raised
+
+======================================================================
+FAIL: test_missing_destination_rolls_back (test_contract.Contract.test_missing_destination_rolls_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed-v2\.preflight-work\h07\initial\test_contract.py", line 19, in test_missing_destination_rolls_back
+    self.assertEqual(balance(self.conn, "alice"), 100)
+AssertionError: 90 != 100
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+FAILED (failures=4)

@@ -1,0 +1,13 @@
+{
+  "role": "Descriptive semantic audit; does not replace or alter frozen token/time tests.",
+  "selection": "After formal completion, select min(8, formal task count) task IDs by seeded shuffle 20261025 of sorted formal IDs; repeat0 only. Both arms retained, randomized anonymous A/B labels with seed20261026.",
+  "reviewer": "Independent agent sees task, base sources, anonymous generated patches; no arm names, skill prompt, token/time totals or grade outcomes.",
+  "questions": [
+    "Does the implementation satisfy the reported behavior and preserve relevant existing contracts? Identify concrete paths and uncertainty.",
+    "Which added guards, catches, defaults, retries, copies or abstractions are required by a current contract or demonstrated failure?",
+    "Which added mechanisms are unnecessary, duplicated or silently convert real failures into apparent success? Cite evidence; do not treat fewer lines as sufficient.",
+    "Does either patch remove necessary validation, resource cleanup, error propagation, authorization or ownership protection?"
+  ],
+  "output": "Per anonymous patch: concise evidence-backed findings, justified defenses, unnecessary machinery, material contract concerns, and unresolved uncertainty. If no material difference is found, say so.",
+  "interpretation": "Small curated audit is descriptive. Report all sampled results and mapping after review. No automated AST/LOC proxy is called proof of less redundancy. Any detected material regression limits claims about preserving behavior even when frozen tests pass."
+}

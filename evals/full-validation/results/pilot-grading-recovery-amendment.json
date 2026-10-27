@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-24T13:20:16.895924+00:00",
+  "stage": "before_valid_pilot_completion_and_any_formal_run",
+  "reason": "Independent grader copy of unreadable pytest-created temporary directory raised after CLI completion. Old runner had no persisted elapsed checkpoint.",
+  "invalidated_whole_pilot_case": "b-06-click-2417",
+  "all_three_pairs_repeated": true,
+  "original_cli_sessions_retained": 5,
+  "original_recorded_grades": 3,
+  "known_original_tokens": 2064872,
+  "unavailable_original_client_timings": 2,
+  "unstarted_original_arm_count": 1,
+  "healthy_pilot_runs_retained": 54,
+  "extra_model_work_reported_separately": true,
+  "archive": "runtime/infrastructure-grading-retry",
+  "fixes": [
+    "Copy only skips actual pytest temporary directories; production and frozen acceptance retained.",
+    "Persist original CLI usage and precise elapsed time before grading; recovery resumes grading only and retains failed grading costs."
+  ],
+  "files": {
+    "preflight.py": "1DEFC6FC711CFBA37789FC79748830EC024966AF5094CFD19FFDE66869FCC9C1",
+    "run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884",
+    "skill-frozen.md": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF"
+  },
+  "unchanged": [
+    "skill",
+    "model",
+    "reasoning",
+    "task IDs",
+    "arm order",
+    "repeats",
+    "metrics",
+    "benefit threshold",
+    "formal/replication untouched"
+  ]
+}

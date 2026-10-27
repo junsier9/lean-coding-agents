@@ -1,0 +1,15 @@
+test_bad_limit (test_contract.Contract.test_bad_limit) ... ok
+test_bad_size_type (test_contract.Contract.test_bad_size_type) ... ok
+test_bad_size_value (test_contract.Contract.test_bad_size_value) ... ok
+test_empty (test_contract.Contract.test_empty) ... ok
+test_export_count (test_contract.Contract.test_export_count) ... ok
+test_limit_does_not_read_tail (test_contract.Contract.test_limit_does_not_read_tail) ... ok
+test_normal_batches (test_contract.Contract.test_normal_batches) ... ok
+test_prefix_before_source_error (test_contract.Contract.test_prefix_before_source_error) ... ok
+test_sink_failure_stops_consumption (test_contract.Contract.test_sink_failure_stops_consumption) ... ok
+test_zero_limit_no_consumption (test_contract.Contract.test_zero_limit_no_consumption) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

@@ -1,0 +1,76 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 9763fc0..3b2cf07 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -545,7 +545,6 @@ DEACCENT_MAP = DeaccenterDict(_BASE_DEACCENT_MAP)
+ 
+ _SIZE_SYMBOLS = ('B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+ _SIZE_BOUNDS = [(1024 ** i, sym) for i, sym in enumerate(_SIZE_SYMBOLS)]
+-_SIZE_RANGES = list(zip(_SIZE_BOUNDS, _SIZE_BOUNDS[1:]))
+ 
+ 
+ def bytes2human(nbytes, ndigits=0):
+@@ -561,8 +560,8 @@ def bytes2human(nbytes, ndigits=0):
+     '0.00B'
+     """
+     abs_bytes = abs(nbytes)
+-    for (size, symbol), (next_size, next_symbol) in _SIZE_RANGES:
+-        if abs_bytes <= next_size:
++    for size, symbol in reversed(_SIZE_BOUNDS):
++        if abs_bytes >= size:
+             break
+     hnbytes = float(nbytes) / size
+     return '{hnbytes:.{ndigits}f}{symbol}'.format(hnbytes=hnbytes,
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1ffa916..15ba271 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -2,9 +2,48 @@ import re
+ import uuid
+ from unittest import TestCase
+ 
++import pytest
++
+ from boltons import strutils
+ 
+ 
++@pytest.mark.parametrize('exponent, symbol', enumerate('KMGTPEZY', 1))
++def test_bytes2human_exact_boundaries(exponent, symbol):
++    nbytes = 1024 ** exponent
++    assert strutils.bytes2human(nbytes) == '1' + symbol
++    assert strutils.bytes2human(-nbytes) == '-1' + symbol
++    assert strutils.bytes2human(nbytes, 2) == '1.00' + symbol
++    assert strutils.bytes2human(-nbytes, 2) == '-1.00' + symbol
++
++
++@pytest.mark.parametrize('exponent, symbol', enumerate('BKMGTPEZ', 1))
++def test_bytes2human_below_boundaries(exponent, symbol):
++    nbytes = 1024 ** exponent - 1
++    rounded = '1023' if exponent == 1 else '1024'
++    assert strutils.bytes2human(nbytes) == rounded + symbol
++    assert strutils.bytes2human(-nbytes) == '-' + rounded + symbol
++    assert strutils.bytes2human(nbytes, 2) == rounded + '.00' + symbol
++    assert strutils.bytes2human(-nbytes, 2) == '-' + rounded + '.00' + symbol
++
++
++@pytest.mark.parametrize('nbytes, ndigits, expected', [
++    (0, 0, '0B'),
++    (0, 2, '0.00B'),
++    (1, 0, '1B'),
++    (-1, 2, '-1.00B'),
++    (128991, 0, '126K'),
++    (100001221, 0, '95M'),
++    (1536, 0, '2K'),
++    (1536, 1, '1.5K'),
++    (1536, 3, '1.500K'),
++    (-1536, 2, '-1.50K'),
++    (1024 ** 8 + 1, 0, '1Y'),
++    (1024 ** 9, 0, '1024Y'),
++])
++def test_bytes2human_formatting(nbytes, ndigits, expected):
++    assert strutils.bytes2human(nbytes, ndigits) == expected
++
++
+ def test_strip_ansi():
+     assert strutils.strip_ansi(
+         '\x1b[0m\x1b[1;36mart\x1b[46;34m\xdc') == 'art\xdc'

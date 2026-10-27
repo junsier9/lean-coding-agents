@@ -1,0 +1,63 @@
+diff --git a/tests/test_http.py b/tests/test_http.py
+index 6ce53ca..0e8ec84 100644
+--- a/tests/test_http.py
++++ b/tests/test_http.py
+@@ -23,6 +23,23 @@ class HttpTests(unittest.TestCase):
+         dct = {b'Content-type': [b'text/html'], b'Accept': [b'gzip']}
+         self.assertEqual(headers_raw_to_dict(raw), dct)
+ 
++    def test_headers_raw_to_dict_repeated(self):
++        raw = (b"Cookie: val001\r\nAccept: gzip\r\n"
++               b"Cookie: val002\r\nCookie: val001\r\n")
++        dct = {b'Cookie': [b'val001', b'val002', b'val001'],
++               b'Accept': [b'gzip']}
++        self.assertEqual(headers_raw_to_dict(raw), dct)
++
++    def test_headers_raw_to_dict_repeated_with_whitespace(self):
++        raw = (b" X-Test : first:part \r\ninvalid\r\n"
++               b"X-Test:\r\nX-Test: \xff\r\n\r\n")
++        dct = {b'X-Test': [b'first:part', b'', b'\xff']}
++        self.assertEqual(headers_raw_to_dict(raw), dct)
++
++    def test_headers_raw_to_dict_empty(self):
++        self.assertEqual(headers_raw_to_dict(b''), {})
++        self.assertEqual(headers_raw_to_dict(b'\r\ninvalid\r\n'), {})
++
+     def test_headers_dict_to_raw(self):
+         dct = OrderedDict([
+             (b'Content-type', b'text/html'),
+diff --git a/w3lib/http.py b/w3lib/http.py
+index 8c5dfed..9951570 100644
+--- a/w3lib/http.py
++++ b/w3lib/http.py
+@@ -4,7 +4,8 @@ from base64 import urlsafe_b64encode
+ def headers_raw_to_dict(headers_raw):
+     r"""
+     Convert raw headers (single multi-line bytestring)
+-    to a dictionary.
++    to a dictionary with bytes keys and lists of bytes values.
++    Repeated header values are kept in their original order.
+ 
+     For example:
+ 
+@@ -27,13 +28,13 @@ def headers_raw_to_dict(headers_raw):
+ 
+     if headers_raw is None:
+         return None
+-    headers = headers_raw.splitlines()
+-    headers_tuples = [header.split(b':', 1) for header in headers]
+-    return dict([
+-        (header_item[0].strip(), [header_item[1].strip()])
+-        for header_item in headers_tuples
+-        if len(header_item) == 2
+-    ])
++    headers = {}
++    for header in headers_raw.splitlines():
++        header_item = header.split(b':', 1)
++        if len(header_item) == 2:
++            key, value = header_item
++            headers.setdefault(key.strip(), []).append(value.strip())
++    return headers
+ 
+ 
+ def headers_dict_to_raw(headers_dict):

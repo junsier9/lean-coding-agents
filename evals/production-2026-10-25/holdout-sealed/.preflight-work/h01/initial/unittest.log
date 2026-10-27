@@ -1,0 +1,23 @@
+test_bad_sku (test_contract.Contract.test_bad_sku) ... ok
+test_duplicate (test_contract.Contract.test_duplicate) ... ok
+test_empty (test_contract.Contract.test_empty) ... ok
+test_invalid_json (test_contract.Contract.test_invalid_json) ... ok
+test_non_array (test_contract.Contract.test_non_array) ... ok
+test_owned_immutable_result (test_contract.Contract.test_owned_immutable_result) ... ok
+test_quantities (test_contract.Contract.test_quantities) ... ok
+test_validator_called_once (test_contract.Contract.test_validator_called_once) ... FAIL
+test_validator_input_not_mutated (test_contract.Contract.test_validator_input_not_mutated) ... ok
+test_values_and_order (test_contract.Contract.test_values_and_order) ... ok
+
+======================================================================
+FAIL: test_validator_called_once (test_contract.Contract.test_validator_called_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h01\initial\test_contract.py", line 22, in test_validator_called_once
+    self.assertEqual(len(calls), 1)
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+FAILED (failures=1)

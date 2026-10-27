@@ -1,0 +1,53 @@
+test_ambiguous_error_never_retries (test_contract.Contract.test_ambiguous_error_never_retries) ... FAIL
+test_attempts_one_has_no_wait (test_contract.Contract.test_attempts_one_has_no_wait) ... ok
+test_cancellation (test_contract.Contract.test_cancellation) ... ok
+test_committed_transient_is_deduplicated (test_contract.Contract.test_committed_transient_is_deduplicated) ... ok
+test_exhaustion_raises_last (test_contract.Contract.test_exhaustion_raises_last) ... ok
+test_immediate_success (test_contract.Contract.test_immediate_success) ... ok
+test_invalid_key_before_write (test_contract.Contract.test_invalid_key_before_write) ... ok
+test_invalid_policy_before_write (test_contract.Contract.test_invalid_policy_before_write) ... ok
+test_none_key_never_retries (test_contract.Contract.test_none_key_never_retries) ... FAIL
+test_permanent_error_never_retries (test_contract.Contract.test_permanent_error_never_retries) ... FAIL
+test_retry_transient_with_key (test_contract.Contract.test_retry_transient_with_key) ... ok
+test_unexpected_error_never_retries (test_contract.Contract.test_unexpected_error_never_retries) ... FAIL
+
+======================================================================
+FAIL: test_ambiguous_error_never_retries (test_contract.Contract.test_ambiguous_error_never_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-e1oyre83\test_contract.py", line 65, in test_ambiguous_error_never_retries
+    with self.assertRaises(AmbiguousWriteError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AmbiguousWriteError not raised
+
+======================================================================
+FAIL: test_none_key_never_retries (test_contract.Contract.test_none_key_never_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-e1oyre83\test_contract.py", line 47, in test_none_key_never_retries
+    with self.assertRaises(TransientWriteError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: TransientWriteError not raised
+
+======================================================================
+FAIL: test_permanent_error_never_retries (test_contract.Contract.test_permanent_error_never_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-e1oyre83\test_contract.py", line 56, in test_permanent_error_never_retries
+    with self.assertRaises(WriteRejected) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: WriteRejected not raised
+
+======================================================================
+FAIL: test_unexpected_error_never_retries (test_contract.Contract.test_unexpected_error_never_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-e1oyre83\test_contract.py", line 73, in test_unexpected_error_never_retries
+    with self.assertRaises(RuntimeError) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.002s
+
+FAILED (failures=4)

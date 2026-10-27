@@ -1,0 +1,52 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 7c3670a..4f1be7f 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -225,11 +225,17 @@ def chunked(iterable, n, strict=False):
+ 
+     To use a fill-in value instead, see the :func:`grouper` recipe.
+ 
++    If *n* is negative, ``ValueError`` is raised. If *n* is zero, no
++    chunks are yielded.
++
+     If the length of *iterable* is not divisible by *n* and *strict* is
+     ``True``, then ``ValueError`` will be raised before the last
+     list is yielded.
+ 
+     """
++    if n is not None and n < 0:
++        raise ValueError('n must be at least 0')
++
+     iterator = iter(partial(take, n, iter(iterable)), [])
+     if strict:
+         if n is None:
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1f8d10c..446e146 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -70,6 +70,25 @@ class ChunkedTests(TestCase):
+             list(mi.chunked('ABCDE', None)), [['A', 'B', 'C', 'D', 'E']]
+         )
+ 
++    def test_negative(self):
++        for n, strict, value in product((-1, -3), (False, True), ('', 'ABCDE')):
++            with self.subTest(n=n, strict=strict, value=value):
++                iterable = iter(value)
++                with self.assertRaisesRegex(
++                    ValueError, '^n must be at least 0$'
++                ):
++                    list(mi.chunked(iterable, n, strict=strict))
++                self.assertEqual(list(iterable), list(value))
++
++    def test_zero(self):
++        for strict, value in product((False, True), ('', 'ABCDE')):
++            with self.subTest(strict=strict, value=value):
++                iterable = iter(value)
++                self.assertEqual(
++                    list(mi.chunked(iterable, 0, strict=strict)), []
++                )
++                self.assertEqual(list(iterable), list(value))
++
+     def test_strict_false(self):
+         """Test when ``n`` does not divide evenly into the length of the
+         iterable and strict is false.

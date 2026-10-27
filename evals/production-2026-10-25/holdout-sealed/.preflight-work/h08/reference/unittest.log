@@ -1,0 +1,15 @@
+test_base_exception_cleanup (test_contract.Contract.test_base_exception_cleanup) ... ok
+test_close_does_not_mask_read (test_contract.Contract.test_close_does_not_mask_read) ... ok
+test_close_failure_no_replace (test_contract.Contract.test_close_failure_no_replace) ... ok
+test_create_failure_closes (test_contract.Contract.test_create_failure_closes) ... ok
+test_empty_resource (test_contract.Contract.test_empty_resource) ... ok
+test_missing_is_normal (test_contract.Contract.test_missing_is_normal) ... ok
+test_open_failure_propagates (test_contract.Contract.test_open_failure_propagates) ... ok
+test_read_failure_preserves_target (test_contract.Contract.test_read_failure_preserves_target) ... ok
+test_replace_failure_cleanup (test_contract.Contract.test_replace_failure_cleanup) ... ok
+test_success (test_contract.Contract.test_success) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.049s
+
+OK

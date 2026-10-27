@@ -1,0 +1,119 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 95f8e12..94897ea 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -662,7 +662,7 @@ def gzip_bytes(bytestring, level=6):
+ 
+ 
+ 
+-_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\x2028|\x2029)',
++_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\u2028|\u2029)',
+                              re.UNICODE)
+ 
+ 
+@@ -671,8 +671,8 @@ def iter_splitlines(text):
+     instead of a list. Also similar to :meth:`file.next`, as that also
+     lazily reads and yields lines from a file.
+ 
+-    This function works with a variety of line endings, but as always,
+-    be careful when mixing line endings within a file.
++    This function works with a variety of line endings and preserves
++    empty lines, including a trailing empty line after a line ending.
+ 
+     >>> list(iter_splitlines('\nhi\nbye\n'))
+     ['', 'hi', 'bye', '']
+@@ -681,21 +681,13 @@ def iter_splitlines(text):
+     >>> list(iter_splitlines(''))
+     []
+     """
+-    prev_end, len_text = 0, len(text)
+-    # print('last: %r' % last_idx)
+-    # start, end = None, None
++    prev_end = 0
+     for match in _line_ending_re.finditer(text):
+-        start, end = match.start(1), match.end(1)
+-        # print(start, end)
+-        if prev_end <= start:
+-            yield text[prev_end:start]
+-        if end == len_text:
+-            yield ''
++        start, end = match.span(1)
++        yield text[prev_end:start]
+         prev_end = end
+-    tail = text[prev_end:]
+-    if tail:
+-        yield tail
+-    return
++    if text:
++        yield text[prev_end:]
+ 
+ 
+ def indent(text, margin, newline='\n', key=bool):
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1da050a..5553022 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -46,12 +46,63 @@ def test_asciify():
+     assert b[-1:].decode('ascii') == 'e'
+ 
+ 
++@pytest.mark.parametrize('text, expected', [
++    ('', []),
++    ('plain text', ['plain text']),
++    ('January 28, 2026', ['January 28, 2026']),
++    ('February 29, 2024', ['February 29, 2024']),
++    (' 28 29 ', [' 28 29 ']),
++    ('2028 2029\t28\t29', ['2028 2029\t28\t29']),
++])
++def test_iter_splitlines_preserves_text(text, expected):
++    lines = strutils.iter_splitlines(text)
++    assert iter(lines) is lines
++    assert list(lines) == expected
++
++
++@pytest.mark.parametrize('separator', [
++    '\r\n', '\n', '\x0b', '\f', '\r', '\x85', '\u2028', '\u2029',
++])
++def test_iter_splitlines_separators(separator):
++    text = separator + 'first' + separator * 2 + 'last' + separator
++    assert list(strutils.iter_splitlines(text)) == ['', 'first', '', 'last', '']
++    assert list(strutils.iter_splitlines(separator)) == ['', '']
++    assert list(strutils.iter_splitlines(separator * 2)) == ['', '', '']
++
++
++def test_iter_splitlines_mixed_endings():
++    text = ('\r\nJanuary 28, 2026\u2028\u2029February 29, 2024\r'
++            'third\nfourth\x85fifth\x0blast\f')
++    assert list(strutils.iter_splitlines(text)) == [
++        '', 'January 28, 2026', '', 'February 29, 2024',
++        'third', 'fourth', 'fifth', 'last', '',
++    ]
++
++
+ def test_indent():
+     to_indent = '\nabc\ndef\n\nxyz\n'
+     ref = '\n  abc\n  def\n\n  xyz\n'
+     assert strutils.indent(to_indent, '  ') == ref
+ 
+ 
++def test_indent_unicode_and_mixed_endings():
++    text = '\u2028January 28, 2026\r\n\u2029February 29, 2024\x85'
++    expected = '\n  January 28, 2026\n\n  February 29, 2024\n'
++    assert strutils.indent(text, '  ') == expected
++    assert strutils.indent('', '  ') == ''
++
++
++def test_indent_custom_key_and_newline():
++    seen = []
++
++    def key(line):
++        seen.append(line)
++        return not line
++
++    assert strutils.indent('\u2028a\r\n\u2029', '>', newline='|', key=key) == '>|a|>|>'
++    assert seen == ['', 'a', '', '']
++
++
+ def test_is_uuid():
+     assert strutils.is_uuid(uuid.uuid4()) == True
+     assert strutils.is_uuid(uuid.uuid4(), version=1) == False

@@ -1,0 +1,144 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index d12acc4..1d4d183 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4198,7 +4198,7 @@ def nth_product(index, *iterables, repeat=1):
+ 
+     ``IndexError`` will be raised if the given *index* is invalid.
+     """
+-    pools = tuple(map(tuple, reversed(iterables * repeat)))
++    pools = tuple(map(tuple, reversed(iterables))) * repeat
+     ns = tuple(map(len, pools))
+ 
+     c = reduce(mul, ns)
+@@ -4362,7 +4362,7 @@ def product_index(element, *iterables, repeat=1):
+     of *args*.
+     """
+     elements = tuple(element)
+-    pools = tuple(map(tuple, iterables * repeat))
++    pools = tuple(map(tuple, iterables)) * repeat
+     if len(elements) != len(pools):
+         raise ValueError('element is not a product of args')
+ 
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index cc043b0..450d5fc 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -580,7 +580,7 @@ def random_product(*iterables, repeat=1):
+     ``itertools.product(*args, repeat=repeat)``.
+ 
+     """
+-    pools = tuple(map(tuple, iterables * repeat))
++    pools = tuple(map(tuple, iterables)) * repeat
+     return tuple(map(choice, pools))
+ 
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b675cd6..2ea2dae 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4865,6 +4865,31 @@ class NthProductTests(TestCase):
+             mi.nth_product(123, 'AB', 'CD', 'EFG', 'AB', 'CD', 'EFG'),
+         )
+ 
++    def test_repeat_iterator_input(self):
++        for make_iter in (iter, lambda items: (x for x in items)):
++            for iterables in [('ba',), ('ba', (2, 1, 2))]:
++                for repeat in (2, 3):
++                    products = list(product(*iterables, repeat=repeat))
++                    for index in range(-len(products), len(products)):
++                        with self.subTest(
++                            make_iter=make_iter,
++                            iterables=iterables,
++                            repeat=repeat,
++                            index=index,
++                        ):
++                            actual = mi.nth_product(
++                                index, *map(make_iter, iterables), repeat=repeat
++                            )
++                            self.assertEqual(actual, products[index])
++
++    def test_repeat_iterator_invalid_index(self):
++        for iterables in [('',), ('ba',), ('ba', (2, 1, 2))]:
++            size = len(list(product(*iterables, repeat=2)))
++            for index in (-size - 1, size):
++                with self.subTest(iterables=iterables, index=index):
++                    with self.assertRaises(IndexError):
++                        mi.nth_product(index, *map(iter, iterables), repeat=2)
++
+ 
+ class NthCombinationWithReplacementTests(TestCase):
+     def test_basic(self):
+@@ -4983,6 +5008,33 @@ class ProductIndexTests(TestCase):
+             mi.product_index(target, 'AB', 'CD', 'EFG', 'AB', 'CD', 'EFG'),
+         )
+ 
++    def test_repeat_iterator_input(self):
++        for make_iter in (iter, lambda items: (x for x in items)):
++            for iterables in [('bab',), ('bab', (2, 1, 2))]:
++                for repeat in (2, 3):
++                    products = list(product(*iterables, repeat=repeat))
++                    for element in products:
++                        with self.subTest(
++                            make_iter=make_iter,
++                            iterables=iterables,
++                            repeat=repeat,
++                            element=element,
++                        ):
++                            actual = mi.product_index(
++                                make_iter(element),
++                                *map(make_iter, iterables),
++                                repeat=repeat,
++                            )
++                            self.assertEqual(actual, products.index(element))
++
++    def test_repeat_iterator_invalid_element(self):
++        for element in [(), ('b',), ('b',) * 3, ('b', 'z')]:
++            with self.subTest(element=element):
++                with self.assertRaises(ValueError):
++                    mi.product_index(element, iter('ba'), repeat=2)
++        with self.assertRaises(ValueError):
++            mi.product_index(('b', 1, 'a', 2), iter('ba'), iter(()), repeat=2)
++
+ 
+ class CombinationIndexTests(TestCase):
+     def test_r_less_than_n(self):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index c6757c9..ec33a63 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -568,6 +568,34 @@ class RandomProductTests(TestCase):
+         self.assertEqual(len(n), len(nums))
+         self.assertEqual(len(m), len(lets))
+ 
++    def test_iterator_with_repeat(self):
++        for make_iter in (iter, lambda items: (x for x in items)):
++            for iterables in [('bab',), ('bab', (2, 1, 2))]:
++                for repeat in (1, 2, 3):
++                    for seed in range(5):
++                        with self.subTest(
++                            make_iter=make_iter,
++                            iterables=iterables,
++                            repeat=repeat,
++                            seed=seed,
++                        ):
++                            rng = random.Random(seed)
++                            expected = tuple(
++                                rng.choice(pool) for pool in iterables * repeat
++                            )
++                            with patch(
++                                'more_itertools.recipes.choice',
++                                side_effect=random.Random(seed).choice,
++                            ):
++                                actual = mi.random_product(
++                                    *map(make_iter, iterables), repeat=repeat
++                                )
++                            self.assertEqual(actual, expected)
++
++    def test_empty_iterator_with_repeat(self):
++        with self.assertRaises(IndexError):
++            mi.random_product(iter('ab'), iter(()), repeat=2)
++
+ 
+ class RandomPermutationTests(TestCase):
+     """Tests for ``random_permutation()``"""

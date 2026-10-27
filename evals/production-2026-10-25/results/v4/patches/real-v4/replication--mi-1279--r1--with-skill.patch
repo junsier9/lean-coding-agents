@@ -1,0 +1,135 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c850a73..b61ef38 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -658,13 +658,17 @@ def one(iterable, too_short=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+-    raise too_short or ValueError('too few items in iterable (expected 1)')
++    if too_short is not None:
++        raise too_short
++    raise ValueError('too few items in iterable (expected 1)')
+ 
+ 
+ def raise_(exception, *args):
+@@ -3681,11 +3685,13 @@ def only(iterable, default=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
++            if too_long is not None:
++                raise too_long
+             msg = (
+                 f'Expected exactly one item in iterable, but got {first!r}, '
+                 f'{second!r}, and perhaps more.'
+             )
+-            raise too_long or ValueError(msg)
++            raise ValueError(msg)
+         return first
+     return default
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4e5f27f..8d72a57 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -791,6 +791,50 @@ class OneTests(TestCase):
+             lambda: mi.one(it),
+         )
+ 
++    def test_falsey_custom_exceptions(self):
++        class FalseyError(Exception):
++            def __bool__(self):
++                return False
++
++        for iterable, keyword in (([], 'too_short'), ([1, 2], 'too_long')):
++            with self.subTest(keyword=keyword):
++                error = FalseyError('custom error')
++                with self.assertRaises(FalseyError) as caught:
++                    mi.one(iterable, **{keyword: error})
++                self.assertIs(caught.exception, error)
++
++    def test_custom_exception_skips_repr(self):
++        item = mock.MagicMock()
++        item.__repr__ = mock.Mock(side_effect=TypeError('bad repr'))
++        self.assertRaises(
++            OverflowError, mi.one, [item, item], too_long=OverflowError
++        )
++        error = OverflowError('too many items')
++        with self.assertRaises(OverflowError) as caught:
++            mi.one([item, item], None, error)
++        self.assertIs(caught.exception, error)
++        item.__repr__.assert_not_called()
++
++    def test_default_exception_repr_failure(self):
++        error = RuntimeError('bad repr')
++        item = mock.MagicMock()
++        item.__repr__ = mock.Mock(side_effect=error)
++        for position in (0, 1):
++            with self.subTest(position=position):
++                iterable = [0, 1]
++                iterable[position] = item
++                with self.assertRaises(RuntimeError) as caught:
++                    mi.one(iterable)
++                self.assertIs(caught.exception, error)
++
++    def test_too_short_default_message(self):
++        self.assertRaisesRegex(
++            ValueError,
++            r'^too few items in iterable \(expected 1\)$',
++            mi.one,
++            [],
++        )
++
+ 
+ class IntersperseTest(TestCase):
+     """Tests for intersperse()"""
+@@ -4385,6 +4429,40 @@ class OnlyTests(TestCase):
+             lambda: mi.only(['foo', 'bar', 'baz']),
+         )
+ 
++    def test_falsey_custom_exception(self):
++        class FalseyError(Exception):
++            def __bool__(self):
++                return False
++
++        error = FalseyError('custom error')
++        with self.assertRaises(FalseyError) as caught:
++            mi.only([1, 2], too_long=error)
++        self.assertIs(caught.exception, error)
++
++    def test_custom_exception_skips_repr(self):
++        item = mock.MagicMock()
++        item.__repr__ = mock.Mock(side_effect=TypeError('bad repr'))
++        self.assertRaises(
++            RuntimeError, mi.only, [item, item], too_long=RuntimeError
++        )
++        error = RuntimeError('too many items')
++        with self.assertRaises(RuntimeError) as caught:
++            mi.only([item, item], None, error)
++        self.assertIs(caught.exception, error)
++        item.__repr__.assert_not_called()
++
++    def test_default_exception_repr_failure(self):
++        error = RuntimeError('bad repr')
++        item = mock.MagicMock()
++        item.__repr__ = mock.Mock(side_effect=error)
++        for position in (0, 1):
++            with self.subTest(position=position):
++                iterable = [0, 1]
++                iterable[position] = item
++                with self.assertRaises(RuntimeError) as caught:
++                    mi.only(iterable)
++                self.assertIs(caught.exception, error)
++
+ 
+ class IchunkedTests(TestCase):
+     def test_even(self):

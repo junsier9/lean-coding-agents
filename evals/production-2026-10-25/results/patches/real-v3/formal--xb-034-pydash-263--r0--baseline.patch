@@ -1,0 +1,93 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 4bb779c..94449f0 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -2026,6 +2026,8 @@ def truncate(
+     """
+     Truncates `text` if it is longer than the given maximum string length. The last characters of
+     the truncated string are replaced with the omission string which defaults to ``...``.
++    If truncation is needed but `length` is no greater than the omission string's length,
++    including zero or negative lengths, only the full omission string is returned.
+ 
+     Args:
+         text: String to truncate.
+@@ -2059,12 +2061,17 @@ def truncate(
+ 
+     omission_len = len(omission)
+     text_len = length - omission_len
++    if text_len <= 0:
++        return omission
++
+     text = text[:text_len]
+ 
+     trunc_len = len(text)
+ 
+     if pyd.is_string(separator):
+-        trunc_len = text.rfind(separator)
++        last_index = text.rfind(separator)
++        if last_index != -1:
++            trunc_len = last_index
+     elif pyd.is_reg_exp(separator):
+         last = None
+         for match in separator.finditer(text):
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 58680f2..9214593 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1092,6 +1092,56 @@ def test_truncate(case, expected):
+     assert _.truncate(*case) == expected
+ 
+ 
++@parametrize("separator", [None, "", " ", "--", re.compile(r"\s+"), re.compile("")])
++@parametrize("length", [-10, -1, 0, 1, 2, 3])
++def test_truncate_short_length(length, separator):
++    assert _.truncate("hello world", length, separator=separator) == "..."
++
++
++@parametrize("separator", [None, "", " ", re.compile(r"\s+")])
++@parametrize(
++    "text,length,omission,expected",
++    [
++        ("hello world", 1, "[omitted]", "[omitted]"),
++        ("hello world", 9, "[omitted]", "[omitted]"),
++        ("hello world", -1, "", ""),
++        ("hello world", 0, "", ""),
++        ("hello world", 5, "", "hello"),
++        (123456789, 2, "...", "..."),
++        ("你好世界", 1, "……", "……"),
++        ("你好世界", 3, "……", "你……"),
++        ("hi", 2, "[omitted]", "hi"),
++        ("hi", 3, "[omitted]", "hi"),
++        ("", 0, "...", ""),
++        (None, 0, "...", ""),
++    ],
++)
++def test_truncate_omission(text, length, omission, separator, expected):
++    assert _.truncate(text, length, omission, separator) == expected
++
++
++@parametrize(
++    "text,length,separator,expected",
++    [
++        ("hello world", 8, None, "hello..."),
++        ("hello world", 8, "", "hello..."),
++        ("hello world", 8, re.compile(""), "hello..."),
++        ("hello world", 8, "|", "hello..."),
++        ("hello world", 8, re.compile(r"\|"), "hello..."),
++        ("hello world", 4, "|", "h..."),
++        ("hello world", 4, re.compile(r"\|"), "h..."),
++        ("hello world", 10, " ", "hello..."),
++        ("hello world", 10, re.compile(r"\s+"), "hello..."),
++        ("one--two--three", 13, "--", "one--two..."),
++        ("one--two--three", 13, re.compile("--"), "one--two..."),
++        ("--hello world", 8, "--", "..."),
++        ("--hello world", 8, re.compile("--"), "..."),
++    ],
++)
++def test_truncate_separator(text, length, separator, expected):
++    assert _.truncate(text, length, separator=separator) == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

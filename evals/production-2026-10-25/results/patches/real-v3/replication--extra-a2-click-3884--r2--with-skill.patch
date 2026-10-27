@@ -1,0 +1,167 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 9cf05a9..6582f96 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3270,8 +3270,12 @@ class Option(Parameter):
+ 
+     def get_error_hint(self, ctx: Context | None) -> str:
+         result = super().get_error_hint(ctx)
+-        if self.show_envvar and self.envvar is not None:
+-            result += f" (env var: '{self.envvar}')"
++        envvar = self.envvar
++        if self.show_envvar and envvar:
++            if isinstance(envvar, str):
++                envvar = (envvar,)
++            envvar_hint = ", ".join(f"'{x}'" for x in envvar)
++            result += f" (env var: {envvar_hint})"
+         return result
+ 
+     def _parse_decls(
+@@ -3439,7 +3443,7 @@ class Option(Parameter):
+         if self.show_envvar:
+             envvar = self.envvar
+ 
+-            if envvar is None:
++            if not envvar:
+                 if (
+                     self.allow_from_autoenv
+                     and ctx.auto_envvar_prefix is not None
+@@ -3447,7 +3451,7 @@ class Option(Parameter):
+                 ):
+                     envvar = f"{ctx.auto_envvar_prefix}_{self.name.upper()}"
+ 
+-            if envvar is not None:
++            if envvar:
+                 if isinstance(envvar, str):
+                     extra["envvars"] = (envvar,)
+                 else:
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 0656a0b..7bd6411 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -838,26 +838,117 @@ def test_nargs_envvar(runner):
+     assert result.output == "x|1\ny|2\n"
+ 
+ 
+-def test_show_envvar(runner):
++@pytest.mark.parametrize(
++    ("envvar", "expected"),
++    [
++        (None, None),
++        ("", None),
++        ([], None),
++        ((), None),
++        ("ARG1", "ARG1"),
++        (["ARG1", "ARG2"], "ARG1, ARG2"),
++        (("ARG1", "ARG2"), "ARG1, ARG2"),
++    ],
++)
++def test_show_envvar(runner, envvar, expected):
+     @click.command()
+-    @click.option("--arg1", envvar="ARG1", show_envvar=True)
++    @click.option("--arg1", envvar=envvar, show_envvar=True)
+     def cmd(arg):
+         pass
+ 
+     result = runner.invoke(cmd, ["--help"])
+     assert not result.exception
+-    assert "ARG1" in result.output
++    if expected is None:
++        assert "env var:" not in result.output
++    else:
++        assert f"[env var: {expected}]" in result.output
+ 
+ 
+-def test_show_envvar_auto_prefix(runner):
++@pytest.mark.parametrize("envvar", [None, "", [], ()])
++@pytest.mark.parametrize("allow_from_autoenv", [True, False])
++def test_show_envvar_auto_prefix(runner, envvar, allow_from_autoenv):
+     @click.command()
+-    @click.option("--arg1", show_envvar=True)
+-    def cmd(arg):
+-        pass
++    @click.option(
++        "--arg1",
++        envvar=envvar,
++        show_envvar=True,
++        allow_from_autoenv=allow_from_autoenv,
++    )
++    def cmd(arg1):
++        click.echo(arg1)
+ 
+     result = runner.invoke(cmd, ["--help"], auto_envvar_prefix="TEST")
+     assert not result.exception
+-    assert "TEST_ARG1" in result.output
++    if allow_from_autoenv:
++        assert "[env var: TEST_ARG1]" in result.output
++    else:
++        assert "env var:" not in result.output
++
++    result = runner.invoke(
++        cmd, auto_envvar_prefix="TEST", env={"TEST_ARG1": "from-env"}
++    )
++    assert not result.exception
++    assert result.output == ("from-env\n" if allow_from_autoenv else "\n")
++
++
++@pytest.mark.parametrize(
++    ("envvar", "envvar_hint"),
++    [
++        (None, ""),
++        ("", ""),
++        ([], ""),
++        ((), ""),
++        ("ARG1", " (env var: 'ARG1')"),
++        (["ARG1", "ARG2"], " (env var: 'ARG1', 'ARG2')"),
++        (("ARG1", "ARG2"), " (env var: 'ARG1', 'ARG2')"),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "error"),
++    [
++        ([], "Missing option {hint}."),
++        (
++            ["--arg1", "invalid"],
++            "Invalid value for {hint}: 'invalid' is not a valid integer.",
++        ),
++    ],
++)
++def test_show_envvar_errors(runner, envvar, envvar_hint, args, error):
++    option = click.Option(
++        ["--arg1"], envvar=envvar, show_envvar=True, required=True, type=int
++    )
++    cmd = click.Command("cmd", params=[option])
++    hint = f"'--arg1'{envvar_hint}"
++
++    assert option.get_error_hint(None) == hint
++    result = runner.invoke(
++        cmd,
++        args,
++        auto_envvar_prefix="TEST",
++        env={"ARG1": None, "ARG2": None, "TEST_ARG1": None},
++    )
++    assert result.exit_code == 2
++    assert f"Error: {error.format(hint=hint)}\n" in result.output
++
++
++def test_show_envvar_disabled(runner):
++    cmd = click.Command(
++        "cmd",
++        params=[
++            click.Option(["--arg1"], envvar=["ARG1", "ARG2"], required=True),
++        ],
++    )
++    result = runner.invoke(cmd, ["--help"], auto_envvar_prefix="TEST")
++    assert not result.exception
++    assert "env var:" not in result.output
++
++    result = runner.invoke(
++        cmd,
++        auto_envvar_prefix="TEST",
++        env={"ARG1": None, "ARG2": None, "TEST_ARG1": None},
++    )
++    assert result.exit_code == 2
++    assert "Error: Missing option '--arg1'.\n" in result.output
+ 
+ 
+ def test_show_envvar_auto_prefix_dash_in_command(runner):

@@ -1,0 +1,268 @@
+{
+  "completed_at": "2026-10-25T02:16:53.728715+00:00",
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "model_runs": 9,
+  "included_in_efficiency_statistics": false,
+  "routing_qualified": true,
+  "cases": {
+    "implicit-d04": {
+      "expected_load": true,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": true,
+      "grade": {
+        "tests_collected": 22,
+        "tests_ran": 22,
+        "passed": 22,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.7029999999795109,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.21799999999348074,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.48499999998603016,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "skill_unchanged": true
+    },
+    "implicit-d05": {
+      "expected_load": true,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": true,
+      "grade": {
+        "tests_collected": 24,
+        "tests_ran": 24,
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.6720000000204891,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 12,
+            "tests_ran": 12,
+            "passed": 12,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.2029999999795109,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 12,
+            "tests_ran": 12,
+            "passed": 12,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.4690000000409782,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "skill_unchanged": true
+    },
+    "implicit-d01": {
+      "expected_load": true,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": true,
+      "grade": {
+        "tests_collected": 22,
+        "tests_ran": 22,
+        "passed": 22,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.3589999999385327,
+        "exit_code": 0,
+        "timeout": false,
+        "modes": {
+          "normal": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.10899999993853271,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          },
+          "optimized": {
+            "exit_code": 0,
+            "tests_collected": 11,
+            "tests_ran": 11,
+            "passed": 11,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0,
+            "timeout": false,
+            "seconds": 0.25,
+            "command": [
+              "{PYTHON_RUNTIME}\\python.exe",
+              "-I",
+              "-B",
+              "-O",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              ".",
+              "-p",
+              "test_contract.py",
+              "-v"
+            ]
+          }
+        }
+      },
+      "skill_unchanged": true
+    },
+    "negative-readme": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    },
+    "negative-explanation": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    },
+    "negative-javascript": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    },
+    "negative-extra-01": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    },
+    "negative-extra-02": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    },
+    "negative-extra-03": {
+      "expected_load": false,
+      "operation_pass": true,
+      "routing_check_pass": true,
+      "skill_body_read_observed": false,
+      "grade": null,
+      "skill_unchanged": true
+    }
+  },
+  "limitations": [
+    "Known nine-request regression, not a new independent routing sample",
+    "No estimate of global selection reliability or invisible host activation"
+  ]
+}

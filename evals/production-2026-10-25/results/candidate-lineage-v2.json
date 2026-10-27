@@ -1,0 +1,14 @@
+{
+  "development_candidate": "v3",
+  "development_skill_sha256": "3492543F0B453DB741674AEC1564532D10B0F3F0DF71FFBA87E9E054BDA9CE92",
+  "previous_metadata_candidate": "v3-python",
+  "previous_metadata_sha256": "4A844452FCAA11DDD45697047B64F6BF286743D8EFD9D9EEC034EB5EBE5319BF",
+  "confirmation_candidate": "v3-python-v2",
+  "confirmation_skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "instruction_body_unchanged": true,
+  "reason": "Observed read-only explanation false-positive routing; description explicitly limits requested Python edits and excludes read-only/docs/other languages",
+  "previous_routing_results_preserved": "routing-v3-python.json",
+  "confirmation_or_holdout_model_calls_before_metadata_change": 0,
+  "new_routing_checks_include_three_fresh_independently_written_read_only_requests": true,
+  "words": 306
+}

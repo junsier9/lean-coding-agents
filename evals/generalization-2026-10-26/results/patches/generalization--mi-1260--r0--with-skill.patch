@@ -1,0 +1,181 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index cad5f7e..375f90d 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -1470,6 +1470,7 @@ def running_mean(iterable, *, maxlen=None):
+     if maxlen is None:
+         return map(truediv, accumulate(iterator), count(1))
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1515,6 +1516,7 @@ def running_min(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=min)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1560,6 +1562,7 @@ def running_max(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=max)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1591,6 +1594,8 @@ def running_statistics(iterable, *, maxlen=None):
+ 
+     # fmt: off
+     t0, t1, t2, t3 = tee(iterable, 4)
++    if maxlen is not None:
++        maxlen = _index(maxlen)
+     return map(
+         Stats,
+         count(1) if maxlen is None else chain(range(1, maxlen), repeat(maxlen)),
+diff --git a/more_itertools/recipes.pyi b/more_itertools/recipes.pyi
+index d492309..14dcb61 100644
+--- a/more_itertools/recipes.pyi
++++ b/more_itertools/recipes.pyi
+@@ -7,6 +7,7 @@ from fractions import Fraction
+ from typing import (
+     Any,
+     Callable,
++    SupportsIndex,
+     TypeVar,
+     overload,
+ )
+@@ -207,16 +208,16 @@ def loops(n: int) -> Iterator[None]: ...
+ def multinomial(*counts: int) -> int: ...
+ def random_derangement(iterable: Iterable[_T]) -> tuple[_T, ...]: ...
+ def running_mean(
+-    iterable: Iterable[_NumberT], *, maxlen: int | None = ...
++    iterable: Iterable[_NumberT], *, maxlen: SupportsIndex | None = ...
+ ) -> Iterator[_NumberT]: ...
+ def running_median(
+-    iterable: Iterable[_NumberT], *, maxlen: int | None = ...
++    iterable: Iterable[_NumberT], *, maxlen: SupportsIndex | None = ...
+ ) -> Iterator[_NumberT]: ...
+ def running_min(
+-    iterable: Iterable[_NumberT], *, maxlen: int | None = ...
++    iterable: Iterable[_NumberT], *, maxlen: SupportsIndex | None = ...
+ ) -> Iterator[_NumberT]: ...
+ def running_max(
+-    iterable: Iterable[_NumberT], *, maxlen: int | None = ...
++    iterable: Iterable[_NumberT], *, maxlen: SupportsIndex | None = ...
+ ) -> Iterator[_NumberT]: ...
+ 
+ @dataclass(frozen=True, slots=True)
+@@ -228,5 +229,5 @@ class Stats:
+     mean: float
+ 
+ def running_statistics(
+-    iterable: Iterable[_NumberT], *, maxlen: int | None = ...
++    iterable: Iterable[_NumberT], *, maxlen: SupportsIndex | None = ...
+ ) -> Iterator[Stats]: ...
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index e6a0a57..69f5ca4 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -1588,6 +1588,99 @@ def grow_to_window(data, maxlen):
+         yield data[i:j]
+ 
+ 
++class RunningWindowTests(TestCase):
++    functions = (
++        mi.running_min,
++        mi.running_max,
++        mi.running_mean,
++        mi.running_median,
++        mi.running_statistics,
++    )
++
++    class WindowSize:
++        def __init__(self, value):
++            self.value = value
++            self.calls = 0
++
++        def __index__(self):
++            self.calls += 1
++            return self.value
++
++    def test_index_protocol(self):
++        data = [4, 3, 7, 0, 8, 1]
++        for function in self.functions:
++            for size in (1, 2, 20):
++                with self.subTest(function=function.__name__, size=size):
++                    maxlen = self.WindowSize(size)
++                    self.assertEqual(
++                        list(function(iter(data), maxlen=maxlen)),
++                        list(function(iter(data), maxlen=size)),
++                    )
++                    self.assertEqual(maxlen.calls, 1)
++
++    def test_non_integer_maxlen(self):
++        class IntOnly:
++            def __int__(self):
++                return 2
++
++        for function in self.functions:
++            for data in ([], [4, 3, 7]):
++                for maxlen in (
++                    2.5,
++                    2.0,
++                    -1.5,
++                    '2',
++                    Decimal(2),
++                    Fraction(2),
++                    IntOnly(),
++                    self.WindowSize(2.5),
++                ):
++                    with self.subTest(
++                        function=function.__name__, data=data, maxlen=maxlen
++                    ):
++                        iterator = iter(data)
++                        with self.assertRaises(TypeError):
++                            function(iterator, maxlen=maxlen)
++                        self.assertEqual(list(iterator), data)
++
++    def test_non_positive_maxlen(self):
++        for function in self.functions:
++            for data in ([], [4, 3, 7]):
++                for maxlen in (
++                    0,
++                    -1,
++                    False,
++                    self.WindowSize(0),
++                    self.WindowSize(-1),
++                ):
++                    with self.subTest(
++                        function=function.__name__, data=data, maxlen=maxlen
++                    ):
++                        with self.assertRaisesRegex(
++                            ValueError, 'Window size should be positive'
++                        ):
++                            function(iter(data), maxlen=maxlen)
++
++    def test_none_and_boolean_maxlen(self):
++        data = [4, 3, 7, 0, 8, 1]
++        for function in self.functions:
++            with self.subTest(function=function.__name__):
++                self.assertEqual(
++                    list(function(iter(data), maxlen=None)),
++                    list(function(iter(data))),
++                )
++                self.assertEqual(
++                    list(function(iter(data), maxlen=True)),
++                    list(function(iter(data), maxlen=1)),
++                )
++
++    def test_empty_input(self):
++        for function in self.functions:
++            for maxlen in (None, 1, self.WindowSize(2)):
++                with self.subTest(function=function.__name__, maxlen=maxlen):
++                    self.assertEqual(list(function([], maxlen=maxlen)), [])
++
++
+ class RunningMeanTests(TestCase):
+     def test_basic(self):
+         for i, (iterable, expected) in enumerate(

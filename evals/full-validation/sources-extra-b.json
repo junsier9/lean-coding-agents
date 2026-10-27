@@ -1,0 +1,2964 @@
+{
+  "cases": [
+    {
+      "id": "xb-001-click-3884",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3884",
+      "task": "show_envvar 启用后，环境变量名为序列时错误提示出现嵌套引号和容器表示，空字符串或空序列又生成无意义的环境变量提示。请修复帮助与错误文本中的这些展示问题。",
+      "fix_sha": "8c73ff134480f436faa0d041bd19aaf949aac22c",
+      "base_sha": "bb695aaecdef95832d167fc1d508921745aa824e",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix `show_envvar` output for a sequence or an empty `envvar`",
+        "merged_at": "2026-10-06T20:59:00Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 23,
+        "test_diff_lines": 36,
+        "test_names_visible_in_diff": [
+          "test_show_envvar_empty",
+          "test_custom_validation",
+          "test_missing_envvar_sequence",
+          "test_case_insensitive_choice"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3884",
+          "https://github.com/pallets/click/commit/8c73ff134480f436faa0d041bd19aaf949aac22c",
+          "https://github.com/pallets/click/blob/8c73ff134480f436faa0d041bd19aaf949aac22c/tests/test_options.py"
+        ],
+        "dedup_source_snapshots": [
+          {
+            "file": "sources-a.json",
+            "count": 40,
+            "sha256": "7767F517D8A38238A532FF2C9F5CAACC208F1763FF86A43551A96137D8CE42E3"
+          },
+          {
+            "file": "sources-b.json",
+            "count": 40,
+            "sha256": "29470B4A442D0DCC01D24E3B59D04E78151DAE0EEAE827FDEDB088CDF8982C74"
+          },
+          {
+            "file": "sources-extra-a.json",
+            "count": 40,
+            "sha256": "F5A7C2AF808306F4464F1AD368A81ECF80404FF37DC2D7BF17692A85B5773B9A"
+          }
+        ],
+        "dedup_method": "与 sources-a.json、sources-b.json、sources-extra-a.json 的 issue_or_pr_url 和 fix_sha 分别去重；本文件内部亦检查两键唯一。",
+        "excluded_source_classes": "无单测差异、生产差异超过60行、仅文档/类型/依赖升级、已知平台专用测试及部分重复症状未纳入。"
+      }
+    },
+    {
+      "id": "xb-002-click-3865",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3865",
+      "task": "命令的短帮助包含 vs.、e.g. 等缩写时，内容过早在缩写后结束。请修复短帮助的截断，同时保留长度限制、首段处理和完整词语的展示。",
+      "fix_sha": "70689853e39c30e36eb0d83d586cc914a74db9d3",
+      "base_sha": "d036881798e34289a49b18a5c550c7cf687e5a7a",
+      "production_files": [
+        "src/click/utils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils/test_make_default_short_help.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_utils/test_make_default_short_help.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix short help abbreviation",
+        "merged_at": "2026-09-12T02:35:08Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 52,
+        "test_diff_lines": 28,
+        "test_names_visible_in_diff": [
+          "test_make_default_short_help"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_utils/test_make_default_short_help.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3865",
+          "https://github.com/pallets/click/commit/70689853e39c30e36eb0d83d586cc914a74db9d3",
+          "https://github.com/pallets/click/blob/70689853e39c30e36eb0d83d586cc914a74db9d3/tests/test_utils/test_make_default_short_help.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-003-click-3805",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3805",
+      "task": "复制、深复制或 pickle 往返带默认参数的 Click 对象时出现失败或哨兵身份变化。请使这些对象能够正常复制和反序列化，并保留未设置默认值的语义。",
+      "fix_sha": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+      "base_sha": "3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+      "production_files": [
+        "src/click/_utils.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utils/test_sentinel.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_utils/test_sentinel.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix `copy`, `deepcopy` and `pickle` of `Sentinel` members",
+        "merged_at": "2026-08-29T15:12:36Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 9,
+        "test_diff_lines": 45,
+        "test_names_visible_in_diff": [
+          "test_sentinel_duplication_preserves_identity",
+          "test_parameter_duplication"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_utils/test_sentinel.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3805",
+          "https://github.com/pallets/click/commit/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+          "https://github.com/pallets/click/blob/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d/tests/test_utils/test_sentinel.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-004-click-3678",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3678",
+      "task": "用户定义名为 help 的参数后，自动帮助选项会干扰正常参数解析。请让用户参数与自动帮助功能都能正常工作，并对真正冲突的参数声明提供适当反馈。",
+      "fix_sha": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+      "base_sha": "8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py",
+        "tests/test_info_dict.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_basic.py tests/test_info_dict.py tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix parsing when a parameter is named `help`",
+        "merged_at": "2026-07-10T03:24:09Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 46,
+        "test_diff_lines": 120,
+        "test_names_visible_in_diff": [
+          "test_param_named_help",
+          "test_param_squatting_help_option_name",
+          "test_option_reusing_help_flag",
+          "test_repr",
+          "test_argument_sharing_param_name_warning",
+          "test_options_sharing_name_no_warning"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_basic.py tests/test_info_dict.py tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3678",
+          "https://github.com/pallets/click/commit/b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_basic.py",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_info_dict.py",
+          "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-005-click-3582",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3582",
+      "task": "version_option 使用的模块导入名与安装分发名不同，例如 PIL 与 Pillow 时，--version 抛出未安装错误。请正确处理此类名称，并为无法确定或存在歧义的分发信息提供清楚错误。",
+      "fix_sha": "7a16b20e8a8a9bb57c7b4f6f15f60f6597478a49",
+      "base_sha": "916883afad450c0c9bbc4212817900949131adbd",
+      "production_files": [
+        "src/click/decorators.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_basic.py。分发名解析测试 monkeypatch importlib.metadata，不需要实际安装 Pillow 或其它演示包。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix `package_name` resolution when module differs from distribution name",
+        "merged_at": "2026-06-14T20:30:14Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 36,
+        "test_diff_lines": 79,
+        "test_names_visible_in_diff": [
+          "test_version_option_resolves_import_name_to_distribution",
+          "test_version_option_ambiguous_import_name_errors",
+          "test_version_option_unknown_package_errors"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_basic.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3582",
+          "https://github.com/pallets/click/commit/7a16b20e8a8a9bb57c7b4f6f15f60f6597478a49",
+          "https://github.com/pallets/click/blob/7a16b20e8a8a9bb57c7b4f6f15f60f6597478a49/tests/test_basic.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-006-click-3578",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3578",
+      "task": "可选或可变数量的 Choice 参数在 Usage 中出现双重方括号，DateTime 参数也有类似问题。请让这些类型的可选参数帮助格式正确。",
+      "fix_sha": "09195f6a92972c4e1bbb5493686456e6ba624520",
+      "base_sha": "d9ff13369ac78d9acff693faa79f26badd566ab3",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_basic.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_basic.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix double-bracketing of choices in synopsis",
+        "merged_at": "2026-06-13T03:59:03Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 7,
+        "test_diff_lines": 40,
+        "test_names_visible_in_diff": [
+          "test_choice_argument_optional_metavar",
+          "test_datetime_argument_optional_metavar",
+          "test_datetime_option_default"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_basic.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3578",
+          "https://github.com/pallets/click/commit/09195f6a92972c4e1bbb5493686456e6ba624520",
+          "https://github.com/pallets/click/blob/09195f6a92972c4e1bbb5493686456e6ba624520/tests/test_basic.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-007-click-3509",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3509",
+      "task": "命令或选项没有帮助正文、但标记 deprecated 时，弃用标签前出现多余空格和不一致缩进。请修复空帮助文本下的标签展示。",
+      "fix_sha": "29bacc773e817b2e49a75b6258399dc3e129b031",
+      "base_sha": "648d7c403829013ade629d63ddbfe808f6b2b770",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_commands.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_commands.py tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix deprecated label formatting",
+        "merged_at": "2026-05-27T04:53:13Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 5,
+        "test_diff_lines": 30,
+        "test_names_visible_in_diff": [
+          "test_deprecated_empty_help_no_leading_space",
+          "test_deprecated_in_invocation",
+          "test_deprecated_warning"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_commands.py tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3509",
+          "https://github.com/pallets/click/commit/29bacc773e817b2e49a75b6258399dc3e129b031",
+          "https://github.com/pallets/click/blob/29bacc773e817b2e49a75b6258399dc3e129b031/tests/test_commands.py",
+          "https://github.com/pallets/click/blob/29bacc773e817b2e49a75b6258399dc3e129b031/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-008-click-3434",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3434",
+      "task": "HelpFormatter 在没有参数文本时可能输出空的 Usage 行、多余尾部空格或额外行。请让仅含程序名的用法行正常展示，并保留自定义或带样式的前缀。",
+      "fix_sha": "3bb230dcd5d751f8605b46e9df5a541639d5fd4e",
+      "base_sha": "63274a79d08fdc5c19220696144489f7144a8547",
+      "production_files": [
+        "src/click/formatting.py"
+      ],
+      "regression_test_files": [
+        "tests/test_formatting.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_formatting.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix `HelpFormatter.write_usage` producing spurious characters",
+        "merged_at": "2026-05-16T15:53:40Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 115,
+        "test_names_visible_in_diff": [
+          "test_help_formatter_write_usage",
+          "test_help_formatter_write_usage_without_args_styled_prefix",
+          "test_command_write_usage_no_args"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_formatting.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3434",
+          "https://github.com/pallets/click/commit/3bb230dcd5d751f8605b46e9df5a541639d5fd4e",
+          "https://github.com/pallets/click/blob/3bb230dcd5d751f8605b46e9df5a541639d5fd4e/tests/test_formatting.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-009-click-3299",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3299",
+      "task": "某些合法默认值对象拒绝与字符串进行相等比较，开启 show_default 后帮助渲染因此抛出 ValueError。请使这类对象正常显示，同时保留空字符串默认值的展示。",
+      "fix_sha": "1458800409ed12076f18451889b0857db36aa522",
+      "base_sha": "04ef3a6f473deb2499721a8d11f92a7d2c0912f2",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix speculative empty string check",
+        "merged_at": "2026-04-08T21:30:46Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 32,
+        "test_names_visible_in_diff": [
+          "test_show_default_with_empty_string",
+          "test_do_not_show_no_default"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3299",
+          "https://github.com/pallets/click/commit/1458800409ed12076f18451889b0857db36aa522",
+          "https://github.com/pallets/click/blob/1458800409ed12076f18451889b0857db36aa522/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-010-click-3225",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3225",
+      "task": "flag_value 是一个类且被设为默认启用时，省略该选项得到的却是类实例，与显式传入标志得到的值不同。请修复默认值行为，并保留 default_map 的覆盖关系。",
+      "fix_sha": "5850ef97230f84c74d0234ab0f30f23b398a6eee",
+      "base_sha": "ae46cfd6bc997804893adc799589248eadcdbc29",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_defaults.py tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix callable ``flag_value`` being instantiated when used as a default",
+        "merged_at": "2026-03-01T23:41:05Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 26,
+        "test_diff_lines": 215,
+        "test_names_visible_in_diff": [
+          "test_default_map_with_callable_flag_value",
+          "test_callable_flag_value_not_instantiated",
+          "test_callable_flag_value_default_map",
+          "test_callable_flag_value_show_default",
+          "test_callable_flag_value_get_default_override",
+          "test_custom_type_frozenset_flag_value"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_defaults.py tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3225",
+          "https://github.com/pallets/click/commit/5850ef97230f84c74d0234ab0f30f23b398a6eee",
+          "https://github.com/pallets/click/blob/5850ef97230f84c74d0234ab0f30f23b398a6eee/tests/test_defaults.py",
+          "https://github.com/pallets/click/blob/5850ef97230f84c74d0234ab0f30f23b398a6eee/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-011-click-3208",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3208",
+      "task": "子命令的普通选项占用了配置的帮助选项名称后，错误提示仍建议用户调用那个已失效的帮助入口。请确保提示中的帮助命令确实可用。",
+      "fix_sha": "0cd28d6548f92e46396e0ffdd19ec5ea75b4b5e4",
+      "base_sha": "8d3449517a97b6fd457a025bd9c3d2acfd301fa4",
+      "production_files": [
+        "src/click/exceptions.py"
+      ],
+      "regression_test_files": [
+        "tests/test_formatting.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_formatting.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix help hint showing shadowed option name",
+        "merged_at": "2026-04-29T07:01:41Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 6,
+        "test_diff_lines": 67,
+        "test_names_visible_in_diff": [
+          "test_formatting_usage_error_help_hint",
+          "test_formatting_custom_type_metavar"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_formatting.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3208",
+          "https://github.com/pallets/click/commit/0cd28d6548f92e46396e0ffdd19ec5ea75b4b5e4",
+          "https://github.com/pallets/click/blob/0cd28d6548f92e46396e0ffdd19ec5ea75b4b5e4/tests/test_formatting.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-012-click-3152",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3152",
+      "task": "选项同时声明 is_flag=False 与 flag_value 后，本来应允许省略、只提供选项名或显式提供一个值，但部分调用返回错误结果。请恢复这三种用法，覆盖字符串和整数类型。",
+      "fix_sha": "ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa",
+      "base_sha": "7f7bbe4569ea68e8dabee232eade069ef3310aea",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix handling of options which set both is_flag=False and flag_value=...",
+        "merged_at": "2025-11-20T03:49:38Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 9,
+        "test_diff_lines": 44,
+        "test_names_visible_in_diff": [
+          "test_prefixes",
+          "test_flag_value_on_option_with_zero_or_one_args"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3152",
+          "https://github.com/pallets/click/commit/ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa",
+          "https://github.com/pallets/click/blob/ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-013-click-3079",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3079",
+      "task": "多个标志共享同一个参数名，且只有其中一个设置默认值时，省略标志得到的默认值受装饰器顺序影响。请让共享参数采用声明的有效默认值，并保留显式标志覆盖。",
+      "fix_sha": "27aaed3fe5bcd6adedd6e91de234914af9859cf1",
+      "base_sha": "2ed395b0b5ac4d56553ff715335f456f812cdc78",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_defaults.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix default handling to defer `UNSET` normalization",
+        "merged_at": "2025-09-24T17:07:42Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 20,
+        "test_diff_lines": 26,
+        "test_names_visible_in_diff": [
+          "test_shared_param_prefers_first_default"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_defaults.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3079",
+          "https://github.com/pallets/click/commit/27aaed3fe5bcd6adedd6e91de234914af9859cf1",
+          "https://github.com/pallets/click/blob/27aaed3fe5bcd6adedd6e91de234914af9859cf1/tests/test_defaults.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-014-click-3004",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/3004",
+      "task": "Choice 由 Enum、IntEnum 或 Flag 等枚举类型组成时，帮助中的默认值与可选值展示不一致。请使这些默认值以用户可以识别的选择名称展示。",
+      "fix_sha": "eaf33a957975e7d0943fad8d2b4b905b6bd98cb9",
+      "base_sha": "a1235aacb1be55dc66ddcfefbf64dec44b6ab54d",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix rendering of Enum choices' default",
+        "merged_at": "2025-07-22T07:30:29Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 88,
+        "test_names_visible_in_diff": [
+          "test_usage_show_choices",
+          "test_choice_default_rendering"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/3004",
+          "https://github.com/pallets/click/commit/eaf33a957975e7d0943fad8d2b4b905b6bd98cb9",
+          "https://github.com/pallets/click/blob/eaf33a957975e7d0943fad8d2b4b905b6bd98cb9/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-015-click-2935",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2935",
+      "task": "命令存在多层嵌套 Group 时，补全无法可靠进入当前层级，返回上层命令或选项。请修复嵌套组的补全上下文，正确提供当前子命令与选项候选。",
+      "fix_sha": "b7cf06970e40a3144eb963ff34ed7c38934afb40",
+      "base_sha": "884af5c20fdc95c9c7352df35c37273391464fb9",
+      "production_files": [
+        "src/click/shell_completion.py"
+      ],
+      "regression_test_files": [
+        "tests/test_shell_completion.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_shell_completion.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "fix shell completion for nested groups",
+        "merged_at": "2025-05-20T20:14:37Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 30,
+        "test_names_visible_in_diff": [
+          "test_nested_group",
+          "test_group_command_same_option"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_shell_completion.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2935",
+          "https://github.com/pallets/click/commit/b7cf06970e40a3144eb963ff34ed7c38934afb40",
+          "https://github.com/pallets/click/blob/b7cf06970e40a3144eb963ff34ed7c38934afb40/tests/test_shell_completion.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-016-click-2930",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2930",
+      "task": "显式设置 is_flag=True 和 type=bool 或 click.BOOL 后，未提供 flag_value 的布尔标志不再正确切换值。请恢复显式类型标志的默认及传入行为。",
+      "fix_sha": "884af5c20fdc95c9c7352df35c37273391464fb9",
+      "base_sha": "011b9f9d190c71310264e6c54bae6259f5e38a9f",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix flag value set when is_flag=True and type is provided",
+        "merged_at": "2025-05-20T14:55:39Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 5,
+        "test_diff_lines": 39,
+        "test_names_visible_in_diff": [
+          "test_flag_value_is_correctly_set",
+          "test_non_flag_with_non_negatable_default"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2930",
+          "https://github.com/pallets/click/commit/884af5c20fdc95c9c7352df35c37273391464fb9",
+          "https://github.com/pallets/click/blob/884af5c20fdc95c9c7352df35c37273391464fb9/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-017-click-2816",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2816",
+      "task": "布尔标志与 nargs>1 的选项同时出现时，补全会给出错误参数的候选。请让正在等待多个值的选项获得自己的候选，而不受前面标志干扰。",
+      "fix_sha": "4f936ac1981645488f396953bc59e50445de00b6",
+      "base_sha": "1c68e531ef5e45f6facdb777c720d0f984614b81",
+      "production_files": [
+        "src/click/shell_completion.py"
+      ],
+      "regression_test_files": [
+        "tests/test_shell_completion.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_shell_completion.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "show correct auto complete value for nargs option in combination with flag option",
+        "merged_at": "2025-08-07T05:57:15Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 1,
+        "test_diff_lines": 13,
+        "test_names_visible_in_diff": [
+          "test_flag_option_with_nargs_option",
+          "test_option_custom"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_shell_completion.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2816",
+          "https://github.com/pallets/click/commit/4f936ac1981645488f396953bc59e50445de00b6",
+          "https://github.com/pallets/click/blob/4f936ac1981645488f396953bc59e50445de00b6/tests/test_shell_completion.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-018-click-2788",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2788",
+      "task": "声明了 flag_value 的标志通过环境变量启用时，命令返回环境变量的原始文本，与显式传入标志得到的值不同。请使这两种启用方式的值语义一致。",
+      "fix_sha": "1787497713fa389435ed732c9b26274c3cdc458d",
+      "base_sha": "380008389b32ca2b7de7c73f670a9eee1562004e",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arguments.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arguments.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Added functionality to set flag_value correctly when using envvar",
+        "merged_at": "2024-11-03T14:40:46Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 12,
+        "test_diff_lines": 13,
+        "test_names_visible_in_diff": [
+          "test_envvar_flag_value",
+          "test_nargs_envvar_only_if_values_empty"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arguments.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2788",
+          "https://github.com/pallets/click/commit/1787497713fa389435ed732c9b26274c3cdc458d",
+          "https://github.com/pallets/click/blob/1787497713fa389435ed732c9b26274c3cdc458d/tests/test_arguments.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-019-click-2550",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2550",
+      "task": "multiple=True 的布尔或自定义值标志在定义时被拒绝，破坏原本有效的重复标志用法。请恢复重复标志的空默认值及多次传入结果。",
+      "fix_sha": "c77966e092edc9b8835e7327294b9177059fc90e",
+      "base_sha": "d34d31f6dde4350f9508f0327698f851c595d91c",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_defaults.py",
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_defaults.py tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "allow `multiple=True` with flags",
+        "merged_at": "2023-07-03T16:31:19Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 10,
+        "test_diff_lines": 25,
+        "test_names_visible_in_diff": [
+          "test_multiple_flag_default",
+          "test_invalid_flag_combinations"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_defaults.py tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2550",
+          "https://github.com/pallets/click/commit/c77966e092edc9b8835e7327294b9177059fc90e",
+          "https://github.com/pallets/click/blob/c77966e092edc9b8835e7327294b9177059fc90e/tests/test_defaults.py",
+          "https://github.com/pallets/click/blob/c77966e092edc9b8835e7327294b9177059fc90e/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-020-click-2509",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2509",
+      "task": "选项设置 show_default=False 且启用 prompt 后，交互提示中仍显示默认值。请使提示遵守该隐藏设置，避免泄露本应隐藏的默认内容。",
+      "fix_sha": "a6e0d2936891030f5092c9869c7391104f6721d9",
+      "base_sha": "1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_termui.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_termui.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Hide default value when show_default is False",
+        "merged_at": "2024-11-02T23:11:55Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 7,
+        "test_diff_lines": 12,
+        "test_names_visible_in_diff": [
+          "test_false_show_default_cause_no_default_display_in_prompt"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_termui.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2509",
+          "https://github.com/pallets/click/commit/a6e0d2936891030f5092c9869c7391104f6721d9",
+          "https://github.com/pallets/click/blob/a6e0d2936891030f5092c9869c7391104f6721d9/tests/test_termui.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-021-click-2365",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2365",
+      "task": "Choice 选项设置 show_choices=False 后，--help 的占位符仍列出全部实际选择值。请使帮助输出遵守隐藏选择的设置，同时正确表示参数类型。",
+      "fix_sha": "1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a",
+      "base_sha": "02046e7a19480f85fff7e4577486518abe47e401",
+      "production_files": [
+        "src/click/types.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix metavar for Choice options when show_choices=False",
+        "merged_at": "2024-11-02T22:45:04Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 36,
+        "test_names_visible_in_diff": [
+          "test_usage_show_choices"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2365",
+          "https://github.com/pallets/click/commit/1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a",
+          "https://github.com/pallets/click/blob/1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-022-pydash-348",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/348",
+      "task": "invoke_map 的 path 参数传入可调用对象时，结果变成一组 None，而不是逐个元素调用该函数。请恢复函数形式的路径及额外位置参数支持。",
+      "fix_sha": "d101681ca36bcedcaa343ca0f30b1d12606da6ed",
+      "base_sha": "21b2e415361d99cfaf3eb9a6ab897ab7990c96fd",
+      "production_files": [
+        "src/pydash/collections.py"
+      ],
+      "regression_test_files": [
+        "tests/test_collections.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_collections.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix invoke_map callable path",
+        "merged_at": "2026-10-20T21:53:00Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 3,
+        "test_names_visible_in_diff": [
+          "test_invoke_map"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_collections.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/348",
+          "https://github.com/dgilland/pydash/commit/d101681ca36bcedcaa343ca0f30b1d12606da6ed",
+          "https://github.com/dgilland/pydash/blob/d101681ca36bcedcaa343ca0f30b1d12606da6ed/tests/test_collections.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-023-pydash-333",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/333",
+      "task": "duplicates 的 iteratee 声明接收 value、index 和 collection，但实际仅收到 value，带多个参数的合法回调因此失败。请正确提供回调参数并保持原对象身份和结果顺序。",
+      "fix_sha": "deed72d4964675fee282f368addc5acd6d724d17",
+      "base_sha": "9637faab0d583b5aeb859dae3ecac2f4eb2e6db9",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix duplicates iteratee index and collection arguments",
+        "merged_at": "2026-10-18T17:24:35Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 12,
+        "test_diff_lines": 21,
+        "test_names_visible_in_diff": [
+          "test_duplicates_passes_index_and_collection_to_iteratee",
+          "test_duplicates_applies_falsey_iteratee_shorthands"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/333",
+          "https://github.com/dgilland/pydash/commit/deed72d4964675fee282f368addc5acd6d724d17",
+          "https://github.com/dgilland/pydash/blob/deed72d4964675fee282f368addc5acd6d724d17/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-024-pydash-295",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/295",
+      "task": "reduce_ 对字典或 MappingProxyType 未显式给定累加器时抛出 dict_items 不是迭代器的 TypeError。请修复映射输入，并保留空映射的明确错误。",
+      "fix_sha": "a9243365fdcefc21b5b2dfa228d563296245581e",
+      "base_sha": "43989d9edb0a5c842246b4f23785a47f73b33bcb",
+      "production_files": [
+        "src/pydash/collections.py"
+      ],
+      "regression_test_files": [
+        "tests/test_collections.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_collections.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix reduce without an initial accumulator for mappings",
+        "merged_at": "2026-10-17T14:22:04Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 22,
+        "test_names_visible_in_diff": [
+          "test_reduce_mapping_without_accumulator",
+          "test_reduce_empty_mapping_without_accumulator",
+          "test_reduce_raise"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_collections.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/295",
+          "https://github.com/dgilland/pydash/commit/a9243365fdcefc21b5b2dfa228d563296245581e",
+          "https://github.com/dgilland/pydash/blob/a9243365fdcefc21b5b2dfa228d563296245581e/tests/test_collections.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-025-pydash-294",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/294",
+      "task": "floor 和 ceil 在带小数精度参数的浮点数上出现整单位误差，例如 floor(0.29, 2) 得到 0.28。请修复精度处理，覆盖正负精度、负数及非有限值边界。",
+      "fix_sha": "43989d9edb0a5c842246b4f23785a47f73b33bcb",
+      "base_sha": "faef6b19143dcee3661f11e0f6ba953ffb88ec33",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix floor and ceil precision errors for float inputs",
+        "merged_at": "2026-10-17T14:21:07Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 23,
+        "test_diff_lines": 18,
+        "test_names_visible_in_diff": [
+          "test_ceil",
+          "test_floor",
+          "test_ceil_floor_non_finite"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/294",
+          "https://github.com/dgilland/pydash/commit/43989d9edb0a5c842246b4f23785a47f73b33bcb",
+          "https://github.com/dgilland/pydash/blob/43989d9edb0a5c842246b4f23785a47f73b33bcb/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-026-pydash-293",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/293",
+      "task": "retry 的 jitter 会累积到后续尝试，使固定基础延迟和抖动逐次膨胀。请让每次等待符合其 delay、scale、max_delay 和 jitter 设置。",
+      "fix_sha": "faef6b19143dcee3661f11e0f6ba953ffb88ec33",
+      "base_sha": "9cbe36f5fc801f3576c8980b07c00f5a7956f81f",
+      "production_files": [
+        "src/pydash/utilities.py"
+      ],
+      "regression_test_files": [
+        "tests/test_utilities.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_utilities.py。新增 test_retry_jitter_does_not_accumulate 通过 mock_sleep 模拟等待，未实际 sleep，不依赖时间流逝或网络。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix retry jitter accumulating across attempts",
+        "merged_at": "2026-10-17T14:20:03Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 14,
+        "test_diff_lines": 29,
+        "test_names_visible_in_diff": [
+          "test_retry_jitter_does_not_accumulate",
+          "test_retry_invalid_args_message",
+          "test_stub_list"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_utilities.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/293",
+          "https://github.com/dgilland/pydash/commit/faef6b19143dcee3661f11e0f6ba953ffb88ec33",
+          "https://github.com/dgilland/pydash/blob/faef6b19143dcee3661f11e0f6ba953ffb88ec33/tests/test_utilities.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-027-pydash-292",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/292",
+      "task": "number_format 处理某些负数时把负号当成独立的千位组，得到 '-,999' 等错误字符串。请修复负数分组，并保留小数及自定义分隔符。",
+      "fix_sha": "9cbe36f5fc801f3576c8980b07c00f5a7956f81f",
+      "base_sha": "93459eac061414e1f8ea03942cc0ce12d24b439b",
+      "production_files": [
+        "src/pydash/strings.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strings.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_strings.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix number_format separator placement for negative numbers",
+        "merged_at": "2026-10-17T14:18:56Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 6,
+        "test_names_visible_in_diff": [
+          "test_number_format"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_strings.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/292",
+          "https://github.com/dgilland/pydash/commit/9cbe36f5fc801f3576c8980b07c00f5a7956f81f",
+          "https://github.com/dgilland/pydash/blob/9cbe36f5fc801f3576c8980b07c00f5a7956f81f/tests/test_strings.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-028-pydash-283",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/283",
+      "task": "union 只接收一个数组时不去重，union_by 和 union_with 还会忽略单数组调用中的比较规则；额外传入空数组反而改变结果。请使这些用法遵守一致的并集语义。",
+      "fix_sha": "5d001e5b85eb30621e654231cae43d25b3b3bf15",
+      "base_sha": "0e2c001adcd09a02e8f230a23800ac1786e83935",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix single-array union uniqueness and comparison rules",
+        "merged_at": "2026-10-07T00:49:53Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 6,
+        "test_diff_lines": 21,
+        "test_names_visible_in_diff": [
+          "test_zip_with",
+          "test_union_deduplicates_a_single_array",
+          "test_union_by_honors_an_iteratee_with_a_single_array",
+          "test_union_with_honors_a_comparator_with_a_single_array"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/283",
+          "https://github.com/dgilland/pydash/commit/5d001e5b85eb30621e654231cae43d25b3b3bf15",
+          "https://github.com/dgilland/pydash/blob/5d001e5b85eb30621e654231cae43d25b3b3bf15/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-029-pydash-279",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/279",
+      "task": "duplicates 忽略空字符串、数字零、空匹配器等假值 iteratee，并不必要地求值可调用对象的布尔值。请让显式提供的这些规则正常生效，保持重复项顺序与身份。",
+      "fix_sha": "8ab88fe7fc0e6c3c779bae8b4de910de3a571ad2",
+      "base_sha": "d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix falsey iteratees in duplicates",
+        "merged_at": "2026-10-06T13:48:09Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 74,
+        "test_names_visible_in_diff": [
+          "test_duplicates_applies_falsey_iteratee_shorthands",
+          "test_duplicates_applies_numeric_zero_iteratee_as_property_path",
+          "test_duplicates_applies_falsey_callable_iteratee",
+          "test_duplicates_applies_empty_matcher_iteratee",
+          "test_duplicates_preserves_duplicate_order_and_identity",
+          "test_duplicates_falsey_iteratee_controls_and_empty_input"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/279",
+          "https://github.com/dgilland/pydash/commit/8ab88fe7fc0e6c3c779bae8b4de910de3a571ad2",
+          "https://github.com/dgilland/pydash/blob/8ab88fe7fc0e6c3c779bae8b4de910de3a571ad2/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-030-pydash-278",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/278",
+      "task": "sample_size(collection, 0) 返回一个随机元素而不是空列表。请正确区分零数量和未提供数量，并保持空输入与超过集合大小的行为。",
+      "fix_sha": "d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6",
+      "base_sha": "5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+      "production_files": [
+        "src/pydash/collections.py"
+      ],
+      "regression_test_files": [
+        "tests/test_collections.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_collections.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix sample_size returning an item for a zero count",
+        "merged_at": "2026-10-04T15:49:02Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 22,
+        "test_names_visible_in_diff": [
+          "test_sample_size"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_collections.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/278",
+          "https://github.com/dgilland/pydash/commit/d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6",
+          "https://github.com/dgilland/pydash/blob/d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6/tests/test_collections.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-031-pydash-277",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/277",
+      "task": "xor 及其比较规则变体不能处理声明支持的迭代器、生成器和部分元组与列表组合，调用时抛出 TypeError。请支持这些输入且不修改原列表。",
+      "fix_sha": "5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+      "base_sha": "6e3d9538d776bcac359858004e2d2f172d2d9460",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix iterable inputs in XOR operations",
+        "merged_at": "2026-10-03T18:26:20Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 30,
+        "test_diff_lines": 33,
+        "test_names_visible_in_diff": [
+          "test_xor_accepts_iterable_inputs_without_mutating_lists",
+          "test_xor_by",
+          "test_xor_by_with_only_iteratee",
+          "test_xor_by_consumes_each_iterable_once",
+          "test_xor_with",
+          "test_xor_with_with_only_comparator",
+          "test_xor_with_accepts_tuple_and_secondary_iterator"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/277",
+          "https://github.com/dgilland/pydash/commit/5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+          "https://github.com/dgilland/pydash/blob/5e6e680797ebe685ee7bdd138f0bb5bdecf0c100/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-032-pydash-266",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/266",
+      "task": "uniq 在相等的 set 与 frozenset 混合输入中保留重复值，某些 set 还被输出两次。请使不同可哈希性但相等的值正确去重，并保留首个对象。",
+      "fix_sha": "cc2a79253ec12acc43c8d49fe53dcfa74d9c6a03",
+      "base_sha": "4e11bc1dc9c7c0d524ca6227ffa37de1b8588502",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix uniq for equal values with different hashability",
+        "merged_at": "2026-09-26T01:36:48Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 9,
+        "test_diff_lines": 12,
+        "test_names_visible_in_diff": [
+          "test_uniq_equal_values_with_different_hashability"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/266",
+          "https://github.com/dgilland/pydash/commit/cc2a79253ec12acc43c8d49fe53dcfa74d9c6a03",
+          "https://github.com/dgilland/pydash/blob/cc2a79253ec12acc43c8d49fe53dcfa74d9c6a03/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-033-pydash-265",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/265",
+      "task": "xor_by 或 xor_with 处理三个及以上数组时，不再一致使用传入的比较规则，导致相同比较键的元素残留。请修复多数组的对称差结果。",
+      "fix_sha": "a9adbab1d10385c72155be5d0c068c07f5c37d96",
+      "base_sha": "8b755dc607765759cfa1fb3c472d0a21faa5dd43",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix xor comparison callbacks across multiple arrays",
+        "merged_at": "2026-09-20T17:18:25Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 33,
+        "test_names_visible_in_diff": [
+          "test_xor_by_multiple_arrays",
+          "test_xor_with_multiple_arrays"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/265",
+          "https://github.com/dgilland/pydash/commit/a9adbab1d10385c72155be5d0c068c07f5c37d96",
+          "https://github.com/dgilland/pydash/blob/a9adbab1d10385c72155be5d0c068c07f5c37d96/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-034-pydash-263",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/263",
+      "task": "truncate 的长度限制短于省略标记时，结果保留大段正文并远超限制。请正确处理很小或非正长度，以及不同 separator 形式。",
+      "fix_sha": "2dfcc0130d28ce8da795bdef8e90fc66ff98b179",
+      "base_sha": "938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+      "production_files": [
+        "src/pydash/strings.py"
+      ],
+      "regression_test_files": [
+        "tests/test_strings.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_strings.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix truncate when the limit is shorter than the omission",
+        "merged_at": "2026-09-20T17:14:10Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 6,
+        "test_names_visible_in_diff": [
+          "test_truncate_limit_no_longer_than_omission"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_strings.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/263",
+          "https://github.com/dgilland/pydash/commit/2dfcc0130d28ce8da795bdef8e90fc66ff98b179",
+          "https://github.com/dgilland/pydash/blob/2dfcc0130d28ce8da795bdef8e90fc66ff98b179/tests/test_strings.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-035-pydash-262",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/262",
+      "task": "sorted_last_index_of 在空列表、空元组或空 range 上抛出 IndexError。请让空输入按未找到处理，并保留首项、重复值和越界搜索结果。",
+      "fix_sha": "938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+      "base_sha": "867951703ec4aa694480298441bf0862313a3c24",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix sorted_last_index_of on empty sequences",
+        "merged_at": "2026-09-20T17:13:14Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 7,
+        "test_names_visible_in_diff": [],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/262",
+          "https://github.com/dgilland/pydash/commit/938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+          "https://github.com/dgilland/pydash/blob/938a9a1af8e0e7cd4c262de15f8dae98a38dee13/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-036-pydash-261",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/261",
+      "task": "mean、mean_by 和 variance 等数值函数对迭代器或生成器抛出长度错误，或在消费输入后计算错误。请使单次迭代输入与对应列表得到相同结果，并处理空迭代器。",
+      "fix_sha": "867951703ec4aa694480298441bf0862313a3c24",
+      "base_sha": "a3fe0eebb58f8d089b35c232a05ae3a9efeb16e6",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix mean and variance for iterators and generators",
+        "merged_at": "2026-09-20T17:12:05Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 5,
+        "test_diff_lines": 16,
+        "test_names_visible_in_diff": [
+          "test_mean",
+          "test_mean_empty_iterators",
+          "test_std_deviation",
+          "test_variance",
+          "test_variance_empty_iterators"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/261",
+          "https://github.com/dgilland/pydash/commit/867951703ec4aa694480298441bf0862313a3c24",
+          "https://github.com/dgilland/pydash/blob/867951703ec4aa694480298441bf0862313a3c24/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-037-pydash-260",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/260",
+      "task": "scale 接收迭代器后返回空列表，而同样的列表输入能得到正常缩放值。请修复单次迭代输入，保留自定义上限、Decimal 和已有错误边界。",
+      "fix_sha": "4e11bc1dc9c7c0d524ca6227ffa37de1b8588502",
+      "base_sha": "a9adbab1d10385c72155be5d0c068c07f5c37d96",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix scale returning empty results for iterators",
+        "merged_at": "2026-09-20T17:19:55Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 1,
+        "test_diff_lines": 22,
+        "test_names_visible_in_diff": [
+          "test_scale_iterable",
+          "test_scale_iterable_errors"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/260",
+          "https://github.com/dgilland/pydash/commit/4e11bc1dc9c7c0d524ca6227ffa37de1b8588502",
+          "https://github.com/dgilland/pydash/blob/4e11bc1dc9c7c0d524ca6227ffa37de1b8588502/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-038-pydash-258",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/258",
+      "task": "median 对迭代器或生成器抛出 TypeError。请让这些声明支持的 Iterable 输入正常计算奇数、偶数和经 iteratee 转换的数据，并保持空输入行为。",
+      "fix_sha": "08dec5c0300f6310efe4826881d1d2fa28498b70",
+      "base_sha": "531825d188c430ce2fdaddcaa49d8fd9e95925b0",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix median for iterators and generators",
+        "merged_at": "2026-09-20T17:00:04Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 14,
+        "test_names_visible_in_diff": [
+          "test_median_iterator",
+          "test_median_iterator_with_iteratee",
+          "test_median_empty_iterator",
+          "test_median_empty"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/258",
+          "https://github.com/dgilland/pydash/commit/08dec5c0300f6310efe4826881d1d2fa28498b70",
+          "https://github.com/dgilland/pydash/blob/08dec5c0300f6310efe4826881d1d2fa28498b70/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-039-pydash-256",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/256",
+      "task": "last_index_of 找不到位于下标 0 的最后一次匹配，包括单独检查 from_index=0 的情况。请修复首元素边界。",
+      "fix_sha": "fbab9f96fec7d4a22b54222d1e82605d082f7e51",
+      "base_sha": "4d150cc10f039b1fe47ef3a08df6053cfa284e8b",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix last_index_of missing a match at index 0",
+        "merged_at": "2026-08-22T01:31:57Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 3,
+        "test_names_visible_in_diff": [
+          "test_last_index_of"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/256",
+          "https://github.com/dgilland/pydash/commit/fbab9f96fec7d4a22b54222d1e82605d082f7e51",
+          "https://github.com/dgilland/pydash/blob/fbab9f96fec7d4a22b54222d1e82605d082f7e51/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-040-pydash-254",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/254",
+      "task": "median 对空集合抛出 IndexError，而数值聚合接口需要返回未定义数值。请修复空列表和空映射的结果。",
+      "fix_sha": "307b82b8e42fb0f5ce9af38d3b880dc6daf7d5f6",
+      "base_sha": "39e0464597527c3009bab4f3c7369457ccfdb276",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: return NaN from median on empty collections",
+        "merged_at": "2026-07-26T21:49:39Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 7,
+        "test_names_visible_in_diff": [
+          "test_median_empty"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/254",
+          "https://github.com/dgilland/pydash/commit/307b82b8e42fb0f5ce9af38d3b880dc6daf7d5f6",
+          "https://github.com/dgilland/pydash/blob/307b82b8e42fb0f5ce9af38d3b880dc6daf7d5f6/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-041-pydash-253",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/253",
+      "task": "pull_at 遇到超出列表范围的下标或重复移除同一下标时抛出 IndexError。请让这些边界输入安全完成，并保持列表的预期内容。",
+      "fix_sha": "39e0464597527c3009bab4f3c7369457ccfdb276",
+      "base_sha": "e3e12e4909f7627c17939c1a4496114c5d8669ae",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: skip out-of-range indexes in pull_at",
+        "merged_at": "2026-07-26T21:49:10Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 5,
+        "test_diff_lines": 3,
+        "test_names_visible_in_diff": [
+          "test_pull_at"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/253",
+          "https://github.com/dgilland/pydash/commit/39e0464597527c3009bab4f3c7369457ccfdb276",
+          "https://github.com/dgilland/pydash/blob/39e0464597527c3009bab4f3c7369457ccfdb276/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-042-pydash-252",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/252",
+      "task": "chunk 的 size 为 0 时抛出除零错误，负值也没有按约定给出空结果。请正确处理小于 1 的分组大小及空输入。",
+      "fix_sha": "e3e12e4909f7627c17939c1a4496114c5d8669ae",
+      "base_sha": "db27fab41b4f889939edf7ff9a6d5e3a09d7702c",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: return empty list from chunk when size is less than 1",
+        "merged_at": "2026-07-26T21:48:54Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 3,
+        "test_names_visible_in_diff": [
+          "test_chunk"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/252",
+          "https://github.com/dgilland/pydash/commit/e3e12e4909f7627c17939c1a4496114c5d8669ae",
+          "https://github.com/dgilland/pydash/blob/e3e12e4909f7627c17939c1a4496114c5d8669ae/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-043-pydash-251",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/251",
+      "task": "mean 和 mean_by 在空集合上抛出 ZeroDivisionError。请让空列表和空映射遵守未定义均值的返回约定。",
+      "fix_sha": "7a627f478e55f933d67ac1a12d1ae3f7bf4c0445",
+      "base_sha": "307b82b8e42fb0f5ce9af38d3b880dc6daf7d5f6",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: return NaN from mean/mean_by on empty collections",
+        "merged_at": "2026-07-26T21:49:47Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 7,
+        "test_diff_lines": 10,
+        "test_names_visible_in_diff": [
+          "test_mean_empty",
+          "test_mean_by_empty"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/251",
+          "https://github.com/dgilland/pydash/commit/7a627f478e55f933d67ac1a12d1ae3f7bf4c0445",
+          "https://github.com/dgilland/pydash/blob/7a627f478e55f933d67ac1a12d1ae3f7bf4c0445/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-044-pydash-250",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/250",
+      "task": "to_list 接收字典后返回 dict_values 视图，违背返回列表的接口并与其它输入分支不一致。请修复返回类型，同时保留值顺序。",
+      "fix_sha": "5af19c8defb4b99232857a414aa2a57512e3884c",
+      "base_sha": "3d36c2d5355abf872679c8c304b102bef6416802",
+      "production_files": [
+        "src/pydash/objects.py"
+      ],
+      "regression_test_files": [
+        "tests/test_objects.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_objects.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix to_list() returning dict_values instead of a list for dicts (#249)",
+        "merged_at": "2026-07-06T21:15:25Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 15,
+        "test_names_visible_in_diff": [
+          "test_to_list"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_objects.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/250",
+          "https://github.com/dgilland/pydash/commit/5af19c8defb4b99232857a414aa2a57512e3884c",
+          "https://github.com/dgilland/pydash/blob/5af19c8defb4b99232857a414aa2a57512e3884c/tests/test_objects.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-045-pydash-248",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/248",
+      "task": "floor、ceil、round_ 用作 count_by 等集合函数的 iteratee 时，集合中的位置影响数值精度，产生错误分组。请使这些公共数值函数作为回调时仍采用正常的默认精度。",
+      "fix_sha": "68d3047a0af1f461dda86bdf584caeb0c08fab99",
+      "base_sha": "338c90e0984d2d60fae66d762ffdc64a0e0e30ee",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_collections.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_collections.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "fix: floor/ceil/round_ used as iteratees silently pass index as precision",
+        "merged_at": "2026-07-06T21:18:34Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 17,
+        "test_diff_lines": 5,
+        "test_names_visible_in_diff": [
+          "test_count_by"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_collections.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/248",
+          "https://github.com/dgilland/pydash/commit/68d3047a0af1f461dda86bdf584caeb0c08fab99",
+          "https://github.com/dgilland/pydash/blob/68d3047a0af1f461dda86bdf584caeb0c08fab99/tests/test_collections.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-046-pydash-246",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/246",
+      "task": "intersperse 接收空迭代输入时泄漏 StopIteration，并在现代 Python 中变成 RuntimeError。请让空输入正常返回空序列。",
+      "fix_sha": "3d36c2d5355abf872679c8c304b102bef6416802",
+      "base_sha": "bdafc86cf179a50ae66dd868213ea94dfe432d04",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "fix: prevent StopIteration leak in iterintersperse on empty iterable",
+        "merged_at": "2026-07-06T21:15:03Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 6,
+        "test_diff_lines": 1,
+        "test_names_visible_in_diff": [],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/246",
+          "https://github.com/dgilland/pydash/commit/3d36c2d5355abf872679c8c304b102bef6416802",
+          "https://github.com/dgilland/pydash/blob/3d36c2d5355abf872679c8c304b102bef6416802/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-047-pydash-243",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/243",
+      "task": "in_range 在 start 大于 end 的范围中返回错误结果，不符合其反向范围约定。请正确处理反向和负数范围，并保留上下边界包含关系。",
+      "fix_sha": "338c90e0984d2d60fae66d762ffdc64a0e0e30ee",
+      "base_sha": "5af19c8defb4b99232857a414aa2a57512e3884c",
+      "production_files": [
+        "src/pydash/predicates.py"
+      ],
+      "regression_test_files": [
+        "tests/test_predicates.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_predicates.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: support reversed ranges in in_range",
+        "merged_at": "2026-07-06T21:15:59Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 11,
+        "test_diff_lines": 6,
+        "test_names_visible_in_diff": [
+          "test_in_range"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_predicates.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/243",
+          "https://github.com/dgilland/pydash/commit/338c90e0984d2d60fae66d762ffdc64a0e0e30ee",
+          "https://github.com/dgilland/pydash/blob/338c90e0984d2d60fae66d762ffdc64a0e0e30ee/tests/test_predicates.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-048-pydash-241",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/241",
+      "task": "take_while 和 drop_while 对生成器或其它不可切片迭代器抛出 TypeError。请使这些合法输入返回与列表输入相同的前缀或剩余项。",
+      "fix_sha": "db27fab41b4f889939edf7ff9a6d5e3a09d7702c",
+      "base_sha": "68d3047a0af1f461dda86bdf584caeb0c08fab99",
+      "production_files": [
+        "src/pydash/arrays.py"
+      ],
+      "regression_test_files": [
+        "tests/test_arrays.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_arrays.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "fix: support iterables in take_while and drop_while",
+        "merged_at": "2026-07-18T18:38:59Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 26,
+        "test_diff_lines": 2,
+        "test_names_visible_in_diff": [
+          "test_drop_while",
+          "test_take_while"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_arrays.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/241",
+          "https://github.com/dgilland/pydash/commit/db27fab41b4f889939edf7ff9a6d5e3a09d7702c",
+          "https://github.com/dgilland/pydash/blob/db27fab41b4f889939edf7ff9a6d5e3a09d7702c/tests/test_arrays.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-049-pydash-218",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/218",
+      "task": "multiply 在任一乘数为 0 时错误地使用缺省值，得到非零结果。请正确区分合法零值与缺失参数，同时保留 None 的约定。",
+      "fix_sha": "40f21a1874b70262587a2cdafa0dd2ca74bb4eb1",
+      "base_sha": "0dfc47d4de3b7101c0c663f79a260a5a3314c3ae",
+      "production_files": [
+        "src/pydash/numerical.py"
+      ],
+      "regression_test_files": [
+        "tests/test_numerical.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_numerical.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix call_math_operator on false values",
+        "merged_at": "2024-02-13T00:05:00Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 10,
+        "test_names_visible_in_diff": [
+          "test_multiply"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_numerical.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/218",
+          "https://github.com/dgilland/pydash/commit/40f21a1874b70262587a2cdafa0dd2ca74bb4eb1",
+          "https://github.com/dgilland/pydash/blob/40f21a1874b70262587a2cdafa0dd2ca74bb4eb1/tests/test_numerical.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-050-pydash-139",
+      "repo": "dgilland/pydash",
+      "issue_or_pr_url": "https://github.com/dgilland/pydash/pull/139",
+      "task": "pick_by 省略 iteratee 时把列表的全部元素都丢弃，与省略筛选规则时的约定不符。请使列表输入正常保留所有索引和值，并保留显式规则行为。",
+      "fix_sha": "4cebf68b86d9910eb6c05f31bd49ac6bdf4a10ec",
+      "base_sha": "7aed6751e9604bffdae9673a5dbb1c641dcaea3d",
+      "production_files": [
+        "src/pydash/objects.py"
+      ],
+      "regression_test_files": [
+        "tests/test_objects.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_objects.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fixes issue #129",
+        "merged_at": "2020-03-15T03:43:46Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 2,
+        "test_names_visible_in_diff": [],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_objects.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "近期快照运行依赖 typing-extensions；回归用 pytest。-o addopts= 用于避免项目默认 coverage/mypy 开关强制额外开发工具。历史快照仍以其自身声明为准。",
+        "evidence_urls": [
+          "https://github.com/dgilland/pydash/pull/139",
+          "https://github.com/dgilland/pydash/commit/4cebf68b86d9910eb6c05f31bd49ac6bdf4a10ec",
+          "https://github.com/dgilland/pydash/blob/4cebf68b86d9910eb6c05f31bd49ac6bdf4a10ec/tests/test_objects.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-051-pluggy-731",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/731",
+      "task": "PluginManager.register(None) 静默产生类似封禁名称的内部状态，使 is_registered 与 get_plugins 的结果矛盾。请拒绝这种无效插件并保持注册表正常。",
+      "fix_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+      "base_sha": "87e45202858dbb725c2ea7d6472a11c1a2624518",
+      "production_files": [
+        "src/pluggy/_manager.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_pluginmanager.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix: reject PluginManager.register(None)",
+        "merged_at": "2026-09-23T15:12:23Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 8,
+        "test_names_visible_in_diff": [
+          "test_register_rejects_none",
+          "test_pm"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_pluginmanager.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/731",
+          "https://github.com/pytest-dev/pluggy/commit/080b7d31074f773540c9e66f9d4c00a47159a35f",
+          "https://github.com/pytest-dev/pluggy/blob/080b7d31074f773540c9e66f9d4c00a47159a35f/testing/test_pluginmanager.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-052-pluggy-728",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/728",
+      "task": "启用 hook tracing 后，参数或返回值包含孤立代理字符，或对象的字符串表示抛出异常时，原本正常的 hook 调用也失败。请使诊断跟踪可处理这些值，同时保留有效非 ASCII 文本及中断行为。",
+      "fix_sha": "d70fe1840d01c78b7d85f693cfef01ccdf2f80a6",
+      "base_sha": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+      "production_files": [
+        "src/pluggy/_tracing.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py",
+        "testing/test_tracer.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_pluginmanager.py testing/test_tracer.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Make hook tracing unable to fail a hook call",
+        "merged_at": "2026-09-24T10:39:59Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 37,
+        "test_diff_lines": 202,
+        "test_names_visible_in_diff": [
+          "test_hook_tracing_escapes_surrogate_values",
+          "test_hook_tracing_with_broken_repr",
+          "test_register_while_calling",
+          "test_dictargs_keep_str_rendering",
+          "test_dictargs_escape_surrogate_values",
+          "test_escape_surrogates_from_repr",
+          "test_escape_surrogates_in_labels",
+          "test_non_ascii_values_are_kept",
+          "test_broken_repr_value_does_not_raise",
+          "test_broken_str_label_does_not_raise",
+          "test_keyboard_interrupt_from_str_propagates",
+          "test_broken_exception_repr_falls_back_to_type_name",
+          "test_error_from_exception_repr_is_not_rendered",
+          "test_keyboard_interrupt_from_exception_repr_propagates"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_pluginmanager.py testing/test_tracer.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/728",
+          "https://github.com/pytest-dev/pluggy/commit/d70fe1840d01c78b7d85f693cfef01ccdf2f80a6",
+          "https://github.com/pytest-dev/pluggy/blob/d70fe1840d01c78b7d85f693cfef01ccdf2f80a6/testing/test_pluginmanager.py",
+          "https://github.com/pytest-dev/pluggy/blob/d70fe1840d01c78b7d85f693cfef01ccdf2f80a6/testing/test_tracer.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-053-pluggy-646",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/646",
+      "task": "插件通过 specname 为同一 hook 注册多个实现后，get_hookcallers 返回重复调用器，注销相关实现的行为也依赖这些重复项。请修复公开查询与注销的一致性。",
+      "fix_sha": "20d8143f127a4d7526dbbea441857b4b80ec8bdd",
+      "base_sha": "6e1d0f13a259776bbf137f90bd7ab8b4474f68e7",
+      "production_files": [
+        "src/pluggy/_hooks.py",
+        "src/pluggy/_manager.py"
+      ],
+      "regression_test_files": [
+        "testing/test_pluginmanager.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_pluginmanager.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix _remove_plugin and get_hookcallers for multi-impl plugins",
+        "merged_at": "2026-02-25T09:33:37Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 15,
+        "test_diff_lines": 73,
+        "test_names_visible_in_diff": [
+          "test_unregister_plugin_with_multi_hookimpls",
+          "test_get_hookcallers_no_duplicates"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_pluginmanager.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/646",
+          "https://github.com/pytest-dev/pluggy/commit/20d8143f127a4d7526dbbea441857b4b80ec8bdd",
+          "https://github.com/pytest-dev/pluggy/blob/20d8143f127a4d7526dbbea441857b4b80ec8bdd/testing/test_pluginmanager.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-054-pluggy-504",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/504",
+      "task": "对同一个 Result 多次调用 get_result 并捕获异常时，异常 traceback 每次都继续变长。请让重复获取异常结果保持稳定的原始调用信息。",
+      "fix_sha": "56085d7dd20aa200999c2c711e9dd9d1908cf577",
+      "base_sha": "313eace19509f6d5cff75836cad12a58e895c07e",
+      "production_files": [
+        "src/pluggy/_callers.py",
+        "src/pluggy/_result.py"
+      ],
+      "regression_test_files": [
+        "testing/test_result.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_result.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "result: keep original traceback and reraise with it",
+        "merged_at": "2024-04-30T08:21:05Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 13,
+        "test_diff_lines": 27,
+        "test_names_visible_in_diff": [
+          "test_exceptions_traceback_doesnt_get_longer_and_longer"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_result.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/504",
+          "https://github.com/pytest-dev/pluggy/commit/56085d7dd20aa200999c2c711e9dd9d1908cf577",
+          "https://github.com/pytest-dev/pluggy/blob/56085d7dd20aa200999c2c711e9dd9d1908cf577/testing/test_result.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-055-pluggy-379",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/379",
+      "task": "重复注册同名 hook 规范时只得到缺乏上下文的 AssertionError，调用方难以定位已有注册。请用合适的错误类型并指出冲突 hook 及原注册命名空间。",
+      "fix_sha": "926084e262441a3d2ab30ae7aefa463377f4c119",
+      "base_sha": "8103269dac8773bf7702d1494127383bbbe4cfc4",
+      "production_files": [
+        "src/pluggy/_hooks.py"
+      ],
+      "regression_test_files": [
+        "testing/test_hookcaller.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_hookcaller.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Detailed error message on hook registration conflict",
+        "merged_at": "2023-06-21T06:00:08Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 6,
+        "test_diff_lines": 20,
+        "test_names_visible_in_diff": [
+          "test_hook_conflict"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_hookcaller.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/379",
+          "https://github.com/pytest-dev/pluggy/commit/926084e262441a3d2ab30ae7aefa463377f4c119",
+          "https://github.com/pytest-dev/pluggy/blob/926084e262441a3d2ab30ae7aefa463377f4c119/testing/test_hookcaller.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-056-pluggy-282",
+      "repo": "pytest-dev/pluggy",
+      "issue_or_pr_url": "https://github.com/pytest-dev/pluggy/pull/282",
+      "task": "声明 hookwrapper=True 的实现不是生成器时，插件仍能注册，直到后续 hook 调用才失败。请在注册阶段提供正常的插件校验错误。",
+      "fix_sha": "ac351e0c8db64da0e0237d76c22c2af6133c16b4",
+      "base_sha": "39bac1f1162267d1d611072147ece4946dde6fa4",
+      "production_files": [
+        "src/pluggy/manager.py"
+      ],
+      "regression_test_files": [
+        "testing/test_details.py",
+        "testing/test_pluginmanager.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= testing/test_details.py testing/test_pluginmanager.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Validate that a hookwrapper's function is a generator function during registration",
+        "merged_at": "2021-04-02T13:39:04Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 10,
+        "test_diff_lines": 15,
+        "test_names_visible_in_diff": [
+          "test_register_hookwrapper_not_a_generator_function",
+          "test_register"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= testing/test_details.py testing/test_pluginmanager.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "回归用 pytest；历史快照可能声明 importlib-metadata 等小型 Python 元数据依赖，需按对应版本隔离。所选测试不依赖外部服务。",
+        "evidence_urls": [
+          "https://github.com/pytest-dev/pluggy/pull/282",
+          "https://github.com/pytest-dev/pluggy/commit/ac351e0c8db64da0e0237d76c22c2af6133c16b4",
+          "https://github.com/pytest-dev/pluggy/blob/ac351e0c8db64da0e0237d76c22c2af6133c16b4/testing/test_details.py",
+          "https://github.com/pytest-dev/pluggy/blob/ac351e0c8db64da0e0237d76c22c2af6133c16b4/testing/test_pluginmanager.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-057-cachetools-445",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/445",
+      "task": "对带 cachedmethod 方法的类创建 autospec 实例模拟后，正常的方法调用抛出缺少必需参数的 TypeError。请恢复这种模拟调用，同时保留通过类显式传入实例的调用行为。",
+      "fix_sha": "95e6addbd82afd75f81cb5650f32f6d74af2f1f9",
+      "base_sha": "eba200635273fe45b67e669b84cb45f995b27c24",
+      "production_files": [
+        "src/cachetools/_descriptor.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_cachedmethod.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Restore autospec calls to @cachedmethod decorated methods",
+        "merged_at": "2026-10-19T17:13:58Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 29,
+        "test_diff_lines": 14,
+        "test_names_visible_in_diff": [
+          "test_class_call_without_instance",
+          "test_class_access_identity",
+          "test_autospec_call"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_cachedmethod.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/445",
+          "https://github.com/tkem/cachetools/commit/95e6addbd82afd75f81cb5650f32f6d74af2f1f9",
+          "https://github.com/tkem/cachetools/blob/95e6addbd82afd75f81cb5650f32f6d74af2f1f9/tests/test_cachedmethod.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-058-cachetools-441",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/441",
+      "task": "TTLCache 使用 datetime 计时器时，插入过程中到期时间算术溢出会留下损坏状态，后续成员检查又抛出 TypeError。请让被拒绝的插入不破坏缓存的可用性。",
+      "fix_sha": "39f9dd234aabc0859c703e7d9747fbefe7133f4c",
+      "base_sha": "f4f288579dc3c8f82f62d0eaca7774303d9d3768",
+      "production_files": [
+        "src/cachetools/__init__.py"
+      ],
+      "regression_test_files": [
+        "tests/test_ttl.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_ttl.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix #440: Compute TTL expiration before changing cache state",
+        "merged_at": "2026-10-12T14:51:49Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 15,
+        "test_names_visible_in_diff": [
+          "test_ttl_expiration_overflow",
+          "test_ttl_lru"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_ttl.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/441",
+          "https://github.com/tkem/cachetools/commit/39f9dd234aabc0859c703e7d9747fbefe7133f4c",
+          "https://github.com/tkem/cachetools/blob/39f9dd234aabc0859c703e7d9747fbefe7133f4c/tests/test_ttl.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-059-cachetools-436",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/436",
+      "task": "cachedmethod 装饰的实例方法通过类并显式传入实例调用时，触发缓存工厂的 AttributeError，而实例调用正常。请恢复普通实例方法应支持的两种调用形式，并保持每个实例的缓存与统计独立。",
+      "fix_sha": "c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974",
+      "base_sha": "0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6",
+      "production_files": [
+        "src/cachetools/_cachedmethod.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_cachedmethod.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix #435: Restore class access to cached instance methods",
+        "merged_at": "2026-10-11T19:33:11Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 12,
+        "test_diff_lines": 45,
+        "test_names_visible_in_diff": [
+          "test_class_call",
+          "test_base_class_call",
+          "test_wrapped_method",
+          "test_autospec_no_warnings"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_cachedmethod.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/436",
+          "https://github.com/tkem/cachetools/commit/c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974",
+          "https://github.com/tkem/cachetools/blob/c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974/tests/test_cachedmethod.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-060-cachetools-424",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/424",
+      "task": "空 RRCache 使用自定义 choice 函数时，popitem 泄漏 ValueError 或 StopIteration，与默认 choice 下的空缓存错误不一致。请使空缓存行为遵守统一映射接口。",
+      "fix_sha": "cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993",
+      "base_sha": "5877d83c7ab53639f1cfb8664173219e5e5cfbf1",
+      "production_files": [
+        "src/cachetools/__init__.py"
+      ],
+      "regression_test_files": [
+        "tests/test_rr.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_rr.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix #423: Detect an empty RRCache before calling choice",
+        "merged_at": "2026-09-27T20:10:40Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 9,
+        "test_diff_lines": 15,
+        "test_names_visible_in_diff": [
+          "test_rr_default_choice",
+          "test_rr_popitem_empty_custom_choice"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_rr.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/424",
+          "https://github.com/tkem/cachetools/commit/cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993",
+          "https://github.com/tkem/cachetools/blob/cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993/tests/test_rr.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-061-cachetools-413",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/413",
+      "task": "Cache 接受负的 maxsize，直到插入时才在淘汰过程中报出难以理解的错误。请在适当时机拒绝无效容量，同时保留零容量和无限容量的行为。",
+      "fix_sha": "dd181c5a72a74fcc01045c17cc943f72cb521262",
+      "base_sha": "b43b95360fd4a99f3bdd19ff87c2ef6f4c99e3d8",
+      "production_files": [
+        "src/cachetools/__init__.py"
+      ],
+      "regression_test_files": [
+        "tests/__init__.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests。tests/__init__.py 是 CacheTestMixin；必须运行继承它的 tests/test_cache.py 或整个 tests 目录，不能将共享 mixin 文件单独当作回归入口。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Reject negative maxsize in Cache.__init__",
+        "merged_at": "2026-08-28T19:17:04Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 24,
+        "test_names_visible_in_diff": [
+          "test_maxsize_negative",
+          "test_maxsize_zero",
+          "test_maxsize_infinite",
+          "test_insert"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/413",
+          "https://github.com/tkem/cachetools/commit/dd181c5a72a74fcc01045c17cc943f72cb521262",
+          "https://github.com/tkem/cachetools/blob/dd181c5a72a74fcc01045c17cc943f72cb521262/tests/__init__.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-062-cachetools-408",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/408",
+      "task": "使用 getsizeof 计量缓存容量时，增大已有条目即使仍能容纳，也会错误淘汰其它条目。请修复替换行为，并保持同大小和缩小条目的容量信息正确。",
+      "fix_sha": "4296bbde2be128341b17126e43a06271259ae477",
+      "base_sha": "13bb86a55e36e501cf0b3e4c35db516ed9409fd7",
+      "production_files": [
+        "src/cachetools/__init__.py"
+      ],
+      "regression_test_files": [
+        "tests/__init__.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests。tests/__init__.py 是共享 CacheTestMixin。运行整个 tests 目录可在各缓存实现上检查替换大小；单独收集 __init__.py 不能代表这些测试。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Fix Cache.__setitem__ over-evicting when growing an existing key",
+        "merged_at": "2026-07-30T15:27:00Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 13,
+        "test_diff_lines": 41,
+        "test_names_visible_in_diff": [
+          "test_getsizeof_param",
+          "test_getsizeof_replace_grow",
+          "test_getsizeof_replace_same_size",
+          "test_getsizeof_replace_shrink",
+          "test_getsizeof_negative"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/408",
+          "https://github.com/tkem/cachetools/commit/4296bbde2be128341b17126e43a06271259ae477",
+          "https://github.com/tkem/cachetools/blob/4296bbde2be128341b17126e43a06271259ae477/tests/__init__.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-063-cachetools-401",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/401",
+      "task": "自定义 getsizeof 返回负数时，插入后 currsize 变成负数，破坏后续容量检查。请拒绝这种条目大小并保持缓存状态不变。",
+      "fix_sha": "b510c82c01167a3277ca05a84384e934d8dd139a",
+      "base_sha": "46fae6627769bc491501dc0938d63360d452a782",
+      "production_files": [
+        "src/cachetools/__init__.py"
+      ],
+      "regression_test_files": [
+        "tests/__init__.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests。上游给出的最小入口为 python -m unittest tests.test_cache.CacheTest.test_getsizeof_negative；共享断言位于 tests/__init__.py。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Reject negative cache item sizes",
+        "merged_at": "2026-07-02T11:15:21Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 9,
+        "test_names_visible_in_diff": [
+          "test_getsizeof_param",
+          "test_getsizeof_negative",
+          "test_getsizeof_subclass"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/401",
+          "https://github.com/tkem/cachetools/commit/b510c82c01167a3277ca05a84384e934d8dd139a",
+          "https://github.com/tkem/cachetools/blob/b510c82c01167a3277ca05a84384e934d8dd139a/tests/__init__.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-064-cachetools-388",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/pull/388",
+      "task": "为含 cachedmethod 的类创建 autospec 模拟时，大量产生与实际实例调用无关的弃用警告。请使类检查过程正常完成且不产生这些无意义警告。",
+      "fix_sha": "8259b8be749d6f19c676ebbe91f3c257f0d04f0e",
+      "base_sha": "8011b71949e8d8d81a71359cca9477d67a2c9c0b",
+      "production_files": [
+        "src/cachetools/_cachedmethod.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_cachedmethod.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix #387: Handle obj=None case for inspection in _DescriptorBase",
+        "merged_at": "2026-03-05T20:48:03Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 7,
+        "test_diff_lines": 12,
+        "test_names_visible_in_diff": [
+          "test_autospec_no_warnings"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_cachedmethod.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/pull/388",
+          "https://github.com/tkem/cachetools/commit/8259b8be749d6f19c676ebbe91f3c257f0d04f0e",
+          "https://github.com/tkem/cachetools/blob/8259b8be749d6f19c676ebbe91f3c257f0d04f0e/tests/test_cachedmethod.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-065-w3lib-388",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/388",
+      "task": "get_base_url 和 get_meta_refresh 把 script-x、noscript-x 等自定义元素误当成真正的 script/noscript，忽略本来可见的标记。请正确区分元素名边界，并支持文本与字节输入。",
+      "fix_sha": "c5d8a72eecc24062b7f199ef24445711087cd1d5",
+      "base_sha": "12b33709813ade8826dd7edb01af989c845bb226",
+      "production_files": [
+        "w3lib/html.py"
+      ],
+      "regression_test_files": [
+        "tests/test_html.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_html.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix handling custom elements named script-* or noscript-*.",
+        "merged_at": "2026-10-19T12:21:35Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 13,
+        "test_diff_lines": 30,
+        "test_names_visible_in_diff": [
+          "test_start_tag",
+          "test_longer_name"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_html.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/388",
+          "https://github.com/scrapy/w3lib/commit/c5d8a72eecc24062b7f199ef24445711087cd1d5",
+          "https://github.com/scrapy/w3lib/blob/c5d8a72eecc24062b7f199ef24445711087cd1d5/tests/test_html.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-066-w3lib-326",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/326",
+      "task": "url_query_cleaner 在 keep_fragments=True 但 URL 没有 fragment 时添加多余的 #。请保留正确的 URL 结构，同时保持查询参数过滤及字节输入支持。",
+      "fix_sha": "9be59e35a244aedde8b1d6d742e42c1cdf56fb15",
+      "base_sha": "1dc698b15779e8ae9d5781ed56d8f25dd8e17fb1",
+      "production_files": [
+        "w3lib/url.py"
+      ],
+      "regression_test_files": [
+        "tests/test_url.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_url.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix empty fragment handling in url_query_cleaner(), fix the parameterlist hint",
+        "merged_at": "2026-09-14T11:22:56Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 4,
+        "test_diff_lines": 14,
+        "test_names_visible_in_diff": [
+          "test_path_to_file_uri"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_url.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/326",
+          "https://github.com/scrapy/w3lib/commit/9be59e35a244aedde8b1d6d742e42c1cdf56fb15",
+          "https://github.com/scrapy/w3lib/blob/9be59e35a244aedde8b1d6d742e42c1cdf56fb15/tests/test_url.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-067-w3lib-253",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/253",
+      "task": "safe_url_string 处理 IPv6 主机地址时丢掉必要的方括号，使有效 URL 变得无效。请保留 IPv6 结构，并兼顾端口、路径和查询。",
+      "fix_sha": "1ed46a8af01a5f445197322ce920b620b7ff2130",
+      "base_sha": "61db33b20f611b8d0a7a3dde3842d65f5f91d8d0",
+      "production_files": [
+        "w3lib/url.py"
+      ],
+      "regression_test_files": [
+        "tests/test_url.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_url.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix safe_url_string to preserve IPv6 brackets in netloc",
+        "merged_at": "2026-02-19T10:43:15Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 17,
+        "test_diff_lines": 5,
+        "test_names_visible_in_diff": [],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_url.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/253",
+          "https://github.com/scrapy/w3lib/commit/1ed46a8af01a5f445197322ce920b620b7ff2130",
+          "https://github.com/scrapy/w3lib/blob/1ed46a8af01a5f445197322ce920b620b7ff2130/tests/test_url.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-068-w3lib-272",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/272",
+      "task": "canonicalize_url 处理同时含 IPv6 主机、查询和 fragment 的 URL 时，片段分隔符未被正确识别，导致 keep_fragments 参数失效。请修复保留或去除片段的行为。",
+      "fix_sha": "5fd294ccf210389a89243870e989aaf6d15d3212",
+      "base_sha": "012208453dfcc26ba0f7adc96f5b4981b9fd3687",
+      "production_files": [
+        "w3lib/_url.py"
+      ],
+      "regression_test_files": [
+        "tests/test_url.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_url.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "fix _urlsplit early-exit dropping the fragment delimiter",
+        "merged_at": "2026-07-01T15:09:40Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 9,
+        "test_names_visible_in_diff": [
+          "test_remove_fragments_ipv6_host",
+          "test_dont_convert_safe_characters"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_url.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/272",
+          "https://github.com/scrapy/w3lib/commit/5fd294ccf210389a89243870e989aaf6d15d3212",
+          "https://github.com/scrapy/w3lib/blob/5fd294ccf210389a89243870e989aaf6d15d3212/tests/test_url.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-069-w3lib-85",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/85",
+      "task": "headers_raw_to_dict 读取同名重复 HTTP 头时仅保留最后一个值，丢失其它头值。请完整保留这些值及其顺序，并保持原有字节接口。",
+      "fix_sha": "e2b7feb17edefea23d0b1591ddf669697984fe4b",
+      "base_sha": "f46b4c4140dfd0081d34327d91f496f7a221bed7",
+      "production_files": [
+        "w3lib/http.py"
+      ],
+      "regression_test_files": [
+        "tests/test_http.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_http.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "[MRG+1] fix headers_raw_to_dict multiple headers with one name issue",
+        "merged_at": "2017-02-08T15:09:49Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 20,
+        "test_diff_lines": 6,
+        "test_names_visible_in_diff": [
+          "test_headers_raw_to_dict",
+          "test_headers_dict_to_raw"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_http.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/85",
+          "https://github.com/scrapy/w3lib/commit/e2b7feb17edefea23d0b1591ddf669697984fe4b",
+          "https://github.com/scrapy/w3lib/blob/e2b7feb17edefea23d0b1591ddf669697984fe4b/tests/test_http.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-070-w3lib-40",
+      "repo": "scrapy/w3lib",
+      "issue_or_pr_url": "https://github.com/scrapy/w3lib/pull/40",
+      "task": "replace_entities 遇到某些 Windows-1252 控制区的数字实体时泄漏 UnicodeDecodeError。请让这些无效实体遵守 remove_illegal 的移除或保留设置。",
+      "fix_sha": "3489ad5f6307983d2740e4516450aacb15620508",
+      "base_sha": "21ff68ddcf35e106be60da21af2a64b44ec13baa",
+      "production_files": [
+        "w3lib/html.py"
+      ],
+      "regression_test_files": [
+        "tests/test_html.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_html.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Fix uncaught UnicodeDecodeError when decoding entities (Thanks @horva!)",
+        "merged_at": "2015-10-29T14:08:11Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 2,
+        "test_names_visible_in_diff": [
+          "test_browser_hack"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_html.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "URL 与 HTML 函数只处理内存字符串，不请求 URL。历史快照中的 six 需要按项目声明提供；Windows-1252 是字符编码名称，并不要求 Windows。",
+        "evidence_urls": [
+          "https://github.com/scrapy/w3lib/pull/40",
+          "https://github.com/scrapy/w3lib/commit/3489ad5f6307983d2740e4516450aacb15620508",
+          "https://github.com/scrapy/w3lib/blob/3489ad5f6307983d2740e4516450aacb15620508/tests/test_html.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-071-cachetools-c1cb33811b",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/c1cb33811b3586be32217b9583307d4da66a66cf",
+      "task": "缓存子类的 __missing__ 只返回默认值而不存储时，读取后再插入其它条目可能在淘汰阶段抛出 KeyError。请支持这种合法的缺失值处理方式并保持条目数与容量一致。",
+      "fix_sha": "c1cb33811b3586be32217b9583307d4da66a66cf",
+      "base_sha": "5391d0990b53708836961fa19b772193a3af8188",
+      "production_files": [
+        "cachetools/lfu.py",
+        "cachetools/lru.py",
+        "cachetools/mru.py"
+      ],
+      "regression_test_files": [
+        "tests/__init__.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests。共享 mixin 在多个实际缓存测试类中继承；需运行整个 tests，尤其 LRU/LFU 相关模块，不能仅收集 tests/__init__.py。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix #200: Handle __missing__ not storing cache items.",
+        "merged_at": null,
+        "sha_basis": "fix_sha 为上游仓库公开修复提交；base_sha 为其第一父 SHA；按该提交相对第一父提交的生产与单测差异选取。",
+        "production_diff_lines": 9,
+        "test_diff_lines": 49,
+        "test_names_visible_in_diff": [
+          "test_missing",
+          "test_missing_getsizeof"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/commit/c1cb33811b3586be32217b9583307d4da66a66cf",
+          "https://github.com/tkem/cachetools/commit/c1cb33811b3586be32217b9583307d4da66a66cf",
+          "https://github.com/tkem/cachetools/issues/200",
+          "https://github.com/tkem/cachetools/blob/c1cb33811b3586be32217b9583307d4da66a66cf/tests/__init__.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-072-cachetools-462e867950",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/462e867950883c8ffbcfff715efd767b20c6c749",
+      "task": "缓存默认键经 pickle 保存后在另一个解释器中恢复，可能与新生成的相等键具有不同 hash，导致缓存无法命中。请修复键的序列化往返及相等哈希语义。",
+      "fix_sha": "462e867950883c8ffbcfff715efd767b20c6c749",
+      "base_sha": "3e5fe022716b0263488ef8146e18e162b2bcbe96",
+      "production_files": [
+        "cachetools/keys.py"
+      ],
+      "regression_test_files": [
+        "tests/test_keys.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_keys.py。新增 test_pickle 在内存里做 pickle 往返并检查 hash 缓存状态；原 issue #130 另有不同解释器的复现。已读取父快照 abc.py，含 collections.abc 的兼容导入。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix #130: Fix pickling/unpickling of cache keys.",
+        "merged_at": null,
+        "sha_basis": "fix_sha 为上游仓库公开修复提交；base_sha 为其第一父 SHA；按该提交相对第一父提交的生产与单测差异选取。",
+        "production_diff_lines": 13,
+        "test_diff_lines": 13,
+        "test_names_visible_in_diff": [
+          "test_pickle"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_keys.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/commit/462e867950883c8ffbcfff715efd767b20c6c749",
+          "https://github.com/tkem/cachetools/commit/462e867950883c8ffbcfff715efd767b20c6c749",
+          "https://github.com/tkem/cachetools/issues/130",
+          "https://github.com/tkem/cachetools/blob/462e867950883c8ffbcfff715efd767b20c6c749/tests/test_keys.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-073-cachetools-41e4b1616a",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/41e4b1616a292e26ebac3c5f68a8c5d5e43edc68",
+      "task": "叠加两层 cached 或 cachetools.func 装饰器时，外层暴露出内层的缓存属性、参数或统计，清理操作也影响错误的缓存。请让每层装饰器保持自己的可观察缓存接口。",
+      "fix_sha": "41e4b1616a292e26ebac3c5f68a8c5d5e43edc68",
+      "base_sha": "952e3bbd70de9d0a5d7699621b69219503ddbe6a",
+      "production_files": [
+        "src/cachetools/_cached.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cached.py",
+        "tests/test_func.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_cached.py tests/test_func.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix @cached stacking behavior.",
+        "merged_at": null,
+        "sha_basis": "fix_sha 为上游仓库公开修复提交；base_sha 为其第一父 SHA；按该提交相对第一父提交的生产与单测差异选取。",
+        "production_diff_lines": 15,
+        "test_diff_lines": 33,
+        "test_names_visible_in_diff": [
+          "test_stacked_decorators",
+          "test_zero_size_cache_decorator"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_cached.py tests/test_func.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/commit/41e4b1616a292e26ebac3c5f68a8c5d5e43edc68",
+          "https://github.com/tkem/cachetools/commit/41e4b1616a292e26ebac3c5f68a8c5d5e43edc68",
+          "https://github.com/tkem/cachetools/blob/41e4b1616a292e26ebac3c5f68a8c5d5e43edc68/tests/test_cached.py",
+          "https://github.com/tkem/cachetools/blob/41e4b1616a292e26ebac3c5f68a8c5d5e43edc68/tests/test_func.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-074-cachetools-ec0b97b8a4",
+      "repo": "tkem/cachetools",
+      "issue_or_pr_url": "https://github.com/tkem/cachetools/commit/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+      "task": "cachedmethod 经 super() 从子类调用父类实现时，后续调用可能绕过覆盖方法，或在父子两层都装饰时递归失败。请保留正确的覆盖调用及父子缓存统计。",
+      "fix_sha": "ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+      "base_sha": "aa73a19299432530eb9b1c0f9acecde6ad96c9e0",
+      "production_files": [
+        "src/cachetools/_cachedmethod.py"
+      ],
+      "regression_test_files": [
+        "tests/test_cachedmethod.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_cachedmethod.py。新增 InheritanceTest 覆盖 super、装饰/未装饰覆盖及多个同步选项；锁与 condition 使用计数测试替身，不需要外部并发服务。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Fix #437: Preserve cachedmethod super dispatch and expand inheritance coverage",
+        "merged_at": null,
+        "sha_basis": "fix_sha 为上游仓库公开修复提交；base_sha 为其第一父 SHA；按该提交相对第一父提交的生产与单测差异选取。",
+        "production_diff_lines": 16,
+        "test_diff_lines": 107,
+        "test_names_visible_in_diff": [
+          "test_super_decorated_override",
+          "test_super_undecorated_override",
+          "test_super_multilevel_override",
+          "test_autospec_no_warnings"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_cachedmethod.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现与所选单测以标准库为主；单测使用 unittest，可由 pytest 收集；未安装任何依赖。",
+        "evidence_urls": [
+          "https://github.com/tkem/cachetools/commit/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+          "https://github.com/tkem/cachetools/commit/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+          "https://github.com/tkem/cachetools/issues/437",
+          "https://github.com/tkem/cachetools/blob/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26/tests/test_cachedmethod.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-075-click-2369",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2369",
+      "task": "命令文档字符串从换页截断标记开始、因而没有可展示的帮助正文时，--help 仍输出多余空行。请修复空正文的格式化。",
+      "fix_sha": "850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd",
+      "base_sha": "a4f5450a2541e2f2f8cacf57f50435eb78422f99",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_commands.py",
+        "tests/test_formatting.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_commands.py tests/test_formatting.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "normal_maintenance",
+        "title": "Don't output spurious lines if the truncated help text is actually empty",
+        "merged_at": "2023-06-30T16:43:46Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 7,
+        "test_diff_lines": 34,
+        "test_names_visible_in_diff": [
+          "test_no_args_is_help",
+          "test_truncating_docstring_no_help",
+          "test_removing_multiline_marker"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_commands.py tests/test_formatting.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2369",
+          "https://github.com/pallets/click/commit/850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd",
+          "https://github.com/pallets/click/blob/850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd/tests/test_commands.py",
+          "https://github.com/pallets/click/blob/850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd/tests/test_formatting.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-076-click-2217",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2217",
+      "task": "非链式 Group 设置 invoke_without_command=True 后，在没有子命令的调用中，result_callback 收到 None 而不是组回调的返回值。请修复该结果传递，同时保持链式组的既有结果语义。",
+      "fix_sha": "19be092b6db4e4300e31906498e354ec0adf870c",
+      "base_sha": "bf9da4838986af3bc09a1b16974d154c61dcbe3f",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_chain.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_chain.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "group without command passes return value to result callback",
+        "merged_at": "2022-03-19T18:06:35Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 8,
+        "test_diff_lines": 8,
+        "test_names_visible_in_diff": [
+          "test_no_command_result_callback"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_chain.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2217",
+          "https://github.com/pallets/click/commit/19be092b6db4e4300e31906498e354ec0adf870c",
+          "https://github.com/pallets/click/blob/19be092b6db4e4300e31906498e354ec0adf870c/tests/test_chain.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-077-click-2158",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2158",
+      "task": "提示同时设置 confirmation_prompt=True 和空字符串默认值时，两次空输入无法确认该默认值。请使空字符串默认值的确认流程正常完成。",
+      "fix_sha": "deb1f0e1d736774ae17ce423ba452de937ffa402",
+      "base_sha": "c01e2b8ed17d3ea65981bc62784363d0e38e3092",
+      "production_files": [
+        "src/click/termui.py"
+      ],
+      "regression_test_files": [
+        "tests/test_termui.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_termui.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "allow empty str input in prompt() when confirmation_prompt=True and default=\"\"",
+        "merged_at": "2022-02-21T20:21:20Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 3,
+        "test_diff_lines": 17,
+        "test_names_visible_in_diff": [
+          "test_confirmation_prompt"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_termui.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2158",
+          "https://github.com/pallets/click/commit/deb1f0e1d736774ae17ce423ba452de937ffa402",
+          "https://github.com/pallets/click/blob/deb1f0e1d736774ae17ce423ba452de937ffa402/tests/test_termui.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-078-click-1990",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/1990",
+      "task": "布尔正反标志声明 required=True 后，不传任何标志仍可执行命令。请使必填标志缺失时产生正常的参数错误。",
+      "fix_sha": "4262661a0fffabe3803f1bd876b19244f587dafa",
+      "base_sha": "422cb2064eed146dbe03ba3aed5be35daeb70414",
+      "production_files": [
+        "src/click/core.py"
+      ],
+      "regression_test_files": [
+        "tests/test_options.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_options.py。固定采用该修复提交中的测试文件；回归覆盖新增边界并应同时保留同文件已有行为。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "external_input_error",
+        "title": "Enforce required flag",
+        "merged_at": "2022-02-20T19:33:31Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 2,
+        "test_diff_lines": 9,
+        "test_names_visible_in_diff": [
+          "test_missing_required_flag",
+          "test_missing_choice"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_options.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/1990",
+          "https://github.com/pallets/click/commit/4262661a0fffabe3803f1bd876b19244f587dafa",
+          "https://github.com/pallets/click/blob/4262661a0fffabe3803f1bd876b19244f587dafa/tests/test_options.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-079-blinker-148",
+      "repo": "pallets-eco/blinker",
+      "issue_or_pr_url": "https://github.com/pallets-eco/blinker/pull/148",
+      "task": "Signal 绑定一个整数 sender 后，发送另一个值相同但身份不同的整数对象不会通知接收器。请恢复整数及字符串 sender 的既有值匹配行为。",
+      "fix_sha": "0068cb4ce6a8d63f6628ba0a02450b7bae5110e9",
+      "base_sha": "3f9f1c9dd560588c118d5b5e23bce2e47f8fbf9d",
+      "production_files": [
+        "src/blinker/_utilities.py"
+      ],
+      "regression_test_files": [
+        "tests/test_signals.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_signals.py。新增/修订 test_int_sender 用 int('123456789') 避免常量折叠，检验相等值但不同对象；不依赖解释器对象驻留细节。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "restore identity handling for str and int senders",
+        "merged_at": "2024-04-28T16:56:29Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 11,
+        "test_diff_lines": 14,
+        "test_names_visible_in_diff": [
+          "test_int_sender"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_signals.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "运行实现以标准库为主，所选 sender 单测为同步内存调用；回归用 pytest。",
+        "evidence_urls": [
+          "https://github.com/pallets-eco/blinker/pull/148",
+          "https://github.com/pallets-eco/blinker/commit/0068cb4ce6a8d63f6628ba0a02450b7bae5110e9",
+          "https://github.com/pallets-eco/blinker/blob/0068cb4ce6a8d63f6628ba0a02450b7bae5110e9/tests/test_signals.py"
+        ]
+      }
+    },
+    {
+      "id": "xb-080-click-2041",
+      "repo": "pallets/click",
+      "issue_or_pr_url": "https://github.com/pallets/click/pull/2041",
+      "task": "选项的合法选择值以 ! 或 + 等非字母字符开头时，补全把输入误认为新的选项，无法提供正在填写的值。请修复值补全与新选项补全的判断，并保留自定义选项前缀行为。",
+      "fix_sha": "ef11be6e49e19a055fe7e5a89f0f1f4062c68dba",
+      "base_sha": "d251cb0abc9b0dbda2402d4d831c18718cfb51bf",
+      "production_files": [
+        "src/click/core.py",
+        "src/click/shell_completion.py"
+      ],
+      "regression_test_files": [
+        "tests/test_commands.py",
+        "tests/test_context.py",
+        "tests/test_parser.py",
+        "tests/test_shell_completion.py"
+      ],
+      "verification_hint": "在所给 SHA 的隔离源码环境运行 python -m pytest -q -o addopts= tests/test_commands.py tests/test_context.py tests/test_parser.py tests/test_shell_completion.py。补全回归通过 _get_words 等内存 API 执行，不启动 Bash/Fish/Zsh。 此处只核实源码，尚未运行父版本失败/修复版本通过检查。",
+      "source_notes": {
+        "category": "protocol_lifecycle",
+        "title": "Make shell completion prioritize option values over new options",
+        "merged_at": "2022-03-28T15:08:28Z",
+        "sha_basis": "fix_sha 来自已合并 PR 的 merge_commit_sha；base_sha 是该提交第一父 SHA；生产行数含增删，按 GitHub commit files 计算。",
+        "production_diff_lines": 20,
+        "test_diff_lines": 121,
+        "test_names_visible_in_diff": [
+          "test_command_parse_args_collects_option_prefixes",
+          "test_group_parse_args_collects_base_option_prefixes",
+          "test_group_invoke_collects_used_option_prefixes",
+          "test_propagate_opt_prefixes",
+          "test_split_arg_string",
+          "test_parser_default_prefixes",
+          "test_parser_collects_prefixes",
+          "test_choice_special_characters",
+          "test_choice_conflicting_prefix",
+          "test_option_count",
+          "test_option_optional"
+        ],
+        "regression_entrypoint": "python -m pytest -q -o addopts= tests/test_commands.py tests/test_context.py tests/test_parser.py tests/test_shell_completion.py",
+        "regression_diff_review": "已读取上游单测 diff，核对具体输入/断言或新增参数行。选择不依据任何 solver、模型输出或预筛运行结果。",
+        "candidate_status": "source_verified_only; runtime admission pending",
+        "dependencies_and_limits": "Python 运行库为主；回归用 pytest。这里选择的是可通过 CliRunner 或纯对象调用验证的用例，不要求实际 shell、终端或操作系统专用功能。",
+        "evidence_urls": [
+          "https://github.com/pallets/click/pull/2041",
+          "https://github.com/pallets/click/commit/ef11be6e49e19a055fe7e5a89f0f1f4062c68dba",
+          "https://github.com/pallets/click/blob/ef11be6e49e19a055fe7e5a89f0f1f4062c68dba/tests/test_commands.py",
+          "https://github.com/pallets/click/blob/ef11be6e49e19a055fe7e5a89f0f1f4062c68dba/tests/test_context.py",
+          "https://github.com/pallets/click/blob/ef11be6e49e19a055fe7e5a89f0f1f4062c68dba/tests/test_parser.py",
+          "https://github.com/pallets/click/blob/ef11be6e49e19a055fe7e5a89f0f1f4062c68dba/tests/test_shell_completion.py"
+        ]
+      }
+    }
+  ]
+}
+

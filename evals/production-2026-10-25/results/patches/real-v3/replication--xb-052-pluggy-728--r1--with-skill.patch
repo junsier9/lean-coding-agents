@@ -1,0 +1,233 @@
+diff --git a/src/pluggy/_tracing.py b/src/pluggy/_tracing.py
+index e90418f..cce5611 100644
+--- a/src/pluggy/_tracing.py
++++ b/src/pluggy/_tracing.py
+@@ -13,6 +13,13 @@ _Writer = Callable[[str], object]
+ _Processor = Callable[[tuple[str, ...], tuple[Any, ...]], object]
+ 
+ 
++def _safe_str(value: object) -> str:
++    try:
++        return str(value)
++    except Exception:
++        return f"<unprintable {type(value).__name__} object>"
++
++
+ class TagTracer:
+     def __init__(self) -> None:
+         self._tags2proc: dict[tuple[str, ...], _Processor] = {}
+@@ -29,15 +36,15 @@ class TagTracer:
+         else:
+             extra = {}
+ 
+-        content = " ".join(map(str, args))
++        content = " ".join(map(_safe_str, args))
+         indent = "  " * self.indent
+ 
+         lines = [f"{indent}{content} [{':'.join(tags)}]\n"]
+ 
+         for name, value in extra.items():
+-            lines.append(f"{indent}    {name}: {value}\n")
++            lines.append(f"{indent}    {_safe_str(name)}: {_safe_str(value)}\n")
+ 
+-        return "".join(lines)
++        return "".join(lines).encode("utf-8", "backslashreplace").decode("utf-8")
+ 
+     def _processmessage(self, tags: tuple[str, ...], args: tuple[object, ...]) -> None:
+         if self._writer is not None and args:
+diff --git a/testing/test_tracer.py b/testing/test_tracer.py
+index 13b2972..2515b72 100644
+--- a/testing/test_tracer.py
++++ b/testing/test_tracer.py
+@@ -1,3 +1,5 @@
++import io
++
+ import pytest
+ 
+ from pluggy import HookimplMarker
+@@ -64,6 +66,77 @@ def test_readable_output_dictargs(rootlogger: TagTracer) -> None:
+     assert out2 == "test [test]\n    a: 1\n"
+ 
+ 
++@pytest.mark.parametrize(
++    ("text", "escaped"),
++    [
++        ("caf\u00e9 \u4e2d\u6587 \U0001f680", "caf\u00e9 \u4e2d\u6587 \U0001f680"),
++        (
++            "caf\u00e9 \u4e2d\u6587 \U0001f680\ud800\udfff",
++            "caf\u00e9 \u4e2d\u6587 \U0001f680\\ud800\\udfff",
++        ),
++    ],
++)
++def test_unicode_output(rootlogger: TagTracer, text: str, escaped: str) -> None:
++    buffer = io.BytesIO()
++    with io.TextIOWrapper(buffer, encoding="utf-8", newline="\n") as writer:
++        rootlogger.setwriter(writer.write)
++        rootlogger.get(text)(text, {text: text})
++        writer.flush()
++        assert buffer.getvalue().decode("utf-8") == (
++            f"{escaped} [{escaped}]\n    {escaped}: {escaped}\n"
++        )
++
++
++def test_unprintable_output(rootlogger: TagTracer) -> None:
++    class Unprintable:
++        def __str__(self) -> str:
++            raise ValueError("cannot stringify")
++
++    value = Unprintable()
++    out = rootlogger._format_message(["test"], [value, {value: value}])
++    assert out == (
++        "<unprintable Unprintable object> [test]\n"
++        "    <unprintable Unprintable object>: <unprintable Unprintable object>\n"
++    )
++
++
++@pytest.mark.parametrize("error_type", [KeyboardInterrupt, SystemExit])
++@pytest.mark.parametrize("nested", [False, True])
++def test_formatting_interrupts(
++    rootlogger: TagTracer, error_type: type[BaseException], nested: bool
++) -> None:
++    error = error_type()
++
++    class Interrupted:
++        def __str__(self) -> str:
++            raise error
++
++        def __repr__(self) -> str:
++            raise error
++
++    value = Interrupted()
++    rootlogger.setwriter(lambda message: None)
++    with pytest.raises(error_type) as excinfo:
++        rootlogger.get("test")([value] if nested else value)
++    assert excinfo.value is error
++
++
++@pytest.mark.parametrize("boundary", ["writer", "processor"])
++def test_callback_errors_propagate(rootlogger: TagTracer, boundary: str) -> None:
++    error = RuntimeError("callback failed")
++
++    def fail(*args: object) -> None:
++        raise error
++
++    if boundary == "writer":
++        rootlogger.setwriter(fail)
++    else:
++        rootlogger.setprocessor("test", fail)
++    with pytest.raises(RuntimeError) as excinfo:
++        rootlogger.get("test")("message")
++    assert excinfo.value is error
++
++
+ def test_setprocessor(rootlogger: TagTracer) -> None:
+     log = rootlogger.get("1")
+     log2 = log.get("2")
+@@ -84,6 +157,107 @@ def test_setprocessor(rootlogger: TagTracer) -> None:
+     assert args == ("seen",)
+ 
+ 
++@pytest.mark.parametrize("firstresult", [False, True])
++@pytest.mark.parametrize("error_type", [None, ValueError, KeyboardInterrupt, SystemExit])
++def test_plugin_tracing_unprintable(
++    pm: PluginManager, firstresult: bool, error_type: type[BaseException] | None
++) -> None:
++    class Unprintable:
++        def __str__(self) -> str:
++            raise ValueError("cannot stringify")
++
++        def __repr__(self) -> str:
++            raise RuntimeError("cannot represent")
++
++    class Api:
++        @hookspec(firstresult=firstresult)
++        def hello(self, arg: object) -> object: ...
++
++    value = Unprintable()
++    seen = []
++    error = error_type() if error_type is not None else None
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg: object) -> object:
++            seen.append(arg)
++            if error is not None:
++                raise error
++            return arg
++
++    pm.add_hookspecs(Api)
++    pm.register(Plugin())
++    trace_out: list[str] = []
++    pm.trace.root.setwriter(trace_out.append)
++    processed = []
++    pm.trace.root.setprocessor("hook", lambda tags, args: processed.append(args))
++    pm.enable_tracing()
++
++    if error_type is not None:
++        with pytest.raises(error_type) as excinfo:
++            pm.hook.hello(arg=value)
++        assert excinfo.value is error
++        assert len(trace_out) == 1
++    else:
++        result = pm.hook.hello(arg=value)
++        assert (result if firstresult else result[0]) is value
++        result_type = "Unprintable" if firstresult else "list"
++        assert trace_out[1] == (
++            f"  finish hello --> <unprintable {result_type} object> [hook]\n"
++        )
++        assert processed[1][-1] is result
++    assert len(seen) == 1 and seen[0] is value
++    assert processed[0][-1]["arg"] is value
++    assert trace_out[0] == (
++        "  hello [hook]\n      arg: <unprintable Unprintable object>\n"
++    )
++    assert pm.trace.root.indent == 0
++
++
++@pytest.mark.parametrize("firstresult", [False, True])
++@pytest.mark.parametrize("custom_representation", [False, True])
++def test_plugin_tracing_unicode(
++    pm: PluginManager, firstresult: bool, custom_representation: bool
++) -> None:
++    text = "caf\u00e9 \u4e2d\u6587 \U0001f680\ud800\udfff"
++    escaped = "caf\u00e9 \u4e2d\u6587 \U0001f680\\ud800\\udfff"
++
++    class UnicodeRepresentation:
++        def __str__(self) -> str:
++            return text
++
++        def __repr__(self) -> str:
++            return text
++
++    class Api:
++        @hookspec(firstresult=firstresult)
++        def hello(self, arg: object) -> object: ...
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg: object) -> object:
++            return arg
++
++    value = UnicodeRepresentation() if custom_representation else text
++    expected_result = escaped
++    if not firstresult:
++        expected_result = f"[{escaped if custom_representation else repr(text)}]"
++    pm.add_hookspecs(Api)
++    pm.register(Plugin())
++    pm.enable_tracing()
++    buffer = io.BytesIO()
++    with io.TextIOWrapper(buffer, encoding="utf-8", newline="\n") as writer:
++        pm.trace.root.setwriter(writer.write)
++        result = pm.hook.hello(arg=value)
++        assert (result if firstresult else result[0]) is value
++        writer.flush()
++        assert buffer.getvalue().decode("utf-8") == (
++            f"  hello [hook]\n      arg: {escaped}\n"
++            f"  finish hello --> {expected_result} [hook]\n"
++        )
++    assert pm.trace.root.indent == 0
++
++
+ def test_plugin_tracing(pm: PluginManager) -> None:
+     class Api:
+         @hookspec

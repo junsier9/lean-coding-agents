@@ -1,0 +1,14 @@
+{
+  "retained_at": "2026-10-25T20:20:11.178702+00:00",
+  "purpose": "Private development evidence; not an installable skill bundle or production qualification",
+  "private_archive": ".local/production-v5-development-evidence.zip",
+  "archive_sha256": "2BA70A7367BFDC2DAE402B0F599A86C0C4CD7CAEEE0827300FF4D002B8B01062",
+  "archive_bytes": 2692558,
+  "entries": 582,
+  "all_entries_crc_and_sha256_verified": true,
+  "native_raw_artifacts_verified": 48,
+  "native_attempts": 6,
+  "third_party_fixture_sources_and_license_notices_included": true,
+  "global_credentials_or_external_environment_dependency_trees_included": false,
+  "raw_events_kept_private": true
+}

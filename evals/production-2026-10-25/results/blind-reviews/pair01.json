@@ -1,0 +1,1357 @@
+{
+  "pair": "01",
+  "review_type": "independent arm-label-blinded code and behavior review",
+  "task": "sample 在使用 counts 且 strict=True 时，样本数大于总体计数仍可能返回短样本而不报错。请使这种情况遵守 strict 契约，同时保持加权采样的相同错误检查以及 counts 与 weights 互斥的规则。",
+  "comparison": "same",
+  "preferred_arm": null,
+  "runtime_ast_equal_excluding_docstrings": true,
+  "summary": "A/B 的采样执行逻辑相同：将必要的 strict 长度检查移出 StopIteration 抑制块，使提前耗尽后仍能检查短样本。两侧的独立行为探针结果相同；A 额外澄清 counts 扩展后的总体文档。未据代码或测试数量选优，未确认不安全修改或无需求机制。",
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "A-J01",
+          "file": "A/more_itertools/more.py",
+          "line": 3737,
+          "title": "将必要检查放到所有正常耗尽路径可达的位置",
+          "evidence": "原检查位于 suppress(StopIteration) 内，feed 在初始填充时抛 StopIteration 会直接跳出该块，因而跳过短样本检查。移动后长度检查仍受 strict 控制，能够拒绝总体计数不足；没有新增兜底值、宽捕获或预先物化整个总体。",
+          "additional_locations": [
+            "base/more_itertools/more.py:3725",
+            "base/more_itertools/more.py:3728",
+            "base/more_itertools/more.py:3729",
+            "A/more_itertools/more.py:3725"
+          ],
+          "probe_ids": [
+            "counted_oversized_strict",
+            "counted_non_strict",
+            "counted_exact_strict"
+          ]
+        },
+        {
+          "id": "A-J02",
+          "file": "A/more_itertools/more.py",
+          "line": 3681,
+          "title": "保留其他采样模式的检查与非预期异常",
+          "evidence": "加权 strict 检查、weights/counts 互斥分派与负 k/零 k 行为未改。局部探针确认加权总体不足仍为既有 ValueError，互斥组合仍为 TypeError，counts 或 population 中的意外 RuntimeError 保留原对象传播；16 个固定种子的有效计数采样与 B 相同，原输入未被修改。",
+          "probe_ids": [
+            "weighted_strict_checks",
+            "mutual_exclusion",
+            "unexpected_iterator_errors",
+            "zero_and_negative_k",
+            "seeded_in_range_samples"
+          ]
+        },
+        {
+          "id": "A-J03",
+          "file": "A/more_itertools/more.py",
+          "line": 3774,
+          "title": "文档澄清与当前 counts 契约直接相关",
+          "evidence": "将 strict 的总体大小描述澄清为 counts 扩展后的总体，避免仅以 iterable 原始元素数解释 k。新增回归检查也围绕不足、恰好、非 strict、加权错误和互斥规则；没有新增生产机制。"
+        }
+      ],
+      "unresolved": []
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "B-J01",
+          "file": "B/more_itertools/more.py",
+          "line": 3737,
+          "title": "strict 检查在迭代提前耗尽后仍然执行",
+          "evidence": "与 A 相同地把长度检查移到 suppress(StopIteration) 之外；这是修复已观察路径的必要边界，而非冗余防御。非 strict 路径继续返回实际总体，完整 reservoir 也不受影响。",
+          "additional_locations": [
+            "B/more_itertools/more.py:3725",
+            "B/more_itertools/more.py:3728"
+          ],
+          "probe_ids": [
+            "counted_oversized_strict",
+            "counted_non_strict",
+            "counted_exact_strict"
+          ]
+        },
+        {
+          "id": "B-J02",
+          "file": "B/more_itertools/more.py",
+          "line": 3681,
+          "title": "执行逻辑保留现有错误与消耗语义",
+          "evidence": "加权 helper 与公共分派未增加新层次；相同探针验证错误接口、异常身份、单次输入迭代与有效样本结果。没有新增复制、重试、包装器或静默 fallback。",
+          "probe_ids": [
+            "weighted_strict_checks",
+            "mutual_exclusion",
+            "unexpected_iterator_errors",
+            "zero_and_negative_k",
+            "seeded_in_range_samples"
+          ]
+        },
+        {
+          "id": "B-J03",
+          "file": "B/tests/test_more.py",
+          "line": 4281,
+          "title": "测试补充针对已存在的有效路径",
+          "evidence": "counts 回归检查包含总体不足、为空、零次数和两种迭代长度不一致的既有截断行为；加权检查和互斥检查与本题相关。测试组织不同不构成生产实现较优的证据。"
+        }
+      ],
+      "unresolved": []
+    }
+  },
+  "probe_method": {
+    "environment": "Bundled Python 3.12.14; standard library only; -B and PYTHONDONTWRITEBYTECODE=1",
+    "isolation": "Only the permitted more_itertools source packages were copied into an independently created temporary tree; each copied package was imported in a separate local subprocess.",
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_tests_executed": false,
+    "checks": [
+      "Counted strict oversize rejects nonempty, empty, zero-count and truncated count populations",
+      "Counted non-strict and exact-size behavior is preserved",
+      "Weighted strict failures and valid exact weighted sample are preserved",
+      "weights/counts mutual exclusion still rejects non-None empty and populated pairs",
+      "Unexpected population/count iterator errors preserve original exception identity",
+      "Zero and negative k do not consume generator items",
+      "Sixteen seeded in-range counted samples respect multiplicities and match A/B"
+    ],
+    "source_sha256": "F1C90AB31B3EADD97BACB3F640C2A980943AD0AEF4B53AE42BF86911B4670A65",
+    "source": "from collections import Counter\nimport json\nfrom pathlib import Path\nimport random\nimport sys\n\nsys.dont_write_bytecode = True\nsys.path.insert(0, str(Path(sys.argv[1]).resolve()))\nfrom more_itertools import sample\n\n\ndef require(condition, message):\n    if not condition:\n        raise AssertionError(message)\n\n\ndef expect_error(kind, function):\n    try:\n        function()\n    except BaseException as error:\n        require(isinstance(error, kind), 'wrong exception: ' + type(error).__name__)\n        return error\n    raise AssertionError('expected ' + kind.__name__)\n\n\nCOUNTED = [('ab', [2, 1]), ('abc', [2, 0, 1]), ('ab', [0, 0]), ('', []), ('ab', [2]), ('a', [2, 3])]\n\n\ndef expanded(data, counts):\n    return [value for value, count in zip(data, counts) for unused in range(count)]\n\n\ndef counted_oversized_strict():\n    observed = []\n    for data, counts in COUNTED:\n        k = len(expanded(data, counts)) + 1\n        error = expect_error(ValueError, lambda: sample(iter(data), k, counts=iter(counts), strict=True))\n        require(str(error) == 'Sample larger than population', 'strict error interface changed')\n        observed.append({'data': data, 'counts': counts, 'k': k, 'exception': type(error).__name__})\n    return observed\n\n\ndef counted_non_strict():\n    observed = []\n    for data, counts in COUNTED:\n        expected = expanded(data, counts)\n        result = sample(iter(data), len(expected) + 1, counts=iter(counts), strict=False)\n        require(Counter(result) == Counter(expected), 'non-strict counted population changed')\n        observed.append({'data': data, 'counts': counts, 'result_counts': dict(Counter(result))})\n    return observed\n\n\ndef counted_exact_strict():\n    observed = []\n    for data, counts in COUNTED:\n        expected = expanded(data, counts)\n        result = sample(iter(data), len(expected), counts=iter(counts), strict=True)\n        require(Counter(result) == Counter(expected), 'exact counted population changed')\n        observed.append({'data': data, 'counts': counts, 'result_counts': dict(Counter(result))})\n    return observed\n\n\ndef weighted_strict_checks():\n    failures = []\n    for data, weights, k in [('', [], 1), ('ab', [1], 2), ('a', [1, 2], 2), ('ab', [], 1), ('ab', [1, 2], 3)]:\n        error = expect_error(ValueError, lambda: sample(iter(data), k, weights=iter(weights), strict=True))\n        require(str(error) == 'Sample larger than population', 'weighted strict error changed')\n        failures.append([data, weights, k])\n    require(Counter(sample('ab', 2, weights=iter([1, 2]), strict=True)) == Counter('ab'), 'weighted exact sample')\n    return {'strict_rejections': failures, 'exact_weighted_population': ['a', 'b']}\n\n\ndef mutual_exclusion():\n    cases = []\n    for strict in [False, True]:\n        for weights, counts in [([], []), ([1], [1])]:\n            error = expect_error(TypeError, lambda: sample('a', 1, weights=weights, counts=counts, strict=strict))\n            cases.append({'strict': strict, 'weights': weights, 'counts': counts, 'error': type(error).__name__})\n    return cases\n\n\ndef unexpected_iterator_errors():\n    observations = []\n    for broken_part in ['population', 'counts']:\n        failure = RuntimeError(broken_part + ' failure')\n        def broken(first):\n            yield first\n            raise failure\n        population = broken('a') if broken_part == 'population' else iter('ab')\n        counts = broken(1) if broken_part == 'counts' else iter([1, 1])\n        error = expect_error(RuntimeError, lambda: sample(population, 2, counts=counts, strict=True))\n        require(error is failure, 'unexpected source failure was replaced')\n        observations.append({'source': broken_part, 'original_exception_identity': True})\n    return observations\n\n\ndef zero_and_negative_k():\n    visited = []\n    def source(label, value):\n        visited.append(label)\n        yield value\n    require(sample(source('population', 'a'), 0, counts=source('counts', 1), strict=True) == [], 'zero size')\n    error = expect_error(ValueError, lambda: sample(source('population', 'a'), -1, counts=source('counts', 1)))\n    require(str(error) == 'k must be non-negative', 'negative size error changed')\n    require(visited == [], 'empty/invalid request consumed data')\n    return {'visited': visited, 'zero_result': [], 'negative_exception': type(error).__name__}\n\n\ndef seeded_in_range_samples():\n    rows = []\n    population, counts = list('abcd'), [3, 2, 0, 4]\n    maximum = Counter(expanded(population, counts))\n    for seed in range(16):\n        random.seed(seed)\n        result = sample(iter(population), 4, counts=iter(counts), strict=True)\n        require(len(result) == 4 and not (Counter(result) - maximum), 'in-range sample violates counts')\n        rows.append(result)\n    require(population == list('abcd') and counts == [3, 2, 0, 4], 'input mutation')\n    return rows\n\n\nresults = {}\nfor function in [counted_oversized_strict, counted_non_strict, counted_exact_strict,\n                 weighted_strict_checks, mutual_exclusion, unexpected_iterator_errors,\n                 zero_and_negative_k, seeded_in_range_samples]:\n    try:\n        results[function.__name__] = {'passed': True, 'observed': function()}\n    except BaseException as error:\n        results[function.__name__] = {'passed': False, 'exception': type(error).__name__, 'message': str(error)}\nprint(json.dumps({'module_file': str(Path(sys.modules['more_itertools'].__file__).resolve()),\n                  'passed': sum(result['passed'] for result in results.values()),\n                  'total': len(results), 'results': results}))\n",
+    "temporary_work_directory_removed": true
+  },
+  "probe_results": {
+    "base": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\01\\base\\more_itertools\\__init__.py",
+      "passed": 7,
+      "total": 8,
+      "results": {
+        "counted_oversized_strict": {
+          "passed": false,
+          "exception": "AssertionError",
+          "message": "expected ValueError"
+        },
+        "counted_non_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "b": 1
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "c": 1
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "counted_exact_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "b": 1,
+                "a": 2
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "c": 1
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "weighted_strict_checks": {
+          "passed": true,
+          "observed": {
+            "strict_rejections": [
+              [
+                "",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1
+                ],
+                2
+              ],
+              [
+                "a",
+                [
+                  1,
+                  2
+                ],
+                2
+              ],
+              [
+                "ab",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1,
+                  2
+                ],
+                3
+              ]
+            ],
+            "exact_weighted_population": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        "mutual_exclusion": {
+          "passed": true,
+          "observed": [
+            {
+              "strict": false,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": false,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            }
+          ]
+        },
+        "unexpected_iterator_errors": {
+          "passed": true,
+          "observed": [
+            {
+              "source": "population",
+              "original_exception_identity": true
+            },
+            {
+              "source": "counts",
+              "original_exception_identity": true
+            }
+          ]
+        },
+        "zero_and_negative_k": {
+          "passed": true,
+          "observed": {
+            "visited": [],
+            "zero_result": [],
+            "negative_exception": "ValueError"
+          }
+        },
+        "seeded_in_range_samples": {
+          "passed": true,
+          "observed": [
+            [
+              "d",
+              "a",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "a"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "a",
+              "a",
+              "d",
+              "d"
+            ],
+            [
+              "a",
+              "d",
+              "d",
+              "d"
+            ],
+            [
+              "d",
+              "d",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "d",
+              "b",
+              "d"
+            ],
+            [
+              "b",
+              "a",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "d",
+              "b",
+              "a",
+              "a"
+            ],
+            [
+              "a",
+              "b",
+              "a",
+              "b"
+            ],
+            [
+              "b",
+              "d",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "a"
+            ]
+          ]
+        }
+      }
+    },
+    "A": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\01\\A\\more_itertools\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "counted_oversized_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "k": 4,
+              "exception": "ValueError"
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "k": 4,
+              "exception": "ValueError"
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "k": 1,
+              "exception": "ValueError"
+            },
+            {
+              "data": "",
+              "counts": [],
+              "k": 1,
+              "exception": "ValueError"
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "k": 3,
+              "exception": "ValueError"
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "k": 3,
+              "exception": "ValueError"
+            }
+          ]
+        },
+        "counted_non_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "b": 1,
+                "a": 2
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "c": 1,
+                "a": 2
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "counted_exact_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "b": 1
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "c": 1
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "weighted_strict_checks": {
+          "passed": true,
+          "observed": {
+            "strict_rejections": [
+              [
+                "",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1
+                ],
+                2
+              ],
+              [
+                "a",
+                [
+                  1,
+                  2
+                ],
+                2
+              ],
+              [
+                "ab",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1,
+                  2
+                ],
+                3
+              ]
+            ],
+            "exact_weighted_population": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        "mutual_exclusion": {
+          "passed": true,
+          "observed": [
+            {
+              "strict": false,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": false,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            }
+          ]
+        },
+        "unexpected_iterator_errors": {
+          "passed": true,
+          "observed": [
+            {
+              "source": "population",
+              "original_exception_identity": true
+            },
+            {
+              "source": "counts",
+              "original_exception_identity": true
+            }
+          ]
+        },
+        "zero_and_negative_k": {
+          "passed": true,
+          "observed": {
+            "visited": [],
+            "zero_result": [],
+            "negative_exception": "ValueError"
+          }
+        },
+        "seeded_in_range_samples": {
+          "passed": true,
+          "observed": [
+            [
+              "d",
+              "a",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "a"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "a",
+              "a",
+              "d",
+              "d"
+            ],
+            [
+              "a",
+              "d",
+              "d",
+              "d"
+            ],
+            [
+              "d",
+              "d",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "d",
+              "b",
+              "d"
+            ],
+            [
+              "b",
+              "a",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "d",
+              "b",
+              "a",
+              "a"
+            ],
+            [
+              "a",
+              "b",
+              "a",
+              "b"
+            ],
+            [
+              "b",
+              "d",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "a"
+            ]
+          ]
+        }
+      }
+    },
+    "B": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\01\\B\\more_itertools\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "counted_oversized_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "k": 4,
+              "exception": "ValueError"
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "k": 4,
+              "exception": "ValueError"
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "k": 1,
+              "exception": "ValueError"
+            },
+            {
+              "data": "",
+              "counts": [],
+              "k": 1,
+              "exception": "ValueError"
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "k": 3,
+              "exception": "ValueError"
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "k": 3,
+              "exception": "ValueError"
+            }
+          ]
+        },
+        "counted_non_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "b": 1
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "c": 1
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "counted_exact_strict": {
+          "passed": true,
+          "observed": [
+            {
+              "data": "ab",
+              "counts": [
+                2,
+                1
+              ],
+              "result_counts": {
+                "a": 2,
+                "b": 1
+              }
+            },
+            {
+              "data": "abc",
+              "counts": [
+                2,
+                0,
+                1
+              ],
+              "result_counts": {
+                "c": 1,
+                "a": 2
+              }
+            },
+            {
+              "data": "ab",
+              "counts": [
+                0,
+                0
+              ],
+              "result_counts": {}
+            },
+            {
+              "data": "",
+              "counts": [],
+              "result_counts": {}
+            },
+            {
+              "data": "ab",
+              "counts": [
+                2
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            },
+            {
+              "data": "a",
+              "counts": [
+                2,
+                3
+              ],
+              "result_counts": {
+                "a": 2
+              }
+            }
+          ]
+        },
+        "weighted_strict_checks": {
+          "passed": true,
+          "observed": {
+            "strict_rejections": [
+              [
+                "",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1
+                ],
+                2
+              ],
+              [
+                "a",
+                [
+                  1,
+                  2
+                ],
+                2
+              ],
+              [
+                "ab",
+                [],
+                1
+              ],
+              [
+                "ab",
+                [
+                  1,
+                  2
+                ],
+                3
+              ]
+            ],
+            "exact_weighted_population": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        "mutual_exclusion": {
+          "passed": true,
+          "observed": [
+            {
+              "strict": false,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": false,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [],
+              "counts": [],
+              "error": "TypeError"
+            },
+            {
+              "strict": true,
+              "weights": [
+                1
+              ],
+              "counts": [
+                1
+              ],
+              "error": "TypeError"
+            }
+          ]
+        },
+        "unexpected_iterator_errors": {
+          "passed": true,
+          "observed": [
+            {
+              "source": "population",
+              "original_exception_identity": true
+            },
+            {
+              "source": "counts",
+              "original_exception_identity": true
+            }
+          ]
+        },
+        "zero_and_negative_k": {
+          "passed": true,
+          "observed": {
+            "visited": [],
+            "zero_result": [],
+            "negative_exception": "ValueError"
+          }
+        },
+        "seeded_in_range_samples": {
+          "passed": true,
+          "observed": [
+            [
+              "d",
+              "a",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "a"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "a",
+              "a",
+              "d",
+              "d"
+            ],
+            [
+              "a",
+              "d",
+              "d",
+              "d"
+            ],
+            [
+              "d",
+              "d",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "d",
+              "b",
+              "d"
+            ],
+            [
+              "b",
+              "a",
+              "a",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "b"
+            ],
+            [
+              "d",
+              "a",
+              "b",
+              "d"
+            ],
+            [
+              "d",
+              "b",
+              "a",
+              "a"
+            ],
+            [
+              "a",
+              "b",
+              "a",
+              "b"
+            ],
+            [
+              "b",
+              "d",
+              "d",
+              "a"
+            ],
+            [
+              "a",
+              "d",
+              "b",
+              "b"
+            ],
+            [
+              "d",
+              "b",
+              "d",
+              "a"
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "source_immutability": {
+    "files_verified": 114,
+    "all_audited_bytes_unchanged": true,
+    "source_hashes": {
+      "base/.gitattributes": "8E0056260CB5F4479F0AB03770E7B8D43E3403462A12D665641FF5B99E3D6DE4",
+      "base/.gitignore": "A487916BEA39987A88683C1C394637BBEFDE534474D21A95CEDAAA12241C8E7D",
+      "base/.readthedocs.yaml": "BE2DCC979BE7C63332099030CC3053B656162D1278BD4910E09EAD172B39D8ED",
+      "base/LICENSE": "09F1C8C9E941AF3E584D59641EA9B87D83C0CB0FD007EB5EF391A7E2643C1A46",
+      "base/Makefile": "D244247DF4578A79CFE4EC602A2D033F237E2AA604F1CAA9259BBD31CCEFEFB8",
+      "base/MANIFEST.in": "CA56ED2EC43DC7F30B79B3AB3B4D84D7EF33AE23688FACFA7DD40DE417CBA88F",
+      "base/pyproject.toml": "74197E577189B7D63307A7A4FC7F71D67F3A0EF85C410561539A2D01E911BAEA",
+      "base/README.rst": "C6AF43F958042D73B7392E0BB506FCB28F0A7E0EEEEB90FD0555564464C1A524",
+      "base/setup.cfg": "DCE0EA6AC71DB5597F5E917CCFE3165755EC3F6B25232B5F2E1B2DEFFF1CC930",
+      "base/setup.py": "843AC26C38A41ABAE578250BC0F9419194B320A0F67327D941037A4268F6CFE7",
+      "base/tox.ini": "6A16F19A423373FBAC1481F0273CF862FFD0C58F9280BD877BE1FE8228AD5306",
+      "base/.github/PULL_REQUEST_TEMPLATE.md": "98664FCD8D87B4192F59820CB18E7DD2E9502D889D675B965770741C6BE61B84",
+      "base/docs/api.rst": "8583EF6E59F45C0564FA46624A35CB2B2925A2949F12A0ACE786C66847EBC5CD",
+      "base/docs/conf.py": "87419CFCDDABE604451A50765B79B0A28833C294311EBB4D57DC25850C333319",
+      "base/docs/index.rst": "9C4321710F0DF7CB20F9A4F5D598E86309A82224FC166EB25B9B3FAFEBE85908",
+      "base/docs/license.rst": "F4A8D4C0F47EC36904FBA4FB1F7BE3FCAA045CC3FDD4766200BA755D892F0D18",
+      "base/docs/make.bat": "1E37476B6C285FB58FAE433C13361F82F1720E43FCB499B42B9C718A7AE1D5D7",
+      "base/docs/Makefile": "95F4FA50D01692B423C545D9FAD53FC977CE116433C67F627D003FC441486A28",
+      "base/docs/requirements.txt": "A947C16A92EB802D9F309DAA0F97AE23F4C0C65624A2BDA0D9EBED32EFC99AA7",
+      "base/docs/testing.rst": "D6BCE97ABF158183C0F853A64B68B170A567474331F02B20BCD9797AE6F8A80C",
+      "base/docs/toctree.rst": "278CB4E971EF7920C9FFF534C75EB847FD7AE2EE424E70347D1CEF2FCE367CD7",
+      "base/docs/versions.rst": "A20644744DF7BA7A213E1F984D192E55C1338A061AAF4CE25D97E9E793E9B873",
+      "base/more_itertools/more.py": "DAF4FFC89D1EBAFDB47A1ED1376CE017C281547130F456E6821A5E74EABAD1DF",
+      "base/more_itertools/more.pyi": "5AD3FD3E7C31A292F2383676CF96986E5C6B70A0B757E608D5FED6D240B748DB",
+      "base/more_itertools/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/more_itertools/recipes.py": "D253DC3AEBEBA9ECB13C77D36ED207E8172713832D073469F13CA1E6A7478AA7",
+      "base/more_itertools/recipes.pyi": "7ED9A1B2E290C445A490F00A5F82656C3F7E09DE24EFEC8B0726DCBE9859BA96",
+      "base/more_itertools/__init__.py": "C56F9E6E47884D145C67FB027E61608BE7CACCCFD42CDB7DEB54ED707E64B018",
+      "base/more_itertools/__init__.pyi": "E41DDE4F338DD4106E38BA1BD6F09F97211BDA549DEAEB17410F82BFE85791E0",
+      "base/requirements/development.txt": "CC8C21EC7972A30F19FB941D3FB2172E007ACE5A3A0C753A0756378BEF2B0BAB",
+      "base/tests/test_more.py": "A7BBBC3BE1DD77CE4974D49B29DD6576463C986AAE83EBBF4A2E655E6E790A1C",
+      "base/tests/test_recipes.py": "E5711448CBA3A81702A2BBC9B94134732AFCA825DEEA363E59D10819FBAD169C",
+      "base/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/.github/ISSUE_TEMPLATE/other-issues.md": "E21F2C602F76E451B79A728E394E5195ADA112C0555DED517F5F758D5009F41E",
+      "base/.github/ISSUE_TEMPLATE/propose-a-new-itertool.md": "6F0F79660CBD5EF98AFE03F80E4C281E5016E71EC4D65AED68B3CBE4009A78D3",
+      "base/.github/workflows/python-app.yml": "2828B5C6132408EDB52C5C4685D2144B8BCB3D29A243B238C720A51BE1E17C1B",
+      "base/docs/_static/theme_overrides.css": "B78B73585650D7960A0552C33C2D3220FD65217E8223C7701F35F1F778B1F6B0",
+      "A/.gitattributes": "8E0056260CB5F4479F0AB03770E7B8D43E3403462A12D665641FF5B99E3D6DE4",
+      "A/.gitignore": "A487916BEA39987A88683C1C394637BBEFDE534474D21A95CEDAAA12241C8E7D",
+      "A/.readthedocs.yaml": "BE2DCC979BE7C63332099030CC3053B656162D1278BD4910E09EAD172B39D8ED",
+      "A/LICENSE": "09F1C8C9E941AF3E584D59641EA9B87D83C0CB0FD007EB5EF391A7E2643C1A46",
+      "A/Makefile": "D244247DF4578A79CFE4EC602A2D033F237E2AA604F1CAA9259BBD31CCEFEFB8",
+      "A/MANIFEST.in": "CA56ED2EC43DC7F30B79B3AB3B4D84D7EF33AE23688FACFA7DD40DE417CBA88F",
+      "A/pyproject.toml": "74197E577189B7D63307A7A4FC7F71D67F3A0EF85C410561539A2D01E911BAEA",
+      "A/README.rst": "C6AF43F958042D73B7392E0BB506FCB28F0A7E0EEEEB90FD0555564464C1A524",
+      "A/setup.cfg": "DCE0EA6AC71DB5597F5E917CCFE3165755EC3F6B25232B5F2E1B2DEFFF1CC930",
+      "A/setup.py": "843AC26C38A41ABAE578250BC0F9419194B320A0F67327D941037A4268F6CFE7",
+      "A/tox.ini": "6A16F19A423373FBAC1481F0273CF862FFD0C58F9280BD877BE1FE8228AD5306",
+      "A/.github/PULL_REQUEST_TEMPLATE.md": "98664FCD8D87B4192F59820CB18E7DD2E9502D889D675B965770741C6BE61B84",
+      "A/docs/api.rst": "8583EF6E59F45C0564FA46624A35CB2B2925A2949F12A0ACE786C66847EBC5CD",
+      "A/docs/conf.py": "87419CFCDDABE604451A50765B79B0A28833C294311EBB4D57DC25850C333319",
+      "A/docs/index.rst": "9C4321710F0DF7CB20F9A4F5D598E86309A82224FC166EB25B9B3FAFEBE85908",
+      "A/docs/license.rst": "F4A8D4C0F47EC36904FBA4FB1F7BE3FCAA045CC3FDD4766200BA755D892F0D18",
+      "A/docs/make.bat": "1E37476B6C285FB58FAE433C13361F82F1720E43FCB499B42B9C718A7AE1D5D7",
+      "A/docs/Makefile": "95F4FA50D01692B423C545D9FAD53FC977CE116433C67F627D003FC441486A28",
+      "A/docs/requirements.txt": "A947C16A92EB802D9F309DAA0F97AE23F4C0C65624A2BDA0D9EBED32EFC99AA7",
+      "A/docs/testing.rst": "D6BCE97ABF158183C0F853A64B68B170A567474331F02B20BCD9797AE6F8A80C",
+      "A/docs/toctree.rst": "278CB4E971EF7920C9FFF534C75EB847FD7AE2EE424E70347D1CEF2FCE367CD7",
+      "A/docs/versions.rst": "A20644744DF7BA7A213E1F984D192E55C1338A061AAF4CE25D97E9E793E9B873",
+      "A/more_itertools/more.py": "C19E9180E10726EABFDCFDF9CAA598E88DBF188082872EC495EC0E9FF3023F15",
+      "A/more_itertools/more.pyi": "5AD3FD3E7C31A292F2383676CF96986E5C6B70A0B757E608D5FED6D240B748DB",
+      "A/more_itertools/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/more_itertools/recipes.py": "D253DC3AEBEBA9ECB13C77D36ED207E8172713832D073469F13CA1E6A7478AA7",
+      "A/more_itertools/recipes.pyi": "7ED9A1B2E290C445A490F00A5F82656C3F7E09DE24EFEC8B0726DCBE9859BA96",
+      "A/more_itertools/__init__.py": "C56F9E6E47884D145C67FB027E61608BE7CACCCFD42CDB7DEB54ED707E64B018",
+      "A/more_itertools/__init__.pyi": "E41DDE4F338DD4106E38BA1BD6F09F97211BDA549DEAEB17410F82BFE85791E0",
+      "A/requirements/development.txt": "CC8C21EC7972A30F19FB941D3FB2172E007ACE5A3A0C753A0756378BEF2B0BAB",
+      "A/tests/test_more.py": "47923595B683F07EA5FE648065856E45322361D08DE75F0B5F1C3407E41CDD7F",
+      "A/tests/test_recipes.py": "E5711448CBA3A81702A2BBC9B94134732AFCA825DEEA363E59D10819FBAD169C",
+      "A/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/.github/ISSUE_TEMPLATE/other-issues.md": "E21F2C602F76E451B79A728E394E5195ADA112C0555DED517F5F758D5009F41E",
+      "A/.github/ISSUE_TEMPLATE/propose-a-new-itertool.md": "6F0F79660CBD5EF98AFE03F80E4C281E5016E71EC4D65AED68B3CBE4009A78D3",
+      "A/.github/workflows/python-app.yml": "2828B5C6132408EDB52C5C4685D2144B8BCB3D29A243B238C720A51BE1E17C1B",
+      "A/docs/_static/theme_overrides.css": "B78B73585650D7960A0552C33C2D3220FD65217E8223C7701F35F1F778B1F6B0",
+      "B/.gitattributes": "8E0056260CB5F4479F0AB03770E7B8D43E3403462A12D665641FF5B99E3D6DE4",
+      "B/.gitignore": "A487916BEA39987A88683C1C394637BBEFDE534474D21A95CEDAAA12241C8E7D",
+      "B/.readthedocs.yaml": "BE2DCC979BE7C63332099030CC3053B656162D1278BD4910E09EAD172B39D8ED",
+      "B/LICENSE": "09F1C8C9E941AF3E584D59641EA9B87D83C0CB0FD007EB5EF391A7E2643C1A46",
+      "B/Makefile": "D244247DF4578A79CFE4EC602A2D033F237E2AA604F1CAA9259BBD31CCEFEFB8",
+      "B/MANIFEST.in": "CA56ED2EC43DC7F30B79B3AB3B4D84D7EF33AE23688FACFA7DD40DE417CBA88F",
+      "B/pyproject.toml": "74197E577189B7D63307A7A4FC7F71D67F3A0EF85C410561539A2D01E911BAEA",
+      "B/README.rst": "C6AF43F958042D73B7392E0BB506FCB28F0A7E0EEEEB90FD0555564464C1A524",
+      "B/setup.cfg": "DCE0EA6AC71DB5597F5E917CCFE3165755EC3F6B25232B5F2E1B2DEFFF1CC930",
+      "B/setup.py": "843AC26C38A41ABAE578250BC0F9419194B320A0F67327D941037A4268F6CFE7",
+      "B/tox.ini": "6A16F19A423373FBAC1481F0273CF862FFD0C58F9280BD877BE1FE8228AD5306",
+      "B/.github/PULL_REQUEST_TEMPLATE.md": "98664FCD8D87B4192F59820CB18E7DD2E9502D889D675B965770741C6BE61B84",
+      "B/docs/api.rst": "8583EF6E59F45C0564FA46624A35CB2B2925A2949F12A0ACE786C66847EBC5CD",
+      "B/docs/conf.py": "87419CFCDDABE604451A50765B79B0A28833C294311EBB4D57DC25850C333319",
+      "B/docs/index.rst": "9C4321710F0DF7CB20F9A4F5D598E86309A82224FC166EB25B9B3FAFEBE85908",
+      "B/docs/license.rst": "F4A8D4C0F47EC36904FBA4FB1F7BE3FCAA045CC3FDD4766200BA755D892F0D18",
+      "B/docs/make.bat": "1E37476B6C285FB58FAE433C13361F82F1720E43FCB499B42B9C718A7AE1D5D7",
+      "B/docs/Makefile": "95F4FA50D01692B423C545D9FAD53FC977CE116433C67F627D003FC441486A28",
+      "B/docs/requirements.txt": "A947C16A92EB802D9F309DAA0F97AE23F4C0C65624A2BDA0D9EBED32EFC99AA7",
+      "B/docs/testing.rst": "D6BCE97ABF158183C0F853A64B68B170A567474331F02B20BCD9797AE6F8A80C",
+      "B/docs/toctree.rst": "278CB4E971EF7920C9FFF534C75EB847FD7AE2EE424E70347D1CEF2FCE367CD7",
+      "B/docs/versions.rst": "A20644744DF7BA7A213E1F984D192E55C1338A061AAF4CE25D97E9E793E9B873",
+      "B/more_itertools/more.py": "8299F437EB3C111A2202EE164D016C452243CF6E0927D6EA12C18E30243E26DC",
+      "B/more_itertools/more.pyi": "5AD3FD3E7C31A292F2383676CF96986E5C6B70A0B757E608D5FED6D240B748DB",
+      "B/more_itertools/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/more_itertools/recipes.py": "D253DC3AEBEBA9ECB13C77D36ED207E8172713832D073469F13CA1E6A7478AA7",
+      "B/more_itertools/recipes.pyi": "7ED9A1B2E290C445A490F00A5F82656C3F7E09DE24EFEC8B0726DCBE9859BA96",
+      "B/more_itertools/__init__.py": "C56F9E6E47884D145C67FB027E61608BE7CACCCFD42CDB7DEB54ED707E64B018",
+      "B/more_itertools/__init__.pyi": "E41DDE4F338DD4106E38BA1BD6F09F97211BDA549DEAEB17410F82BFE85791E0",
+      "B/requirements/development.txt": "CC8C21EC7972A30F19FB941D3FB2172E007ACE5A3A0C753A0756378BEF2B0BAB",
+      "B/tests/test_more.py": "E6E88443D0731B924A7B03BDCFEB5C3E5C8AC7AD9B427C7150EB15A338A0CA18",
+      "B/tests/test_recipes.py": "E5711448CBA3A81702A2BBC9B94134732AFCA825DEEA363E59D10819FBAD169C",
+      "B/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/.github/ISSUE_TEMPLATE/other-issues.md": "E21F2C602F76E451B79A728E394E5195ADA112C0555DED517F5F758D5009F41E",
+      "B/.github/ISSUE_TEMPLATE/propose-a-new-itertool.md": "6F0F79660CBD5EF98AFE03F80E4C281E5016E71EC4D65AED68B3CBE4009A78D3",
+      "B/.github/workflows/python-app.yml": "2828B5C6132408EDB52C5C4685D2144B8BCB3D29A243B238C720A51BE1E17C1B",
+      "B/docs/_static/theme_overrides.css": "B78B73585650D7960A0552C33C2D3220FD65217E8223C7701F35F1F778B1F6B0",
+      "task.json": "F280813391FB9BFD8F4A616B491B13CDC3F0287092CADF0184AAB3CE831D454F",
+      "A.patch": "80B52D5D24CB7570C2B2E88E60D2E639A0BFAD9EAA46B86833B9425BD3521F7B",
+      "B.patch": "4F330B84B268E86722548AA8D086399AD433E9F52BA090240C9A40E2401F1DF4"
+    }
+  },
+  "limitations": [
+    "Local descriptive review, not a statistical sampling-distribution test or an efficiency trial.",
+    "Only visible task and permitted base/A/B sources and patches were used; no current skill, arm mapping, cost, reference fix or hidden grader was opened.",
+    "This agent previously authored unrelated synthetic development fixtures; it is not a fresh reviewer with zero background. This counted-sampling task was not one of those authored fixtures.",
+    "Pre-existing behavior for every invalid count/weight domain was not redefined or exhaustively verified.",
+    "A's documentation clarification is recorded, but no overall arm preference is assigned from a cosmetic size or test-count comparison."
+  ],
+  "reviewed_at": "2026-10-24T22:13:06.173056+00:00"
+}

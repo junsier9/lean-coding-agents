@@ -1,0 +1,350 @@
+{
+  "arm": "baseline",
+  "test_methods_run": 22,
+  "failed_methods": [
+    "test_t03_failures_remain_failures",
+    "test_t07_request_and_result_identity",
+    "test_t08_final_failure_and_bound",
+    "test_t08_transient_recovery",
+    "test_t09_every_sample",
+    "test_t12_label",
+    "test_t12_proportionate_delivery"
+  ],
+  "passed_cases": 7,
+  "failed_cases": [
+    "t03",
+    "t07",
+    "t08",
+    "t09",
+    "t12"
+  ],
+  "records": [
+    {
+      "test": "test_t01_ingress_errors",
+      "status": "passed"
+    },
+    {
+      "test": "test_t01_totals",
+      "status": "passed"
+    },
+    {
+      "test": "test_t02_invalid_external_values",
+      "status": "passed"
+    },
+    {
+      "test": "test_t02_valid_order",
+      "status": "passed"
+    },
+    {
+      "test": "test_t03_count_values",
+      "status": "passed"
+    },
+    {
+      "test": "test_t03_failures_remain_failures",
+      "status": "failed_subtest"
+    },
+    {
+      "test": "test_t03_failures_remain_failures",
+      "status": "failed_subtest"
+    },
+    {
+      "test": "test_t04_io_error",
+      "status": "passed"
+    },
+    {
+      "test": "test_t04_valid_and_optional",
+      "status": "passed"
+    },
+    {
+      "test": "test_t05_result_and_input_ownership",
+      "status": "passed"
+    },
+    {
+      "test": "test_t06_preview_does_not_mutate_source",
+      "status": "passed"
+    },
+    {
+      "test": "test_t07_failure_is_visible",
+      "status": "passed"
+    },
+    {
+      "test": "test_t07_request_and_result_identity",
+      "status": "failed"
+    },
+    {
+      "test": "test_t08_fatal_is_not_retried",
+      "status": "passed"
+    },
+    {
+      "test": "test_t08_final_failure_and_bound",
+      "status": "failed"
+    },
+    {
+      "test": "test_t08_success_stops",
+      "status": "passed"
+    },
+    {
+      "test": "test_t08_transient_recovery",
+      "status": "error"
+    },
+    {
+      "test": "test_t09_every_sample",
+      "status": "failed_subtest"
+    },
+    {
+      "test": "test_t09_every_sample",
+      "status": "failed_subtest"
+    },
+    {
+      "test": "test_t10_failure_closes_stream",
+      "status": "passed"
+    },
+    {
+      "test": "test_t10_success_closes_stream",
+      "status": "passed"
+    },
+    {
+      "test": "test_t11_protocol_bytes",
+      "status": "passed"
+    },
+    {
+      "test": "test_t12_label",
+      "status": "failed"
+    },
+    {
+      "test": "test_t12_proportionate_delivery",
+      "status": "failed"
+    }
+  ],
+  "cases": [
+    {
+      "id": "t01",
+      "before": {
+        "nonblank_lines": 26,
+        "functions": 2,
+        "branches": 6,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 26,
+        "functions": 2,
+        "branches": 6,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t02",
+      "before": {
+        "nonblank_lines": 11,
+        "functions": 1,
+        "branches": 3,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 11,
+        "functions": 1,
+        "branches": 3,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t03",
+      "before": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "after": {
+        "nonblank_lines": 5,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t04",
+      "before": {
+        "nonblank_lines": 9,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "after": {
+        "nonblank_lines": 9,
+        "functions": 1,
+        "branches": 1,
+        "except_handlers": 1
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t05",
+      "before": {
+        "nonblank_lines": 4,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 4,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t06",
+      "before": {
+        "nonblank_lines": 6,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 6,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t07",
+      "before": {
+        "nonblank_lines": 2,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 2,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t08",
+      "before": {
+        "nonblank_lines": 2,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 2,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t09",
+      "before": {
+        "nonblank_lines": 8,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 8,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t10",
+      "before": {
+        "nonblank_lines": 7,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 7,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t11",
+      "before": {
+        "nonblank_lines": 7,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 7,
+        "functions": 2,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    },
+    {
+      "id": "t12",
+      "before": {
+        "nonblank_lines": 3,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "after": {
+        "nonblank_lines": 3,
+        "functions": 1,
+        "branches": 0,
+        "except_handlers": 0
+      },
+      "added_lines": 0,
+      "deleted_lines": 0,
+      "additional_files": [],
+      "checks": null
+    }
+  ],
+  "interpretation": "Structural counts are descriptive; they do not establish that a defense is redundant."
+}

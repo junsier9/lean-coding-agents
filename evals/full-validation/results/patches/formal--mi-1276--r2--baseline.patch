@@ -1,0 +1,65 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 83131cb..d7f7de6 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2458,14 +2458,11 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
+-        # Empty iterator
+-        try:
+-            start = self._get_by_index(-1)
+-        except IndexError:
+-            return iter([])
+-
+-        return iter(
+-            numeric_range(start, self._start - self._step, -self._step)
++        # Use the original indices to preserve rounding and avoid computing
++        # a stop value beyond the bounds of the numeric type.
++        return (
++            self._start + n * self._step
++            for n in range(self._len - 1, -1, -1)
+         )
+ 
+     def count(self, value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 3896451..e487ddd 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3185,6 +3185,36 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_matches_iteration_with_inexact_step(self):
++        for args in [
++            (0.0, 1.0, 0.1),
++            (0.0, 3.0, 0.7),
++            (1.0, 0.0, -0.1),
++            (3.0, 0.0, -0.7),
++            (2.1, 5.1, 0.5),
++            (5.1, 2.1, -0.5),
++            (-8.732, -13.532, -2.4),
++            (4.51, 10.375, 0.255),
++            (-69.37276490678778, -29.8339073344664, 4.942357196540172),
++            (32.50227965239458, 9.003418351482358, -1.9582384417426848),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual(list(r)[::-1], list(reversed(r)))
++
++    def test_reversed_at_datetime_boundaries(self):
++        hour = timedelta(hours=1)
++        for start, step in [(datetime.min, hour), (datetime.max, -hour)]:
++            for length in (0, 1, 3):
++                with self.subTest(start=start, step=step, length=length):
++                    r = mi.numeric_range(start, start + length * step, step)
++                    self.assertEqual(list(r)[::-1], list(reversed(r)))
++
++    def test_reversed_large_range(self):
++        stop = 10**30
++        r = mi.numeric_range(stop)
++        self.assertEqual([stop - 1, stop - 2], list(islice(reversed(r), 2)))
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

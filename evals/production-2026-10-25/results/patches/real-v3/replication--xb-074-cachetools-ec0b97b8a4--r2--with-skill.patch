@@ -1,0 +1,165 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 4e4f940..d02de67 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -5,6 +5,7 @@
+ __all__ = ()
+ 
+ import functools
++import inspect
+ import warnings
+ import weakref
+ 
+@@ -93,11 +94,16 @@ class _DescriptorBase:
+ 
+             return unbound
+         elif self.__attrname is not None:
+-            # replace descriptor instance with wrapper in instance dict
++            # Only shadow this descriptor, never a subclass override reached via super().
++            name = (
++                self.__attrname
++                if inspect.getattr_static(type(obj), self.__attrname, None) is self
++                else self
++            )
+             try:
+                 # In case of a race condition where another thread already replaced
+                 # the descriptor, prefer the initial wrapper.
+-                wrapper = obj.__dict__.setdefault(self.__attrname, wrapper)
++                wrapper = obj.__dict__.setdefault(name, wrapper)
+             except AttributeError:
+                 # not all objects have __dict__ (e.g. class defines slots)
+                 msg = (
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 727a317..7a6fb6e 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -728,6 +728,129 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(len(cached.cache), 0)
+ 
+ 
++class InheritanceMethodTest(unittest.TestCase):
++    sync_options = (
++        {},
++        {"lock": lambda self: self.lock},
++        {"condition": lambda self: self.cond},
++        {"lock": lambda self: self.lock, "condition": lambda self: self.cond},
++    )
++
++    def test_override(self):
++        for info in (False, True):
++            for options in self.sync_options:
++                with self.subTest(info=info, options=tuple(options)):
++
++                    class Base:
++                        def __init__(self):
++                            self.cache = {}
++                            self.lock = CountedLock()
++                            self.cond = CountedCondition()
++                            self.base_calls = self.override_calls = 0
++
++                        @cachedmethod(lambda self: self.cache, info=info, **options)
++                        def get(self, value):
++                            self.base_calls += 1
++                            return value
++
++                    class Derived(Base):
++                        def get(self, value):
++                            self.override_calls += 1
++                            return super().get(value) + 10
++
++                    for base_first in (False, True):
++                        with self.subTest(base_first=base_first):
++                            cached = Derived()
++                            if base_first:
++                                self.assertEqual(Base.get(cached, 1), 1)
++
++                            self.assertEqual(cached.get(1), 11)
++                            self.assertEqual(cached.get(1), 11)
++                            self.assertEqual(cached.base_calls, 1)
++                            self.assertEqual(cached.override_calls, 2)
++
++                            base = super(Derived, cached).get
++                            self.assertIs(base, super(Derived, cached).get)
++                            self.assertEqual(base(1), 1)
++                            if info:
++                                self.assertEqual(
++                                    base.cache_info(), (2 + base_first, 1, None, 1)
++                                )
++
++    def test_decorated_override(self):
++        for info in (False, True):
++            for options in self.sync_options:
++                with self.subTest(info=info, options=tuple(options)):
++
++                    class Base:
++                        def __init__(self):
++                            self.cache = {}
++                            self.derived_cache = {}
++                            self.lock = CountedLock()
++                            self.cond = CountedCondition()
++                            self.base_calls = self.override_calls = 0
++
++                        @cachedmethod(lambda self: self.cache, info=info, **options)
++                        def get(self, value):
++                            self.base_calls += 1
++                            return value
++
++                    class Derived(Base):
++                        @cachedmethod(
++                            lambda self: self.derived_cache, info=info, **options
++                        )
++                        def get(self, value):
++                            self.override_calls += 1
++                            return super().get(value) + 10
++
++                    for base_first in (False, True):
++                        with self.subTest(base_first=base_first):
++                            cached = Derived()
++                            if base_first:
++                                self.assertEqual(Base.get(cached, 1), 1)
++
++                            self.assertEqual(cached.get(1), 11)
++                            self.assertEqual(cached.get(1), 11)
++                            base = super(Derived, cached).get
++                            derived = cached.get
++                            self.assertIs(base, super(Derived, cached).get)
++                            self.assertIs(derived, cached.get)
++                            self.assertIsNot(base, derived)
++                            self.assertEqual(base(1), 1)
++                            self.assertEqual(Base.get(cached, 1), 1)
++                            self.assertEqual(Derived.get(cached, 1), 11)
++                            self.assertEqual(cached.base_calls, 1)
++                            self.assertEqual(cached.override_calls, 1)
++                            if info:
++                                self.assertEqual(
++                                    base.cache_info(), (2 + base_first, 1, None, 1)
++                                )
++                                self.assertEqual(derived.cache_info(), (2, 1, None, 1))
++
++                            base.cache_clear()
++                            self.assertEqual(cached.cache, {})
++                            self.assertEqual(derived(1), 11)
++                            self.assertEqual(cached.base_calls, 1)
++                            if info:
++                                self.assertEqual(base.cache_info(), (0, 0, None, 0))
++                                self.assertEqual(derived.cache_info(), (3, 1, None, 1))
++
++                            derived.cache_clear()
++                            self.assertEqual(cached.derived_cache, {})
++                            self.assertEqual(derived(1), 11)
++                            self.assertEqual(cached.base_calls, 2)
++                            self.assertEqual(cached.override_calls, 2)
++                            if info:
++                                self.assertEqual(base.cache_info(), (0, 1, None, 1))
++                                self.assertEqual(derived.cache_info(), (0, 1, None, 1))
++                                other = Derived()
++                                self.assertEqual(other.get.cache_info(), (0, 0, None, 0))
++                                self.assertEqual(
++                                    super(Derived, other).get.cache_info(),
++                                    (0, 0, None, 0),
++                                )
++
++
+ class AutospecTest(unittest.TestCase):
+     def test_autospec_no_warnings(self):
+ 

@@ -1,0 +1,16 @@
+diff --git a/app.py b/app.py
+index 4a3ea12..533cfa6 100644
+--- a/app.py
++++ b/app.py
+@@ -15,5 +15,10 @@ class LiveQuote:
+         return sum(line.unit_cents * line.quantity for line in self.lines)
+ 
+ def prepare_quote(cart, catalog):
++    """Capture an immutable quote using the current prices and quantities."""
+     check(cart, catalog)
+-    return LiveQuote(cart, catalog)
++    lines = tuple(
++        Line(row["sku"], catalog[row["sku"]], row["quantity"])
++        for row in cart
++    )
++    return Quote(lines=lines, total=sum(line.unit_cents * line.quantity for line in lines))

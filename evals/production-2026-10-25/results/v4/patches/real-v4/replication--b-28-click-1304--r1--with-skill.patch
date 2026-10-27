@@ -1,0 +1,160 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 217f705..71eed2c 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 7.1
+ 
+ Unreleased
+ 
++-   Treat empty environment variables as unset when resolving parameter
++    values, including explicitly named variables and automatic prefixes.
+ -   Fix PyPI package name, "click" is lowercase again.
+ -   Fix link in ``unicode_literals`` error message. :pr:`1151`
+ -   Add support for colored output on UNIX Jupyter notebooks.
+diff --git a/click/core.py b/click/core.py
+index bf771f5..f9b200d 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1480,10 +1480,12 @@ class Parameter(object):
+         if isinstance(self.envvar, (tuple, list)):
+             for envvar in self.envvar:
+                 rv = os.environ.get(envvar)
+-                if rv is not None:
++                if rv:
+                     return rv
+         else:
+-            return os.environ.get(self.envvar)
++            rv = os.environ.get(self.envvar)
++            if rv:
++                return rv
+ 
+     def value_from_envvar(self, ctx):
+         rv = self.resolve_envvar_value(ctx)
+@@ -1800,14 +1802,16 @@ class Option(Parameter):
+         if self.allow_from_autoenv and \
+            ctx.auto_envvar_prefix is not None:
+             envvar = '%s_%s' % (ctx.auto_envvar_prefix, self.name.upper())
+-            return os.environ.get(envvar)
++            rv = os.environ.get(envvar)
++            if rv:
++                return rv
+ 
+     def value_from_envvar(self, ctx):
+         rv = self.resolve_envvar_value(ctx)
+         if rv is None:
+             return None
+         value_depth = (self.nargs != 1) + bool(self.multiple)
+-        if value_depth > 0 and rv is not None:
++        if value_depth > 0:
+             rv = self.type.split_envvar_value(rv)
+             if self.multiple and self.nargs != 1:
+                 rv = batch(rv, self.nargs)
+diff --git a/docs/options.rst b/docs/options.rst
+index 095041e..2bf1a2e 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -649,7 +649,12 @@ And from the command line:
+     invoke(greet, env={'USERNAME': 'john'})
+ 
+ In that case it can also be a list of different environment variables
+-where the first one is picked.
++where the first one with a non-empty value is picked.
++
++.. versionchanged:: 7.1
++   Empty environment variables are ignored and treated as unset. This
++   applies to explicitly named variables and automatic prefixes. Values
++   containing only whitespace are not considered empty.
+ 
+ Multiple Values from Environment Values
+ ---------------------------------------
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 14a7a17..8ecedc0 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -215,6 +215,86 @@ def test_toupper_envvar_prefix(runner):
+     assert result.output == 'foo\n'
+ 
+ 
++@pytest.mark.parametrize('envvar', [
++    'TEST_ARG', ['TEST_ARG', 'TEST_OTHER'],
++    ('TEST_ARG', 'TEST_OTHER'), None,
++])
++@pytest.mark.parametrize('default', [None, '.'])
++def test_empty_envvar_path(runner, envvar, default):
++    @click.command()
++    @click.option('--arg', type=click.Path(exists=True), envvar=envvar,
++                  default=default)
++    def cmd(arg):
++        click.echo(repr(arg))
++
++    for value in (None, ''):
++        result = runner.invoke(cmd, [], auto_envvar_prefix='TEST',
++                               env={'TEST_ARG': value, 'TEST_OTHER': value})
++        assert result.exit_code == 0
++        assert result.output == '%r\n' % default
++
++    result = runner.invoke(cmd, [], auto_envvar_prefix='TEST',
++                           env={'TEST_ARG': '', 'TEST_OTHER': ''},
++                           default_map={'arg': '.'})
++    assert result.exit_code == 0
++    assert result.output == "'.'\n"
++
++
++@pytest.mark.parametrize('envvar,env', [
++    (['TEST_ARG', 'TEST_OTHER'], {'TEST_ARG': '', 'TEST_OTHER': '.'}),
++    (('TEST_ARG', 'TEST_OTHER'), {'TEST_ARG': '', 'TEST_OTHER': '.'}),
++    ('TEST_EXPLICIT', {'TEST_EXPLICIT': '', 'TEST_ARG': '.'}),
++    (['TEST_FIRST', 'TEST_OTHER'],
++     {'TEST_FIRST': '', 'TEST_OTHER': '', 'TEST_ARG': '.'}),
++])
++def test_empty_envvar_path_fallback(runner, envvar, env):
++    @click.command()
++    @click.option('--arg', type=click.Path(exists=True), envvar=envvar)
++    def cmd(arg):
++        click.echo(arg)
++
++    result = runner.invoke(cmd, [], auto_envvar_prefix='TEST', env=env)
++    assert result.exit_code == 0
++    assert result.output == '.\n'
++
++
++@pytest.mark.parametrize('envvar', [
++    'TEST_ARG', ['TEST_ARG', 'TEST_OTHER'], None,
++])
++@pytest.mark.parametrize('args,value', [
++    ([], 'missing-envvar-path'), ([], ' '), ([], '0'),
++    (['--arg', ''], '.'),
++])
++def test_envvar_path_validation(runner, envvar, args, value):
++    @click.command()
++    @click.option('--arg', type=click.Path(exists=True), envvar=envvar)
++    def cmd(arg):
++        pytest.fail('Invalid paths must not reach the command.')
++
++    result = runner.invoke(cmd, args, auto_envvar_prefix='TEST',
++                           env={'TEST_ARG': value, 'TEST_OTHER': '.'})
++    assert result.exit_code == 2
++    assert 'Invalid value for "--arg"' in result.output
++    assert 'does not exist' in result.output
++
++
++@pytest.mark.parametrize('prompt', [False, True])
++def test_empty_envvar_required_path(runner, prompt):
++    @click.command()
++    @click.option('--arg', type=click.Path(exists=True), envvar='TEST_ARG',
++                  required=True, prompt=prompt)
++    def cmd(arg):
++        click.echo(arg)
++
++    result = runner.invoke(cmd, [], env={'TEST_ARG': ''}, input='.\n')
++    if prompt:
++        assert result.exit_code == 0
++        assert result.output == 'Arg: .\n.\n'
++    else:
++        assert result.exit_code == 2
++        assert 'Missing option "--arg"' in result.output
++
++
+ def test_nargs_envvar(runner):
+     @click.command()
+     @click.option('--arg', nargs=2)

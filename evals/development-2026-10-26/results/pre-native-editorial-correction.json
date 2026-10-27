@@ -1,0 +1,11 @@
+{
+  "corrected_at": "2026-10-25T19:43:53.298287+00:00",
+  "earlier_draft_sha256": "32CD5B6B66BCCC556C2D5518737306912102FDA1C3EEC44B099840BD6DEA6144",
+  "new_candidate_sha256": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+  "native_calls_before_correction": 0,
+  "earlier_draft_snapshot_retained": true,
+  "earlier_freeze_iteration1_was_prepare_only": true,
+  "actual_native_iteration": 2,
+  "reason": "Keep public errors and optional outcomes explicit while adding the binding distinction; no case or expected behavior changed.",
+  "word_count": 377
+}

@@ -1,0 +1,60 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index e14991a..855d5b6 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2849,7 +2849,11 @@ def iterinterleave(*arrays):
+ def iterintersperse(iterable, separator):
+     """Iteratively intersperse iterable."""
+     iterable = iter(iterable)
+-    yield next(iterable)
++    try:
++        first = next(iterable)
++    except StopIteration:
++        return
++    yield first
+     for item in iterable:
+         yield separator
+         yield item
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index c9740c5..7bf3d3d 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -280,6 +280,8 @@ def test_initial(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([], [1, 2, 3]), []),
++        ((iter([]), [1, 2, 3]), []),
+         (([[10, 20], [30, 40], [50, 60]], [1, 2, 3]), [10, 20, 1, 2, 3, 30, 40, 1, 2, 3, 50, 60]),
+         (
+             ([[[10, 20]], [[30, 40]], [50, [60]]], [1, 2, 3]),
+@@ -356,6 +358,12 @@ def test_intersection_with(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([], 10), []),
++        (((), 10), []),
++        ((iter([]), 10), []),
++        (((item for item in []), 10), []),
++        ((iter([None]), 10), [None]),
++        ((iter([0, False, "", None]), 10), [0, 10, False, 10, "", 10, None]),
+         (([1, 2, 3, 4], 10), [1, 10, 2, 10, 3, 10, 4]),
+         (([1, 2, 3, 4], [0, 0, 0]), [1, [0, 0, 0], 2, [0, 0, 0], 3, [0, 0, 0], 4]),
+         (
+@@ -368,6 +376,16 @@ def test_intersperse(case, expected):
+     assert _.intersperse(*case) == expected
+ 
+ 
++@parametrize("items", [[], [1]])
++def test_intersperse_propagates_iterator_errors(items):
++    def failing_iterator():
++        yield from items
++        raise ValueError("iteration failed")
++
++    with pytest.raises(ValueError, match="iteration failed"):
++        _.intersperse(failing_iterator(), 10)
++
++
+ @parametrize("case,expected", [([1, 2, 3], 3), ([], None)])
+ def test_last(case, expected):
+     assert _.last(case) == expected

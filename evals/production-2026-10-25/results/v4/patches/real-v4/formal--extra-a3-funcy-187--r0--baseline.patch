@@ -1,0 +1,87 @@
+diff --git a/docs/flow.rst b/docs/flow.rst
+index b14b689..315531c 100644
+--- a/docs/flow.rst
++++ b/docs/flow.rst
+@@ -139,6 +139,8 @@ Flow
+             # ... make a http request
+             return data
+ 
++    ``timeout`` accepts a number of seconds (including fractional values) or a :class:`datetime.timedelta` instance.
++
+     Can be combined with :func:`ignore` to silently stop trying for a while::
+ 
+         @ignore(ErrorRateExceeded, default={'id': None, 'name': 'Unknown'})
+diff --git a/funcy/flow.py b/funcy/flow.py
+index be77433..03e0c7f 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -135,8 +135,9 @@ class ErrorRateExceeded(Exception):
+ 
+ def limit_error_rate(fails, timeout, exception=ErrorRateExceeded):
+     """If function fails to complete fails times in a row,
+-       calls to it will be intercepted for timeout with exception raised instead."""
+-    if isinstance(timeout, int):
++       calls to it will be intercepted for timeout with exception raised instead.
++       timeout is a number of seconds or a timedelta."""
++    if isinstance(timeout, (int, float)):
+         timeout = timedelta(seconds=timeout)
+ 
+     def decorator(func):
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index ec52571..ef043d8 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -1,4 +1,4 @@
+-from datetime import timedelta
++from datetime import datetime, timedelta
+ from threading import Thread
+ import pytest
+ from funcy.flow import *
+@@ -154,6 +154,47 @@ def test_limit_error_rate():
+     assert calls == [1, 2]
+ 
+ 
++@pytest.mark.parametrize('timeout, seconds', [
++    (0.5, 0.5), (timedelta(seconds=0.5), 0.5),
++    (1, 1), (timedelta(seconds=1), 1),
++])
++@pytest.mark.parametrize('exception', [ErrorRateExceeded, MyError])
++def test_limit_error_rate_timeout(monkeypatch, timeout, seconds, exception):
++    class Clock:
++        current = datetime(2026, 1, 1)
++
++        @classmethod
++        def now(cls):
++            return cls.current
++
++    monkeypatch.setattr('funcy.flow.datetime', Clock)
++    calls = []
++
++    @limit_error_rate(2, timeout, exception)
++    def limited(x):
++        calls.append(x)
++        if x < 3:
++            raise ValueError
++        return x
++
++    with pytest.raises(ValueError): limited(1)
++    with pytest.raises(ValueError): limited(2)
++
++    blocked_at = Clock.current
++    duration = timedelta(seconds=seconds)
++    for elapsed in (timedelta(0), duration - timedelta(microseconds=1)):
++        Clock.current = blocked_at + elapsed
++        with pytest.raises(exception): limited(3)
++        assert calls == [1, 2]
++
++    Clock.current = blocked_at + duration
++    assert limited(3) == 3
++    assert limited.fails == 0
++    assert limited.blocked is None
++    assert limited(4) == 4
++    assert calls == [1, 2, 3, 4]
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_throttle(monkeypatch, typ):

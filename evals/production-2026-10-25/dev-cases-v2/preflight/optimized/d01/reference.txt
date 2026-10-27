@@ -1,0 +1,16 @@
+test_audit_failure_propagates (test_contract.Contract.test_audit_failure_propagates) ... ok
+test_audit_once (test_contract.Contract.test_audit_once) ... ok
+test_does_not_mutate_input (test_contract.Contract.test_does_not_mutate_input) ... ok
+test_empty (test_contract.Contract.test_empty) ... ok
+test_empty_audit_once (test_contract.Contract.test_empty_audit_once) ... ok
+test_invalid_has_no_success_audit (test_contract.Contract.test_invalid_has_no_success_audit) ... ok
+test_non_integer_elements (test_contract.Contract.test_non_integer_elements) ... ok
+test_non_lists (test_contract.Contract.test_non_lists) ... ok
+test_original_list_iterated_once (test_contract.Contract.test_original_list_iterated_once) ... ok
+test_signed_total (test_contract.Contract.test_signed_total) ... ok
+test_snapshot_survives_callback_mutation (test_contract.Contract.test_snapshot_survives_callback_mutation) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.000s
+
+OK

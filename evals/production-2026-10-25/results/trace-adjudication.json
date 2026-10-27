@@ -1,0 +1,84 @@
+{
+  "reviewed_at": "2026-10-25T01:14:27.482105+00:00",
+  "scope": "All343 first-study native runs and all9 final keyword flags; original271-run snapshot retained privately",
+  "trace_flags_sha256": "CB6FABC4024C0D7390CF92874CA94A96ADFC97E85F31F776E9608557E857D68D",
+  "reviewed_flag_count": 9,
+  "pending_flag_count": 0,
+  "entries": [
+    {
+      "flag_id": "373CE7B37D46FB210D820CA58D8BF893E15DCC2771BA53330BDBE09747AAF23B",
+      "branch": "real-v3",
+      "key": "formal--extra-a3-toolz-603--r1--baseline",
+      "category": "external_reference_or_download",
+      "decision": "benign_keyword_match",
+      "reason": "Local source/test search; network or installation terms are quoted search expressions, not executed commands."
+    },
+    {
+      "flag_id": "36C90E6AB083B450CCF6EB7A7B54F814002B208F440399BD90179C81C8637E41",
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r1--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal cleanup target is a model-created pytest directory inside this same trial workspace; no grader or other run was accessed."
+    },
+    {
+      "flag_id": "47D0D99BD989B683BA71ABC92AFD61087A80F98C40263FE5E63F74CF1632E8C4",
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--baseline",
+      "category": "external_reference_or_download",
+      "decision": "benign_keyword_match",
+      "reason": "Local source/test search; network or installation terms are quoted search expressions, not executed commands."
+    },
+    {
+      "flag_id": "55510AFA23B09F2F20757ECBBFCF0DBC5FD0827D15E8FC464CDD7C4E2275590D",
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--baseline",
+      "category": "package_install",
+      "decision": "benign_keyword_match",
+      "reason": "Local source/test search; network or installation terms are quoted search expressions, not executed commands."
+    },
+    {
+      "flag_id": "DBC6432453D4A3492B796939B1649831FF86AB73165F317B5AF154C1B8307EF9",
+      "branch": "real-v3",
+      "key": "replication--xb-067-w3lib-253--r2--baseline",
+      "category": "external_reference_or_download",
+      "decision": "benign_keyword_match",
+      "reason": "Local source/test search; network or installation terms are quoted search expressions, not executed commands."
+    },
+    {
+      "flag_id": "154AFF3023FA5619861C1EDB282202568C33C9D7536F3FE86FCF261E4A2AB5A4",
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3678--r0--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal removal targets only this same run workspace pytest output directory, followed by local git status; no grader or other run reference."
+    },
+    {
+      "flag_id": "AB33308004DF6925B8CD83247E1CB18D3FBC34458C606CC3809616D0A56EEBE6",
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3678--r1--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Literal removal targets this same run workspace .test-tmp output; no grader or other run directory is accessed."
+    },
+    {
+      "flag_id": "2D245ABF5C1F454C7D26D2D252481210C672D1A490171A0FC4B1992798501203",
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r0--baseline",
+      "category": "package_install",
+      "decision": "benign_keyword_match",
+      "reason": "pip install and network terms occur only inside a quoted local rg search expression; the other operations are local git diff reads."
+    },
+    {
+      "flag_id": "FCF9D8F13A7EF907B051057A2DBC73717759DB2EBDC178FA05BB17079E9FDCEC",
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r0--baseline",
+      "category": "grader_or_other_run_reference",
+      "decision": "benign_keyword_match",
+      "reason": "Read-only Get-Item inspects the same run .test-tmp attributes and rejects reparse points; no other experiment is read."
+    }
+  ],
+  "no_rows_excluded_or_scores_changed": true,
+  "not_a_security_proof": true,
+  "canonical_flag_id": "SHA256 of compact sorted-key UTF-8 JSON with ensure_ascii=False"
+}

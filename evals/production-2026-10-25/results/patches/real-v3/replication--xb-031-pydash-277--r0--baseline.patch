@@ -1,0 +1,229 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 4fc05cc..287ba3c 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2519,8 +2519,8 @@ def xor(array: t.Iterable[T], *lists: t.Iterable[T]) -> t.List[T]:
+     Creates a list that is the symmetric difference of the provided lists.
+ 
+     Args:
+-        array: List to process.
+-        *lists: Lists to xor with.
++        array: Iterable to process.
++        *lists: Iterables to xor with.
+ 
+     Returns:
+         XOR'd list.
+@@ -2552,13 +2552,13 @@ def xor_by(
+ def xor_by(array, *lists, **kwargs):
+     """
+     This method is like :func:`xor` except that it accepts iteratee which is invoked for each
+-    element of each arras to generate the criterion by which they're compared. The order of result
++    element of each array to generate the criterion by which they're compared. The order of result
+     values is determined by the order they occur in the arrays. The iteratee is invoked with one
+     argument: ``(value)``.
+ 
+     Args:
+-        array: List to process.
+-        *lists: Lists to xor with.
++        array: Iterable to process.
++        *lists: Iterables to xor with.
+ 
+     Keyword Args:
+         iteratee: Function to transform the elements of the arrays. Defaults to
+@@ -2576,33 +2576,36 @@ def xor_by(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor_by(
+-        uniq(
++    for other in lists:
++        # Reuse the realized values for both concatenation and intersection.
++        other = list(other)
++        array = uniq(
+             difference_by(
+-                array + lists[0],
+-                intersection_by(array, lists[0], iteratee=iteratee),
++                array + other,
++                intersection_by(array, other, iteratee=iteratee),
+                 iteratee=iteratee,
+             )
+-        ),
+-        *lists[1:],
+-        iteratee=iteratee,
+-    )
++        )
++
++    return array
+ 
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++    array: t.Iterable[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+ ) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++    array: t.Iterable[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+ ) -> t.List[T]: ...
+ 
+ 
+@@ -2613,8 +2616,8 @@ def xor_with(array, *lists, **kwargs):
+     arrays. The comparator is invoked with two arguments: ``(arr_val, oth_val)``.
+ 
+     Args:
+-        array: List to process.
+-        *lists: Lists to xor with.
++        array: Iterable to process.
++        *lists: Iterables to xor with.
+ 
+     Keyword Args:
+         comparator: Function to compare the elements of the arrays. Defaults to
+@@ -2633,22 +2636,25 @@ def xor_with(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     comp, lists = parse_iteratee("comparator", *lists, **kwargs)
+ 
+-    return xor_with(
+-        uniq(
++    for other in lists:
++        # Reuse the realized values for both concatenation and intersection.
++        other = list(other)
++        array = uniq(
+             difference_with(
+-                array + lists[0],
+-                intersection_with(array, lists[0], comparator=comp),
++                array + other,
++                intersection_with(array, other, comparator=comp),
+                 comparator=comp,
+             )
+-        ),
+-        *lists[1:],
+-        comparator=comp,
+-    )
++        )
++
++    return array
+ 
+ 
+ @t.overload
+diff --git a/src/pydash/chaining/all_funcs.pyi b/src/pydash/chaining/all_funcs.pyi
+index 7c0efa7..02e1b58 100644
+--- a/src/pydash/chaining/all_funcs.pyi
++++ b/src/pydash/chaining/all_funcs.pyi
+@@ -629,11 +629,11 @@ class AllFuncs:
+ 
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++        self: "Chain[t.Iterable[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++        self: "Chain[t.Iterable[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+     ) -> "Chain[t.List[T]]": ...
+     def xor_with(self, *lists, **kwargs):
+         return self._wrap(pyd.xor_with)(*lists, **kwargs)
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b618b3c..8c90a9b 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1084,6 +1084,80 @@ def test_xor_with_multiple_arrays(arrays, expected):
+     assert _.xor_with(*arrays, comparator=comparator) == expected
+ 
+ 
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++@parametrize("first_factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("other_factory", [list, tuple, iter, lambda values: (value for value in values)])
++def test_xor_iterable_inputs(name, first_factory, other_factory):
++    function = getattr(_, name)
++    assert function(first_factory([1, 2, 2, 3]), other_factory([2, 4])) == [1, 3, 4]
++    assert function(
++        first_factory([1, 2, 2, 5]),
++        other_factory([2, 3, 5]),
++        (value for value in [3, 4, 5]),
++    ) == [1, 4, 5]
++
++
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++def test_xor_single_and_empty_iterables(name, factory):
++    function = getattr(_, name)
++    values = [1, 2, 2]
++    result = function(factory(values))
++    assert isinstance(result, list)
++    assert result == values
++    assert result is not values
++    assert function(factory([])) == []
++    assert function(factory([]), factory([1, 1, 2])) == [1, 2]
++    assert function(factory([1, 1, 2]), factory([])) == [1, 2]
++    assert function(factory([]), factory([]), factory([])) == []
++
++
++@parametrize("name", ["xor", "xor_by", "xor_with"])
++def test_xor_keeps_input_lists_and_item_references(name):
++    first, shared, last = [1], [2], [3]
++    array = [first, shared, first]
++    other = [shared, last, last]
++    result = getattr(_, name)(array, other)
++    assert result == [first, last]
++    assert result[0] is first
++    assert result[1] is last
++    assert array == [[1], [2], [1]]
++    assert other == [[2], [3], [3]]
++    assert result is not array
++    assert result is not other
++
++
++@parametrize(
++    "name,keyword,callback",
++    [
++        ("xor_by", "iteratee", "id"),
++        ("xor_by", "iteratee", lambda value: value["id"]),
++        ("xor_with", "comparator", lambda left, right: left["id"] == right["id"]),
++    ],
++)
++@parametrize("as_keyword", [False, True])
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++def test_xor_iterables_with_callbacks(name, keyword, callback, as_keyword, factory):
++    one, two, three, four, five = ({"id": value} for value in range(1, 6))
++    arrays = [
++        [one, two, one],
++        [{"id": 2, "updated": True}, three, three],
++        [{"id": 1, "updated": True}, four],
++        [{"id": 3, "updated": True}, five],
++    ]
++    originals = [[dict(value) for value in array] for array in arrays]
++    inputs = [factory(array) for array in arrays]
++    function = getattr(_, name)
++    if as_keyword:
++        result = function(*inputs, **{keyword: callback})
++    else:
++        result = function(*inputs, callback)
++    assert result == [four, five]
++    assert result[0] is four
++    assert result[1] is five
++    assert arrays == originals
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,178 @@
+diff --git a/docs/versions.rst b/docs/versions.rst
+index fc6f686..eb17012 100644
+--- a/docs/versions.rst
++++ b/docs/versions.rst
+@@ -9,6 +9,7 @@ Unreleased
+ ----------
+ 
+ * Changes to existing functions:
++    * :func:`seekable` now uses bounded lookahead for ``peek()`` and ``bool()`` with ``maxlen=0``, while keeping ``elements()`` empty.
+     * :func:`numeric_range` now preserves its original values and length when reversed, including floating-point ranges and ranges near datetime limits.
+     * :func:`constrained_batches` now raises ``ValueError`` for a nonpositive *max_count*.
+     * :func:`running_min`, :func:`running_max`, :func:`running_mean`, and :func:`running_statistics` now consistently validate *maxlen* as an integer and support the index protocol.
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 6d43f7b..f684950 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3090,6 +3090,10 @@ class seekable:
+         >>> next(it)
+         '6'
+ 
++    With ``maxlen=0``, no history is kept and :meth:`elements` stays empty.
++    Calls to :meth:`peek` or :func:`bool` retain at most one pending item,
++    which is returned by the next iteration.
++
+     """
+ 
+     def __init__(self, iterable, maxlen=None):
+@@ -3099,6 +3103,7 @@ class seekable:
+         else:
+             self._cache = deque([], maxlen)
+         self._index = None
++        self._peeked = []
+ 
+     def __iter__(self):
+         return self
+@@ -3113,6 +3118,9 @@ class seekable:
+                 self._index += 1
+                 return item
+ 
++        if self._peeked:
++            return self._peeked.pop()
++
+         item = next(self._source)
+         self._cache.append(item)
+         return item
+@@ -3131,6 +3139,10 @@ class seekable:
+             if default is _marker:
+                 raise
+             return default
++        if not self._cache:
++            # A maxlen=0 cache discarded the item, so keep it separately.
++            self._peeked.append(peeked)
++            return peeked
+         if self._index is None:
+             self._index = len(self._cache)
+         self._index -= 1
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 9757022..a7ef7c7 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3,6 +3,7 @@ from __future__ import annotations
+ import cmath
+ import gc
+ import platform
++import tracemalloc
+ import types
+ import weakref
+ 
+@@ -3781,6 +3782,109 @@ class SeekableTest(PeekableMixinTests, TestCase):
+         self.assertEqual(list(s), iterable)
+         self.assertEqual(list(s.elements()), [])
+ 
++    def test_maxlen_zero_observations(self):
++        values = [None, False, 0, '', object()]
++        pulled = []
++
++        def source():
++            for value in values:
++                pulled.append(value)
++                yield value
++
++        s = mi.seekable(source(), maxlen=0)
++        elements = s.elements()
++        for index, value in enumerate(values):
++            for _ in range(10):
++                self.assertIs(s.peek(), value)
++                self.assertTrue(s)
++                self.assertEqual(list(elements), [])
++            self.assertEqual(len(pulled), index + 1)
++            with self.assertRaises(IndexError):
++                s[0]
++            self.assertIs(next(s), value)
++            self.assertEqual(list(elements), [])
++
++        default = object()
++        for _ in range(3):
++            self.assertFalse(s)
++            self.assertIs(s.peek(default), default)
++            self.assertRaises(StopIteration, s.peek)
++            self.assertRaises(StopIteration, next, s)
++        self.assertEqual(list(elements), [])
++
++    def test_maxlen_zero_peek_then_iterate(self):
++        s = mi.seekable(range(5), maxlen=0)
++        self.assertEqual(next(s), 0)
++        self.assertTrue(s)
++        self.assertEqual(s.peek(), 1)
++        self.assertEqual(s.peek(), 1)
++        self.assertEqual(list(s), [1, 2, 3, 4])
++        self.assertEqual(list(s.elements()), [])
++
++    def test_maxlen_zero_peek_then_seek(self):
++        cases = [
++            ('seek', 0, [1, 2, 3, 4]),
++            ('seek', 2, [3, 4]),
++            ('seek', 10, []),
++            ('relative_seek', 0, [1, 2, 3, 4]),
++            ('relative_seek', -2, [1, 2, 3, 4]),
++            ('relative_seek', 2, [3, 4]),
++            ('relative_seek', 10, []),
++        ]
++        for method, index, expected in cases:
++            with self.subTest(method=method, index=index):
++                s = mi.seekable(range(5), maxlen=0)
++                elements = s.elements()
++                self.assertEqual(next(s), 0)
++                self.assertEqual(s.peek(), 1)
++                self.assertTrue(s)
++                getattr(s, method)(index)
++                self.assertEqual(list(elements), [])
++                self.assertEqual(s.peek(None), next(iter(expected), None))
++                self.assertEqual(list(s), expected)
++                self.assertEqual(list(elements), [])
++
++    def test_maxlen_zero_observation_memory(self):
++        if not tracemalloc.is_tracing():
++            tracemalloc.start()
++            self.addCleanup(tracemalloc.stop)
++
++        for advance in (False, True):
++            with self.subTest(advance=advance):
++                s = mi.seekable(repeat(None), maxlen=0)
++
++                def observe(times):
++                    for _ in range(times):
++                        s.peek()
++                        bool(s)
++                        if advance:
++                            next(s)
++
++                observe(100)
++                gc.collect()
++                before = tracemalloc.get_traced_memory()[0]
++                observe(10_000)
++                gc.collect()
++                retained = tracemalloc.get_traced_memory()[0] - before
++                # Allow allocator noise, but reject accumulating wrappers.
++                self.assertLess(retained, 32 * 1024)
++                self.assertEqual(list(s.elements()), [])
++
++    def test_maxlen_zero_releases_peeked_item(self):
++        class Item:
++            def __init__(self, value):
++                self.value = value
++
++        s = mi.seekable(map(Item, range(2)), maxlen=0)
++        ref = weakref.ref(s.peek())
++        gc.collect()
++        self.assertIsNotNone(ref())
++        self.assertTrue(s)
++        next(s)
++        gc.collect()
++        self.assertIsNone(ref())
++        self.assertEqual(list(s.elements()), [])
++
+     def test_relative_seek(self):
+         iterable = [str(x) for x in range(5)]
+         s = mi.seekable(iterable)

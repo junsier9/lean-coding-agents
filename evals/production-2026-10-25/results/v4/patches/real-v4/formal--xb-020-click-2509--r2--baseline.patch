@@ -1,0 +1,133 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 097a79f..3fb9f94 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,7 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Hide default values in option prompts when ``show_default=False``.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/docs/options.rst b/docs/options.rst
+index 39f66c4..8d2707d 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -460,6 +460,10 @@ By default, the user will be prompted for an input if one was not passed
+ through the command line. To turn this behavior off, see
+ :ref:`optional-value`.
+ 
++If an option has a default value, the prompt shows it by default. Set
++``show_default=False`` to hide it. Pressing Enter still uses the default
++value.
++
+ 
+ Password Prompts
+ ----------------
+diff --git a/src/click/core.py b/src/click/core.py
+index cc0d460..b8e2f15 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2370,7 +2370,8 @@ class Option(Parameter):
+         string, it shows that string in parentheses instead of the
+         actual value. This is particularly useful for dynamic options.
+         For single option boolean flags, the default remains hidden if
+-        its value is ``False``.
++        its value is ``False``. Set to ``False`` to hide the default
++        value in prompts as well.
+     :param show_envvar: Controls if an environment variable should be
+         shown on the help page. Normally, environment variables are not
+         shown.
+@@ -2403,6 +2404,9 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.2.0
++        Setting ``show_default=False`` hides the default value in prompts.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2789,11 +2793,12 @@ class Option(Parameter):
+ 
+         # Calculate the default before prompting anything to be stable.
+         default = self.get_default(ctx)
++        show_default = self.show_default is not False
+ 
+         # If this is a prompt for a flag we need to handle this
+         # differently.
+         if self.is_bool_flag:
+-            return confirm(self.prompt, default)
++            return confirm(self.prompt, default, show_default=show_default)
+ 
+         return prompt(
+             self.prompt,
+@@ -2801,6 +2806,7 @@ class Option(Parameter):
+             type=self.type,
+             hide_input=self.hide_input,
+             show_choices=self.show_choices,
++            show_default=show_default,
+             confirmation_prompt=self.confirmation_prompt,
+             value_proc=lambda x: self.process_value(ctx, x),
+         )
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index 7cfa939..9dac38d 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -221,6 +221,55 @@ def test_choices_list_in_prompt(runner, monkeypatch):
+     assert "(none, day, week, month)" not in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("show_default", "expected"),
++    [
++        (None, " [secret-default]"),
++        (True, " [secret-default]"),
++        (False, ""),
++        ("description", " [secret-default]"),
++        ("", " [secret-default]"),
++    ],
++)
++@pytest.mark.parametrize(
++    "default", ["secret-default", lambda: "secret-default"], ids=["static", "callable"]
++)
++@pytest.mark.parametrize("hide_input", [False, True])
++def test_prompt_show_default(runner, show_default, expected, default, hide_input):
++    @click.command()
++    @click.option(
++        "--value",
++        prompt=True,
++        default=default,
++        show_default=show_default,
++        hide_input=hide_input,
++    )
++    def cli(value):
++        return value
++
++    result = runner.invoke(cli, input="\n", standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value == "secret-default"
++    assert result.output == f"Value{expected}: \n"
++
++
++@pytest.mark.parametrize("show_default", [None, True, False, "description", ""])
++@pytest.mark.parametrize("default", [False, True])
++def test_flag_prompt_show_default(runner, show_default, default):
++    @click.command()
++    @click.option(
++        "--value/--no-value", prompt=True, default=default, show_default=show_default
++    )
++    def cli(value):
++        return value
++
++    result = runner.invoke(cli, input="\n", standalone_mode=False)
++    assert result.exception is None
++    assert result.return_value is default
++    expected = "" if show_default is False else f" [{'Y/n' if default else 'y/N'}]"
++    assert result.output == f"Value{expected}: \n"
++
++
+ @pytest.mark.parametrize(
+     "file_kwargs", [{"mode": "rt"}, {"mode": "rb"}, {"lazy": True}]
+ )

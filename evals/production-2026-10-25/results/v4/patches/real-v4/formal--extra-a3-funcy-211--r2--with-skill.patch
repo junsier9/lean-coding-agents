@@ -1,0 +1,168 @@
+diff --git a/funcy/decorators.py b/funcy/decorators.py
+index 94e33d8..63a58ef 100644
+--- a/funcy/decorators.py
++++ b/funcy/decorators.py
+@@ -115,6 +115,9 @@ def arggetter(func, _cache={}):
+ 
+     original = getattr(func, '__original__', None) or unwrap(func)
+     code = original.__code__
++    # Preserve binding even when wrappers point to an unbound original.
++    method = unwrap(func, stop=inspect.ismethod)
++    bound_args = (method.__self__,) if inspect.ismethod(method) else ()
+ 
+     # Instrospect pos and kw names
+     posnames = code.co_varnames[:code.co_argcount]
+@@ -146,6 +149,7 @@ def arggetter(func, _cache={}):
+         if name not in allnames:
+             raise TypeError("%s() doesn't have argument named %s" % (func.__name__, name))
+ 
++        args = bound_args + args
+         index = indexes.get(name)
+         if index is not None and index < len(args):
+             return args[index]
+diff --git a/tests/py38_decorators.py b/tests/py38_decorators.py
+index 87bd06c..14d2a8b 100644
+--- a/tests/py38_decorators.py
++++ b/tests/py38_decorators.py
+@@ -40,3 +40,37 @@ def test_decorator_access_args():
+     assert return_x(lambda **x: None)(a=1, x=3) == {'a': 1, 'x': 3}  # Not just 3
+     assert return_x(lambda a, **x: None)(a=1, b=2) == {'b': 2}
+     assert return_x(lambda a, /, **x: None)(a=1, b=2) == {'a': 1, 'b': 2}
++
++
++@pytest.mark.parametrize('as_classmethod', [False, True])
++def test_decorator_bound_posonly_method(as_classmethod):
++    @decorator
++    def read(call):
++        values = call.receiver, call.x, call.args, call.y, call.kwargs
++        assert values == call()
++        return values
++
++    class A:
++        def method(receiver, x=11, /, *args, y=12, **kwargs):
++            return receiver, x, args, y, kwargs
++
++        def required(receiver, x, /):
++            return x
++
++    if as_classmethod:
++        A.method = classmethod(A.method)
++        A.required = classmethod(A.required)
++    receiver = A if as_classmethod else A()
++    wrapped = read(receiver.method)
++    assert wrapped() == (receiver, 11, (), 12, {})
++    assert wrapped(1, 2, y=3) == (receiver, 1, (2,), 3, {})
++    assert wrapped(x=4, receiver=5) == (receiver, 11, (), 12, {'x': 4, 'receiver': 5})
++
++    @decorator
++    def read_x(call):
++        return call.x
++
++    required = read_x(receiver.required)
++    assert required(6) == 6
++    with pytest.raises(AttributeError, match="missing required argument: 'x'"):
++        required(x=6)
+diff --git a/tests/test_decorators.py b/tests/test_decorators.py
+index 661563f..18c7db3 100644
+--- a/tests/test_decorators.py
++++ b/tests/test_decorators.py
+@@ -68,7 +68,9 @@ def test_decorator_access_args():
+ 
+ if sys.version_info >= (3, 8):
+     pytest.register_assert_rewrite("tests.py38_decorators")
+-    from .py38_decorators import test_decorator_access_args  # noqa
++    from .py38_decorators import (  # noqa
++        test_decorator_access_args, test_decorator_bound_posonly_method,
++    )
+ 
+ 
+ def test_double_decorator_defaults():
+@@ -110,6 +112,88 @@ def test_decorator_with_method():
+     assert inc(A.ten_static)() == 11
+ 
+ 
++@pytest.mark.parametrize('as_classmethod', [False, True])
++@pytest.mark.parametrize('prewrapped', [False, True])
++def test_decorator_bound_method_arguments(as_classmethod, prewrapped):
++    @decorator
++    def noop(call):
++        return call()
++
++    @decorator
++    def read(call):
++        values = call.receiver, call.x, call.y, call.args, call.z, call.kwargs
++        assert values == call()
++        return values
++
++    class A:
++        def method(receiver, x, y=11, *args, z=12, **kwargs):
++            return receiver, x, y, args, z, kwargs
++
++    if prewrapped:
++        A.method = noop(A.method)
++    if as_classmethod:
++        A.method = classmethod(A.method)
++    receiver = A if as_classmethod else A()
++    bound = receiver.method
++    wrapped = read(read(bound))
++
++    assert wrapped(1) == (receiver, 1, 11, (), 12, {})
++    assert wrapped(1, 2, 3, 4, z=5, extra=6) == (receiver, 1, 2, (3, 4), 5, {'extra': 6})
++    assert wrapped(x=7, y=8, z=9, extra=10) == (receiver, 7, 8, (), 9, {'extra': 10})
++    with pytest.raises(AttributeError, match="missing required argument: 'x'"):
++        wrapped()
++    with pytest.raises(TypeError):
++        noop(bound)()
++
++    @decorator
++    def read_missing(call):
++        return call.missing
++
++    with pytest.raises(AttributeError, match="doesn't have argument named missing"):
++        read_missing(bound)(1)
++
++
++@pytest.mark.parametrize('as_classmethod', [False, True])
++def test_decorator_bound_variadic_method(as_classmethod):
++    @decorator
++    def read(call):
++        assert call.args == call()
++        return call.args
++
++    class A:
++        def method(*args):
++            return args
++
++    if as_classmethod:
++        A.method = classmethod(A.method)
++    receiver = A if as_classmethod else A()
++    wrapped = read(receiver.method)
++    assert wrapped() == (receiver,)
++    assert wrapped(1, 2) == (receiver, 1, 2)
++
++
++def test_decorator_method_receiver_keywords():
++    @decorator
++    def read(call):
++        return call.x, call()
++
++    class A:
++        @read
++        def method(self, x=11):
++            return self, x
++
++        @classmethod
++        @read
++        def class_method(cls, x=11):
++            return cls, x
++
++    a = A()
++    assert a.method() == (11, (a, 11))
++    assert A.method(self=a, x=2) == (2, (a, 2))
++    assert A.class_method(x=3) == (3, (A, 3))
++    assert A.class_method.__func__(cls=A, x=4) == (4, (A, 4))
++
++
+ def test_decorator_with_method_descriptor():
+     @decorator
+     def exclaim(call):

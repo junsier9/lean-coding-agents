@@ -1,0 +1,99 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index c623764..25ce05c 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1223,6 +1223,7 @@ class Command(BaseCommand):
+         self.options_metavar = options_metavar
+         self.short_help = short_help
+         self.add_help_option = add_help_option
++        self._help_option: t.Optional[Option] = None
+         self.no_args_is_help = no_args_is_help
+         self.hidden = hidden
+         self.deprecated = deprecated
+@@ -1288,16 +1289,22 @@ class Command(BaseCommand):
+         """Returns the help option object.
+ 
+         Unless ``add_help_option`` is ``False``.
++
++        The option is cached to preserve its identity between parsing
++        and callback ordering, as long as the help option names match.
+         """
+         help_options = self.get_help_option_names(ctx)
+ 
+         if not help_options or not self.add_help_option:
+             return None
+ 
+-        # Avoid circular import.
+-        from .decorators import HelpOption
++        if self._help_option is None or set(self._help_option.opts) != set(help_options):
++            # Avoid circular import.
++            from .decorators import HelpOption
++
++            self._help_option = HelpOption(help_options)
+ 
+-        return HelpOption(help_options)
++        return self._help_option
+ 
+     def make_parser(self, ctx: Context) -> OptionParser:
+         """Creates the underlying option parser for this command."""
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index ed9d96f..e9df559 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -105,6 +105,56 @@ def test_no_args_is_help(runner):
+     assert "Show this message and exit." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("help_option_names", "help_flag"),
++    [
++        (None, "--help"),
++        (["--man"], "--man"),
++        (["-h", "--help"], "-h"),
++        (["-h", "--help"], "--help"),
++    ],
++)
++@pytest.mark.parametrize("help_first", [True, False])
++def test_help_option_eager_order(runner, help_option_names, help_flag, help_first):
++    def eager_callback(ctx, param, value):
++        if value:
++            click.echo("eager callback")
++            ctx.exit()
++
++    @click.command(context_settings={"help_option_names": help_option_names})
++    @click.option(
++        "--eager",
++        is_flag=True,
++        is_eager=True,
++        expose_value=False,
++        callback=eager_callback,
++    )
++    def cli():
++        pytest.fail("The command callback should not run.")
++
++    args = [help_flag, "--eager"] if help_first else ["--eager", help_flag]
++    result = runner.invoke(cli, args)
++    assert result.exit_code == 0
++
++    if help_first:
++        assert result.output.startswith("Usage: cli [OPTIONS]\n")
++        assert "Show this message and exit." in result.output
++        assert "eager callback" not in result.output
++    else:
++        assert result.output == "eager callback\n"
++
++
++def test_help_option_context_names(runner):
++    @click.command()
++    def cli():
++        pytest.fail("The command callback should not run.")
++
++    for help_flag in ("--help", "--man", "-h", "--help"):
++        result = runner.invoke(cli, [help_flag], help_option_names=[help_flag])
++        assert result.exit_code == 0
++        assert "Show this message and exit." in result.output
++
++
+ def test_default_maps(runner):
+     @click.group()
+     def cli():

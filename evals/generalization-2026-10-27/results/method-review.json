@@ -1,0 +1,174 @@
+{
+  "audit_kind": "v6-before-first-new-task-call-method-review",
+  "audited_at": "2026-10-27T09:40:31.410610+00:00",
+  "source_sha256": {
+    "protocol.json": "98FB26BA92DD1DD7BB482C7EC249E7B7A5BDCC580D43D3B301F262E6AE631084",
+    "run.py": "AD5DEF0D2020BBECD5A0ED2084159767F02DB5718081A8A9F6C87F55AFBCFB82",
+    "verify.py": "0A602BCAE47B58F811BF8CF8AB426DEF2A1869C04F781085E7AABAE994A442A3",
+    "close.py": "80F4D022E7A74DF888E32218D852E373911D8413590483AE817DC486FB1DD790",
+    "prepare_reviews.py": "137A30EDCD4ABA73F731681176512205BCA4330E68F6F3F27009E39F5725EA84"
+  },
+  "sources_unchanged_during_probes": {
+    "protocol.json": true,
+    "run.py": true,
+    "verify.py": true,
+    "close.py": true,
+    "prepare_reviews.py": true
+  },
+  "native_model_calls": 0,
+  "real_new_fixture_metadata_candidate_skill_or_result_reads": 0,
+  "overall": "pre_freeze_repairs_required",
+  "prospective_thresholds": {
+    "fresh_tasks": 13,
+    "fresh_repeats": 3,
+    "fresh_success_minimum": 38,
+    "each_task_minimum": 2,
+    "known_critical_success": 12
+  },
+  "actual_gate_probes": {
+    "all_success": {
+      "fresh_end_to_end_at_least38_of39": true,
+      "each_fresh_task_at_least2_of3": true,
+      "known_critical_end_to_end12_of12": true,
+      "eight_preselected_reviews_pass": true,
+      "source_trace_archive_package_integrity": true
+    },
+    "one_fresh_failure_38_of39": {
+      "fresh_end_to_end_at_least38_of39": true,
+      "each_fresh_task_at_least2_of3": true,
+      "known_critical_end_to_end12_of12": true,
+      "eight_preselected_reviews_pass": true,
+      "source_trace_archive_package_integrity": true
+    },
+    "two_fresh_failures_37_of39_and_one_task1of3": {
+      "fresh_end_to_end_at_least38_of39": false,
+      "each_fresh_task_at_least2_of3": false,
+      "known_critical_end_to_end12_of12": true,
+      "eight_preselected_reviews_pass": true,
+      "source_trace_archive_package_integrity": true
+    },
+    "known_failure": {
+      "fresh_end_to_end_at_least38_of39": true,
+      "each_fresh_task_at_least2_of3": true,
+      "known_critical_end_to_end12_of12": false,
+      "eight_preselected_reviews_pass": true,
+      "source_trace_archive_package_integrity": true
+    },
+    "missing_fresh_slot": {
+      "fresh_end_to_end_at_least38_of39": false,
+      "each_fresh_task_at_least2_of3": true,
+      "known_critical_end_to_end12_of12": true,
+      "eight_preselected_reviews_pass": true,
+      "source_trace_archive_package_integrity": true
+    }
+  },
+  "actual_success_definition_probes": {
+    "normal": true,
+    "failed_terminal": false,
+    "nonzero_exit": false,
+    "timeout": false,
+    "no_full_body": false,
+    "grade_failed": false
+  },
+  "closed_controls": {
+    "M2_base_production_and_fix_overlay_on_resume": "run.py:116-123 adds actual base-production/fix-overlay/archive checks; whole-tree completeness is a separate scope boundary.",
+    "M3_and_Q1_Q4": "verify.py:132-148 reuses bound legacy checker, requires one thread and actual terminal success; inherited final legacy checks were separately verified with synthetic records.",
+    "M4_source_closure": "run.py:140-149 freezes driver/verifier/close/review preparer/runner/transport/grader/resource gate/exporter/auditor/observer/legacy qualifier before calls.",
+    "F1_missing_modes_rejected": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Critical normal/-O modes missing"
+    },
+    "F2_actual_outputs_and_confirmed_findings": {
+      "actual_review_outputs_consumed": true,
+      "confirmed_finding_makes_all_passed_false": true
+    },
+    "F3_empty_archive_rejected": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Required actual evidence missing from archive: runtime/runs/synthetic/events.jsonl"
+    },
+    "F4_empty_review_manifest_rejected": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Both nonempty review trees required"
+    },
+    "F5_package_without_frozen_ui_rejected": {
+      "rejected": true,
+      "error_type": "ValueError",
+      "message": "Package file inventory differs"
+    }
+  },
+  "blocking_findings": [
+    {
+      "id": "V6-B1",
+      "title_zh": "\u5c1a\u65e0\u8986\u76d6\u542f\u52a8/API\u65e9\u671f\u5931\u8d25\u7684\u56fa\u5b9a\u5206\u6bcd\u5931\u8d25\u6536\u5c3e\u8def\u5f84",
+      "evidence": [
+        "protocol.json:18-19,27",
+        "run.py:235-244",
+        "runner.py:262-280,342-351,435-446",
+        "verify.py:127-144,168"
+      ],
+      "probe": {
+        "rejected": true,
+        "error_type": "OSError",
+        "message": "synthetic process creation failure",
+        "started_preserved": true,
+        "events_preserved": true,
+        "client_done_created": false
+      },
+      "impact_zh": "\u5408\u6210Popen\u5f02\u5e38\u7559\u4e0bstarted/events\u4f46\u65e0done/record\uff1b\u65e7suite\u629b\u5f02\u5e38\u3002\u9a8c\u8bc1\u5668\u8981\u6c42\u6bcf\u4e2aslot\u6709record\u548c\u6070\u597d\u4e00\u4e2athread\uff0c\u4e0d\u80fd\u628a\u8fd9\u7c7b\u9884\u671f\u5931\u8d25\u8ba1\u516539\u56fa\u5b9a\u5206\u6bcd\uff0c\u4e14\u7981\u6b62\u66ff\u6362\u6a21\u578b\u5c1d\u8bd5\u65f6\u65e0\u6cd5\u6b63\u5e38\u7ed3\u6848\u3002",
+      "required_pre_freeze_repair_zh": "\u4e3a\u4e0d\u5b8c\u6574attempt\u5efa\u7acb\u72ec\u7acb\u3001\u53ef\u5ba1\u8ba1\u4e14\u9884\u51bb\u7ed3\u7684\u8d1f\u5411\u6d3e\u751f\u6e05\u5355\uff1b\u53ea\u4ece\u539f\u59cbstarted/done/phase-failures\u8bc1\u636e\u5b9a\u4f4d\u56fa\u5b9a\u8ba1\u5212slot\uff0c\u4e0d\u4f2a\u9020record/grade/usage\u3002\u5c1a\u672a\u5f00\u59cb\u5fc5\u987bnot_attempted\u4e14\u963b\u65ad\u5168\u6279\u901a\u8fc7\u3002"
+    },
+    {
+      "id": "V6-B2",
+      "title_zh": "\u672a\u8ddf\u8e2a\u975ePython\u8fd0\u884c\u8f93\u5165\u53ef\u88ab\u5b9e\u9645\u5ba1\u67e5\u9057\u6f0f",
+      "evidence": [
+        "prepare_reviews.py:45-49,53-62",
+        "verify.py:55-69"
+      ],
+      "probe": {
+        "all_review_outputs_pass": true,
+        "untracked_json_exists_in_fixed_r0": true,
+        "untracked_json_presented_to_reviewer": false
+      },
+      "impact_zh": "\u5b9e\u9645prepare\u5b9e\u73b0\u53ea\u589e\u52a0\u672a\u8ddf\u8e2a.py\uff1b\u5408\u6210r0\u542bdanger.json\u4f46\u4e2d\u7acbcandidate\u4e0d\u5305\u542b\u5b83\uff0c8\u4efd\u5b9e\u9645\u8f93\u51fa\u5747pass\u65f6verify_reviews\u4ecd\u8fd4\u56deall_passed=True\u3002\u9010\u6587\u4ef6hash\u4fdd\u8bc1\u5df2\u5217\u6587\u4ef6\u6b63\u786e\uff0c\u4e0d\u80fd\u8bc1\u660e\u5019\u9009\u8f93\u5165\u8986\u76d6\u5b8c\u6574\u3002",
+      "required_pre_freeze_repair_zh": "\u5728\u6392\u9664\u660e\u786e\u7f13\u5b58/\u4f9d\u8d56/skill\u540e\u8986\u76d6\u6240\u6709\u5019\u9009\u6e90\u7801\u3001\u914d\u7f6e\u548c\u8fd0\u884c\u6570\u636e\uff1b\u9a8c\u8bc1\u5668\u72ec\u7acb\u91cd\u5efacandidate\u5fc5\u9700\u6e05\u5355\u5e76\u68c0\u67e5\u96c6\u5408\u5b8c\u5168\u76f8\u7b49\uff0c\u4e0d\u80fd\u53ea\u6838\u5bf9manifest\u5185\u6587\u4ef6\u3002"
+    },
+    {
+      "id": "V6-B3",
+      "title_zh": "\u5386\u53f2\u672a\u5b8c\u6210attempt\u68c0\u67e5\u53ea\u8986\u76d6\u56fa\u5b9a\u4e09\u5c42\u5e03\u5c40",
+      "evidence": [
+        "run.py:75-86"
+      ],
+      "probe": {
+        "flat_prior_started": {
+          "rejected": false,
+          "value": null
+        },
+        "phased_prior_started_control": {
+          "rejected": true,
+          "error_type": "AssertionError",
+          "message": "Selected task has prior attempt metadata"
+        }
+      },
+      "impact_zh": "\u5b9e\u9645\u626b\u63cfruns/*/*/*.json\u4f1a\u9057\u6f0fruns/<run>/started.json\uff1b\u5408\u6210\u540c\u4e00selected case\u5728\u5e73\u94fa\u5386\u53f2\u5e03\u5c40\u4e2d\u4e0d\u88ab\u62d2\u7edd\uff0c\u5206phase\u5e03\u5c40\u5219\u62d2\u7edd\u3002\u672a\u58f0\u79f0\u5b9e\u9645\u5386\u53f2\u5b58\u5728\u9057\u6f0f\u3002",
+      "required_pre_freeze_repair_zh": "\u5728\u660e\u786e\u5386\u53f2root\u5185\u9012\u5f52\u679a\u4e3e\u767d\u540d\u5355metadata\u6587\u4ef6\u540d\uff0c\u6216\u7a77\u5c3d\u5e76\u8bb0\u5f55\u5b9e\u9645\u652f\u6301\u7684\u5168\u90e8\u5386\u53f2\u5e03\u5c40\uff1b\u4fdd\u7559\u6bcf\u4efd\u5143\u6570\u636ehash\u53ca\u5339\u914dID/fix/URL\u8bc1\u636e\u3002"
+    }
+  ],
+  "incomplete_attempt_direction_required_bindings_zh": [
+    "\u7531\u51bb\u7ed351-slot\u8ba1\u5212\u751f\u6210\u552f\u4e00\u952e\u96c6\u5408\uff1b\u7ed1\u5b9aphase/case_id/repeat/arm\u548c\u51bb\u7ed3case/skill/model-provider\u914d\u7f6e\uff0c\u4e0d\u53ef\u4ec5\u6309case\u5339\u914dphase-failures\u3002",
+    "\u6d3e\u751f\u6761\u76ee\u5fc5\u987b\u5f15\u7528\u5b9e\u9645\u539f\u59cbstarted/done/phase-failures/recovery\u8def\u5f84\u548csha\uff0c\u6838\u5bf9\u8eab\u4efd\u3001freeze\u65f6\u95f4\u3001workspace\u3001timeout\u4e0eexit\uff1b\u6709\u77db\u76fe\u65f6\u963b\u65ad\u5b8c\u6574\u6027\uff0c\u4e0d\u628a\u77db\u76fe\u964d\u6210\u666e\u901a\u5931\u8d25\u3002",
+    "\u65e0\u6210\u529f\u7ec8\u6b62\u3001\u65e0grade\u6216\u65e0\u5b8c\u6574\u6b63\u6587\u53ea\u80fd\u5bfc\u51faend_to_end_success=False\uff1b\u4e0d\u8865accepted/usage/token/\u8ba1\u65f6\u3002\u5df2\u6709thread\u5fc5\u987b\u552f\u4e00\uff1b\u65e0thread\u53ea\u80fd\u7528\u4e8e\u660e\u786e\u7684\u8d1f\u5411\u72b6\u6001\u3002",
+    "\u533a\u5206\u5b9e\u9645\u542f\u52a8/\u5df2\u8c03\u7528\u540e\u5931\u8d25\u4e0enot_attempted\uff1b\u540e\u8005\u4e0d\u5f97\u6ee1\u8db3all51attempts retained/attempted\uff0c\u5b9e\u9645quota\u8017\u5c3d\u505c\u6b62\u961f\u5217\u4e0d\u80fd\u83b7\u5f97beta\u901a\u8fc7\u3002",
+    "\u540c\u4e00slot\u4e0d\u80fd\u540c\u65f6\u6709\u5b8c\u6210record\u548cincomplete\u6761\u76ee\uff1bgrade-only\u6062\u590d\u66f4\u65b0\u6d3e\u751f\u72b6\u6001\u5e94\u4fdd\u7559\u5386\u53f2\uff0c\u4e0d\u91cd\u542fCLI\u3002\u56fa\u5b9ar0\u5ba1\u67e5\u4e0d\u80fd\u56e0\u5931\u8d25\u6362\u4e3ar1\u6216\u5176\u4ed6\u4efb\u52a1\u3002",
+    "\u5f52\u6863required\u6e05\u5355\u987b\u5305\u62ec\u4e0d\u5b8c\u6574attempt\u5168\u90e8\u5b9e\u9645raw\u548c\u6d3e\u751f\u6e05\u5355/\u539f\u59cb\u5931\u8d25\u6587\u4ef6\uff1b\u9884\u671f\u7f3a\u5931\u6587\u4ef6\u5e94\u6709\u660e\u786e\u72b6\u6001\uff0c\u4e0d\u80fd\u4ec5\u904d\u5386\u73b0\u5b58\u6587\u4ef6\u6765\u58f0\u79f0\u5b8c\u6574\u3002",
+    "\u628anormalizer\u4ee3\u7801\u3001schema\u548c\u6545\u969c\u5206\u7c7b\u5951\u7ea6\u52a0\u5165\u9996\u6b21\u8c03\u7528\u524dsource_closure\u4e0eprotocol\uff0c\u5e76\u660e\u786e\u5982\u4f55\u5728\u56fa\u5b9a39\u5206\u6bcd\u53ca12\u5173\u952e\u5168\u8fc7\u4e2d\u8ba1\u5931\u8d25\u3002"
+  ],
+  "scope_limits_zh": [
+    "\u672a\u8bfb\u53d6\u4efb\u4f55\u771f\u5b9e\u65b0\u9898fixture/metadata\u3001\u5f00\u53d1\u6210\u7ee9\u3001skill\u3001\u5019\u9009/\u53c2\u8003\u6216\u771f\u5b9e\u6a21\u578b\u8f93\u51fa\uff1b\u53ea\u6267\u884c\u5141\u8bb8\u4ee3\u7801\u7684AST\u6458\u53d6\u53ca\u5b8c\u5168\u865a\u6784\u7684\u5939\u5177\u3002",
+    "\u6ca1\u6709\u4fee\u6539\u65b0\u6e90\u7801\u3001\u51bb\u7ed3\u8f93\u5165\u6216\u8fd0\u884c\u4efb\u4f55\u6a21\u578b\uff1b\u6240\u6709\u5199\u5165\u53ea\u5728.local/v6-method-audit\u3002",
+    "\u672c\u62a5\u544a\u9488\u5bf9\u8bb0\u5f55\u7684\u6e90\u7801\u6458\u8981\uff1b\u6e90\u7801\u5c1a\u672a\u51bb\u7ed3\uff0c\u4fee\u8865\u540e\u987b\u9488\u5bf9\u65b0\u6458\u8981\u590d\u6838\u5fc5\u8981\u8def\u5f84\u3002"
+  ],
+  "next_objective_zh": "\u5728\u9996\u6b21\u65b0\u9898\u6a21\u578b\u8c03\u7528\u524d\u4fee\u8865B1-B3\u3001\u51bb\u7ed3\u6d3e\u751f\u5931\u8d25\u5951\u7ea6\u4e0e\u5b8c\u6574\u4ea7\u7269\u6e05\u5355\uff0c\u518d\u6267\u884c\u4ec5\u5408\u6210\u6545\u969c\u56de\u5f52\u3002"
+}

@@ -1,0 +1,74 @@
+{
+  "preflight_before_sha256": "3cd03d43a286753a7413393c265b6e68f2b7dbfdedca10fcc4ce899d1b309226",
+  "preflight_after_sha256": "1defc6fc711cfba37789fc79748830ec024966af5094cfd19ffde66869fcc9c1",
+  "only_copy_ignore_block_changed": true,
+  "scope": {
+    "models_run": 0,
+    "tests_run": 0,
+    "diagnostic": "prepare_grade only",
+    "original_candidates_modified": false,
+    "original_logs_modified": false,
+    "runs_or_records_read": false
+  },
+  "copy_policy": {
+    "ignored_directory_patterns": [
+      ".pytest-tmp-*",
+      ".pytest-local-tmp"
+    ],
+    "matching_regular_files_and_symlinks_preserved": true,
+    "unrelated_unreadable_directory_not_ignored": true,
+    "unrelated_copy_error_propagates": true,
+    "existing_standard_ignores_unchanged": true
+  },
+  "candidate_diagnostics": [
+    {
+      "repeat": "r0",
+      "candidate": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\work\\pilot\\b-06-click-2417\\r0\\with-skill",
+      "prepared_dir": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\diagnostics\\pytest-copy-3c14da4ab04d4873a7f57ad9f14f98c5\\r0-prepared",
+      "prepare_succeeded": true,
+      "original_temporary_directories_preserved": [
+        ".pytest-tmp-maintenance"
+      ],
+      "temporary_directories_absent_in_prepared": true,
+      "production_files_preserved": 17,
+      "all_production_hashes_identical": true,
+      "declared_production": {
+        "src/click/core.py": {
+          "candidate_sha256": "cea77e71089e7c14716b16ec6f41efd28ec693fb547389d476586020c04e8703",
+          "prepared_sha256": "cea77e71089e7c14716b16ec6f41efd28ec693fb547389d476586020c04e8703",
+          "base_sha256": "b37203feca695bccca11a97e09d3bcc4ad4c600a43584577703dcc5611418329"
+        }
+      },
+      "frozen_overlay_files_checked": 23,
+      "frozen_overlay_mismatches": []
+    },
+    {
+      "repeat": "r1",
+      "candidate": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\work\\pilot\\b-06-click-2417\\r1\\with-skill",
+      "prepared_dir": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\diagnostics\\pytest-copy-3c14da4ab04d4873a7f57ad9f14f98c5\\r1-prepared",
+      "prepare_succeeded": true,
+      "original_temporary_directories_preserved": [
+        ".pytest-local-tmp"
+      ],
+      "temporary_directories_absent_in_prepared": true,
+      "production_files_preserved": 17,
+      "all_production_hashes_identical": true,
+      "declared_production": {
+        "src/click/core.py": {
+          "candidate_sha256": "9652323088424e437d525a78d8fcdce761b6a22f15eabb160c3983bd52496e1e",
+          "prepared_sha256": "9652323088424e437d525a78d8fcdce761b6a22f15eabb160c3983bd52496e1e",
+          "base_sha256": "b37203feca695bccca11a97e09d3bcc4ad4c600a43584577703dcc5611418329"
+        }
+      },
+      "frozen_overlay_files_checked": 23,
+      "frozen_overlay_mismatches": []
+    }
+  ],
+  "overlay_audit": {
+    "cases": 177,
+    "mismatch_count": 0,
+    "mismatch_ids": [],
+    "eligible_json_sha256": "f2a377d80a74a18c8ac7dabc196b6f425ce2646bc3c951970ece9c604a00c71f",
+    "recomputed_manifest_sha256": "3dc7182df0aff5ba770b5dc952ef5f46f4012954795697f3bb55d501758f9b53"
+  }
+}

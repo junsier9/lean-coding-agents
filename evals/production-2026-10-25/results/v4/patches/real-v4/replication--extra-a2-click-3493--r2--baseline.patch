@@ -1,0 +1,86 @@
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 223d6b8..d7d5d21 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -294,7 +294,7 @@ def echo(
+         out = message
+ 
+     if nl:
+-        out = out or ""
++        out = out or (b"" if isinstance(out, bytes) else "")
+         if isinstance(out, str):
+             out += "\n"
+         else:
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index a16493b..ab5a483 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -8,7 +8,9 @@ from contextlib import nullcontext
+ from decimal import Decimal
+ from fractions import Fraction
+ from functools import partial
++from io import BytesIO
+ from io import StringIO
++from io import TextIOWrapper
+ from unittest.mock import patch
+ 
+ import pytest
+@@ -98,6 +100,58 @@ def test_echo_custom_file():
+     assert f.getvalue() == "hello\n"
+ 
+ 
++@pytest.mark.parametrize("message", [b"", b"\xff\x1b[31mx\x1b[39m"])
++@pytest.mark.parametrize("nl", [False, True])
++@pytest.mark.parametrize("wrapped", [False, True])
++def test_echo_binary_file(message, nl, wrapped):
++    binary_file = BytesIO()
++    file = TextIOWrapper(binary_file, encoding="utf-8") if wrapped else binary_file
++    click.echo(message, file=file, nl=nl)
++    assert binary_file.getvalue() == message + (b"\n" if nl else b"")
++
++
++@pytest.mark.parametrize(
++    ("message", "expected"),
++    [
++        ("", ""),
++        ("hello", "hello"),
++        ("\x1b[31mx\x1b[39m", "x"),
++        (None, ""),
++        (bytearray(), ""),
++    ],
++)
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_text_file(message, expected, nl):
++    file = StringIO()
++    click.echo(message, file=file, nl=nl)
++    assert file.getvalue() == expected + ("\n" if nl else "")
++
++
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_bytearray_file(nl):
++    message = bytearray(b"\x1b[31mx\x1b[39m")
++    file = BytesIO()
++    click.echo(message, file=file, nl=nl)
++    expected = b"\x1b[31mx\x1b[39m" + (b"\n" if nl else b"")
++    assert file.getvalue() == expected
++    assert message == expected
++
++
++@pytest.mark.parametrize("text", ["", "\x1b[31mx\x1b[39m"])
++@pytest.mark.parametrize("nl", [False, True])
++def test_echo_custom_object(text, nl):
++    class Message:
++        def __str__(self):
++            return text
++
++        def __bool__(self):
++            raise AssertionError("The message should be converted to text first.")
++
++    file = StringIO()
++    click.echo(Message(), file=file, nl=nl)
++    assert file.getvalue() == click.unstyle(text) + ("\n" if nl else "")
++
++
+ def test_echo_no_streams(monkeypatch, runner):
+     """echo should not fail when stdout and stderr are None with pythonw on Windows."""
+     with runner.isolation():

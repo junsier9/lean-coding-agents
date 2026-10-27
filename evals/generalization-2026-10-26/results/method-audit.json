@@ -1,0 +1,157 @@
+{
+  "audit_kind": "restricted-independent-method-audit-with-synthetic-offline-probes",
+  "audited_at": "2026-10-26T01:38:16.205229+00:00",
+  "probe_python": "3.13.0",
+  "frozen_experiment_python": "3.12.14",
+  "native_model_calls": 0,
+  "evaluation_reruns": 0,
+  "candidate_or_new_result_reads": 0,
+  "hash_checks": {
+    "protocol_sha256": {
+      "matches": true,
+      "actual": "AA5EEC19BA9E55BB064AE48CEE645442E6DD6053407B5CCD3130F40E26E7707A"
+    },
+    "driver_sha256": {
+      "matches": true,
+      "actual": "7F200B15FBCC7459F9A276218B27933D68026016F5EA099AB8C1FE5BBEA4076C"
+    },
+    "observer_sha256": {
+      "matches": true,
+      "actual": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199"
+    },
+    "runner_sha256": {
+      "matches": true,
+      "actual": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46"
+    },
+    "observer_preflight_sha256": {
+      "matches": true,
+      "actual": "56D20D3EE2D2FF69752C8004649614B2FEEFDE0CBCC7107071576B4E70D77B98"
+    },
+    "freeze_sha256": {
+      "matches": true,
+      "actual": "981BFFD49C236F71184B85736F0856C0B431C13844A2A2BC1E24C14AFF904858"
+    }
+  },
+  "observer_probes": {
+    "direct_call_arguments_only": {
+      "observed": false,
+      "expected": false
+    },
+    "agent_self_report": {
+      "observed": false,
+      "expected": false
+    },
+    "shell_command_only": {
+      "observed": false,
+      "expected": false
+    },
+    "partial_result": {
+      "observed": false,
+      "expected": false
+    },
+    "shell_full_body": {
+      "observed": true,
+      "expected": true
+    },
+    "mcp_text_full_body": {
+      "observed": true,
+      "expected": true
+    },
+    "nested_json": {
+      "observed": true,
+      "expected": true
+    },
+    "literal_concatenation": {
+      "observed": true,
+      "expected": true
+    }
+  },
+  "freshness_probe": {
+    "orphan_attempt_case": "fresh-00",
+    "started_done_checkpoint_present": true,
+    "selection_check_passed_despite_orphan_attempt": true,
+    "finalized_journal_control_rejected": true,
+    "control_message": "Fresh selection has prior model records"
+  },
+  "base_integrity_probe": {
+    "base_production_hash_now_matches": false,
+    "case_digest_unchanged": true,
+    "upstream_preflight_accepted": true
+  },
+  "terminal_completion_probe": {
+    "trace_has_turn_completed": false,
+    "trace_has_turn_failed": true,
+    "synthetic_cli_exit_code": 0,
+    "parse_cli_completed": true,
+    "parse_usage_complete": false,
+    "parse_stream_errors": [],
+    "summary_cli_completed_without_timeout": 1,
+    "summary_full_body_outputs": 1,
+    "summary_integrity_issues": [],
+    "conditional_limit": "Requires exit code zero with missing/failed terminal event; real CLI occurrence not asserted."
+  },
+  "findings": [
+    {
+      "id": "M1",
+      "severity": "method-gap",
+      "title_zh": "历史未使用检查遗漏未完成原生尝试",
+      "evidence": [
+        "run.py:68-84",
+        "runner.py:262-280",
+        "runner.py:327-351",
+        "runner.py:386-388"
+      ],
+      "impact_zh": "已有 started/client-done/checkpoint 且尚未写入 records.jsonl 的任务可仍被选择为 fresh。探针证实检查通过；写入最终 journal 后对照立即拒绝。此探针不证明实际选中任务曾被使用。"
+    },
+    {
+      "id": "M2",
+      "severity": "method-gap",
+      "title_zh": "已有上游包装的 base 源码未重新绑定冻结字节",
+      "evidence": [
+        "run.py:101-108",
+        "run.py:131",
+        "runner.py:59-60",
+        "runner.py:192-200",
+        "runner.py:101-103",
+        "prepare_second_real.py:30-33"
+      ],
+      "impact_zh": "已有 wrapper 时跳过 restore_case；case_digest 只散列元数据。更改 base_production 文件不会改变 case_digest，upstream preflight 仍通过；运行时从 source_dir 复制该目录。此探针不证明实际 base 已改变。"
+    },
+    {
+      "id": "M3",
+      "severity": "conditional-method-gap",
+      "title_zh": "正常结束汇总未要求成功终止事件",
+      "evidence": [
+        "runner.py:283-303",
+        "run.py:177-186"
+      ],
+      "impact_zh": "合成零退出码且仅有 turn.failed 的轨迹被 parse 标为 cli_completed，汇总计入 cli_completed_without_timeout，且无 integrity issue。是否存在真实 CLI 零退出失败轨迹未验证。"
+    },
+    {
+      "id": "M4",
+      "severity": "scope-limit",
+      "title_zh": "冻结清单未绑定所有传递实现和实际来源目录",
+      "evidence": [
+        "run.py:13-18",
+        "run.py:123-140",
+        "runner.py:26-30",
+        "runner.py:360"
+      ],
+      "impact_zh": "清单绑定 driver/observer/runner，但不绑定 restore_case、scan、public_value、resource_gate、upstream grader/transport 实现；后两者按限制未读取。当前源码哈希一致不能单独证明整个评分闭包预冻结。"
+    }
+  ],
+  "preserved_failure_behavior": {
+    "cli_timeout_recorded_after_successful_process_cleanup": "runner.py:270-280, 344-351",
+    "grading_exception_history_appended": "runner.py:374-380",
+    "suite_exception_saved_and_suite_raises": "runner.py:435-446",
+    "normal_failure_not_replaced_by_new_model_call": "runner.py:328-355",
+    "limits_zh": "launch/cleanup 异常可能只有 started/raw/failures 而无最终记录；parse 失败保留 done/raw，但阻止 export；失败日志重写且新 exporter 不导出 stream_error_count，须读原始证据恢复。"
+  },
+  "not_certified_zh": [
+    "所选任务确实未用于历史模型尝试或修订；禁止读取旧日志，只有冻结声明和实现可审查。",
+    "candidate/UI、原始选择清单、base/fix 快照、归档、Python/CLI 本体及依赖字节的实际一致性；只验证了允许读取的文件。",
+    "模型质量结果、8 份独立产物审查、轨迹人工裁决、安装包验证与最终 beta 门槛；本审查没有读取这些产物。",
+    "run.py 仅执行和汇总，没有资格裁决器；不能据此宣告 beta 通过或已发生误通过。"
+  ],
+  "recommendation_zh": "将当前补充只读证据与冻结前检查分开报告；最终裁决补齐所有原生尝试清单、base/fix 逐字绑定、成功终止事件和完整失败记录后再判断 beta。不要追溯修改冻结文件。"
+}

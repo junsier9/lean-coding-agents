@@ -1,0 +1,49 @@
+diff --git a/memo.py b/memo.py
+index 0743916..8817fb8 100644
+--- a/memo.py
++++ b/memo.py
+@@ -1,10 +1,13 @@
+ from collections import namedtuple
+ from functools import wraps
++from inspect import signature
+ from weakref import WeakKeyDictionary
+ 
+ CacheInfo = namedtuple("CacheInfo", "hits misses size")
+ 
+ def memoized_method(method):
++    method_signature = signature(method)
++    receiver_name = next(iter(method_signature.parameters))
+     states = WeakKeyDictionary()
+ 
+     def state(owner):
+@@ -13,14 +16,25 @@ def memoized_method(method):
+         return states[owner]
+ 
+     @wraps(method)
+-    def wrapper(owner, *args, **kwargs):
++    def wrapper(*args, **kwargs):
++        bound = method_signature.bind(*args, **kwargs)
++        bound.apply_defaults()
++        owner = bound.arguments.pop(receiver_name)
+         current = state(owner)
+-        key = (args, tuple(sorted(kwargs.items())))
+-        if key in current["values"]:
++        key = tuple((type(value), value) for value in bound.arguments.values())
++        try:
++            result = current["values"][key]
++        except TypeError:
++            # Unhashable inputs still need the original method's validation.
++            current["misses"] += 1
++            return method(*args, **kwargs)
++        except KeyError:
++            pass
++        else:
+             current["hits"] += 1
+-            return current["values"][key]
++            return result
+         current["misses"] += 1
+-        result = method(owner, *args, **kwargs)
++        result = method(*args, **kwargs)
+         current["values"][key] = result
+         return result
+ 

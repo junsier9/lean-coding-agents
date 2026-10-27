@@ -1,0 +1,36 @@
+{
+  "documented_at": "2026-10-24T22:45:15.358911+00:00",
+  "supersedes_scope_of": "grading-temp-copy-amendment.json",
+  "entries": [
+    {
+      "key": "formal--extra-a2-click-3805--r1--with-skill",
+      "copy_exclusion": ".tmp-sentinel-checks",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "778742EE20A976CD61192E31318F186EA74CA71EBBE6FB0635C7A6E623441E2A",
+      "client_seconds": 214.28200000000652,
+      "usage_complete": true
+    },
+    {
+      "key": "formal--xb-013-click-3079--r0--baseline",
+      "copy_exclusion": ".task-local-tmp",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "B3BC8D70F6EA377A1CEDD7718533888ED51A5402BDEFB22E80ECC03392045F2A",
+      "client_seconds": 192.51500000001397,
+      "usage_complete": true
+    },
+    {
+      "key": "formal--extra-a2-click-3805--r2--baseline",
+      "copy_exclusion": ".maintenance-pytest-tmp",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "095F2A7B4DC7ED9175DD379E8BEB1550849A2B81273102D1FFBE21F14740B924",
+      "client_seconds": 461.1719999999041,
+      "usage_complete": true
+    }
+  ],
+  "reason": "All three observed Windows permission failures copying model-created runtime test directories",
+  "frozen_runner_grader_assess_skill_task_and_guard_sources_changed": false,
+  "existing_completed_model_calls_repeated": false,
+  "failed_grading_costs_retained": true,
+  "recovery_runs_only_after_controller_idle": true,
+  "no_assertion_failure_relabelled": true
+}

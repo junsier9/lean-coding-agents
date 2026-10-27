@@ -1,0 +1,70 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 3ebcb1b..5ef8898 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -491,7 +491,7 @@ def duplicates(
+ 
+     .. versionadded:: 3.0.0
+     """
+-    if iteratee:
++    if iteratee is not None:
+         cbk = pyd.iteratee(iteratee)
+         computed = [cbk(item) for item in array]
+     else:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b42dad5..0a2587c 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -149,6 +149,52 @@ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++@parametrize("iteratee,key", [("", ""), (0, 0), (False, "False")])
++def test_duplicates_falsey_property_iteratee(iteratee, key):
++    array = [
++        {key: value, "name": name}
++        for value, name in [(1, "a"), (2, "b"), (1, "c"), (3, "d"), (3, "e"), (2, "f"), (2, "f")]
++    ]
++
++    result = _.duplicates(array, iteratee)
++
++    assert result == [array[2], array[4], array[5]]
++    assert all(item is array[index] for item, index in zip(result, [2, 4, 5]))
++
++
++@parametrize("iteratee,indices", [({}, [1, 3]), ((), [1, 3]), ([], [2]), (None, [2])])
++def test_duplicates_empty_iteratee(iteratee, indices):
++    array = [{"a": 1}, {"a": 2}, {"a": 2}, {"a": 3}]
++
++    result = _.duplicates(array=array, iteratee=iteratee)
++
++    assert result == [array[index] for index in indices]
++    assert all(item is array[index] for item, index in zip(result, indices))
++
++
++def test_duplicates_does_not_evaluate_callable_truthiness():
++    calls = []
++
++    class Iteratee:
++        def __bool__(self):
++            raise AssertionError("iteratee truth value must not be evaluated")
++
++        def __call__(self, item):
++            calls.append(item)
++            return item.lower()
++
++    assert _.duplicates(["A", "b", "a", "B", "a"], Iteratee()) == ["a", "B"]
++    assert calls == ["A", "b", "a", "B", "a"]
++
++
++def test_duplicates_propagates_iteratee_error():
++    def iteratee(item):
++        raise RuntimeError("iteratee failed")
++
++    with pytest.raises(RuntimeError, match="iteratee failed"):
++        _.duplicates([1, 1], iteratee)
++
++
+ @parametrize(
+     "case,expected",
+     [

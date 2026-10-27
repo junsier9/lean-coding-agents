@@ -1,0 +1,131 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 668cda6..9188349 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -208,9 +208,13 @@ class Bits:
+         return [c == '1' for c in self.as_bin()]
+ 
+     def as_bin(self):
++        if self.len == 0:
++            return ''
+         return f'{{0:0{self.len}b}}'.format(self.val)
+ 
+     def as_hex(self):
++        if self.len == 0:
++            return ''
+         # make template to pad out to number of bytes necessary to represent bits
+         tmpl = f'%0{2 * (self.len // 8 + ((self.len % 8) != 0))}X'
+         ret = tmpl % self.val
+@@ -234,7 +238,7 @@ class Bits:
+     def from_hex(cls, hex):
+         if isinstance(hex, bytes):
+             hex = hex.decode('ascii')
+-        if not hex.startswith('0x'):
++        if not hex.startswith('0x') and hex:
+             hex = '0x' + hex
+         return cls(hex)
+ 
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 01fcaf2..6ac09e8 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import raises, mark
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -127,3 +127,93 @@ def test_bits_len_bound():
+         Bits(4, 2)
+     with raises(ValueError):
+         Bits(1, 0)
++
++
++@mark.parametrize('value, length', [('', None), (b'', None), ([], None), (0, 0)])
++def test_bits_empty(value, length):
++    bits = Bits(value, length)
++    assert len(bits) == 0
++    assert bits.as_int() == 0
++    assert bits.as_bin() == ''
++    assert bits.as_hex() == ''
++    assert bits.as_bytes() == b''
++    assert bits.as_list() == []
++    assert repr(bits) == "Bits('')"
++    assert bits != Bits('0')
++    assert Bits.from_bin(bits.as_bin()) == bits
++    assert Bits.from_hex(bits.as_hex()) == bits
++    assert Bits.from_bytes(bits.as_bytes()) == bits
++    assert Bits.from_list(bits.as_list()) == bits
++    assert Bits.from_int(bits.as_int(), len(bits)) == bits
++    for index in (0, -1):
++        with raises(IndexError):
++            bits[index]
++
++
++@mark.parametrize('hex_value', ['', b''])
++def test_bits_from_empty_hex(hex_value):
++    assert Bits.from_hex(hex_value) == Bits(0, 0)
++
++
++def test_bits_from_empty_bytes():
++    assert Bits.from_bytes(b'') == Bits(0, 0)
++
++
++@mark.parametrize('value, key', [
++    ('101', slice(0, 0)),
++    ('101', slice(3, None)),
++    ('101', slice(2, 1)),
++    ('', slice(None)),
++    ('', slice(None, None, -1)),
++])
++def test_bits_empty_slice(value, key):
++    bits = Bits(value)[key]
++    assert bits == Bits(0, 0)
++    assert bits.as_bin() == ''
++    assert bits.as_list() == []
++
++
++@mark.parametrize('binary, hex_value, bytes_value', [
++    ('0', '00', b'\x00'),
++    ('00000000', '00', b'\x00'),
++    ('1', '01', b'\x01'),
++    ('0001', '01', b'\x01'),
++    ('00000001', '01', b'\x01'),
++    ('000000001', '0001', b'\x00\x01'),
++])
++def test_bits_nonempty_serialization(binary, hex_value, bytes_value):
++    bits = Bits(binary)
++    assert bits.as_bin() == binary
++    assert bits.as_hex() == hex_value
++    assert bits.as_bytes() == bytes_value
++    assert Bits.from_hex(hex_value).as_bytes() == bytes_value
++    assert Bits.from_bytes(bytes_value).as_hex() == hex_value
++
++
++def test_bits_default_zero():
++    assert Bits() == Bits(0) == Bits.from_int(0) == Bits('0')
++
++
++@mark.parametrize('hex_value', ['0x', b'0x', 'GG', b'GG', '0xGG'])
++def test_bits_invalid_hex(hex_value):
++    with raises(ValueError):
++        Bits.from_hex(hex_value)
++
++
++@mark.parametrize('hex_value', [None, 0, False, [], {}])
++def test_bits_invalid_hex_type(hex_value):
++    with raises(AttributeError):
++        Bits.from_hex(hex_value)
++
++
++def test_bits_invalid_inputs():
++    with raises(ValueError):
++        Bits('2')
++    with raises(ValueError):
++        Bits(-1)
++    with raises(TypeError):
++        Bits(None)
++    with raises(UnicodeDecodeError):
++        Bits.from_hex(b'\xff')
++    with raises(TypeError):
++        Bits.from_bytes('')

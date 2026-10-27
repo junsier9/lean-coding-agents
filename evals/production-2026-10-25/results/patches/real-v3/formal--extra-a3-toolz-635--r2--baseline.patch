@@ -1,0 +1,38 @@
+diff --git a/toolz/itertoolz.py b/toolz/itertoolz.py
+index 354ecf2..a5f092e 100644
+--- a/toolz/itertoolz.py
++++ b/toolz/itertoolz.py
+@@ -522,9 +522,11 @@ def interpose(el, seq):
+ 
+     >>> list(interpose("a", [1, 2, 3]))
+     [1, 'a', 2, 'a', 3]
++    >>> list(interpose("a", []))
++    []
+     """
+     inposed = concat(zip(itertools.repeat(el), seq))
+-    next(inposed)
++    next(inposed, None)
+     return inposed
+ 
+ 
+diff --git a/toolz/tests/test_itertoolz.py b/toolz/tests/test_itertoolz.py
+index c864091..a621896 100644
+--- a/toolz/tests/test_itertoolz.py
++++ b/toolz/tests/test_itertoolz.py
+@@ -255,6 +255,16 @@ def test_interpose():
+     assert list(interpose('.', ['a', 'b', 'c'])) == ['a', '.', 'b', '.', 'c']
+ 
+ 
++def test_interpose_empty():
++    for seq in ([], (), '', iter(()), (x for x in ())):
++        assert list(interpose('-', seq)) == []
++
++
++def test_interpose_singleton():
++    for value in (1, None, False, ''):
++        assert list(interpose('-', iter([value]))) == [value]
++
++
+ def test_frequencies():
+     assert (frequencies(["cat", "pig", "cat", "eel",
+                         "pig", "dog", "dog", "dog"]) ==

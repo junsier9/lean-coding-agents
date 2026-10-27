@@ -1,0 +1,33 @@
+{
+  "interpretation": "Executor self-reports; parent holdout results determine correctness.",
+  "reports": [
+    {
+      "case": "h01",
+      "arm": "baseline",
+      "agent": "/root/codex_b_h01",
+      "reported_checks": 10,
+      "report": "仅修改 app.py：sum 替代解析后冗余判断；无插件时省去重复 validate_current，有插件时保留。自述 10 项检查通过。"
+    },
+    {
+      "case": "h01",
+      "arm": "with-skill",
+      "agent": "/root/codex_s_h01",
+      "reported_checks": 8,
+      "report": "仅修改 app.py：sum 替代解析后冗余判断；保留 validate_current。自述 8 项检查通过。"
+    },
+    {
+      "case": "h02",
+      "arm": "baseline",
+      "agent": "/root/codex_b_h02",
+      "reported_checks": 9,
+      "report": "仅修改 app.py：去掉宽泛 catch 返回零；页面错误边界与 SDK 有限恢复不变。自述 9 项检查通过。"
+    },
+    {
+      "case": "h02",
+      "arm": "with-skill",
+      "agent": "/root/codex_s_h02",
+      "reported_checks": 7,
+      "report": "仅修改 app.py：去掉宽泛 catch 返回零；页面错误边界与 SDK 有限恢复不变。自述 7 项检查通过。"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+diff --git a/boltons/statsutils.py b/boltons/statsutils.py
+index b00fa09..0a43e84 100644
+--- a/boltons/statsutils.py
++++ b/boltons/statsutils.py
+@@ -466,7 +466,11 @@ class Stats:
+         elif round(c2, precision) == 0:
+             return 3  # Gamma
+         else:
+-            k = c1 ** 2 / (4 * c0 * c2)
++            denominator = 4 * c0 * c2
++            if denominator == 0:
++                # Infinite-kappa boundary; Normal and Gamma take precedence.
++                return 6  # Type VI
++            k = c1 ** 2 / denominator
+             if k < 0:
+                 return 1  # Beta
+             elif round(k, precision) == 1:
+diff --git a/tests/test_statsutils.py b/tests/test_statsutils.py
+index 6c55053..bb22cdb 100644
+--- a/tests/test_statsutils.py
++++ b/tests/test_statsutils.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from boltons.statsutils import Stats, mode
+ 
+ 
+@@ -20,6 +22,40 @@ def test_pearson_type_covers_kappa_ge_zero():
+         assert Stats(data).pearson_type in (0, 1, 2, 3, 4, 5, 6, 7)
+ 
+ 
++@pytest.mark.parametrize('precision', [0, 6])
++@pytest.mark.parametrize('skewness, kurtosis, expected', [
++    (0, 3, 0),  # Normal
++    (0, 2, 2),  # Symmetric Beta
++    (0, 6, 7),
++    (2, 6, 1),  # Beta
++    (2, 9, 3),  # Gamma: c2 == 0
++    (2, 30, 4),  # Type IV
++    (8.0 / 3, 22, 5),  # Type V: kappa == 1 up to rounding
++    (2, 10, 6),  # Type VI
++    (2, 3, 6),  # c0 == 0
++    (-2, 3, 6),  # The same boundary with negative skewness
++    (0, 0, 2),  # Symmetry takes precedence when c0 == 0
++])
++def test_pearson_type_exact_moments(skewness, kurtosis, expected, precision):
++    stats = Stats([0])
++    # Supply cached moments so sample calculations do not obscure boundaries.
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    stats._pearson_precision = precision
++    assert stats.pearson_type == expected
++
++
++@pytest.mark.parametrize('skewness, kurtosis, expected', [
++    (0.01, 3.1, 0),  # Rounded symmetry and kurtosis retain Normal priority
++    (2, 9.1, 3),  # Rounded c2 retains Gamma priority
++])
++def test_pearson_type_rounded_boundaries(skewness, kurtosis, expected):
++    stats = Stats([0])
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    assert stats.pearson_type == expected
++
++
+ def test_mode():
+     assert Stats([2, 1, 3, 1]).mode == 1
+     # ties resolve to the value seen first in the data

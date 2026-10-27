@@ -1,0 +1,76 @@
+diff --git a/boltons/timeutils.py b/boltons/timeutils.py
+index 1ec31dd..d609936 100644
+--- a/boltons/timeutils.py
++++ b/boltons/timeutils.py
+@@ -316,8 +316,9 @@ def daterange(start, stop, step=1, inclusive=False):
+     is reached.
+ 
+     When *inclusive* is True, the final date may be *stop*, **if**
+-    *step* falls evenly on it. By default, *step* is one day. See
+-    details below for many more details.
++    *step* falls evenly on it. When *start* equals *stop*, that date is
++    yielded once if *inclusive* is True, otherwise no dates are yielded.
++    By default, *step* is one day. See details below for many more details.
+ 
+     Args:
+         start (datetime.date): The starting date The first value in
+@@ -382,6 +383,10 @@ def daterange(start, stop, step=1, inclusive=False):
+ 
+     if stop is None:
+         finished = lambda now, stop: False
++    elif start == stop:
++        if inclusive:
++            yield start
++        return
+     elif start < stop:
+         finished = operator.gt if inclusive else operator.ge
+     else:
+diff --git a/tests/test_timeutils.py b/tests/test_timeutils.py
+index 631435e..0b6d03c 100644
+--- a/tests/test_timeutils.py
++++ b/tests/test_timeutils.py
+@@ -1,5 +1,9 @@
+ 
+ from datetime import timedelta, date
++from itertools import islice
++
++import pytest
++
+ from boltons.timeutils import total_seconds, daterange
+ 
+ 
+@@ -62,6 +66,34 @@ def test_daterange_years_step():
+     assert dates == expected
+ 
+ 
++@pytest.mark.parametrize('day', [date.min, date(2017, 1, 1), date.max])
++@pytest.mark.parametrize('step', [
++    1, -1, 0, timedelta(days=1), timedelta(days=-1), timedelta(0),
++    (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 0),
++])
++@pytest.mark.parametrize('inclusive', [False, True])
++def test_daterange_equal_endpoints(day, step, inclusive):
++    dates = daterange(day, day, step=step, inclusive=inclusive)
++    assert list(islice(dates, 2)) == ([day] if inclusive else [])
++
++
++@pytest.mark.parametrize('inclusive', [False, True])
++@pytest.mark.parametrize('start_day, stop_day, step, expected_days', [
++    (1, 5, 1, [1, 2, 3, 4]),
++    (5, 1, -1, [5, 4, 3, 2]),
++    (1, 5, 2, [1, 3]),
++    (5, 1, -2, [5, 3]),
++    (1, 4, 2, [1, 3]),
++    (4, 1, -2, [4, 2]),
++])
++def test_daterange_days(start_day, stop_day, step, expected_days, inclusive):
++    start, stop = date(2017, 1, start_day), date(2017, 1, stop_day)
++    expected = [date(2017, 1, day) for day in expected_days]
++    if inclusive and (stop_day - start_day) % step == 0:
++        expected.append(stop)
++    assert list(daterange(start, stop, step=step, inclusive=inclusive)) == expected
++
++
+ def test_daterange_infinite():
+     today = date.today()
+     infinite_dates = daterange(today, None)

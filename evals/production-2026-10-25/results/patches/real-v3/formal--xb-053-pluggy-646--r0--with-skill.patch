@@ -1,0 +1,132 @@
+diff --git a/src/pluggy/_hooks.py b/src/pluggy/_hooks.py
+index 7fde78c..7b8495c 100644
+--- a/src/pluggy/_hooks.py
++++ b/src/pluggy/_hooks.py
+@@ -440,11 +440,12 @@ class HookCaller:
+         return self._call_history is not None
+ 
+     def _remove_plugin(self, plugin: _Plugin) -> None:
+-        for i, method in enumerate(self._hookimpls):
+-            if method.plugin == plugin:
+-                del self._hookimpls[i]
+-                return
+-        raise ValueError(f"plugin {plugin!r} not found")
++        old_length = len(self._hookimpls)
++        self._hookimpls[:] = [
++            impl for impl in self._hookimpls if impl.plugin is not plugin
++        ]
++        if len(self._hookimpls) == old_length:
++            raise ValueError(f"plugin {plugin!r} not found")
+ 
+     def get_hookimpls(self) -> list[HookImpl]:
+         """Get all registered hook implementations for this hook."""
+diff --git a/src/pluggy/_manager.py b/src/pluggy/_manager.py
+index 1b994f2..1d7f0b1 100644
+--- a/src/pluggy/_manager.py
++++ b/src/pluggy/_manager.py
+@@ -432,7 +432,7 @@ class PluginManager:
+         return list(self._name2plugin.items())
+ 
+     def get_hookcallers(self, plugin: _Plugin) -> list[HookCaller] | None:
+-        """Get all hook callers for the specified plugin.
++        """Get all hook callers for the specified plugin, without duplicates.
+ 
+         :returns:
+             The hook callers, or ``None`` if ``plugin`` is not registered in
+@@ -445,6 +445,7 @@ class PluginManager:
+             for hookimpl in hookcaller.get_hookimpls():
+                 if hookimpl.plugin is plugin:
+                     hookcallers.append(hookcaller)
++                    break
+         return hookcallers
+ 
+     def add_hookcall_monitoring(
+diff --git a/testing/test_pluginmanager.py b/testing/test_pluginmanager.py
+index f80b1b5..60f0265 100644
+--- a/testing/test_pluginmanager.py
++++ b/testing/test_pluginmanager.py
+@@ -213,6 +213,64 @@ def test_unregister_blocked(pm: PluginManager) -> None:
+     pm.unregister(p, "error")
+ 
+ 
++@pytest.mark.parametrize("unregister_by", ["plugin", "name", "blocked"])
++def test_unregister_multiple_implementations(
++    pm: PluginManager, unregister_by: str
++) -> None:
++    class Plugin:
++        def __init__(self, value):
++            self.value = value
++
++        @hookimpl
++        def he_method1(self):
++            return self.value
++
++        @hookimpl(specname="he_method1")
++        def another_method1(self):
++            return self.value + 1
++
++        @hookimpl(specname="he_method1", wrapper=True)
++        def wrap_method1(self):
++            return (yield)
++
++        @hookimpl(specname="he_method1", hookwrapper=True)
++        def old_wrap_method1(self):
++            yield
++
++        @hookimpl
++        def he_method2(self):
++            return self.value + 2
++
++    plugin, other = Plugin(10), Plugin(20)
++    pm.register(plugin, "plugin")
++    pm.register(other, "other")
++    assert pm.hook.he_method1() == [20, 21, 10, 11]
++    assert pm.hook.he_method2() == [22, 12]
++    other_impls = [
++        impl for impl in pm.hook.he_method1.get_hookimpls() if impl.plugin is other
++    ]
++
++    if unregister_by == "plugin":
++        assert pm.unregister(plugin) is plugin
++    elif unregister_by == "name":
++        assert pm.unregister(name="plugin") is plugin
++    else:
++        pm.set_blocked("plugin")
++        assert pm.is_blocked("plugin")
++        assert pm.register(plugin, "plugin") is None
++
++    assert not pm.is_registered(plugin)
++    assert pm.get_hookcallers(plugin) is None
++    assert pm.get_plugin("plugin") is None
++    assert pm.get_plugin("other") is other
++    assert pm.hook.he_method1.get_hookimpls() == other_impls
++    assert pm.hook.he_method1() == [20, 21]
++    assert pm.hook.he_method2() == [22]
++    with pytest.raises(ValueError, match="not found"):
++        pm.hook.he_method1._remove_plugin(plugin)
++    assert pm.hook.he_method1.get_hookimpls() == other_impls
++
++
+ def test_register_unknown_hooks(pm: PluginManager) -> None:
+     class Plugin1:
+         @hookimpl
+@@ -543,6 +601,9 @@ def test_get_hookcallers(pm: PluginManager) -> None:
+         @hookimpl
+         def he_method1(self): ...
+ 
++        @hookimpl(specname="he_method1")
++        def another_method1(self): ...
++
+         @hookimpl
+         def he_method2(self): ...
+ 
+@@ -573,6 +634,9 @@ def test_get_hookcallers(pm: PluginManager) -> None:
+     assert hookcallers1 == hookcallers2 + hookcallers3
+ 
+     assert pm.get_hookcallers(object()) is None
++    empty_plugin = object()
++    pm.register(empty_plugin)
++    assert pm.get_hookcallers(empty_plugin) == []
+ 
+ 
+ def test_add_hookspecs_nohooks(pm: PluginManager) -> None:

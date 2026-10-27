@@ -1,0 +1,66 @@
+diff --git a/tests/test_html.py b/tests/test_html.py
+index 01feedf..715d2c3 100644
+--- a/tests/test_html.py
++++ b/tests/test_html.py
+@@ -42,6 +42,30 @@ class RemoveEntitiesTest(unittest.TestCase):
+         self.assertEqual(replace_entities('x&#153;y', encoding='cp1252'), u'x\u2122y')
+         self.assertEqual(replace_entities('x&#x99;y', encoding='cp1252'), u'x\u2122y')
+ 
++    def test_illegal_browser_entities(self):
++        for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):
++            for entity in ('&#%d;' % number, '&#x%x;' % number,
++                           '&#X%X;' % number):
++                text = u'x%sy' % entity
++                for source in (text, text.encode('ascii')):
++                    self.assertEqual(replace_entities(source), u'xy')
++                    self.assertEqual(
++                        replace_entities(source, remove_illegal=True), u'xy')
++                    self.assertEqual(
++                        replace_entities(source, remove_illegal=False), text)
++
++    def test_illegal_browser_entities_without_semicolon(self):
++        for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):
++            for entity in ('&#%d' % number, '&#x%x' % number,
++                           '&#X%X' % number):
++                text = u'x%s!' % entity
++                for source in (text, text.encode('ascii')):
++                    for remove_illegal in (True, False):
++                        self.assertEqual(
++                            replace_entities(source,
++                                             remove_illegal=remove_illegal),
++                            text)
++
+     def test_missing_semicolon(self):
+         for entity, result in (
+                 ('&lt&lt!', '<<!',),
+@@ -65,6 +89,13 @@ class RemoveEntitiesTest(unittest.TestCase):
+         self.assertEqual(replace_entities(b'x\x99&#153;&#8482;y', encoding='cp1252'), \
+                          u'x\u2122\u2122\u2122y')
+ 
++    def test_invalid_input_encoding(self):
++        for encoding in ('utf-8', 'cp1252'):
++            for remove_illegal in (True, False):
++                with self.assertRaises(UnicodeDecodeError):
++                    replace_entities(b'\x81&#129;', encoding=encoding,
++                                     remove_illegal=remove_illegal)
++
+ 
+ class ReplaceTagsTest(unittest.TestCase):
+     def test_returns_unicode(self):
+diff --git a/w3lib/html.py b/w3lib/html.py
+index b9d660e..cacd6a6 100644
+--- a/w3lib/html.py
++++ b/w3lib/html.py
+@@ -81,10 +81,9 @@ def replace_entities(text, keep=(), remove_illegal=True, encoding='utf-8'):
+             # interpreted by browsers as representing the characters mapped
+             # to bytes 80-9F in the Windows-1252 encoding. For more info
+             # see: http://en.wikipedia.org/wiki/Character_encodings_in_HTML
+-            if 0x80 <= number <= 0x9f:
+-                return six.int2byte(number).decode('cp1252')
+-
+             try:
++                if 0x80 <= number <= 0x9f:
++                    return six.int2byte(number).decode('cp1252')
+                 return six.unichr(number)
+             except ValueError:
+                 pass

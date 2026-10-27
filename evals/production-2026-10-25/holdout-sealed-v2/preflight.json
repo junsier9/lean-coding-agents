@@ -1,0 +1,514 @@
+{
+  "case_count": 12,
+  "reference_tests": 121,
+  "results": [
+    {
+      "id": "h01",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "1B982E81FF9F4D5375D35B00B3E87DEFBABE09BFF9F930F43650861632D49AFE",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.094,
+          "log_sha256": "FB3D1EA9FD47312F969E7B5D792FE5359ABC756BF87C409E4236243400B6CB87",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "1EAB96666E2C52EC10387691F41635740CFAABF85F1913E09D7193802C2AA342",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.187,
+          "log_sha256": "FB3D1EA9FD47312F969E7B5D792FE5359ABC756BF87C409E4236243400B6CB87",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h02",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 8,
+          "errors": 1,
+          "seconds": 0.094,
+          "log_sha256": "F94ADA8EBB8DF409FF64D7FC2B34C84846B1994470BDFD1AD72DAB2CB8658E87",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "85915E289095318A32EBA29D4D9101D47DD9B4CC83AA4363BB5989FDF8EDE411",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 8,
+          "errors": 1,
+          "seconds": 0.203,
+          "log_sha256": "508B343C3EAEFDB3499263DE17DF8797D869C68CD1536E2AF60A818D88D4A348",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "85915E289095318A32EBA29D4D9101D47DD9B4CC83AA4363BB5989FDF8EDE411",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h03",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 1,
+          "seconds": 0.093,
+          "log_sha256": "18830547B0F90CE65ACB3CBE5EE7248AF869B9BC6D86189337707BB6148B3771",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "1CEB6F09C4FBFBF79E3290AA2909E98B8E6E606B4849A65DBD8972AF34DC80AE",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 1,
+          "errors": 1,
+          "seconds": 0.188,
+          "log_sha256": "EDF7663AEA9BD9B4D206EE5B6349973A84F711F22ACAEE68E2EFF4A9EB2ECC22",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.172,
+          "log_sha256": "1CEB6F09C4FBFBF79E3290AA2909E98B8E6E606B4849A65DBD8972AF34DC80AE",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h04",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.063,
+          "log_sha256": "58372EE4990A3D2A7B1CD8E2381C215CFB7DD136950511A350F06B76F408B389",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "8240B3875FEF28E1B44858BBD2B95B43BE34833FC9C1C52F5F8492D85A120E2B",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "52968C068110FCB4FCA54DB234ABBA9E83FAB43DAE11B4E4BBDCF8ABDED82874",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.171,
+          "log_sha256": "8240B3875FEF28E1B44858BBD2B95B43BE34833FC9C1C52F5F8492D85A120E2B",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h05",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 3,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "EA7B820552684CE77AC168DDD907D2CCF74A769A418DD072C877A9827B3DA480",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "EBE327B719ADC540B540941331AEDA3BE6D5629CED7C92D94C637CDBCE1EE3E2",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 3,
+          "errors": 0,
+          "seconds": 0.203,
+          "log_sha256": "230B26044D5760D09D1139DFAF4952E2F437968DB5F67CB5AF8CC648EE4B2E8E",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "EBE327B719ADC540B540941331AEDA3BE6D5629CED7C92D94C637CDBCE1EE3E2",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h06",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 11,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.093,
+          "log_sha256": "8C1A6AE054E54AB07517A19D4AA36E9276D29B6085777FC76FB94955E8B13386",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "9B2A860CFDD58B8824CED56044E6E74029392B195C154AA558E836D32716C904",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 11,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "EAA185703AC59E08A90F30CA40346695E055E29FEF26D9573B1957FFC1036C3F",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.187,
+          "log_sha256": "9B2A860CFDD58B8824CED56044E6E74029392B195C154AA558E836D32716C904",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h07",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.109,
+          "log_sha256": "4E38F9A3FC376665748C6CDCFD6D43DCE3121AB3F683671EB59BB796262992E1",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.094,
+          "log_sha256": "446830FC14F0FFA09FF6777AC5451737C2C6B47E23C2C1E981DC9FEF7D29C103",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "D5E039438D57735333372902144B12B723082FDA4AD85E4348B94791A9F6EA18",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.187,
+          "log_sha256": "446830FC14F0FFA09FF6777AC5451737C2C6B47E23C2C1E981DC9FEF7D29C103",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h08",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 6,
+          "errors": 0,
+          "seconds": 0.11,
+          "log_sha256": "8EA8A718C3CCEA0B0F234070956358F4779F6B09E78DAFD00F259EA475CB4823",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.125,
+          "log_sha256": "697F470EEAD5A4345B1468B28E6D08EAA65DD4E826A8DE39B33EEC60B8EE020D",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 6,
+          "errors": 0,
+          "seconds": 0.25,
+          "log_sha256": "60DD263AD297D0481E59971B210B323B182AEDD07D1F6BEEFC65674AECDBCFE8",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.25,
+          "log_sha256": "BDB19AB8E707559668457D353691A8143AFBF3C48521E7771890FB853792B6A6",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h09",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 1,
+          "seconds": 0.187,
+          "log_sha256": "9A95D04423CF87054553D16243D1AFEC7F5C40DBD4FF1E49C7634524F033C7B8",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.156,
+          "log_sha256": "19DD120BD4324903680F758017E257385C6A0014A1040EC6A8269565C0802050",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 4,
+          "errors": 1,
+          "seconds": 0.375,
+          "log_sha256": "0B6CFC14CCA26803156FED6E428DFF58E6D8B2A56BEA800CCD78586C4C437FE2",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.36,
+          "log_sha256": "06E1297093A4214AB063B12CFF0DD2F948AC97F8740D50C8E77459147799BF36",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h10",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 7,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "15CCEAEFB85D9058D627F30C40D831C58EEF6D0DFBAB23BC29B2D1652089C0FF",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "0D26F7B41AF70427DD24A39A0FC1596D7DD7069983FE7AFE994C8E575635BA95",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 7,
+          "errors": 0,
+          "seconds": 0.187,
+          "log_sha256": "77D261207A3240F658F77490A88A9138B7FD2250ACD783CBBED98B3C49C76321",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.172,
+          "log_sha256": "0D26F7B41AF70427DD24A39A0FC1596D7DD7069983FE7AFE994C8E575635BA95",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h11",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 6,
+          "errors": 0,
+          "seconds": 0.078,
+          "log_sha256": "F33442FD2AC7D4735D0EC0245B8463CF285C42D5636C0F3783E1187B0084DA62",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.062,
+          "log_sha256": "D0B2F7D7C6159F194D0665F1F8EA3F1437DFC85784BC062B6A48A649939DB0B8",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 6,
+          "errors": 0,
+          "seconds": 0.172,
+          "log_sha256": "AA9D8778C0C5508D58DD0DFCADDA79AD90524C51E65D4DBDD1D39F1BDC4E7E22",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "D0B2F7D7C6159F194D0665F1F8EA3F1437DFC85784BC062B6A48A649939DB0B8",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    },
+    {
+      "id": "h12",
+      "phases": {
+        "initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 2,
+          "errors": 2,
+          "seconds": 0.078,
+          "log_sha256": "F2E8F4F2AA69987B5213CCC4919E88E22E73A318319F63C83DB7B6C5B1F79F9B",
+          "optimized": false
+        },
+        "reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.094,
+          "log_sha256": "8BD138C6C1D3769320B46C42BBE3C0B6F1E6B9195CE703FF8847FE7DCA6D5EB2",
+          "optimized": false
+        },
+        "optimized_initial": {
+          "exit_code": 1,
+          "tests": 10,
+          "failures": 2,
+          "errors": 2,
+          "seconds": 0.187,
+          "log_sha256": "D8F8A68B7F5ECF2998ED122422678A1954B648014356B762DB3007257E69158C",
+          "optimized": true
+        },
+        "optimized_reference": {
+          "exit_code": 0,
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "seconds": 0.188,
+          "log_sha256": "8BD138C6C1D3769320B46C42BBE3C0B6F1E6B9195CE703FF8847FE7DCA6D5EB2",
+          "optimized": true
+        }
+      },
+      "eligible": true
+    }
+  ],
+  "all_eligible": true,
+  "interpreter": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "model_calls": 0,
+  "network_calls": 0
+}

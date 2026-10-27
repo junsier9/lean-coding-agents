@@ -1,0 +1,76 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 3ebcb1b..5ef8898 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -491,7 +491,7 @@ def duplicates(
+ 
+     .. versionadded:: 3.0.0
+     """
+-    if iteratee:
++    if iteratee is not None:
+         cbk = pyd.iteratee(iteratee)
+         computed = [cbk(item) for item in array]
+     else:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b42dad5..d4cd5ce 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -149,6 +149,58 @@ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++@parametrize(
++    "iteratee,expected_indexes",
++    [
++        ("", [2, 3, 4]),
++        (0, [2, 3, 4]),
++        (False, [2, 3, 4]),
++        ({}, [1, 2, 3, 4]),
++        ((), [1, 2, 3, 4]),
++        (None, [5]),
++        ([], [5]),
++    ],
++)
++def test_duplicates_explicit_falsy_iteratee(iteratee, expected_indexes):
++    array = [
++        {"": group, "0": group, "False": group, "index": index}
++        for index, group in enumerate(["a", "b", "b", "a", "b"])
++    ]
++    array.append(array[2].copy())
++    expected = [array[index] for index in expected_indexes]
++
++    result = _.duplicates(array, iteratee)
++
++    assert result == expected
++    assert all(actual is original for actual, original in zip(result, expected))
++
++
++@parametrize("truth_value", [False, True])
++def test_duplicates_does_not_evaluate_callable_truthiness(truth_value):
++    calls = []
++    bool_calls = []
++
++    class Callback:
++        def __bool__(self):
++            bool_calls.append(True)
++            return truth_value
++
++        def __call__(self, item):
++            calls.append(item)
++            return item["group"]
++
++    array = [{"group": group, "index": index} for index, group in enumerate(["a", "b", "b", "a"])]
++
++    result = _.duplicates(array, Callback())
++
++    assert result == [array[2], array[3]]
++    assert result[0] is array[2]
++    assert result[1] is array[3]
++    assert calls == array
++    assert all(actual is original for actual, original in zip(calls, array))
++    assert bool_calls == []
++
++
+ @parametrize(
+     "case,expected",
+     [

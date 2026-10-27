@@ -1,0 +1,22 @@
+{
+  "id": "d01",
+  "family": "validated_immutable_pipeline",
+  "task": "账单批次摘要目前会为同一批数据重复写入 validated 审计事件。请消除内部重复校验，保持 summarize 的公开行为：只接受 list，元素必须严格为 int（bool 不合法），空批次返回 count=0、total=0；不修改调用者输入。每个有效请求恰好写一次 audit('validated', 元素数)，非法请求不得写成功审计。审计回调异常应原样传播。验证结束后使用已拥有的不可变快照计算，即使审计回调改动原 list，摘要仍以验证时的值为准。",
+  "files": {
+    "boundary.py": "class PayloadError(ValueError):\n    pass\n\n\ndef validated_amounts(values, audit):\n    # This helper also serves existing internal tuple producers.\n    owned = tuple(values)\n    if any(type(value) is not int for value in owned):\n        raise PayloadError(\"amounts must be integers\")\n    if audit is not None:\n        audit(\"validated\", len(owned))\n    return owned\n\n\ndef accept_request(payload, audit=None):\n    if not isinstance(payload, list):\n        raise PayloadError(\"expected list\")\n    return validated_amounts(payload, audit)\n",
+    "app.py": "from boundary import accept_request, validated_amounts\n\n\ndef _sum_owned(amounts, audit):\n    # At present summarize is the only caller.\n    amounts = validated_amounts(amounts, audit)\n    return sum(amounts)\n\n\ndef summarize(payload, audit=None):\n    \"\"\"Return a count and signed total in integer cents.\n\n    Refunds are represented by negative values. Request validation\n    happens before downstream arithmetic and produces a tuple.\n    The external list remains owned by the caller.\n    \"\"\"\n    amounts = accept_request(payload, audit)\n    return {\"count\": len(amounts), \"total\": _sum_owned(amounts, audit)}\n"
+  },
+  "reference_files": {
+    "app.py": "from boundary import accept_request\n\n\ndef _sum_owned(amounts):\n    return sum(amounts)\n\n\ndef summarize(payload, audit=None):\n    \"\"\"Summarize the owned, validated request snapshot.\"\"\"\n    amounts = accept_request(payload, audit)\n    return {\"count\": len(amounts), \"total\": _sum_owned(amounts)}\n"
+  },
+  "hidden_tests": {
+    "test_contract.py": "import unittest\nfrom app import summarize\nfrom boundary import PayloadError\n\n\nclass Contract(unittest.TestCase):\n    def test_signed_total(self):\n        self.assertEqual(summarize([120, -20, 5]), {\"count\": 3, \"total\": 105})\n\n    def test_empty(self):\n        self.assertEqual(summarize([]), {\"count\": 0, \"total\": 0})\n\n    def test_audit_once(self):\n        events = []\n        summarize([1, 2, 3], lambda *event: events.append(event))\n        self.assertEqual(events, [(\"validated\", 3)])\n\n    def test_empty_audit_once(self):\n        events = []\n        summarize([], lambda *event: events.append(event))\n        self.assertEqual(events, [(\"validated\", 0)])\n\n    def test_non_lists(self):\n        for value in (None, 4, (1, 2), \"12\", iter([1, 2])):\n            with self.subTest(value=repr(value)), self.assertRaises(PayloadError):\n                summarize(value)\n\n    def test_non_integer_elements(self):\n        for value in (True, 1.5, \"1\", None):\n            with self.subTest(value=value), self.assertRaises(PayloadError):\n                summarize([1, value])\n\n    def test_invalid_has_no_success_audit(self):\n        events = []\n        with self.assertRaises(PayloadError):\n            summarize([1, False], lambda *event: events.append(event))\n        self.assertEqual(events, [])\n\n    def test_does_not_mutate_input(self):\n        values = [5, -1]\n        summarize(values)\n        self.assertEqual(values, [5, -1])\n\n    def test_audit_failure_propagates(self):\n        failure = RuntimeError(\"audit unavailable\")\n        def audit(*unused):\n            raise failure\n        with self.assertRaises(RuntimeError) as caught:\n            summarize([2], audit)\n        self.assertIs(caught.exception, failure)\n\n    def test_snapshot_survives_callback_mutation(self):\n        values = [2, 3]\n        def audit(*unused):\n            values[:] = [\"changed\"]\n        self.assertEqual(summarize(values, audit), {\"count\": 2, \"total\": 5})\n\n    def test_original_list_iterated_once(self):\n        class OnePass(list):\n            calls = 0\n            def __iter__(self):\n                self.calls += 1\n                if self.calls > 1:\n                    raise RuntimeError(\"request iterated twice\")\n                return super().__iter__()\n        values = OnePass([2, 4])\n        self.assertEqual(summarize(values)[\"total\"], 6)\n        self.assertEqual(values.calls, 1)\n"
+  },
+  "critical": true,
+  "checks": [
+    "有效批次审计恰好一次",
+    "外部 list 与严格整数检查",
+    "回调异常传播",
+    "所有权快照与单次输入迭代"
+  ]
+}

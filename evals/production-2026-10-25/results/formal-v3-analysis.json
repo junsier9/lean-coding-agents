@@ -1,0 +1,91 @@
+{
+  "phase": "formal",
+  "task_count": 20,
+  "integrity": {
+    "ok": true,
+    "structure_ok": true,
+    "input_record_count": 120,
+    "selected_record_count": 120,
+    "other_phase_record_counts": {},
+    "task_count": 20,
+    "complete_task_count": 20,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 120,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "metrics": {
+    "token": {
+      "available": true,
+      "mode": "exact",
+      "actual_ratio": 0.8340633050048294,
+      "observed_ratio_upper_bound": null,
+      "upper_one_sided_98_75": 0.9266945459055601,
+      "gain": 0.1659366949951706,
+      "gain_lower_confidence_bound": 0.07330545409443989,
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "cost_total": {
+        "baseline": 27427041.0,
+        "with-skill": 23307509.0
+      },
+      "cost_total_is_lower_bound": {
+        "baseline": false,
+        "with-skill": false
+      },
+      "batch_criterion_met": false,
+      "ratio_interval97_5": [
+        0.7470745768091065,
+        0.9266945459055601
+      ],
+      "gain_interval97_5": [
+        0.07330545409443989,
+        0.2529254231908935
+      ]
+    },
+    "time": {
+      "available": true,
+      "mode": "exact",
+      "actual_ratio": 0.9132319772403046,
+      "observed_ratio_upper_bound": null,
+      "upper_one_sided_98_75": 1.0471259542229645,
+      "gain": 0.08676802275969542,
+      "gain_lower_confidence_bound": -0.047125954222964506,
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "cost_total": {
+        "baseline": 9902.234999999999,
+        "with-skill": 9213.660999999998
+      },
+      "cost_total_is_lower_bound": {
+        "baseline": false,
+        "with-skill": false
+      },
+      "batch_criterion_met": false,
+      "ratio_interval97_5": [
+        0.8028980186072459,
+        1.0471259542229645
+      ],
+      "gain_interval97_5": [
+        -0.047125954222964506,
+        0.19710198139275414
+      ]
+    }
+  },
+  "confidence": 0.9875,
+  "alpha": 0.0125,
+  "draws": 40000,
+  "seed": 20261025,
+  "sampling_unit": "complete paired task with both arms and all3 repeats",
+  "quality": {
+    "baseline_accepted": 53,
+    "skill_accepted": 54,
+    "runs_per_arm": 60,
+    "degraded_tasks": [],
+    "gate_pass": true
+  }
+}

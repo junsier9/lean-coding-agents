@@ -1,0 +1,19 @@
+{
+  "version": "0.3.0-rc.2",
+  "production_assistant_qualified": false,
+  "supported_scope": "Codex + existing Python code maintenance involving redundant defenses",
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "files_sha256": {
+    "SKILL.md": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+    "agents/openai.yaml": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A"
+  },
+  "archive": "lean-coding-0.3.0-rc.2.zip",
+  "archive_sha256": "751A72B527E81BFBEE16BCEC1767BE4E0BAA7D0095E30010B9D8A8D34B495ADC",
+  "package_entries_verified": 2,
+  "install_and_rollback_byte_checks_passed": true,
+  "known_good_v2_sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF",
+  "global_skill_directory_modified": false,
+  "stable_at_least10percent_benefit": null,
+  "qualification_evidence": "Pending; release candidate only",
+  "claude_tested": false
+}

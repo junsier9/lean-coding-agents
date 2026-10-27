@@ -1,0 +1,79 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 3ebcb1b..5ef8898 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -491,7 +491,7 @@ def duplicates(
+ 
+     .. versionadded:: 3.0.0
+     """
+-    if iteratee:
++    if iteratee is not None:
+         cbk = pyd.iteratee(iteratee)
+         computed = [cbk(item) for item in array]
+     else:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b42dad5..f05d032 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -149,6 +149,61 @@ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++@parametrize(
++    "iteratee,expected_indexes",
++    [
++        ("", [2, 3]),
++        (0, [2, 3]),
++        ({}, [1, 2, 3]),
++        ((), [1, 2, 3]),
++        ([], [4]),
++        (None, [4]),
++    ],
++)
++def test_duplicates_falsey_iteratee(iteratee, expected_indexes):
++    array = [
++        {"": 1, "0": 1, "tag": "a"},
++        {"": 2, "0": 2, "tag": "b"},
++        {"": 1, "0": 1, "tag": "c"},
++        {"": 2, "0": 2, "tag": "d"},
++        {"": 1, "0": 1, "tag": "c"},
++    ]
++
++    result = _.duplicates(array=array, iteratee=iteratee)
++
++    assert result == [array[index] for index in expected_indexes]
++    assert all(item is array[index] for item, index in zip(result, expected_indexes))
++    assert _.duplicates([], iteratee) == []
++
++
++@parametrize("array,expected", [([], []), (["A", "b", "a", "B", "a"], ["a", "B"])])
++def test_duplicates_does_not_check_callable_truthiness(array, expected):
++    calls = []
++
++    class Iteratee:
++        def __bool__(self):
++            raise AssertionError("iteratee truthiness must not be evaluated")
++
++        def __call__(self, item):
++            calls.append(item)
++            return item.lower()
++
++    assert _.duplicates(array, Iteratee()) == expected
++    assert calls == array
++
++
++def test_duplicates_propagates_iteratee_error():
++    error = ValueError("iteratee failed")
++
++    def iteratee(item):
++        raise error
++
++    with pytest.raises(ValueError) as exc_info:
++        _.duplicates([1, 1], iteratee)
++
++    assert exc_info.value is error
++
++
+ @parametrize(
+     "case,expected",
+     [

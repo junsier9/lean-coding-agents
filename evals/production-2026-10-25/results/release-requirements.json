@@ -1,0 +1,22 @@
+{
+  "frozen_at": "2026-10-24T20:40:13.300429+00:00",
+  "protocol_sha256": "BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F",
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "new_real_model_runs_before_addition": 0,
+  "scope": "Additional release-fitness requirement; no change to case allocation, scores, analysis or original>=10% threshold",
+  "required_for_production_assistant_qualification": [
+    "All frozen critical treatment contracts pass in ordinary and optimized modes",
+    "Native relevant-edit routing and negative scope checks pass",
+    "Real treatment acceptance>=baseline in each batch, no task-level accepted-count regression and>=95% treatment acceptance",
+    "Same efficiency endpoint has its existing one-sided98.75% upper ratio<1.00 in both real batches",
+    "Independent blinded review finds no confirmed unsafe or unjustified treatment machinery",
+    "Two-file package install/rollback and evidence integrity checks pass"
+  ],
+  "credible_positive_benefit_threshold_ratio": 1.0,
+  "material_benefit_claim_threshold_ratio": 0.9,
+  "same_confidence_bound_for_nested_thresholds": true,
+  "alpha_note": "Both thresholds use the same upper confidence bound for each endpoint; nested claims do not add a separate test. Original2 endpoints x2 confirmatory candidates budget is retained. Bootstrap coverage remains approximate.",
+  "minimum10percent_claim_still_requires_both_batches_below0_90": true,
+  "missing_usage_policy_unchanged": true,
+  "no_universal_or_unattended_production_guarantee": true
+}

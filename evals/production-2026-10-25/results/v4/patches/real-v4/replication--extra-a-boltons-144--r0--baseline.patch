@@ -1,0 +1,123 @@
+diff --git a/boltons/ioutils.py b/boltons/ioutils.py
+index 47f2b6a..3719fc8 100644
+--- a/boltons/ioutils.py
++++ b/boltons/ioutils.py
+@@ -116,7 +116,12 @@ class SpooledIOBase(object):
+         return self.buffer.isatty()
+ 
+     def next(self):
+-        return self.readline()
++        line = self.readline()
++        if not line:
++            raise StopIteration
++        return line
++
++    __next__ = next
+ 
+     @property
+     def closed(self):
+@@ -165,7 +170,7 @@ class SpooledIOBase(object):
+         return self.len
+ 
+     def __iter__(self):
+-        yield self.readline()
++        return self
+ 
+     def __enter__(self):
+         return self
+diff --git a/tests/test_ioutils.py b/tests/test_ioutils.py
+index a798dcb..e1b3558 100644
+--- a/tests/test_ioutils.py
++++ b/tests/test_ioutils.py
+@@ -143,11 +143,86 @@ class BaseTestMixin(object):
+         self.assertTrue(self.spooled_flo.softspace)
+ 
+     def test_iter(self):
+-        """Make sure iter works as expected"""
+-        self.spooled_flo.write(self.test_str)
+-        self.spooled_flo.seek(0)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.test_str)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.data_type())
++        """Iterate all lines, including blanks and an unterminated last line."""
++        contents = (self.linesep + self.test_str_lines + self.linesep * 2
++                    + self.test_str)
++        self.spooled_flo.write(contents)
++        for rolled in (False, True):
++            if rolled:
++                self.spooled_flo.rollover()
++            self.spooled_flo.seek(0)
++            self.assertEqual([x for x in self.spooled_flo],
++                             contents.splitlines(True))
++            self.assertEqual([x for x in self.spooled_flo], [])
++            self.assertEqual([x for x in self.spooled_flo], [])
++            self.assertEqual(self.spooled_flo.tell(), len(contents))
++
++    def test_iter_empty(self):
++        """An empty stream is its own iterator and is already exhausted."""
++        for rolled in (False, True):
++            if rolled:
++                self.spooled_flo.rollover()
++            self.assertTrue(iter(self.spooled_flo) is self.spooled_flo)
++            self.assertEqual(list(self.spooled_flo), [])
++            self.assertRaises(StopIteration, next, self.spooled_flo)
++            self.assertRaises(StopIteration, self.spooled_flo.next)
++
++    def test_next_until_eof(self):
++        """Both next APIs stop at EOF without changing read's empty value."""
++        contents = self.test_str_lines + self.linesep * 2 + self.test_str
++        self.spooled_flo.write(contents)
++        sentinel = object()
++        for rolled in (False, True):
++            if rolled:
++                self.spooled_flo.rollover()
++            for read_next in (next, lambda flo: flo.next()):
++                self.spooled_flo.seek(0)
++                for line in contents.splitlines(True):
++                    self.assertEqual(read_next(self.spooled_flo), line)
++                self.assertRaises(StopIteration, read_next, self.spooled_flo)
++                self.assertRaises(StopIteration, read_next, self.spooled_flo)
++                self.assertTrue(next(self.spooled_flo, sentinel) is sentinel)
++                self.assertEqual(self.spooled_flo.readline(), self.data_type())
++                self.assertEqual(self.spooled_flo.read(), self.data_type())
++                self.assertEqual(self.spooled_flo.tell(), len(contents))
++
++    def test_iter_read_seek(self):
++        """Iteration shares the read cursor and can resume after seeking."""
++        contents = self.test_str_lines + self.linesep * 2 + self.test_str
++        lines = contents.splitlines(True)
++        self.spooled_flo.write(contents)
++        for rolled in (False, True):
++            if rolled:
++                self.spooled_flo.rollover()
++            self.spooled_flo.seek(0)
++            iterator = iter(self.spooled_flo)
++            self.assertTrue(iter(iterator) is iterator)
++            self.assertEqual(self.spooled_flo.tell(), 0)
++            self.assertEqual(next(iterator), lines[0])
++            self.assertEqual(self.spooled_flo.tell(), len(lines[0]))
++            self.assertEqual(self.spooled_flo.read(1), lines[1][:1])
++            self.assertEqual(next(iterator), lines[1][1:])
++            self.assertEqual(self.spooled_flo.readline(), lines[2])
++            self.assertEqual(next(iterator), lines[3])
++            self.assertRaises(StopIteration, next, iterator)
++            self.spooled_flo.seek(len(lines[0]))
++            self.assertEqual(next(iterator), lines[1])
++            self.assertEqual(self.spooled_flo.read(), lines[2] + lines[3])
++            self.assertEqual(self.spooled_flo.tell(), len(contents))
++
++    def test_iter_context_manager(self):
++        """Iteration leaves the stream open until the context exits."""
++        for max_size in (1, 5000000):
++            with type(self.spooled_flo)(max_size=max_size) as flo:
++                flo.write(self.test_str_lines)
++                self.assertEqual(flo._rolled, max_size == 1)
++                flo.seek(0)
++                iterator = iter(flo)
++                self.assertEqual([x for x in iterator],
++                                 self.test_str_lines.splitlines(True))
++                self.assertFalse(flo.closed)
++            self.assertTrue(flo.closed)
++            self.assertRaises(ValueError, next, iterator)
+ 
+     def test_buf_property(self):
+         """'buf' property returns the same value as getvalue()"""

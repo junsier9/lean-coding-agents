@@ -1,0 +1,71 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index be77433..eedee8c 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -136,7 +136,7 @@ class ErrorRateExceeded(Exception):
+ def limit_error_rate(fails, timeout, exception=ErrorRateExceeded):
+     """If function fails to complete fails times in a row,
+        calls to it will be intercepted for timeout with exception raised instead."""
+-    if isinstance(timeout, int):
++    if isinstance(timeout, (int, float)):
+         timeout = timedelta(seconds=timeout)
+ 
+     def decorator(func):
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index ec52571..81e4ca1 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -1,4 +1,4 @@
+-from datetime import timedelta
++from datetime import datetime, timedelta
+ from threading import Thread
+ import pytest
+ from funcy.flow import *
+@@ -154,6 +154,47 @@ def test_limit_error_rate():
+     assert calls == [1, 2]
+ 
+ 
++@pytest.mark.parametrize('timeout, duration', [
++    pytest.param(0.5, timedelta(seconds=0.5), id='float'),
++    pytest.param(timedelta(seconds=0.5), timedelta(seconds=0.5), id='timedelta'),
++    pytest.param(1, timedelta(seconds=1), id='int'),
++])
++def test_limit_error_rate_timeout(monkeypatch, timeout, duration):
++    now = datetime(2026, 1, 1)
++
++    class Clock:
++        @staticmethod
++        def now():
++            return now
++
++    monkeypatch.setattr('funcy.flow.datetime', Clock)
++    calls = []
++
++    @limit_error_rate(2, timeout)
++    def limited(value):
++        calls.append(value)
++        if value < 0:
++            raise MyError
++        return value
++
++    assert limited(0) == 0
++    with pytest.raises(MyError): limited(-1)
++    assert limited.blocked is None
++    with pytest.raises(MyError): limited(-2)
++
++    blocked_at = now
++    for elapsed in (timedelta(0), duration - timedelta(microseconds=1)):
++        now = blocked_at + elapsed
++        with pytest.raises(ErrorRateExceeded): limited(1)
++        assert calls == [0, -1, -2]
++
++    now = blocked_at + duration
++    assert limited(2) == 2
++    assert calls == [0, -1, -2, 2]
++    assert limited.fails == 0
++    assert limited.blocked is None
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_throttle(monkeypatch, typ):

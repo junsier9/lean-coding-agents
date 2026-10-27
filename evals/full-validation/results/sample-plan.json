@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "pilot_task_count": 10,
+  "expected_pilot_task_count": 10,
+  "protocol_pilot_task_count_satisfied": true,
+  "planning_available": true,
+  "planning_status": "available",
+  "formula": "ceil(((z(.975)+z(.80))*SD/(log(.90)-log(.80)))**2)",
+  "planning_alternative_ratio": 0.8,
+  "null_boundary_ratio": 0.9,
+  "nominal_power": 0.8,
+  "power_scope": "per_confirmatory_batch",
+  "two_batch_joint_power_if_independent_and_each_exactly_0_80": 0.64,
+  "metrics": {
+    "token": {
+      "available": true,
+      "required_n": 13,
+      "log_ratio": -0.17100094481564987,
+      "jackknife_pseudovalues": [
+        -0.34298473807090724,
+        -0.18563002194876366,
+        -0.07259118576359813,
+        -0.30605536740268713,
+        0.048264947874754105,
+        -0.19871747806304163,
+        0.07416383733185183,
+        -0.2534493898581265,
+        -0.3131763831278167,
+        -0.1536609053798237
+      ],
+      "jackknife_pseudovalue_sd": 0.14680924475538765,
+      "planning_sd": 0.14680924475538765,
+      "sd_floor": 0.05
+    },
+    "time": {
+      "available": true,
+      "required_n": 11,
+      "log_ratio": -0.04184135653334777,
+      "jackknife_pseudovalues": [
+        -0.12909225573620509,
+        -0.023500597376726606,
+        0.188359232665257,
+        -0.1307017048798702,
+        0.15117453177187357,
+        -0.2105061641274614,
+        0.02454679455654646,
+        0.01114010870459442,
+        -0.15740473110141223,
+        -0.13729428455183584
+      ],
+      "jackknife_pseudovalue_sd": 0.13507959261175168,
+      "planning_sd": 0.13507959261175168,
+      "sd_floor": 0.05
+    }
+  },
+  "required_n_before_cap": 13,
+  "target_tasks_per_confirmatory_batch": 20,
+  "minimum_per_batch": 20,
+  "maximum_per_batch": 80,
+  "underpowered": false,
+  "adequacy_claim_permitted": true,
+  "current_eligible_tasks": 61,
+  "independent_tasks_required_total": 50,
+  "untouched_tasks_after_pilot": 51,
+  "additional_eligible_tasks_needed_before_formal": 0,
+  "extension_required_before_formal": false,
+  "integrity": {
+    "ok": true,
+    "structure_ok": true,
+    "input_record_count": 298,
+    "selected_record_count": 60,
+    "other_phase_record_counts": {
+      "formal": 120,
+      "replication": 118
+    },
+    "task_count": 10,
+    "complete_task_count": 10,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 60,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "notes": [
+    "Use the maximum required N across token and time, then apply minimum 20/maximum 80 per batch.",
+    "If uncapped N exceeds 80, the cap is underpowered relative to the planning approximation.",
+    "An unavailable metric or undefined log ratio does not default to N=20.",
+    "Formal and replication require distinct tasks and the same frozen target size.",
+    "Ten-task pilot variance is uncertain; nominal power is not guaranteed realized power.",
+    "Requiring both batches to pass does not provide 80% joint power; .80 each gives approximately .64 before quality gates."
+  ]
+}

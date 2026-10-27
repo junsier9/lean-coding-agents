@@ -1,0 +1,82 @@
+{
+  "decoded_at": "2026-10-24T16:39:25.880697+00:00",
+  "review_sha256": "8EA7C8EEBFCCED29815B0E87BA54E6D856254786720AACCDE0A46947E9201650",
+  "reviewer_not_given_mapping": true,
+  "selection_seed": 20261025,
+  "label_seed": 20261026,
+  "pairs": [
+    {
+      "pair": "01",
+      "case_id": "mi-1125",
+      "A_arm": "with-skill",
+      "B_arm": "baseline",
+      "comparison": "A",
+      "preferred_arm": "with-skill",
+      "reason": "两者修复有限正常输入的重复结果；A 保持了可从 base 追踪的消费和异常时机。A 的轻微重复归一化不足以抵消 B 的实质消费边界变化。"
+    },
+    {
+      "pair": "02",
+      "case_id": "b-29-click-1142",
+      "A_arm": "with-skill",
+      "B_arm": "baseline",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "可执行修改相同；没有新增 catches、defaults、copies 或 retries，也未删掉 TTY 的原防护。"
+    },
+    {
+      "pair": "03",
+      "case_id": "mi-1251",
+      "A_arm": "with-skill",
+      "B_arm": "baseline",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "删除的是会静默吞错的过宽捕获范围，必要的标量处理仍在；两个匿名版本一致。"
+    },
+    {
+      "pair": "04",
+      "case_id": "boltons-428",
+      "A_arm": "baseline",
+      "B_arm": "with-skill",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "除未要求固定文本的 ValueError 消息外，生产行为一致。"
+    },
+    {
+      "pair": "05",
+      "case_id": "boltons-418",
+      "A_arm": "baseline",
+      "B_arm": "with-skill",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "差别只在示例和测试组织；未见新增防御层、吞错或契约差异。"
+    },
+    {
+      "pair": "06",
+      "case_id": "mi-1261",
+      "A_arm": "with-skill",
+      "B_arm": "baseline",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "两份生产补丁一致；不同测试枚举范围不能在未运行时作为结果优劣依据。"
+    },
+    {
+      "pair": "07",
+      "case_id": "b-09-click-2058",
+      "A_arm": "with-skill",
+      "B_arm": "baseline",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "运行修复与文档相同；测试组合写法不同，不构成物质性差异。"
+    },
+    {
+      "pair": "08",
+      "case_id": "boltons-458",
+      "A_arm": "baseline",
+      "B_arm": "with-skill",
+      "comparison": "same",
+      "preferred_arm": "same",
+      "reason": "新增快照及两个现有实现的修复均相同且有当前消费路径依据；未以注释、测试数量或少一行选择优者。"
+    }
+  ],
+  "interpretation": "Descriptive eight-task review only; no new confirmatory efficiency claim."
+}

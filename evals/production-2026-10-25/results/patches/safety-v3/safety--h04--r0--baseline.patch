@@ -1,0 +1,28 @@
+diff --git a/app.py b/app.py
+index 9e16f1f..b4ad88e 100644
+--- a/app.py
++++ b/app.py
+@@ -7,5 +7,5 @@ class API:
+     def lookup(self, key, force=False):
+         try:
+             return self.cache.get(key, force=force)
+-        except Exception as exc:
++        except RepositoryError as exc:
+             raise ServiceUnavailable("unavailable") from exc
+diff --git a/cache.py b/cache.py
+index beeb195..4154758 100644
+--- a/cache.py
++++ b/cache.py
+@@ -25,10 +25,7 @@ class ProductCache:
+             expires, value = self.entries[key]
+             if now < expires:
+                 return value
+-        old = self.entries.get(key)
+-        try:
+-            value = self.repository(key)
+-        except Exception:
+-            return old[1] if old else None
++        self.invalidate(key)
++        value = self.repository(key)
+         self.entries[key] = (now + self.ttl, value)
+         return value

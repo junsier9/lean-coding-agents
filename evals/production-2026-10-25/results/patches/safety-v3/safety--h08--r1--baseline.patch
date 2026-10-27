@@ -1,0 +1,60 @@
+diff --git a/app.py b/app.py
+index 69b025d..8c9e5d1 100644
+--- a/app.py
++++ b/app.py
+@@ -1,9 +1,10 @@
+ import os
++import tempfile
+ from pathlib import Path
+ from errors import AssetMissing, Opener
+ 
+ def download(opener: Opener, target, replace=os.replace):
+-    """Download into a caller-selected destination.
++    """Atomically install a complete download into the destination.
+ 
+     The caller owns the destination path; we own an opened response.
+     """
+@@ -11,12 +12,34 @@ def download(opener: Opener, target, replace=os.replace):
+         response = opener()
+     except AssetMissing:
+         return False
+-    target = Path(target)
+-    with target.open("wb") as output:
+-        while True:
+-            chunk = response.read(65536)
+-            if not chunk:
+-                break
+-            output.write(chunk)
+-    response.close()
+-    return True
++    temporary_path = None
++    try:
++        try:
++            target = Path(target)
++            # Keep the temporary file on the destination's filesystem so the
++            # final replacement is atomic. Close the file before replacing it.
++            with tempfile.NamedTemporaryFile(
++                mode="wb", dir=target.parent, prefix=".download-", delete=False
++            ) as output:
++                temporary_path = Path(output.name)
++                while True:
++                    chunk = response.read(65536)
++                    if chunk == b"":
++                        break
++                    output.write(chunk)
++        except BaseException:
++            # A cleanup error must not hide the original read or file error.
++            try:
++                response.close()
++            except Exception:
++                pass
++            raise
++        else:
++            # A close error on the successful read path aborts the download.
++            response.close()
++
++        replace(temporary_path, target)
++        return True
++    finally:
++        if temporary_path is not None:
++            temporary_path.unlink(missing_ok=True)

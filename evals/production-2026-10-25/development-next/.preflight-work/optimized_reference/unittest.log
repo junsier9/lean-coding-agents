@@ -1,0 +1,20 @@
+test_bound_business_keyword_call (test_contract.Contract.test_bound_business_keyword_call) ... ok
+test_bound_positional_call (test_contract.Contract.test_bound_positional_call) ... ok
+test_business_exceptions_propagate_and_are_not_cached (test_contract.Contract.test_business_exceptions_propagate_and_are_not_cached) ... ok
+test_business_input_errors_not_replaced_by_cache_errors (test_contract.Contract.test_business_input_errors_not_replaced_by_cache_errors) ... ok
+test_cache_hit_skips_business_backend (test_contract.Contract.test_cache_hit_skips_business_backend) ... ok
+test_clear_affects_one_instance_only (test_contract.Contract.test_clear_affects_one_instance_only) ... ok
+test_distinct_business_parameters_have_distinct_entries (test_contract.Contract.test_distinct_business_parameters_have_distinct_entries) ... ok
+test_equivalent_forms_share_cache (test_contract.Contract.test_equivalent_forms_share_cache) ... ok
+test_instance_cache_and_statistics_are_isolated (test_contract.Contract.test_instance_cache_and_statistics_are_isolated) ... ok
+test_invalid_call_shape_is_not_silently_accepted (test_contract.Contract.test_invalid_call_shape_is_not_silently_accepted) ... ok
+test_public_wrapped_bypasses_cache_positionally (test_contract.Contract.test_public_wrapped_bypasses_cache_positionally) ... ok
+test_public_wrapped_bypasses_cache_with_receiver_keyword (test_contract.Contract.test_public_wrapped_bypasses_cache_with_receiver_keyword) ... ok
+test_unbound_mixed_call (test_contract.Contract.test_unbound_mixed_call) ... ok
+test_unbound_receiver_keyword_call (test_contract.Contract.test_unbound_receiver_keyword_call) ... ok
+test_unbound_receiver_positional_call (test_contract.Contract.test_unbound_receiver_positional_call) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.001s
+
+OK

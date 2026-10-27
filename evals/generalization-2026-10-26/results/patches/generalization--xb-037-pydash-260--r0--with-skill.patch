@@ -1,0 +1,95 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index af6baed..74c9cc7 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -985,7 +985,7 @@ def scale(array: t.Iterable[NumberT], maximum: int = 1) -> t.List[float]: ...
+ 
+ def scale(array, maximum: NumberT = 1):
+     """
+-    Scale list of value to a maximum number.
++    Scale numbers from an iterable to a maximum number.
+ 
+     Args:
+         array: Numbers to scale.
+@@ -1007,6 +1007,7 @@ def scale(array, maximum: NumberT = 1):
+ 
+     .. versionadded:: 2.1.0
+     """
++    array = list(array)
+     array_max = max(array)
+     factor = maximum / array_max
+     return [item * factor for item in array]
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 54add19..85fa6ee 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal
+ import math
+ 
+ import pytest
+@@ -280,6 +281,11 @@ def test_round_(case, expected):
+     assert _.round_(*case) == expected
+ 
+ 
++@parametrize(
++    "array_type",
++    [list, tuple, iter, lambda values: (value for value in values)],
++    ids=["list", "tuple", "iterator", "generator"],
++)
+ @parametrize(
+     "case,expected",
+     [
+@@ -287,10 +293,50 @@ def test_round_(case, expected):
+         (([1, 2, 5], 1), [0.2, 0.4, 1]),
+         (([1, 2, 5], 5), [1, 2, 5]),
+         (([1, 2, 5],), [0.2, 0.4, 1]),
++        (([1, 2, 5], 0), [0, 0, 0]),
++        (([1, 2, 5], -5), [-1, -2, -5]),
+     ],
+ )
+-def test_scale(case, expected):
+-    assert _.scale(*case) == expected
++def test_scale(case, expected, array_type):
++    array, *args = case
++    assert _.scale(array_type(array), *args) == expected
++
++
++@parametrize("maximum", [1, Decimal("2.5")])
++def test_scale_decimal_iterator(maximum):
++    values = [Decimal("1"), Decimal("2"), Decimal("5")]
++    expected = [Decimal("0.2") * maximum, Decimal("0.4") * maximum, Decimal("1") * maximum]
++
++    result = _.scale(array=iter(values), maximum=maximum)
++
++    assert result == expected
++    assert all(isinstance(value, Decimal) for value in result)
++
++
++@parametrize("array_type", [list, iter])
++@parametrize(
++    "case,error",
++    [
++        (([],), ValueError),
++        (([0, 0],), ZeroDivisionError),
++        (([1, "2"],), TypeError),
++        ((["1", "2"],), TypeError),
++        (([1, 2], None), TypeError),
++    ],
++)
++def test_scale_errors(case, error, array_type):
++    array, *args = case
++    with pytest.raises(error):
++        _.scale(array_type(array), *args)
++
++
++def test_scale_iterator_error():
++    def values():
++        yield 1
++        raise RuntimeError("iteration failed")
++
++    with pytest.raises(RuntimeError, match="iteration failed"):
++        _.scale(values())
+ 
+ 
+ @parametrize(

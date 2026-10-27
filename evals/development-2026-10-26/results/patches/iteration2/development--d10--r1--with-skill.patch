@@ -1,0 +1,76 @@
+diff --git a/click/parser.py b/click/parser.py
+index 1ea1f71..ad57b36 100644
+--- a/click/parser.py
++++ b/click/parser.py
+@@ -367,14 +367,7 @@ class _OptionParser:
+ 
+         option = self._long_opt[opt]
+         if option.takes_value:
+-            # At this point it's safe to modify rargs by injecting the
+-            # explicit value, because no exception is raised in this
+-            # branch.  This means that the inserted value will be fully
+-            # consumed.
+-            if explicit_value is not None:
+-                state.rargs.insert(0, explicit_value)
+-
+-            value = self._get_value_from_state(opt, option, state)
++            value = self._get_value_from_state(opt, option, state, explicit_value)
+ 
+         elif explicit_value is not None:
+             raise BadOptionUsage(
+@@ -403,13 +396,11 @@ class _OptionParser:
+                     continue
+                 raise NoSuchOption(opt, ctx=self.ctx)
+             if option.takes_value:
+-                # Any characters left in arg?  Pretend they're the
+-                # next arg, and stop consuming characters of arg.
+-                if i < len(arg):
+-                    state.rargs.insert(0, arg[i:])
+-                    stop = True
+-
+-                value = self._get_value_from_state(opt, option, state)
++                # Any characters left in arg are an explicit value.
++                stop = i < len(arg)
++                value = self._get_value_from_state(
++                    opt, option, state, arg[i:] if stop else None
++                )
+ 
+             else:
+                 value = UNSET
+@@ -427,10 +418,17 @@ class _OptionParser:
+             state.largs.append(f"{prefix}{''.join(unknown_options)}")
+ 
+     def _get_value_from_state(
+-        self, option_name: str, option: _Option, state: _ParsingState
++        self,
++        option_name: str,
++        option: _Option,
++        state: _ParsingState,
++        explicit_value: str | None = None,
+     ) -> str | cabc.Sequence[str] | T_FLAG_NEEDS_VALUE:
+         nargs = option.nargs
+ 
++        if explicit_value is not None:
++            state.rargs.insert(0, explicit_value)
++
+         value: str | cabc.Sequence[str] | T_FLAG_NEEDS_VALUE
+ 
+         if len(state.rargs) < nargs:
+@@ -450,13 +448,14 @@ class _OptionParser:
+             next_rarg = state.rargs[0]
+ 
+             if (
+-                option.obj._flag_needs_value
++                explicit_value is None
++                and option.obj._flag_needs_value
+                 and isinstance(next_rarg, str)
+                 and next_rarg[:1] in self._opt_prefixes
+                 and len(next_rarg) > 1
+             ):
+-                # The next arg looks like the start of an option, don't
+-                # use it as the value if omitting the value is allowed.
++                # Only a separate argument can be treated as the next option
++                # when omitting the value is allowed.
+                 value = FLAG_NEEDS_VALUE
+             else:
+                 value = state.rargs.pop(0)

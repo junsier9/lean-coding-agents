@@ -1,0 +1,18 @@
+diff --git a/app.py b/app.py
+index 728a2a0..5e54e24 100644
+--- a/app.py
++++ b/app.py
+@@ -11,9 +11,10 @@ class TenantService:
+             raise ValueError("tenant")
+         if not isinstance(doc_id, str) or not doc_id.strip():
+             raise ValueError("doc_id")
+-        if doc_id in self.cache:
+-            return self.cache[doc_id]
+         self.authorizer.ensure(principal, tenant)
++        key = (tenant, doc_id)
++        if key in self.cache:
++            return self.cache[key]
+         value = self.repository.get(tenant, doc_id)
+-        self.cache[doc_id] = value
++        self.cache[key] = value
+         return value

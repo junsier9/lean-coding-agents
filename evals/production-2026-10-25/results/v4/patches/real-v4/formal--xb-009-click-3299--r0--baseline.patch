@@ -1,0 +1,54 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index f0a624b..6dc44f3 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -3110,7 +3110,7 @@ class Option(Parameter):
+                 )[1]
+             elif self.is_bool_flag and not self.secondary_opts and not default_value:
+                 default_string = ""
+-            elif default_value == "":
++            elif isinstance(default_value, str) and default_value == "":
+                 default_string = '""'
+             else:
+                 default_string = str(default_value)
+diff --git a/tests/test_options.py b/tests/test_options.py
+index e335f3c..d62c07f 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -1267,6 +1267,36 @@ def test_show_default_with_empty_string(runner):
+     assert '[default: ""]' in message
+ 
+ 
++@pytest.mark.parametrize("use_default_map", [False, True])
++def test_show_default_with_non_string(runner, use_default_map):
++    class Value:
++        def __eq__(self, other):
++            if isinstance(other, str):
++                raise ValueError("Cannot compare Value to a string.")
++
++            return NotImplemented
++
++        def __str__(self):
++            return "special value"
++
++    value = Value()
++    opt = click.Option(
++        ["--value"],
++        type=UNPROCESSED,
++        default=UNSET if use_default_map else value,
++        show_default=True,
++    )
++    cmd = click.Command("cli", params=[opt])
++    default_map = {"value": value} if use_default_map else None
++    ctx = click.Context(cmd, default_map=default_map)
++    assert opt.get_help_extra(ctx) == {"default": "special value"}
++    assert "[default: special value]" in opt.get_help_record(ctx)[1]
++
++    result = runner.invoke(cmd, ["--help"], default_map=default_map)
++    assert result.exit_code == 0
++    assert "[default: special value]" in result.output
++
++
+ def test_do_not_show_no_default(runner):
+     """When show_default is True and no default is set do not show None."""
+     opt = click.Option(["--limit"], show_default=True)

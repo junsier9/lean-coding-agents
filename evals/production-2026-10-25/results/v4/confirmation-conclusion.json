@@ -1,0 +1,22 @@
+{
+  "completed_at": "2026-10-25T17:13:46.993223+00:00",
+  "candidate": "v4",
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "real_valid_runs": 240,
+  "real_tasks": 40,
+  "real_quality_qualified": false,
+  "same_endpoint_credible_positive": {
+    "token": false,
+    "time": false
+  },
+  "stable_at_least10percent_benefit": {
+    "token": false,
+    "time": false
+  },
+  "production_release_qualified": false,
+  "remaining": [
+    "Prespecified independent blinded review",
+    "Two-file package verification",
+    "Data/raw evidence integrity and statistical reproduction"
+  ]
+}

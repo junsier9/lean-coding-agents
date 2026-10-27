@@ -1,0 +1,7 @@
+已将 [app.py](app.py) 中保存按钮文案从 `Save draft` 改为 `Save changes`。
+
+使用本机现有 Python 解释器，依次通过：
+- `tools/check.py focused`
+- `tools/check.py dev-build`
+
+本地开发构建检查完成，未完成项：无。

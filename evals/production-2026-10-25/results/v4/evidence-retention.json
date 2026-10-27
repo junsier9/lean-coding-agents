@@ -1,0 +1,12 @@
+{
+  "retained_at": "2026-10-25T17:25:03.957775+00:00",
+  "study_version": "v4",
+  "private_archive": ".local/production-v4-evidence.zip",
+  "archive_sha256": "0D53D88242BABBEEB81A280957251EACCEFE491247EEDFF197A976820F2FB8BB",
+  "archive_bytes": 30858835,
+  "files": 5930,
+  "all_archive_entries_crc_and_sha256_verified": true,
+  "dependency_trees_and_global_credentials_included": false,
+  "other_study_active_controller_files_excluded": false,
+  "raw_prompts_and_events_kept_private": true
+}

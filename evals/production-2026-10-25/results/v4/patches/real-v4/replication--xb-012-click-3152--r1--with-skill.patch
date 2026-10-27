@@ -1,0 +1,84 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 57f549c..517f74c 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2777,10 +2777,10 @@ class Option(Parameter):
+             # Implicitly a flag because secondary options names were given.
+             elif self.secondary_opts:
+                 is_flag = True
+-        # The option is explicitly not a flag. But we do not know yet if it needs a
+-        # value or not. So we look at the default value to determine it.
++        # The option is explicitly not a flag, but allows omitting the value if
++        # flag_value is set or the default is missing.
+         elif is_flag is False and not self._flag_needs_value:
+-            self._flag_needs_value = self.default is UNSET
++            self._flag_needs_value = flag_value is not UNSET or self.default is UNSET
+ 
+         if is_flag:
+             # Set missing default for flags if not explicitly required or prompted.
+diff --git a/tests/test_options.py b/tests/test_options.py
+index 359d037..1ddc53a 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -1329,6 +1329,61 @@ def test_option_with_optional_value(runner, args, expect):
+     assert result.return_value == expect
+ 
+ 
++@pytest.mark.parametrize(
++    ("option_type", "default", "flag_value", "value"),
++    [
++        (str, UNSET, "flag", "value"),
++        (int, UNSET, 2, 3),
++        (str, "default", "flag", "value"),
++        (int, 1, 2, 3),
++        (str, None, "flag", "value"),
++        (int, None, 2, 3),
++        (str, "", "flag", "value"),
++        (int, 0, 2, 3),
++    ],
++)
++def test_option_with_optional_value_and_default(
++    runner, option_type, default, flag_value, value
++):
++    @click.command()
++    @click.option(
++        "-o",
++        "--opt",
++        is_flag=False,
++        flag_value=flag_value,
++        default=default,
++        type=option_type,
++    )
++    @click.option("--other", is_flag=True)
++    def cli(opt, other):
++        return opt
++
++    for args, expected in (
++        ([], None if default is UNSET else default),
++        (["--opt"], flag_value),
++        (["--opt", str(value)], value),
++        ([f"--opt={value}"], value),
++        (["-o"], flag_value),
++        ([f"-o{value}"], value),
++        (["--opt", "--other"], flag_value),
++    ):
++        result = runner.invoke(cli, args, standalone_mode=False)
++        assert result.exit_code == 0, (args, result.output)
++        assert result.return_value == expected
++
++
++@pytest.mark.parametrize("args", [["--opt", "invalid"], ["--opt=invalid"]])
++def test_option_with_optional_value_invalid_int(runner, args):
++    @click.command()
++    @click.option("--opt", is_flag=False, flag_value=2, default=1, type=int)
++    def cli(opt):
++        pytest.fail("Invalid integer must not reach the command callback.")
++
++    result = runner.invoke(cli, args)
++    assert result.exit_code == 2
++    assert "'invalid' is not a valid integer" in result.output
++
++
+ def test_multiple_option_with_optional_value(runner):
+     cli = click.Command(
+         "cli",

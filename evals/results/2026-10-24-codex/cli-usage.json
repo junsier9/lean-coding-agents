@@ -1,0 +1,351 @@
+{
+  "interpretation": "Reported turn usage, not billing; four cases per arm, one run each. Wall time includes transport recovery. Cached tokens are a subset of input tokens.",
+  "totals": {
+    "baseline": {
+      "cli_tasks": 4,
+      "reported_input_tokens": 890148,
+      "reported_cached_input_tokens": 790528,
+      "reported_output_tokens": 14891,
+      "completed_command_items": 38,
+      "reported_uncached_input_tokens": 99620
+    },
+    "with-skill": {
+      "cli_tasks": 4,
+      "reported_input_tokens": 964015,
+      "reported_cached_input_tokens": 882688,
+      "reported_output_tokens": 14775,
+      "completed_command_items": 39,
+      "reported_uncached_input_tokens": 81327
+    }
+  },
+  "runs": [
+    {
+      "case": "h03",
+      "arm": "baseline",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 240.505,
+      "usage": [
+        {
+          "input_tokens": 218490,
+          "cached_input_tokens": 191104,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3218,
+          "reasoning_output_tokens": 751
+        }
+      ],
+      "completed_command_items": 8,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h03",
+      "arm": "with-skill",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 232.513,
+      "usage": [
+        {
+          "input_tokens": 286097,
+          "cached_input_tokens": 266112,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2990,
+          "reasoning_output_tokens": 474
+        }
+      ],
+      "completed_command_items": 11,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h04",
+      "arm": "baseline",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 226.76,
+      "usage": [
+        {
+          "input_tokens": 176395,
+          "cached_input_tokens": 159488,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4275,
+          "reasoning_output_tokens": 1340
+        }
+      ],
+      "completed_command_items": 8,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h04",
+      "arm": "with-skill",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 272.05,
+      "usage": [
+        {
+          "input_tokens": 184056,
+          "cached_input_tokens": 169856,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 4890,
+          "reasoning_output_tokens": 1261
+        }
+      ],
+      "completed_command_items": 9,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h05",
+      "arm": "baseline",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 219.833,
+      "usage": [
+        {
+          "input_tokens": 265183,
+          "cached_input_tokens": 243328,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1792,
+          "reasoning_output_tokens": 546
+        }
+      ],
+      "completed_command_items": 12,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h05",
+      "arm": "with-skill",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 201.249,
+      "usage": [
+        {
+          "input_tokens": 265736,
+          "cached_input_tokens": 241024,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1631,
+          "reasoning_output_tokens": 371
+        }
+      ],
+      "completed_command_items": 11,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h06",
+      "arm": "baseline",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 293.913,
+      "usage": [
+        {
+          "input_tokens": 230080,
+          "cached_input_tokens": 196608,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5606,
+          "reasoning_output_tokens": 2306
+        }
+      ],
+      "completed_command_items": 10,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    },
+    {
+      "case": "h06",
+      "arm": "with-skill",
+      "exit_code": 0,
+      "status": "completed",
+      "wall_seconds": 268.749,
+      "usage": [
+        {
+          "input_tokens": 228126,
+          "cached_input_tokens": 205696,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5264,
+          "reasoning_output_tokens": 1956
+        }
+      ],
+      "completed_command_items": 8,
+      "completed_file_change_items": 1,
+      "error_items": [
+        "Falling back from WebSockets to HTTPS transport. request timed out"
+      ],
+      "terminal_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (request timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 5/5 (request timed out)"
+        }
+      ],
+      "transport_override": null,
+      "model_override": null
+    }
+  ]
+}

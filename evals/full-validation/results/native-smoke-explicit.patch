@@ -1,0 +1,16 @@
+diff --git a/logic.py b/logic.py
+index 10ac3de..29236ce 100644
+--- a/logic.py
++++ b/logic.py
+@@ -13,11 +13,6 @@ def validate_payload(values):
+ 
+ def _sum_validated(values):
+     # Only validate_payload's owned immutable tuple reaches this function.
+-    if values is None:
+-        raise PayloadError("expected a list")
+-    for value in values:
+-        if type(value) is not int:
+-            raise PayloadError("expected integers")
+     return sum(values)
+ 
+ 

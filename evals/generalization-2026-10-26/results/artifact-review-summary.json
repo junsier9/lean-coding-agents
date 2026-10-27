@@ -1,0 +1,201 @@
+{
+  "completed_at": "2026-10-27T09:02:14.232382+00:00",
+  "completed": 8,
+  "confirmed_defects": 2,
+  "unresolved_notes": 1,
+  "selection_matches_freeze": true,
+  "inputs_unchanged": true,
+  "parent_outcomes_hidden_from_reviewers": true,
+  "parent_adjudication": "A-01-1 is a positive __index__ compatibility regression under the explicit preserve-positive-boundaries requirement. A-03-1 is a reproducible narrower signature-probe exception fallback than the prior callable acceptance; the task explicitly preserves uninspectable-callable compatibility. Keep its medium confidence and limited custom-descriptor scope. Neither finding proves causation by the skill.",
+  "reviews": [
+    {
+      "review": "case-01",
+      "case_id": "extra-a-mi-1182",
+      "repeat": 0,
+      "review_report": "review-a.json",
+      "review_report_sha256": "7DAB39A39AC3B8C2927DE4352DE913197A4F0225DA71B25B1D6B2D03841BC214",
+      "input_manifest_sha256": "8F76AA60475A4257EDDA1A92C318201E3B84C2CDEEB590AE6D17F9547DB5E9EF",
+      "confirmed_findings": [
+        {
+          "id": "A-01-1",
+          "severity": "P2",
+          "confidence": "high",
+          "title": "新增负数判断破坏原本可用的正边界整数索引对象",
+          "location": {
+            "file": "{PROJECT_ROOT}/.local/beta-v5-artifact-reviews/case-01/candidate/more_itertools/recipes.py",
+            "start_line": 900,
+            "end_line": 900
+          },
+          "request_contract": "请求明确要求保留正边界行为。初始版本的普通迭代器路径通过 islice/enumerate 支持实现 __index__ 的正边界对象。",
+          "observed_difference": "候选版本在调用 islice 之前对边界直接执行 < 0。仅实现 __index__、不实现富比较的对象因此抛 TypeError；start 和 stop 两个位置均受影响。",
+          "reproduction_code": "from more_itertools import iter_index\nclass Index:\n    def __init__(self, n): self.n = n\n    def __index__(self): return self.n\nprint(list(iter_index(iter('AABCADEAF'), 'A', Index(1), 7)))\nprint(list(iter_index(iter('AABCADEAF'), 'A', 1, Index(7))))",
+          "independent_evidence": {
+            "script": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent_probes.py",
+            "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+            "json_paths": [
+              "case-01.base.output.checks.index_start",
+              "case-01.candidate.output.checks.index_start",
+              "case-01.base.output.checks.index_stop",
+              "case-01.candidate.output.checks.index_stop"
+            ],
+            "base": "两次调用均得到 [1, 4]。",
+            "candidate": "两次调用均抛 TypeError: '<' not supported between instances of 'Index' and 'int'。"
+          },
+          "impact": "已有正边界调用变为失败；普通 int 正边界及有限输入负边界矩阵正确，不能抵消这一兼容回退。"
+        }
+      ],
+      "unresolved": [],
+      "conclusion": {
+        "status": "needs_changes",
+        "summary": "负边界主需求已实现，但未完全保留正边界的已有接受范围。"
+      }
+    },
+    {
+      "review": "case-02",
+      "case_id": "xb-008-click-3434",
+      "repeat": 0,
+      "review_report": "review-a.json",
+      "review_report_sha256": "7DAB39A39AC3B8C2927DE4352DE913197A4F0225DA71B25B1D6B2D03841BC214",
+      "input_manifest_sha256": "1FEA32A916578295A985E6E7AF01C14A3D43D60CB04065417993E65537A78B93",
+      "confirmed_findings": [],
+      "unresolved": [
+        {
+          "topic": "仅含空白的参数文本是否属于需求范围",
+          "evidence": "write_usage(\"cli\", \"   \") 在 width=24 时，base 与 candidate 均输出 \"Usage: cli \\n\\n\"；prefix=\"\" 时二者均可能只输出换行。",
+          "assessment": "这是已有行为，候选仅处理空字符串。若请求将空白字符串也视为没有参数文本，则该子情形尚未满足；请求未明确，未列为确认回归。",
+          "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+          "json_path": "case-02.whitespace_examples"
+        }
+      ],
+      "conclusion": {
+        "status": "pass_with_scope_note",
+        "summary": "空字符串参数文本的需求已实现，自定义与样式前缀保留，非空文本未观察到回归；空白字符串语义留作范围说明。"
+      }
+    },
+    {
+      "review": "case-03",
+      "case_id": "extra-a-boltons-445",
+      "repeat": 0,
+      "review_report": "review-a.json",
+      "review_report_sha256": "7DAB39A39AC3B8C2927DE4352DE913197A4F0225DA71B25B1D6B2D03841BC214",
+      "input_manifest_sha256": "92F1228C6E79A1CBFE6999AF879777D78C3670A90326FCE88122E10B357B1A55",
+      "confirmed_findings": [
+        {
+          "id": "A-03-1",
+          "severity": "P2",
+          "confidence": "medium",
+          "title": "目标签名读取抛出其他异常时不再保留旧有包装兼容行为",
+          "location": {
+            "file": "{PROJECT_ROOT}/.local/beta-v5-artifact-reviews/case-03/candidate/boltons/funcutils.py",
+            "start_line": 604,
+            "end_line": 607
+          },
+          "request_contract": "请求要求保留无法检查签名的可调用对象的兼容行为。初始版本对目标 wrapper 不作这次 inspect.signature 读取。",
+          "observed_difference": "候选新增签名探测仅对 TypeError/ValueError 回退。__signature__ 属性用 NotImplementedError 或 RuntimeError 表示不可用时，原本能生成并正常调用的包装器现在在装饰时直接失败，尚未进入目标调用。",
+          "reproduction_code": "from boltons.funcutils import wraps\ndef source(a, b=10): pass\nclass Target:\n    @property\n    def __signature__(self):\n        raise NotImplementedError('signature unavailable')\n    def __call__(self, a, b=10):\n        return a, b\nprint(wraps(source)(Target())(3))",
+          "independent_evidence": {
+            "script": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent_probes.py",
+            "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+            "json_paths": [
+              "case-03.base.output.uninspectable_NotImplementedError",
+              "case-03.candidate.output.uninspectable_NotImplementedError",
+              "case-03.base.output.uninspectable_RuntimeError",
+              "case-03.candidate.output.uninspectable_RuntimeError"
+            ],
+            "base": "两种签名属性异常下均能包装并返回 (3, 10)。",
+            "candidate": "分别在包装阶段抛 NotImplementedError/RuntimeError: signature unavailable。",
+            "controls": "签名属性抛 TypeError/ValueError 的对象及内建 max 均仍可用；目标函数本体抛出的 RuntimeError 对象被原样传播。"
+          },
+          "impact": "只涉及自定义签名属性抛出上述非标准异常的目标，并非声称普通内建函数普遍失效。行为差异已独立复现；按请求保留旧可用对象的字面范围列为兼容缺口。"
+        }
+      ],
+      "unresolved": [],
+      "conclusion": {
+        "status": "needs_changes",
+        "summary": "主要合法签名组合调用已修复；无法检查签名的目标仍存在一个有条件的旧调用兼容缺口。"
+      }
+    },
+    {
+      "review": "case-04",
+      "case_id": "mi-1260",
+      "repeat": 0,
+      "review_report": "review-a.json",
+      "review_report_sha256": "7DAB39A39AC3B8C2927DE4352DE913197A4F0225DA71B25B1D6B2D03841BC214",
+      "input_manifest_sha256": "5A2D75F177D8D9B99861D8D09C68427C32417884598AB63424D0D001FDB725D1",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "conclusion": {
+        "status": "pass",
+        "summary": "请求的窗口大小契约一致性已实现，未确认行为、错误处理或消费状态回归。"
+      }
+    },
+    {
+      "review": "case-05",
+      "case_id": "extra-a-boltons-178",
+      "repeat": 0,
+      "review_report": "review-b.json",
+      "review_report_sha256": "8E94CBB473F29F663C292CE9546CB19C2E71109964794F0561AEA2AF176263C5",
+      "input_manifest_sha256": "CC3C1E138F68012D4A51C7898F52D0D7F732498D74EFCAD75A58E1AAAA9670C2",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "conclusion": {
+        "status": "pass_within_reviewed_scope",
+        "request_satisfied": true,
+        "confirmed_regressions": 0,
+        "unnecessary_new_mechanisms_observed": false,
+        "summary": "在已审查及独立复现范围内满足维护请求，未确认既有调用、错误处理、状态或资源契约回归。"
+      }
+    },
+    {
+      "review": "case-06",
+      "case_id": "extra-a-boltons-472",
+      "repeat": 0,
+      "review_report": "review-b.json",
+      "review_report_sha256": "8E94CBB473F29F663C292CE9546CB19C2E71109964794F0561AEA2AF176263C5",
+      "input_manifest_sha256": "53EA215FCB729D46B4DA880E5F2EB28F80AF690BD3F0619BA76AAC22A9E1BEAB",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "conclusion": {
+        "status": "pass_within_reviewed_scope",
+        "request_satisfied": true,
+        "confirmed_regressions": 0,
+        "unnecessary_new_mechanisms_observed": false,
+        "summary": "在已审查及独立复现范围内满足维护请求，未确认既有调用、错误处理、状态或资源契约回归。"
+      }
+    },
+    {
+      "review": "case-07",
+      "case_id": "extra-a-boltons-450",
+      "repeat": 0,
+      "review_report": "review-b.json",
+      "review_report_sha256": "8E94CBB473F29F663C292CE9546CB19C2E71109964794F0561AEA2AF176263C5",
+      "input_manifest_sha256": "CAC79F79F50C8A0D634DA7366DB13020FE4389E075E95A13D36C99288E3AA7E4",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "conclusion": {
+        "status": "pass_within_reviewed_scope",
+        "request_satisfied": true,
+        "confirmed_regressions": 0,
+        "unnecessary_new_mechanisms_observed": false,
+        "summary": "在已审查及独立复现范围内满足维护请求，未确认既有调用、错误处理、状态或资源契约回归。"
+      }
+    },
+    {
+      "review": "case-08",
+      "case_id": "xb-019-click-2550",
+      "repeat": 0,
+      "review_report": "review-b.json",
+      "review_report_sha256": "8E94CBB473F29F663C292CE9546CB19C2E71109964794F0561AEA2AF176263C5",
+      "input_manifest_sha256": "519AD6CEDA8DA77F2ECBCDEB40B6E9F25422231FF24C4A4917418B1A29FFBEBA",
+      "confirmed_findings": [],
+      "unresolved": [],
+      "conclusion": {
+        "status": "pass_within_reviewed_scope",
+        "request_satisfied": true,
+        "confirmed_regressions": 0,
+        "unnecessary_new_mechanisms_observed": false,
+        "summary": "在已审查及独立复现范围内满足维护请求，未确认既有调用、错误处理、状态或资源契约回归。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 1367a54..ae3ecd9 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -161,7 +161,7 @@ class Bits:
+             raise ValueError('Bits cannot represent negative values')
+         if len_ is None:
+             len_ = len(f'{val:b}')
+-        if val > 2 ** len_:
++        if val >= 2 ** len_:
+             raise ValueError(f'value {val} cannot be represented with {len_} bits')
+         self.val = val  # data is stored internally as integer
+         self.len = len_
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 4187a6b..a2a77a1 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -110,3 +110,38 @@ def test_bits():
+             ).as_int()
+         ),
+         Bits('101'))
++
++
++@mark.parametrize('val, len_', [
++    (1, 0), (2, 1), (4, 2), (5, 2), (256, 8), (2 ** 64, 64),
++])
++def test_bits_rejects_length_overflow(val, len_):
++    message = f'value {val} cannot be represented with {len_} bits'
++    with raises(ValueError, match=message):
++        Bits(val, len_)
++    with raises(ValueError, match=message):
++        Bits.from_int(val, len_)
++
++
++@mark.parametrize('val', ['100', b'100', [True, False, False], '0x4'])
++def test_bits_rejects_converted_length_overflow(val):
++    with raises(ValueError, match='value 4 cannot be represented with 2 bits'):
++        Bits(val, 2)
++
++
++@mark.parametrize('len_', [1, 2, 8, 64])
++def test_bits_maximum_value(len_):
++    val = 2 ** len_ - 1
++    bits = Bits(val, len_)
++    assert bits.as_int() == val
++    assert len(bits) == len_
++    assert bits.as_bin() == '1' * len_
++
++
++@mark.parametrize('val', [0, 1, 4, 256, 2 ** 64])
++def test_bits_inferred_length(val):
++    bits = Bits(val)
++    expected = f'{val:b}'
++    assert bits.as_int() == val
++    assert bits.as_bin() == expected
++    assert len(bits) == len(expected)

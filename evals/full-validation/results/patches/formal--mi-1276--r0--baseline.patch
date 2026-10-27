@@ -1,0 +1,149 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 83131cb..3c58afc 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2408,11 +2408,15 @@ class numeric_range(Sequence):
+         return hash((len_self, self._start, self._step))
+ 
+     def __iter__(self):
+-        values = (self._start + (n * self._step) for n in count())
+-        if self._growing:
+-            return takewhile(partial(gt, self._stop), values)
+-        else:
+-            return takewhile(partial(lt, self._stop), values)
++        values = (self._start + n * self._step for n in count())
++        try:
++            if self._growing:
++                yield from takewhile(partial(gt, self._stop), values)
++            else:
++                yield from takewhile(partial(lt, self._stop), values)
++        except OverflowError:
++            # A step beyond a bounded type has also passed the stop.
++            return
+ 
+     def __len__(self):
+         return self._len
+@@ -2444,7 +2448,12 @@ class numeric_range(Sequence):
+             return n
+ 
+     def _before_stop(self, i):
+-        value = self._start + i * self._step
++        try:
++            value = self._start + i * self._step
++        except OverflowError:
++            # A probe beyond a bounded type (such as datetime) has also
++            # passed the stop, even when the stop itself is representable.
++            return False
+         return value < self._stop if self._growing else value > self._stop
+ 
+     def __reduce__(self):
+@@ -2458,14 +2467,11 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
+-        # Empty iterator
+-        try:
+-            start = self._get_by_index(-1)
+-        except IndexError:
+-            return iter([])
+-
+-        return iter(
+-            numeric_range(start, self._start - self._step, -self._step)
++        # Keep the original arithmetic to preserve floating-point rounding
++        # and avoid computing a stop outside the type's representable bounds.
++        return (
++            self._start + i * self._step
++            for i in range(self._len - 1, -1, -1)
+         )
+ 
+     def count(self, value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 3896451..920a220 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3185,6 +3185,85 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_matches_iteration(self):
++        for args in [
++            (0.0, 1.0, 0.1),
++            (1.0, 0.0, -0.1),
++            (0.0, 3.0, 0.7),
++            (3.0, 0.0, -0.7),
++            (0.1, 1.0, 0.1),
++            (1.1, 0.1, -0.1),
++            (2.1, 5.1, 0.5),
++            (-0.3, 0.5, 0.1),
++            (-8.732, -13.532, -2.4),
++            (4.51, 10.375, 0.255),
++            (-69.37276490678778, -29.8339073344664, 4.942357196540172),
++            (32.50227965239458, 9.003418351482358, -1.9582384417426848),
++            (0.1, 0.2, 0.5),
++            (0.2, 0.1, -0.5),
++            (0.1, 0.1, 0.1),
++            (0.1, 0.0, 0.1),
++            (0.0, 0.1, -0.1),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                expected = list(r)[::-1]
++                self.assertEqual(expected, list(reversed(r)))
++                self.assertEqual(expected, list(reversed(r)))
++
++    def test_reversed_datetime_boundaries(self):
++        step = timedelta(microseconds=1)
++        for start, stop, delta, expected in [
++            (
++                datetime.min,
++                datetime.min + 3 * step,
++                step,
++                [datetime.min + i * step for i in range(3)],
++            ),
++            (
++                datetime.max,
++                datetime.max - 3 * step,
++                -step,
++                [datetime.max - i * step for i in range(3)],
++            ),
++            (datetime.min, datetime.min + step, 2 * step, [datetime.min]),
++            (datetime.max, datetime.max - step, -2 * step, [datetime.max]),
++            (
++                datetime.max - 3 * step,
++                datetime.max,
++                2 * step,
++                [datetime.max - 3 * step, datetime.max - step],
++            ),
++            (
++                datetime.min + 3 * step,
++                datetime.min,
++                -2 * step,
++                [datetime.min + 3 * step, datetime.min + step],
++            ),
++            (datetime.min, datetime.min, step, []),
++            (datetime.max, datetime.max, -step, []),
++            (datetime.min, datetime.max, -step, []),
++            (datetime.max, datetime.min, step, []),
++        ]:
++            with self.subTest(start=start, stop=stop, step=delta):
++                r = mi.numeric_range(start, stop, delta)
++                self.assertEqual(expected[::-1], list(reversed(r)))
++                self.assertEqual(expected, list(r))
++                self.assertEqual(len(expected), len(r))
++
++    def test_reversed_large_range(self):
++        stop = 10**20
++        r = mi.numeric_range(0, stop)
++        it = reversed(r)
++        self.assertIs(iter(it), it)
++        self.assertEqual([stop - 1, stop - 2, stop - 3], list(islice(it, 3)))
++
++    def test_iter_unbounded(self):
++        for stop, step in [(float('inf'), 0.1), (-float('inf'), -0.1)]:
++            with self.subTest(stop=stop, step=step):
++                r = mi.numeric_range(0.0, stop, step)
++                self.assertEqual([0.0, step, 2 * step], list(islice(r, 3)))
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

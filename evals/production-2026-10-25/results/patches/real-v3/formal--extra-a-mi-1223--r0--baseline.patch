@@ -1,0 +1,47 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 7c3670a..8f3ff0a 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -229,7 +229,12 @@ def chunked(iterable, n, strict=False):
+     ``True``, then ``ValueError`` will be raised before the last
+     list is yielded.
+ 
++    If *n* is negative, ``ValueError`` is raised.
++
+     """
++    if n is not None and n < 0:
++        raise ValueError('n must be at least 0')
++
+     iterator = iter(partial(take, n, iter(iterable)), [])
+     if strict:
+         if n is None:
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1f8d10c..763e20d 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -70,6 +70,25 @@ class ChunkedTests(TestCase):
+             list(mi.chunked('ABCDE', None)), [['A', 'B', 'C', 'D', 'E']]
+         )
+ 
++    def test_negative(self):
++        for n, strict, iterable in product(
++            (-1, -3), (False, True), ('', 'ABC')
++        ):
++            with self.subTest(n=n, strict=strict, iterable=iterable):
++                with self.assertRaisesRegex(
++                    ValueError, '^n must be at least 0$'
++                ):
++                    list(mi.chunked(iterable, n, strict=strict))
++
++    def test_zero(self):
++        for strict in (False, True):
++            with self.subTest(strict=strict):
++                iterable = iter('ABC')
++                self.assertEqual(
++                    list(mi.chunked(iterable, 0, strict=strict)), []
++                )
++                self.assertEqual(list(iterable), list('ABC'))
++
+     def test_strict_false(self):
+         """Test when ``n`` does not divide evenly into the length of the
+         iterable and strict is false.

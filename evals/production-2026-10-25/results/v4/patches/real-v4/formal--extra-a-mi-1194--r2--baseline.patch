@@ -1,0 +1,48 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index ce22bdc..11d11e5 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -147,11 +147,15 @@ def tabulate(function, start=0):
+ def tail(n, iterable):
+     """Return an iterator over the last *n* items of *iterable*.
+ 
++    If *n* is negative, raise :exc:`ValueError`.
++
+     >>> t = tail(3, 'ABCDEFG')
+     >>> list(t)
+     ['E', 'F', 'G']
+ 
+     """
++    if n < 0:
++        raise ValueError('n must be >= 0')
+     try:
+         size = len(iterable)
+     except TypeError:
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 15d54fc..d5a6f72 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -72,6 +72,23 @@ class TabulateTests(TestCase):
+ class TailTests(TestCase):
+     """Tests for ``tail()``"""
+ 
++    def test_negative(self):
++        for n in (-1, -3):
++            for iterable in ('', 'ABCDEFG', iter(''), iter('ABCDEFG')):
++                with self.subTest(n=n, iterable=iterable):
++                    with self.assertRaises(ValueError):
++                        mi.tail(n, iterable)
++
++    def test_zero(self):
++        for iterable in ('', 'ABCDEFG', iter(''), iter('ABCDEFG')):
++            with self.subTest(iterable=iterable):
++                self.assertEqual(list(mi.tail(0, iterable)), [])
++
++    def test_empty(self):
++        for iterable in ('', iter('')):
++            with self.subTest(iterable=iterable):
++                self.assertEqual(list(mi.tail(3, iterable)), [])
++
+     def test_iterator_greater(self):
+         """Length of iterator is greater than requested tail"""
+         self.assertEqual(list(mi.tail(3, iter('ABCDEFG'))), list('EFG'))

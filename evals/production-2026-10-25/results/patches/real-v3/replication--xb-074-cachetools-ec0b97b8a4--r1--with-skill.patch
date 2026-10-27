@@ -1,0 +1,166 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 4e4f940..4e47f1b 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -5,6 +5,7 @@
+ __all__ = ()
+ 
+ import functools
++import inspect
+ import warnings
+ import weakref
+ 
+@@ -93,11 +94,15 @@ class _DescriptorBase:
+ 
+             return unbound
+         elif self.__attrname is not None:
+-            # replace descriptor instance with wrapper in instance dict
++            # Only replace this descriptor, never an overriding method.
++            # Base methods reached through super() need their own wrapper.
++            name = self.__attrname
++            if inspect.getattr_static(type(obj), name, None) is not self:
++                name = self
+             try:
+                 # In case of a race condition where another thread already replaced
+                 # the descriptor, prefer the initial wrapper.
+-                wrapper = obj.__dict__.setdefault(self.__attrname, wrapper)
++                wrapper = obj.__dict__.setdefault(name, wrapper)
+             except AttributeError:
+                 # not all objects have __dict__ (e.g. class defines slots)
+                 msg = (
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 727a317..227f114 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -728,6 +728,131 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(len(cached.cache), 0)
+ 
+ 
++class InheritanceMethodTest(unittest.TestCase):
++    sync_options = (
++        {},
++        {"lock": lambda self: self.lock},
++        {"condition": lambda self: self.cond},
++        {"lock": lambda self: self.lock, "condition": lambda self: self.cond},
++    )
++
++    def test_super_preserves_override(self):
++        for info in (False, True):
++            for sync in self.sync_options:
++                with self.subTest(info=info, **sync):
++
++                    class Base:
++                        def __init__(self):
++                            self.cache = Cache(2)
++                            self.lock = CountedLock()
++                            self.cond = CountedCondition()
++                            self.calls = []
++
++                        @cachedmethod(lambda self: self.cache, info=info, **sync)
++                        def get(self, value):
++                            self.calls.append(("base", value))
++                            return value
++
++                    class Derived(Base):
++                        def get(self, value):
++                            self.calls.append(("derived", value))
++                            return super().get(value) + 10
++
++                    cached = Derived()
++                    self.assertEqual(cached.get(1), 11)
++                    self.assertEqual(cached.get(1), 11)
++                    self.assertEqual(cached.get(2), 12)
++                    self.assertEqual(
++                        cached.calls,
++                        [
++                            ("derived", 1),
++                            ("base", 1),
++                            ("derived", 1),
++                            ("derived", 2),
++                            ("base", 2),
++                        ],
++                    )
++                    parent = super(Derived, cached).get
++                    self.assertIs(parent, super(Derived, cached).get)
++                    if info:
++                        self.assertEqual(parent.cache_info(), (1, 2, 2, 2))
++                    parent.cache_clear()
++                    self.assertEqual(cached.get(1), 11)
++                    self.assertEqual(cached.calls[-2:], [("derived", 1), ("base", 1)])
++                    if info:
++                        self.assertEqual(parent.cache_info(), (0, 1, 2, 1))
++
++    def test_super_separate_wrappers(self):
++        for info in (False, True):
++            for sync in self.sync_options:
++                for parent_first in (False, True):
++                    with self.subTest(info=info, parent_first=parent_first, **sync):
++
++                        class Base:
++                            def __init__(self):
++                                self.base_cache = Cache(2)
++                                self.cache = Cache(2)
++                                self.lock = CountedLock()
++                                self.cond = CountedCondition()
++                                self.calls = []
++
++                            @cachedmethod(lambda self: self.base_cache, info=info, **sync)
++                            def get(self, value):
++                                self.calls.append(("base", value))
++                                return value
++
++                        class Derived(Base):
++                            @cachedmethod(lambda self: self.cache, info=info, **sync)
++                            def get(self, value):
++                                self.calls.append(("derived", value))
++                                return super().get(value) + 10
++
++                        cached = Derived()
++                        if parent_first:
++                            parent = super(Derived, cached).get
++                            child = cached.get
++                        else:
++                            child = cached.get
++                            parent = super(Derived, cached).get
++                        self.assertIsNot(parent, child)
++                        self.assertIs(parent, super(Derived, cached).get)
++                        self.assertIs(child, cached.get)
++                        self.assertEqual(cached.get(1), 11)
++                        self.assertEqual(cached.get(1), 11)
++                        self.assertEqual(Base.get(cached, 1), 1)
++                        self.assertEqual(super(Derived, cached).get(2), 2)
++                        self.assertEqual(cached.get(2), 12)
++                        self.assertEqual(
++                            cached.calls,
++                            [
++                                ("derived", 1),
++                                ("base", 1),
++                                ("base", 2),
++                                ("derived", 2),
++                            ],
++                        )
++                        if info:
++                            self.assertEqual(child.cache_info(), (1, 2, 2, 2))
++                            self.assertEqual(parent.cache_info(), (2, 2, 2, 2))
++                        child.cache_clear()
++                        if info:
++                            self.assertEqual(child.cache_info(), (0, 0, 2, 0))
++                            self.assertEqual(parent.cache_info(), (2, 2, 2, 2))
++                        self.assertEqual(cached.get(1), 11)
++                        if info:
++                            self.assertEqual(child.cache_info(), (0, 1, 2, 1))
++                            self.assertEqual(parent.cache_info(), (3, 2, 2, 2))
++                        parent.cache_clear()
++                        if info:
++                            self.assertEqual(parent.cache_info(), (0, 0, 2, 0))
++                            self.assertEqual(child.cache_info(), (0, 1, 2, 1))
++                        self.assertEqual(cached.get(1), 11)
++                        self.assertEqual(Base.get(cached, 1), 1)
++                        if info:
++                            self.assertEqual(child.cache_info(), (1, 1, 2, 1))
++                            self.assertEqual(parent.cache_info(), (0, 1, 2, 1))
++
++
+ class AutospecTest(unittest.TestCase):
+     def test_autospec_no_warnings(self):
+ 

@@ -1,0 +1,57 @@
+diff --git a/app.py b/app.py
+index 69b025d..14d1b01 100644
+--- a/app.py
++++ b/app.py
+@@ -1,7 +1,10 @@
+ import os
++import tempfile
+ from pathlib import Path
++
+ from errors import AssetMissing, Opener
+ 
++
+ def download(opener: Opener, target, replace=os.replace):
+     """Download into a caller-selected destination.
+ 
+@@ -11,12 +14,32 @@ def download(opener: Opener, target, replace=os.replace):
+         response = opener()
+     except AssetMissing:
+         return False
+-    target = Path(target)
+-    with target.open("wb") as output:
+-        while True:
+-            chunk = response.read(65536)
+-            if not chunk:
+-                break
+-            output.write(chunk)
+-    response.close()
+-    return True
++    temporary = None
++    try:
++        try:
++            target = Path(target)
++            with tempfile.NamedTemporaryFile(
++                mode="wb", dir=target.parent, delete=False
++            ) as output:
++                temporary = Path(output.name)
++                while True:
++                    chunk = response.read(65536)
++                    if not chunk:
++                        break
++                    output.write(chunk)
++        except BaseException:
++            # Preserve the download failure if closing the response also fails.
++            try:
++                response.close()
++            except Exception:
++                pass
++            raise
++        else:
++            response.close()
++
++        # Both handles must close successfully before publishing the file.
++        replace(temporary, target)
++        return True
++    finally:
++        if temporary is not None:
++            temporary.unlink(missing_ok=True)

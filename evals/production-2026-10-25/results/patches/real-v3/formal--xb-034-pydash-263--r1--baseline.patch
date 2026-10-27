@@ -1,0 +1,106 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 4bb779c..f1bcbba 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -2029,8 +2029,8 @@ def truncate(
+ 
+     Args:
+         text: String to truncate.
+-        length: Maximum string length. Defaults to ``30``.
+-        omission: String to indicate text is omitted.
++        length: Maximum string length. Non-positive values return an empty string. Defaults to ``30``.
++        omission: String to indicate text is omitted. Shortened if it exceeds `length`.
+         separator: Separator pattern to truncate to.
+ 
+     Returns:
+@@ -2046,6 +2046,10 @@ def truncate(
+         'hello w...'
+         >>> truncate("hello world", 10, separator=" ")
+         'hello...'
++        >>> truncate("hello world", 2)
++        '..'
++        >>> truncate("hello world", 0)
++        ''
+ 
+     .. versionadded:: 1.1.0
+ 
+@@ -2054,17 +2058,25 @@ def truncate(
+     """
+     text = pyd.to_string(text)
+ 
++    if length <= 0:
++        return ""
++
+     if len(text) <= length:
+         return text
+ 
+     omission_len = len(omission)
+     text_len = length - omission_len
++    if text_len <= 0:
++        return omission[:length]
++
+     text = text[:text_len]
+ 
+     trunc_len = len(text)
+ 
+     if pyd.is_string(separator):
+-        trunc_len = text.rfind(separator)
++        separator_index = text.rfind(separator)
++        if separator_index >= 0:
++            trunc_len = separator_index
+     elif pyd.is_reg_exp(separator):
+         last = None
+         for match in separator.finditer(text):
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 58680f2..c477880 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1082,6 +1082,15 @@ def test_trim_end(case, expected):
+         (("hi-diddly-ho there, neighborino", 30, " [...]"), "hi-diddly-ho there, neig [...]"),
+         (("123456789", 9), "123456789"),
+         (("123456789", 8), "12345..."),
++        (("123456789", 2, "<omitted>"), "<o"),
++        (("123456789", 1, "省略"), "省"),
++        (("123456789", 2, "省略"), "省略"),
++        (("123456789", 3, ""), "123"),
++        (("x", 1), "x"),
++        (("xy", 2, "<omitted>"), "xy"),
++        (("", -1), ""),
++        ((None, -1), ""),
++        ((12345, 2), ".."),
+         (("x",), "x"),
+         ((" ",), " "),
+         (("",), ""),
+@@ -1092,6 +1101,32 @@ def test_truncate(case, expected):
+     assert _.truncate(*case) == expected
+ 
+ 
++@parametrize("length,expected", [(-10, ""), (-1, ""), (0, ""), (1, "."), (2, ".."), (3, "...")])
++@parametrize("separator", [None, " ", re.compile(r" +"), "|", re.compile(r"\|"), "", re.compile("")])
++def test_truncate_small_length(length, expected, separator):
++    assert _.truncate("abc def ghi", length, separator=separator) == expected
++
++
++@parametrize(
++    "separator,expected",
++    [
++        (None, "abc de..."),
++        (" ", "abc..."),
++        (re.compile(r" +"), "abc..."),
++        ("|", "abc de..."),
++        (re.compile(r"\|"), "abc de..."),
++        ("", "abc de..."),
++        (re.compile(""), "abc de..."),
++        ("bc", "a..."),
++        (re.compile("bc"), "a..."),
++        ("abc", "..."),
++        (re.compile("abc"), "..."),
++    ],
++)
++def test_truncate_separator(separator, expected):
++    assert _.truncate("abc def ghi", 9, separator=separator) == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

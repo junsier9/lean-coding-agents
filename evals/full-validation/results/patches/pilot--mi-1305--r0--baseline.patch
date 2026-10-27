@@ -1,0 +1,67 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c128bc9..125e3af 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3702,6 +3702,9 @@ def ichunked(iterable, n):
+     :func:`ichunked` is like :func:`chunked`, but it yields iterables
+     instead of lists.
+ 
++    If *n* is zero, no sub-iterables are yielded and *iterable* is not consumed.
++    If *n* is negative, ``ValueError`` is raised.
++
+     If the sub-iterables are read in order, the elements of *iterable*
+     won't be stored in memory.
+     If they are read out of order, :func:`itertools.tee` is used to cache
+@@ -3718,6 +3721,11 @@ def ichunked(iterable, n):
+     [8, 9, 10, 11]
+ 
+     """
++    if n < 0:
++        raise ValueError('n must be at least 0')
++    elif n == 0:
++        return
++
+     iterator = iter(iterable)
+     for first in iterator:
+         rest = islice(iterator, n - 1)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 50fab9c..c03bcc7 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4544,9 +4544,34 @@ class IchunkedTests(TestCase):
+         self.assertEqual(actual, expected)
+ 
+     def test_negative(self):
++        for n in (-1, -2):
++            for iterable in ([], 'ABCDE', count()):
++                with self.subTest(n=n, iterable=iterable):
++                    with self.assertRaisesRegex(
++                        ValueError, '^n must be at least 0$'
++                    ):
++                        list(mi.ichunked(iterable, n))
++
++    def test_zero_does_not_consume(self):
++        for iterable in (iter(range(5)), count()):
++            with self.subTest(iterable=iterable):
++                self.assertEqual(list(mi.ichunked(iterable, 0)), [])
++                self.assertEqual(next(iterable), 0)
++
++    def test_negative_does_not_consume(self):
+         iterable = count()
+-        with self.assertRaises(ValueError):
+-            [list(c) for c in mi.ichunked(iterable, -1)]
++        with self.assertRaisesRegex(ValueError, '^n must be at least 0$'):
++            list(mi.ichunked(iterable, -1))
++        self.assertEqual(next(iterable), 0)
++
++    def test_positive_sizes(self):
++        for length in (0, 1, 9):
++            for n in (1, 2, 4, 10):
++                with self.subTest(length=length, n=n):
++                    self.assertEqual(
++                        [list(c) for c in mi.ichunked(range(length), n)],
++                        list(mi.chunked(range(length), n)),
++                    )
+ 
+     def test_out_of_order(self):
+         iterable = map(str, count())

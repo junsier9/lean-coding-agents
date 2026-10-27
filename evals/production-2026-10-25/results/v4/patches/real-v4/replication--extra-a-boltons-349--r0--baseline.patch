@@ -1,0 +1,74 @@
+diff --git a/boltons/cacheutils.py b/boltons/cacheutils.py
+index 27a19cb..169294a 100644
+--- a/boltons/cacheutils.py
++++ b/boltons/cacheutils.py
+@@ -235,9 +235,9 @@ class LRI(dict):
+                 else:
+                     evicted = self._set_key_and_evict_last_in_ll(key, value)
+                     super(LRI, self).__delitem__(evicted)
+-                super(LRI, self).__setitem__(key, value)
+             else:
+                 link[VALUE] = value
++            super(LRI, self).__setitem__(key, value)
+ 
+     def __getitem__(self, key):
+         with self._lock:
+diff --git a/tests/test_cacheutils.py b/tests/test_cacheutils.py
+index 91ebcf9..b37affc 100644
+--- a/tests/test_cacheutils.py
++++ b/tests/test_cacheutils.py
+@@ -100,6 +100,54 @@ def test_cache_sizes_on_repeat_insertions():
+         assert initial_list_size == list_size_after_inserts
+ 
+ 
++@pytest.mark.parametrize('cache_type', [LRI, LRU])
++@pytest.mark.parametrize('max_size', [1, 2, 3])
++@pytest.mark.parametrize('write_method', ['assignment', 'mapping', 'pairs', 'kwargs'])
++def test_cache_overwrite_mapping_views(cache_type, max_size, write_method):
++    cache = cache_type(max_size, values=[('a', 'old'), ('b', 'B')][:max_size])
++    expected = dict(cache)
++
++    for value in ('new', None, {'nested': 'value'}):
++        if write_method == 'assignment':
++            cache['a'] = value
++        elif write_method == 'mapping':
++            cache.update({'a': value})
++        elif write_method == 'pairs':
++            cache.update([('a', 'intermediate'), ('a', value)])
++        else:
++            cache.update({}, a=value)
++        expected['a'] = value
++
++        assert cache['a'] is value
++        assert dict(cache) == expected
++        assert dict(cache.items()) == expected
++        assert list(cache.values()) == [expected[key] for key in cache]
++        assert dict(cache.copy()) == expected
++        assert len(cache) == len(expected)
++
++    assert cache.pop('a') is value
++    del expected['a']
++    assert dict(cache) == expected
++
++
++@pytest.mark.parametrize('cache_type', [LRI, LRU])
++def test_cache_overwrite_eviction(cache_type):
++    cache = cache_type(2, values=[('a', 'old'), ('b', 'B')])
++    cache['a'] = 'new'
++    assert len(cache) == 2
++
++    cache['c'] = 'C'
++    assert dict(cache) == {'a': 'new', 'c': 'C'}
++    assert cache['a'] == 'new'
++
++    cache['d'] = 'D'
++    if cache_type is LRI:
++        assert dict(cache) == {'c': 'C', 'd': 'D'}
++    else:
++        assert dict(cache) == {'a': 'new', 'd': 'D'}
++    assert len(cache) == 2
++
++
+ def test_lru_basic():
+     lru = LRU(max_size=1)
+     repr(lru)                   # sanity

@@ -1,0 +1,95 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index af04d53..ba97f0f 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4897,7 +4897,10 @@ def gray_product(*iterables, repeat=1):
+     `this section <https://www-cs-faculty.stanford.edu/~knuth/fasc2a.ps.gz>`__
+     of Donald Knuth's *The Art of Computer Programming*.
+     """
+-    all_iterables = tuple(map(tuple, iterables * repeat))
++    if repeat > 1:
++        all_iterables = tuple(map(tuple, iterables)) * repeat
++    else:
++        all_iterables = tuple(map(tuple, iterables * repeat))
+     iterable_count = len(all_iterables)
+     for iterable in all_iterables:
+         if len(iterable) < 2:
+@@ -4939,7 +4942,13 @@ def partial_product(*iterables, repeat=1):
+     equivalent to ``partial_product('AB', 'AB', 'AB')``.
+     """
+ 
+-    iterators = tuple(map(iter, iterables * repeat))
++    if repeat > 1:
++        # Give each repeated position an independent iterator, in input order.
++        iterators = tuple(
++            chain.from_iterable(zip(*(tee(it, repeat) for it in iterables)))
++        )
++    else:
++        iterators = tuple(map(iter, iterables * repeat))
+ 
+     try:
+         prod = [next(it) for it in iterators]
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 0041ff1..d6a34cc 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -6025,6 +6025,20 @@ class GrayProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for inputs in (('abc',), ('abc', 'def'), ('abc', 'de')):
++            for repeat in (0, 1, 2, 3):
++                with self.subTest(inputs=inputs, repeat=repeat):
++                    self.assertEqual(
++                        list(mi.gray_product(*map(iter, inputs), repeat=repeat)),
++                        list(mi.gray_product(*inputs, repeat=repeat)),
++                    )
++
++    def test_zero_repeat_does_not_consume(self):
++        iterable = iter('abc')
++        self.assertEqual(list(mi.gray_product(iterable, repeat=0)), [()])
++        self.assertEqual(list(iterable), list('abc'))
++
+ 
+ class PartialProductTests(TestCase):
+     def test_no_iterables(self):
+@@ -6116,6 +6130,38 @@ class PartialProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for inputs in (
++            ('abc',),
++            ('abc', 'def'),
++            ('abc', 'de'),
++            ('a', 'def'),
++            ('abc', ''),
++        ):
++            for repeat in (0, 1, 2, 3):
++                with self.subTest(inputs=inputs, repeat=repeat):
++                    self.assertEqual(
++                        list(
++                            mi.partial_product(*map(iter, inputs), repeat=repeat)
++                        ),
++                        list(mi.partial_product(*inputs, repeat=repeat)),
++                    )
++
++    def test_repeat_is_lazy(self):
++        consumed = []
++
++        def source():
++            for value in count():
++                consumed.append(value)
++                yield value
++
++        result = mi.partial_product(source(), repeat=2)
++        self.assertEqual(consumed, [])
++        self.assertEqual(
++            list(islice(result, 4)), [(0, 0), (1, 0), (2, 0), (3, 0)]
++        )
++        self.assertEqual(consumed, [0, 1, 2, 3])
++
+ 
+ class IterateTests(TestCase):
+     def test_basic(self) -> None:

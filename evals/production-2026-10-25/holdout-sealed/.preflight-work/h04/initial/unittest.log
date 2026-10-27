@@ -1,0 +1,51 @@
+test_expected_boundary_translation (test_contract.Contract.test_expected_boundary_translation) ... FAIL
+test_expiry (test_contract.Contract.test_expiry) ... ok
+test_failed_miss_not_cached (test_contract.Contract.test_failed_miss_not_cached) ... FAIL
+test_force_failure_evicts_stale (test_contract.Contract.test_force_failure_evicts_stale) ... FAIL
+test_fresh_hit (test_contract.Contract.test_fresh_hit) ... ok
+test_invalid_ttl (test_contract.Contract.test_invalid_ttl) ... ok
+test_invalidate (test_contract.Contract.test_invalidate) ... ok
+test_key_isolation (test_contract.Contract.test_key_isolation) ... ok
+test_none_is_normal (test_contract.Contract.test_none_is_normal) ... ok
+test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates) ... FAIL
+
+======================================================================
+FAIL: test_expected_boundary_translation (test_contract.Contract.test_expected_boundary_translation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h04\initial\test_contract.py", line 58, in test_expected_boundary_translation
+    with self.assertRaises(ServiceUnavailable) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ServiceUnavailable not raised
+
+======================================================================
+FAIL: test_failed_miss_not_cached (test_contract.Contract.test_failed_miss_not_cached)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h04\initial\test_contract.py", line 50, in test_failed_miss_not_cached
+    with self.assertRaises(RepositoryError) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RepositoryError not raised
+
+======================================================================
+FAIL: test_force_failure_evicts_stale (test_contract.Contract.test_force_failure_evicts_stale)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h04\initial\test_contract.py", line 43, in test_force_failure_evicts_stale
+    with self.assertRaises(RepositoryError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RepositoryError not raised
+
+======================================================================
+FAIL: test_unexpected_propagates (test_contract.Contract.test_unexpected_propagates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h04\initial\test_contract.py", line 65, in test_unexpected_propagates
+    with self.assertRaises(ValueError) as found:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+FAILED (failures=4)

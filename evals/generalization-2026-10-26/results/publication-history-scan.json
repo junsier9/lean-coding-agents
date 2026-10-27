@@ -1,0 +1,7 @@
+{
+  "audit_class": "public_repository_preparation",
+  "history_blob_count": 1945,
+  "credential_pattern_findings": [],
+  "private_local_evidence_tracked": false,
+  "limits": "Pattern scan is not proof that every kind of sensitive content is absent; raw private evidence archives remain outside Git."
+}

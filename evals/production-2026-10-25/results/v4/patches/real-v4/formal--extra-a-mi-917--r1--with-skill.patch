@@ -1,0 +1,164 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index a6573f2..a5cabdc 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -25,7 +25,7 @@ from itertools import (
+ from math import comb, e, exp, factorial, floor, fsum, log, log1p, perm, tau
+ from queue import Empty, Queue
+ from random import random, randrange, shuffle, uniform
+-from operator import itemgetter, mul, sub, gt, lt, le
++from operator import itemgetter, mul, sub, gt, lt
+ from sys import hexversion, maxsize
+ from time import monotonic
+ 
+@@ -3802,15 +3802,17 @@ def sample(iterable, k, weights=None, *, counts=None, strict=False):
+ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     """Returns ``True`` if the items of iterable are in sorted order, and
+     ``False`` otherwise. *key* and *reverse* have the same meaning that they do
+-    in the built-in :func:`sorted` function.
++    in the built-in :func:`sorted` function. Like :func:`sorted`, comparisons
++    use only the ``<`` operator.
+ 
+     >>> is_sorted(['1', '2', '3', '4', '5'], key=int)
+     True
+     >>> is_sorted([5, 4, 3, 1, 2], reverse=True)
+     False
+ 
+-    If *strict*, tests for strict sorting, that is, returns ``False`` if equal
+-    elements are found:
++    If *strict*, each item must be strictly less than the next (or strictly
++    greater if *reverse*). Equal or incomparable items are not considered
++    strictly sorted:
+ 
+     >>> is_sorted([1, 2, 2])
+     True
+@@ -3822,12 +3824,13 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     :func:`sorted` function for objects with unusual comparison dynamics.
+     If there are no out-of-order items, the iterable is exhausted.
+     """
+-    compare = le if strict else lt
+     it = iterable if (key is None) else map(key, iterable)
+     it_1, it_2 = tee(it)
+-    next(it_2 if reverse else it_1, None)
++    next(it_1 if reverse else it_2, None)
+ 
+-    return not any(map(compare, it_1, it_2))
++    if strict:
++        return all(map(lt, it_1, it_2))
++    return not any(map(lt, it_2, it_1))
+ 
+ 
+ class AbortThread(BaseException):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b25343f..7d8ceb9 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4367,12 +4367,6 @@ class IsSortedTests(TestCase):
+             ([0, 'nan', 0, 'nan'], {'key': float}, True),
+             (['nan', 0, 'nan', 0], {'key': float, 'reverse': True}, True),
+             ([0, 'nan', 0, 'nan'], {'key': float, 'reverse': True}, True),
+-            ([0, 'nan', 0, 'nan'], {'strict': True, 'key': float}, True),
+-            (
+-                ['nan', 0, 'nan', 0],
+-                {'strict': True, 'key': float, 'reverse': True},
+-                True,
+-            ),
+         ]:
+             key = kwargs.get('key', None)
+             reverse = kwargs.get('reverse', False)
+@@ -4394,6 +4388,95 @@ class IsSortedTests(TestCase):
+                 self.assertEqual(mi_result, expected)
+                 self.assertEqual(mi_result, py_result)
+ 
++    def test_lt_only(self):
++        class LtOnly:
++            def __init__(self, value):
++                self.value = value
++
++            def __lt__(self, other):
++                return self.value < other.value
++
++        for reverse, strict, use_key in product([False, True], repeat=3):
++            for values, expected in [
++                ([], True),
++                ([1], True),
++                ([1, 2, 3], True),
++                ([1, 1, 2, 3], not strict),
++                ([1, 3, 2], False),
++            ]:
++                if reverse:
++                    values = values[::-1]
++                key = LtOnly if use_key else None
++                iterable = values if use_key else list(map(LtOnly, values))
++                with self.subTest(
++                    values=values, reverse=reverse, strict=strict, key=key
++                ):
++                    self.assertEqual(
++                        mi.is_sorted(
++                            iter(iterable),
++                            key=key,
++                            reverse=reverse,
++                            strict=strict,
++                        ),
++                        expected,
++                    )
++                    if expected:
++                        self.assertEqual(
++                            sorted(iterable, key=key, reverse=reverse),
++                            iterable,
++                        )
++
++    def test_strict_incomparable(self):
++        for reverse in [False, True]:
++            for values in [[0, 'nan', 0, 'nan'], ['nan', 0, 'nan', 0]]:
++                for key in [None, float]:
++                    iterable = (
++                        list(map(float, values)) if key is None else values
++                    )
++                    with self.subTest(
++                        values=values, reverse=reverse, key=key
++                    ):
++                        self.assertFalse(
++                            mi.is_sorted(
++                                iterable, key=key, reverse=reverse, strict=True
++                            )
++                        )
++
++    def test_short_circuit(self):
++        for reverse, strict in product([False, True], repeat=2):
++            values = [1, 2, 0] if reverse else [2, 1, 3]
++            iterator = iter(values)
++            seen = []
++
++            def key(value):
++                seen.append(value)
++                return value
++
++            with self.subTest(reverse=reverse, strict=strict):
++                self.assertFalse(
++                    mi.is_sorted(
++                        iterator, key=key, reverse=reverse, strict=strict
++                    )
++                )
++                self.assertEqual(seen, values[:2])
++                self.assertEqual(list(iterator), values[2:])
++
++    def test_comparison_error(self):
++        class BrokenComparison:
++            def __lt__(self, other):
++                raise RuntimeError('comparison failed')
++
++        for reverse, strict in product([False, True], repeat=2):
++            with self.subTest(reverse=reverse, strict=strict):
++                with self.assertRaisesRegex(
++                    RuntimeError, 'comparison failed'
++                ):
++                    mi.is_sorted(
++                        [BrokenComparison(), BrokenComparison()],
++                        reverse=reverse,
++                        strict=strict,
++                    )
++
+ 
+ class CallbackIterTests(TestCase):
+     def _target(self, cb=None, exc=None, wait=0):

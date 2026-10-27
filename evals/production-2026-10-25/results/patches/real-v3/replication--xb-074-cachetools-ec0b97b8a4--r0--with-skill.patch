@@ -1,0 +1,138 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 4e4f940..8665835 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -82,6 +82,11 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is not None:
++            try:
++                return obj.__dict__[self]
++            except (AttributeError, KeyError):
++                pass
+         wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+             descriptor = self
+@@ -93,11 +98,10 @@ class _DescriptorBase:
+ 
+             return unbound
+         elif self.__attrname is not None:
+-            # replace descriptor instance with wrapper in instance dict
++            # Cache by descriptor so base and overriding methods stay separate.
+             try:
+-                # In case of a race condition where another thread already replaced
+-                # the descriptor, prefer the initial wrapper.
+-                wrapper = obj.__dict__.setdefault(self.__attrname, wrapper)
++                # In case of a race condition, prefer the initial wrapper.
++                wrapper = obj.__dict__.setdefault(self, wrapper)
+             except AttributeError:
+                 # not all objects have __dict__ (e.g. class defines slots)
+                 msg = (
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 727a317..d065fa9 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -728,6 +728,102 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(len(cached.cache), 0)
+ 
+ 
++class InheritedMethodTest(unittest.TestCase):
++    def test_super(self):
++        for info in (False, True):
++            for options in (
++                {},
++                {"lock": lambda self: self.lock},
++                {"condition": lambda self: self.cond},
++                {
++                    "lock": lambda self: self.lock,
++                    "condition": lambda self: self.cond,
++                },
++            ):
++                with self.subTest(info=info, options=tuple(options)):
++
++                    class Base:
++                        def __init__(self):
++                            self.base_cache = Cache(2)
++                            self.child_cache = Cache(2)
++                            self.lock = CountedLock()
++                            self.cond = CountedCondition()
++                            self.calls = []
++
++                        @cachedmethod(lambda self: self.base_cache, info=info, **options)
++                        def get(self, value):
++                            self.calls.append(value)
++                            if value < 0:
++                                raise ValueError("negative value")
++                            return value * 2
++
++                    class Override(Base):
++                        def get(self, value):
++                            return super().get(value) + 1
++
++                    class CachedOverride(Base):
++                        @cachedmethod(lambda self: self.child_cache, info=info, **options)
++                        def get(self, value):
++                            return super().get(value) + 1
++
++                    plain = Override()
++                    self.assertEqual(plain.get(3), 7)
++                    self.assertEqual(plain.get(3), 7)
++                    self.assertEqual(plain.get(4), 9)
++                    self.assertEqual(plain.calls, [3, 4])
++                    base = super(Override, plain).get
++                    self.assertIs(base, super(Override, plain).get)
++                    self.assertEqual(Base.get(plain, 3), 6)
++                    self.assertEqual(plain.get(3), 7)
++                    if info:
++                        self.assertEqual(base.cache_info(), (3, 2, 2, 2))
++
++                    cached = CachedOverride()
++                    child = cached.get
++                    self.assertEqual(cached.get(3), 7)
++                    self.assertEqual(cached.get(3), 7)
++                    parent = super(CachedOverride, cached).get
++                    self.assertIs(child, cached.get)
++                    self.assertIs(parent, super(CachedOverride, cached).get)
++                    self.assertIsNot(child, parent)
++                    self.assertEqual(cached.calls, [3])
++                    if info:
++                        self.assertEqual(child.cache_info(), (1, 1, 2, 1))
++                        self.assertEqual(parent.cache_info(), (0, 1, 2, 1))
++
++                    self.assertEqual(parent(3), 6)
++                    self.assertEqual(Base.get(cached, 3), 6)
++                    if info:
++                        self.assertEqual(child.cache_info(), (1, 1, 2, 1))
++                        self.assertEqual(parent.cache_info(), (2, 1, 2, 1))
++
++                    parent.cache_clear()
++                    self.assertEqual(cached.get(3), 7)
++                    if info:
++                        self.assertEqual(child.cache_info(), (2, 1, 2, 1))
++                        self.assertEqual(parent.cache_info(), (0, 0, 2, 0))
++
++                    child.cache_clear()
++                    self.assertEqual(cached.get(3), 7)
++                    self.assertEqual(cached.calls, [3, 3])
++                    other = CachedOverride()
++                    self.assertEqual(other.get(3), 7)
++                    if info:
++                        self.assertEqual(child.cache_info(), (0, 1, 2, 1))
++                        self.assertEqual(parent.cache_info(), (0, 1, 2, 1))
++
++                    # Exceptions must propagate and leave neither layer pending.
++                    for _ in range(2):
++                        with self.assertRaisesRegex(ValueError, "negative value"):
++                            cached.get(-1)
++                    self.assertEqual(cached.calls, [3, 3, -1, -1])
++                    self.assertEqual(list(cached.base_cache.values()), [6])
++                    self.assertEqual(list(cached.child_cache.values()), [7])
++                    if info:
++                        self.assertEqual(child.cache_info(), (0, 3, 2, 1))
++                        self.assertEqual(parent.cache_info(), (0, 3, 2, 1))
++
++
+ class AutospecTest(unittest.TestCase):
+     def test_autospec_no_warnings(self):
+ 

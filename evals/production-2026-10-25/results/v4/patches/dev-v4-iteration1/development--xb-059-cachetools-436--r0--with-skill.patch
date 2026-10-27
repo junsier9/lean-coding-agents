@@ -1,0 +1,143 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..5693add 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -81,14 +81,17 @@ class _DescriptorBase:
+                 f"({self.__attrname!r} and {name!r})."
+             )
+ 
++    def __call__(self, obj, *args, **kwargs):
++        if obj is None:
++            # Here None is an explicit argument, not descriptor class access.
++            return self.Wrapper(obj)(*args, **kwargs)  # type: ignore
++        return self.__get__(obj)(*args, **kwargs)
++
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++            return self
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+@@ -131,9 +134,11 @@ class _DeprecatedDescriptorBase(_DescriptorBase):
+         self.__cache_clear = cache_clear
+ 
+     # called for @classmethod with Python >= 3.13
+-    def __call__(self, *args, **kwargs):
+-        _warn_classmethod(stacklevel=3)
+-        return self.__wrapper(*args, **kwargs)
++    def __call__(self, obj, *args, **kwargs):
++        if isinstance(obj, type):
++            _warn_classmethod(stacklevel=3)
++            return self.__wrapper(obj, *args, **kwargs)
++        return super().__call__(obj, *args, **kwargs)
+ 
+     # backward-compatible @classmethod handling with Python >= 3.13
+     def cache_clear(self, objtype):
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..ba653ec 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -638,6 +638,95 @@ class DictMethodTest(unittest.TestCase, MethodDecoratorTestMixin):
+         return {}
+ 
+ 
++class UnboundMethodTest(unittest.TestCase):
++    def test_call_forms_and_instance_state(self):
++        for cached_type in (Cached, Unhashable):
++            for name in (
++                "get",
++                "get_typed",
++                "get_info",
++                "get_lock",
++                "get_lock_info",
++                "get_cond",
++                "get_cond_info",
++                "get_lock_cond",
++                "get_lock_cond_info",
++            ):
++                with self.subTest(cached_type=cached_type, method=name):
++                    first = cached_type(Cache(2))
++                    second = cached_type(Cache(2), count=10)
++                    unbound = getattr(cached_type, name)
++
++                    self.assertEqual(unbound(first, 0), 0)
++                    bound = getattr(first, name)
++                    self.assertEqual(bound(0), 0)
++                    self.assertEqual(bound(1), 1)
++                    self.assertEqual(getattr(cached_type, name)(first, 1), 1)
++                    self.assertEqual(unbound(first, 0), 0)
++
++                    other = getattr(second, name)
++                    self.assertEqual(len(second.cache), 0)
++                    if name.endswith("info"):
++                        self.assertEqual(other.cache_info(), (0, 0, 2, 0))
++                    self.assertEqual(other(0), 10)
++                    self.assertEqual(unbound(second, 0), 10)
++                    self.assertEqual(unbound(second, value=1), 11)
++                    self.assertEqual(other(value=1), 11)
++                    self.assertEqual(first.count, 2)
++                    self.assertEqual(second.count, 12)
++                    self.assertEqual(len(first.cache), 2)
++                    self.assertEqual(len(second.cache), 2)
++                    if name.endswith("info"):
++                        self.assertEqual(bound.cache_info(), (3, 2, 2, 2))
++                        self.assertEqual(other.cache_info(), (2, 2, 2, 2))
++
++                    bound.cache_clear()
++                    self.assertEqual(len(first.cache), 0)
++                    self.assertEqual(len(second.cache), 2)
++                    if name.endswith("info"):
++                        self.assertEqual(bound.cache_info(), (0, 0, 2, 0))
++                        self.assertEqual(other.cache_info(), (2, 2, 2, 2))
++                    self.assertEqual(unbound(first, 0), 2)
++                    if name.endswith("info"):
++                        self.assertEqual(bound.cache_info(), (0, 1, 2, 1))
++
++    def test_typed_key(self):
++        cached = Cached(Cache(2))
++
++        self.assertEqual(Cached.get_typed(cached, 1), 0)
++        self.assertEqual(cached.get_typed(1.0), 1)
++        self.assertEqual(Cached.get_typed(cached, 1.0), 1)
++        self.assertEqual(cached.get_typed(1), 0)
++
++    def test_condition_error(self):
++        cached = Cached(Cache(2))
++
++        with self.assertRaisesRegex(ValueError, "test error"):
++            Cached.get_cond_error(cached, 0)
++        with self.assertRaisesRegex(ValueError, "test error"):
++            cached.get_cond_error(0)
++        with self.assertRaisesRegex(ValueError, "test error"):
++            Cached.get_cond_error(cached, 0)
++        self.assertEqual(cached.cond.wait_count, 3)
++        self.assertEqual(cached.cond.notify_count, 3)
++        self.assertEqual(len(cached.cache), 0)
++
++    def test_none_instance(self):
++        for method in (Cached.get, Cached.get_info):
++            with self.subTest(method=method.__name__):
++                with self.assertRaises(AttributeError):
++                    method(None, 0)
++
++    def test_metadata(self):
++        cached = Cached(Cache(2))
++
++        self.assertEqual(Cached.get.__name__, "get")
++        self.assertEqual((Cached.get.__doc__ or "").strip(), "docstring")
++        self.assertIs(Cached.get.__wrapped__, cached.get.__wrapped__)
++        self.assertEqual(Cached.get.__wrapped__(cached, 0), 0)
++        self.assertEqual(len(cached.cache), 0)
++
++
+ class WeakRefMethodTest(unittest.TestCase):
+     def test_weakref(self):
+         import fractions

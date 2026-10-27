@@ -1,0 +1,113 @@
+{
+  "completed_at": "2026-10-24T22:56:00.947908+00:00",
+  "recoveries": [
+    {
+      "recovered_at": "2026-10-24T22:45:47.974072+00:00",
+      "key": "formal--extra-a2-click-3805--r1--with-skill",
+      "accepted": true,
+      "model_calls": 0,
+      "original_tracked_bytes_unchanged": true,
+      "only_additional_copy_exclusion": ".tmp-sentinel-checks",
+      "all_original_failed_grading_cost_retained": true,
+      "frozen_guard_and_source_code_unchanged": true,
+      "original_checkpoint_sha256": "778742EE20A976CD61192E31318F186EA74CA71EBBE6FB0635C7A6E623441E2A",
+      "grading_attempts": [
+        {
+          "started_at": "2026-10-24T21:12:13.649151+00:00",
+          "seconds": 0.0779999999795109,
+          "status": "failed",
+          "error_type": "Error",
+          "error": "[('{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\work\\\\formal\\\\extra-a2-click-3805\\\\r1\\\\with-skill\\\\.tmp-sentinel-checks\\\\pytest-focused', '{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\grades\\\\formal\\\\formal--extra-a2-click-3805--r1--with-skill\\\\.tmp-sentinel-checks\\\\pytest-focused', \"[WinError 5] 拒绝访问。: '{PROJECT_ROOT}\\\\\\\\.local\\\\\\\\production-runtime\\\\\\\\real-v3\\\\\\\\work\\\\\\\\formal\\\\\\\\extra-a2-click-3805\\\\\\\\r1\\\\\\\\with-skill\\\\\\\\.tmp-sentinel-checks\\\\\\\\pytest-focused'\")]"
+        },
+        {
+          "started_at": "2026-10-24T22:45:46.886244+00:00",
+          "seconds": 0.765,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "recovered_at": "2026-10-24T22:45:51.314228+00:00",
+      "key": "formal--extra-a2-click-3805--r2--baseline",
+      "accepted": true,
+      "model_calls": 0,
+      "original_tracked_bytes_unchanged": true,
+      "only_additional_copy_exclusion": ".maintenance-pytest-tmp",
+      "all_original_failed_grading_cost_retained": true,
+      "frozen_guard_and_source_code_unchanged": true,
+      "original_checkpoint_sha256": "095F2A7B4DC7ED9175DD379E8BEB1550849A2B81273102D1FFBE21F14740B924",
+      "grading_attempts": [
+        {
+          "started_at": "2026-10-24T21:43:34.810632+00:00",
+          "seconds": 0.09399999992456287,
+          "status": "failed",
+          "error_type": "Error",
+          "error": "[('{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\work\\\\formal\\\\extra-a2-click-3805\\\\r2\\\\baseline\\\\.maintenance-pytest-tmp', '{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\grades\\\\formal\\\\formal--extra-a2-click-3805--r2--baseline\\\\.maintenance-pytest-tmp', \"[WinError 5] 拒绝访问。: '{PROJECT_ROOT}\\\\\\\\.local\\\\\\\\production-runtime\\\\\\\\real-v3\\\\\\\\work\\\\\\\\formal\\\\\\\\extra-a2-click-3805\\\\\\\\r2\\\\\\\\baseline\\\\\\\\.maintenance-pytest-tmp'\")]"
+        },
+        {
+          "started_at": "2026-10-24T22:45:50.211435+00:00",
+          "seconds": 0.765,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "recovered_at": "2026-10-24T22:45:49.732970+00:00",
+      "key": "formal--xb-013-click-3079--r0--baseline",
+      "accepted": true,
+      "model_calls": 0,
+      "original_tracked_bytes_unchanged": true,
+      "only_additional_copy_exclusion": ".task-local-tmp",
+      "all_original_failed_grading_cost_retained": true,
+      "frozen_guard_and_source_code_unchanged": true,
+      "original_checkpoint_sha256": "B3BC8D70F6EA377A1CEDD7718533888ED51A5402BDEFB22E80ECC03392045F2A",
+      "grading_attempts": [
+        {
+          "started_at": "2026-10-24T21:43:12.809956+00:00",
+          "seconds": 0.0779999999795109,
+          "status": "failed",
+          "error_type": "Error",
+          "error": "[('{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\work\\\\formal\\\\xb-013-click-3079\\\\r0\\\\baseline\\\\.task-local-tmp\\\\pytest', '{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\grades\\\\formal\\\\formal--xb-013-click-3079--r0--baseline\\\\.task-local-tmp\\\\pytest', \"[WinError 5] 拒绝访问。: '{PROJECT_ROOT}\\\\\\\\.local\\\\\\\\production-runtime\\\\\\\\real-v3\\\\\\\\work\\\\\\\\formal\\\\\\\\xb-013-click-3079\\\\\\\\r0\\\\\\\\baseline\\\\\\\\.task-local-tmp\\\\\\\\pytest'\")]"
+        },
+        {
+          "started_at": "2026-10-24T22:45:48.699824+00:00",
+          "seconds": 0.765,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "recovered_at": "2026-10-24T22:55:16.516096+00:00",
+      "key": "formal--xb-013-click-3079--r0--with-skill",
+      "accepted": true,
+      "model_calls": 0,
+      "original_tracked_bytes_unchanged": true,
+      "only_additional_copy_exclusion": ".pt-shared-default",
+      "all_original_failed_grading_cost_retained": true,
+      "frozen_guard_and_source_code_unchanged": true,
+      "original_checkpoint_sha256": "46B63B366FAD1E39F11FFE191A3CD7E8B86FEF9A5FDABF9D3F5B95D165FA8C33",
+      "grading_attempts": [
+        {
+          "started_at": "2026-10-24T22:53:27.288520+00:00",
+          "seconds": 0.09299999999348074,
+          "status": "failed",
+          "error_type": "Error",
+          "error": "[('{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\work\\\\formal\\\\xb-013-click-3079\\\\r0\\\\with-skill\\\\.pt-shared-default', '{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v3\\\\grades\\\\formal\\\\formal--xb-013-click-3079--r0--with-skill\\\\.pt-shared-default', \"[WinError 5] 拒绝访问。: '{PROJECT_ROOT}\\\\\\\\.local\\\\\\\\production-runtime\\\\\\\\real-v3\\\\\\\\work\\\\\\\\formal\\\\\\\\xb-013-click-3079\\\\\\\\r0\\\\\\\\with-skill\\\\\\\\.pt-shared-default'\")]"
+        },
+        {
+          "started_at": "2026-10-24T22:55:15.400318+00:00",
+          "seconds": 0.828,
+          "status": "completed"
+        }
+      ]
+    }
+  ],
+  "additional_model_calls": 0,
+  "original_assertion_failures_not_regraded": true,
+  "never_started_arms_resuming_normally": 2,
+  "limits": "Two paired arms begin later because their first-arm grading failed. Original CLI costs, source bytes and timestamps retained; no claim of perfect temporal adjacency.",
+  "original_phase_failure_file_retained_byte_for_byte": false,
+  "phase_failure_entries_retained_in_original_checkpoints": true,
+  "retention_correction": "Initial phase-failures.json was overwritten by the existing controller on its next failure; its three entries remain in saved original checkpoints. The later one-entry summary is copied before the next restart.",
+  "all_original_planned_formal_arms_now_completed": true
+}

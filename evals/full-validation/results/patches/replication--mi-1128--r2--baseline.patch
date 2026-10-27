@@ -1,0 +1,141 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 764e720..938660b 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2337,22 +2337,10 @@ class numeric_range(Sequence):
+         if isinstance(key, int):
+             return self._get_by_index(key)
+         elif isinstance(key, slice):
+-            step = self._step if key.step is None else key.step * self._step
+-
+-            if key.start is None or key.start <= -self._len:
+-                start = self._start
+-            elif key.start >= self._len:
+-                start = self._stop
+-            else:  # -self._len < key.start < self._len
+-                start = self._get_by_index(key.start)
+-
+-            if key.stop is None or key.stop >= self._len:
+-                stop = self._stop
+-            elif key.stop <= -self._len:
+-                stop = self._start
+-            else:  # -self._len < key.stop < self._len
+-                stop = self._get_by_index(key.stop)
+-
++            start_index, stop_index, step_index = key.indices(self._len)
++            start = self._start + start_index * self._step
++            stop = self._start + stop_index * self._step
++            step = step_index * self._step
+             return numeric_range(start, stop, step)
+         else:
+             raise TypeError(
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 175d368..8bb8072 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -2883,6 +2883,105 @@ class NumericRangeTests(TestCase):
+                 mi.numeric_range(*expected_args), mi.numeric_range(*args)[sl]
+             )
+ 
++    def test_get_item_by_slice_matches_range(self):
++        bounds = [None, -20, -6, -1, 0, 1, 4, 6, 20]
++        steps = [None, -4, -2, -1, 1, 2, 4]
++        for args in [
++            (0, 10, 2),
++            (0, 11, 2),
++            (10, 0, -2),
++            (10, -1, -3),
++            (0, 0, 1),
++            (3, 0, 1),
++            (0, 3, -1),
++            (2, 3, 4),
++            (3, 2, -4),
++        ]:
++            r = mi.numeric_range(*args)
++            for start, stop, step in product(bounds, bounds, steps):
++                sl = slice(start, stop, step)
++                with self.subTest(args=args, sl=sl):
++                    expected = range(*args)[sl]
++                    actual = r[sl]
++                    self.assertIsInstance(actual, mi.numeric_range)
++                    self.assertEqual(list(actual), list(expected))
++                    self.assertEqual(len(actual), len(expected))
++
++    def test_get_item_by_slice_numeric_types(self):
++        for start, stop, step in [
++            (1.0, 9.0, 1.5),
++            (Decimal('1.0'), Decimal('9.0'), Decimal('1.5')),
++            (Fraction(1, 1), Fraction(5, 1), Fraction(3, 2)),
++            (datetime(2019, 3, 29), datetime(2019, 3, 30), timedelta(hours=10)),
++        ]:
++            for args in [(start, stop, step), (stop, start, -step)]:
++                r = mi.numeric_range(*args)
++                values = list(r)
++                for sl in [
++                    slice(None, None, -1),
++                    slice(None, None, -2),
++                    slice(None, -1, -1),
++                    slice(-2, None, -1),
++                    slice(None, -2, -1),
++                    slice(-1, -4, -2),
++                    slice(20, -20, -1),
++                    slice(-20, 20, -1),
++                    slice(2, 2, -1),
++                    slice(20, None, 1),
++                    slice(None, -20, 1),
++                ]:
++                    with self.subTest(args=args, sl=sl):
++                        expected = values[sl]
++                        actual = r[sl]
++                        self.assertIsInstance(actual, mi.numeric_range)
++                        self.assertEqual(list(actual), expected)
++                        self.assertEqual(len(actual), len(expected))
++                        self.assertTrue(
++                            all(
++                                type(a) is type(e)
++                                for a, e in zip(actual, expected)
++                            )
++                        )
++
++    def test_get_item_by_slice_index_protocol(self):
++        class Index:
++            def __index__(self):
++                return -1
++
++        sl = slice(Index(), None, Index())
++        self.assertEqual(
++            list(mi.numeric_range(0, 10, 2)[sl]), list(range(0, 10, 2)[sl])
++        )
++
++    def test_get_item_by_invalid_slice(self):
++        for args in [(0, 10, 2), (10, 0, -2), (0, 0, 1)]:
++            r = mi.numeric_range(*args)
++            for sl, error in [
++                (slice(None, None, 0), ValueError),
++                (slice(None, None, 0.0), TypeError),
++                (slice(1.0, None), TypeError),
++                (slice(None, 1.0), TypeError),
++                (slice(None, None, 1.0), TypeError),
++            ]:
++                with self.subTest(args=args, sl=sl):
++                    with self.assertRaises(error):
++                        r[sl]
++
++    def test_get_item_by_slice_large_range(self):
++        r = mi.numeric_range(0, 10**30, 2)
++        expected_range = range(0, 10**30, 2)
++        for sl in [
++            slice(None, None, -1),
++            slice(-5, None),
++            slice(None, None, -(10**25)),
++        ]:
++            with self.subTest(sl=sl):
++                actual = r[sl]
++                expected = expected_range[sl]
++                self.assertIsInstance(actual, mi.numeric_range)
++                self.assertEqual(actual[0], expected[0])
++                self.assertEqual(actual[-1], expected[-1])
++
+     def test_hash(self):
+         for args, expected in [
+             ((1.0, 6.0, 1.5), hash((1.0, 5.5, 1.5))),

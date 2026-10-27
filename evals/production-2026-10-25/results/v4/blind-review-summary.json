@@ -1,0 +1,257 @@
+{
+  "unblinded_at": "2026-10-25T06:30:57.411477+00:00",
+  "study_version": "v4",
+  "plan_sha256": "BB991C8857E770CEA3F028B0ADC5B210A4F0F241608C825E770F7F51A519BB36",
+  "completion_control_sha256": "7FD2816D9555F067BE1D5B9CAE0A4D54888665162EB0A09D6D9C6823A1791449",
+  "label_mapping_sha256": "902A1F9EF52BA232C4793EEB90F6500924F5C0D6F6C8907270DD6F4F85F52BBB",
+  "prespecified_pairs": 8,
+  "reviews_completed_before_parent_unblinding": 8,
+  "reviewer_received_labels_costs_skill_or_hidden_fixes": false,
+  "parent_source_hashes_rechecked": 2030,
+  "parent_source_hashes_match": true,
+  "no_confirmed_unsafe_or_unjustified_treatment_machinery": false,
+  "findings_total_by_arm": {
+    "baseline": {
+      "confirmed_unsafe": 1,
+      "unjustified_machinery": 0
+    },
+    "with-skill": {
+      "confirmed_unsafe": 1,
+      "unjustified_machinery": 0
+    }
+  },
+  "pairs_with_no_side_preference": 8,
+  "entries": [
+    {
+      "pair": "01",
+      "phase": "formal",
+      "case_id": "extra-a-mi-1118",
+      "repeat": 0,
+      "comparison": "A/B 的 more_itertools/recipes.py 完整字节相同。两侧只拆分原有 r 范围错误，使 r<0 继续 ValueError、r>输入长度改为 IndexError，正常计算与索引逻辑不变。独立标准库输出对照、错误传播、一次性输入与对象所有权检查均通过，无一侧偏好。",
+      "preferred_arm": null,
+      "review_raw_sha256": "2BF7EAE18F7B251625E495EC33F64B3292D61C5582A42DFF8165A5A68E722494",
+      "public_report": "blind-reviews/pair01.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 121,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "02",
+      "phase": "formal",
+      "case_id": "extra-a3-funcy-187",
+      "repeat": 0,
+      "comparison": "A/B 的 funcy/flow.py 忽略文档字符串后完整 AST 相同。两侧都在原有秒数归一化边界中加入 float，没有改写失败计数、阻止判断、异常传播、调用转发或状态所有权。局部行为一致，B 增补公开 timeout 文档，不构成运行时优劣依据。",
+      "preferred_arm": null,
+      "review_raw_sha256": "C820029C25A787E2DA05BD83FDAC15281E36EAA52B6D36B8079606F6455B95FB",
+      "public_report": "blind-reviews/pair02.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 208,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "03",
+      "phase": "formal",
+      "case_id": "extra-a-mi-1194",
+      "repeat": 0,
+      "comparison": "A/B 对题面普通整数长度、受支持整数子类、零/超长请求、序列/迭代器结果和相关有效输入错误路径行为一致，均修复负整数长度。A 在有长度分支补检查，B 在入口先检查。两者在负长度与故障 __len__ 同时出现时异常优先级不同，但没有公开约定要求该双重非法情况的优先级；未据此判确认缺陷或一侧优劣。",
+      "preferred_arm": null,
+      "review_raw_sha256": "9A61E0CDEC4F67C56C633D15BF10C8953BF701E65F5F7064AA690414CB52D32E",
+      "public_report": "blind-reviews/pair03.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 121,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "04",
+      "phase": "formal",
+      "case_id": "xb-033-pydash-265",
+      "repeat": 0,
+      "comparison": "A/B 的目标生产文件 src/pydash/arrays.py 字节相同。两侧都在递归处理剩余数组时继续传入原 iteratee/comparator，修复多数组比较规则丢失；在所列正常、公开调用、可选结果、错误和所有权路径中行为相同，未发现本次引入的确认缺陷或无当前需求机制。",
+      "preferred_arm": null,
+      "review_raw_sha256": "BF8E468566E106231E0F9F61E0440C2A4A40CB58846E9A9BAE33828039B58C40",
+      "public_report": "blind-reviews/pair04.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 232,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "05",
+      "phase": "replication",
+      "case_id": "xb-012-click-3152",
+      "repeat": 0,
+      "comparison": "A/B 的 core.py 完整执行 AST 相同，仅注释措辞不同。两侧均修复普通省略/裸选项/显式正值等路径，但也共有已确认兼容性回归：明确附加的 --opt=--other 被改当裸 opt 与另一选项，--opt=-3 等先前有效整数变成 NoSuchOption。没有一侧偏好；本报告只作盲审，不作发布资格判断。",
+      "preferred_arm": null,
+      "review_raw_sha256": "0521462FD947B45F7A58663E024353FEFFE3A59FA9DEB53EED89D11129A223C2",
+      "public_report": "blind-reviews/pair05.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 1,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 1,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 436,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "06",
+      "phase": "replication",
+      "case_id": "xb-047-pydash-243",
+      "repeat": 0,
+      "comparison": "A/B 的完整 predicates.py 忽略文档字符串后 AST 相同。两侧在既有数字判断和缺省端点处理之后，仅在 start>end 时交换本地端点，修复反向及负数范围并保持较小端点包含、较大端点排除。八组功能探针均通过，无一侧偏好；Decimal NaN 端点的比较错误先后单独记录为未明示边界。本报告不作发布资格判断。",
+      "preferred_arm": null,
+      "review_raw_sha256": "181C0F62EDDE9B6DA4BFA27F67936062F154C58C643F4D1C8DF97B75887C17DF",
+      "public_report": "blind-reviews/pair06.json",
+      "unblinded_mapping": {
+        "A": "baseline",
+        "B": "with-skill"
+      },
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 232,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "07",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-128",
+      "repeat": 0,
+      "comparison": "A/B 的完整 boltons/mathutils.py 忽略文档字符串后 AST 相同；本次运行逻辑一致。两侧跳过未指定方向的比较，双边范围验证与 max/min 的原参数次序保持。八组实际行为探针均通过，未发现确认缺陷或无当前需求机制，无一侧偏好。本报告不作发布判断。",
+      "preferred_arm": null,
+      "review_raw_sha256": "730AE111EB2B03C2E1B35DC5085AC9220441698D96602D87F14B949BF3A3CFF5",
+      "public_report": "blind-reviews/pair07.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 334,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "08",
+      "phase": "replication",
+      "case_id": "b-28-click-1304",
+      "repeat": 0,
+      "comparison": "A/B 的完整 click/core.py 字节相同。两侧在共同环境变量解析边界将空字符串视为未设置，修复 Path(exists=True) 的默认/候选环境/必填语义，CLI 显式值与非空环境错误仍保留。九组功能探针均通过，无一侧偏好；普通字符串和位置参数的空环境值也受新政策影响，单独记录范围不确定性。本报告不评价发布资格。",
+      "preferred_arm": null,
+      "review_raw_sha256": "73512F49C99EF741B3E480F520DC01B61536C740C751B5D1148C59FDBFDA577D",
+      "public_report": "blind-reviews/pair08.json",
+      "unblinded_mapping": {
+        "A": "with-skill",
+        "B": "baseline"
+      },
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 346,
+        "all_audited_bytes_unchanged": true
+      }
+    }
+  ],
+  "limits": [
+    "Eight prespecified pairs are not a proof of absence of defects on other runs.",
+    "Pair05 has the same confirmed explicit attached-value compatibility regression on BOTH arms; this observation does not establish that the skill caused it. It fails the predeclared absolute review requirement.",
+    "Pair03 doubly-invalid exception ordering, pair06 Decimal NaN policy and pair08 empty-environment policy scope are recorded uncertainties, not invented additional defects.",
+    "Probe groups and their many individual cases are not independent native cost observations."
+  ],
+  "pair05_independent_corroboration": "blind-pair05-adjudication.json"
+}

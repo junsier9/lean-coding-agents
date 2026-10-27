@@ -1,0 +1,240 @@
+{
+  "phase": "replication",
+  "task_count": 20,
+  "integrity": {
+    "ok": false,
+    "structure_ok": true,
+    "input_record_count": 240,
+    "selected_record_count": 120,
+    "other_phase_record_counts": {
+      "formal": 120
+    },
+    "task_count": 20,
+    "complete_task_count": 20,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 120,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 226,
+        "case_id": "extra-a-boltons-247"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 227,
+        "case_id": "xb-042-pydash-252"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 228,
+        "case_id": "extra-a-boltons-349"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 229,
+        "case_id": "extra-a-boltons-247"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 230,
+        "case_id": "xb-042-pydash-252"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 231,
+        "case_id": "extra-a-boltons-349"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 232,
+        "case_id": "extra-a2-click-3493"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 233,
+        "case_id": "extra-a2-click-3493"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 234,
+        "case_id": "xb-076-click-2217"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 235,
+        "case_id": "extra-a2-click-3493"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 236,
+        "case_id": "extra-a2-click-3493"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 237,
+        "case_id": "xb-076-click-2217"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 238,
+        "case_id": "xb-030-pydash-278"
+      },
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 239,
+        "case_id": "xb-030-pydash-278"
+      }
+    ],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "metrics": {
+    "token": {
+      "available": false,
+      "batch_criterion_met": false
+    },
+    "time": {
+      "available": true,
+      "mode": "exact",
+      "actual_ratio": 0.9221671274833037,
+      "observed_ratio_upper_bound": null,
+      "upper_one_sided_98_75": 0.9680566810791089,
+      "gain": 0.07783287251669635,
+      "gain_lower_confidence_bound": 0.031943318920891084,
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "cost_total": {
+        "baseline": 15437.449,
+        "with-skill": 14235.908
+      },
+      "cost_total_is_lower_bound": {
+        "baseline": false,
+        "with-skill": false
+      },
+      "batch_criterion_met": false,
+      "ratio_interval97_5": [
+        0.8698434494636355,
+        0.9680566810791089
+      ],
+      "gain_interval97_5": [
+        0.031943318920891084,
+        0.13015655053636455
+      ]
+    }
+  },
+  "confidence": 0.9875,
+  "alpha": 0.0125,
+  "draws": 40000,
+  "seed": 20261025,
+  "sampling_unit": "complete paired task with both arms and all3 repeats",
+  "quality": {
+    "baseline_accepted": 53,
+    "skill_accepted": 53,
+    "runs_per_arm": 60,
+    "degraded_tasks": [],
+    "gate_pass": true
+  },
+  "missing_usage": [
+    {
+      "case_id": "extra-a-boltons-247",
+      "repeat": 0,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "xb-042-pydash-252",
+      "repeat": 2,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "extra-a-boltons-349",
+      "repeat": 2,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "extra-a-boltons-247",
+      "repeat": 0,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "xb-042-pydash-252",
+      "repeat": 2,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "extra-a-boltons-349",
+      "repeat": 2,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "extra-a2-click-3493",
+      "repeat": 0,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "extra-a2-click-3493",
+      "repeat": 1,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "xb-076-click-2217",
+      "repeat": 1,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "extra-a2-click-3493",
+      "repeat": 0,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "extra-a2-click-3493",
+      "repeat": 1,
+      "arm": "with-skill"
+    },
+    {
+      "case_id": "xb-076-click-2217",
+      "repeat": 1,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "xb-030-pydash-278",
+      "repeat": 0,
+      "arm": "baseline"
+    },
+    {
+      "case_id": "xb-030-pydash-278",
+      "repeat": 0,
+      "arm": "with-skill"
+    }
+  ]
+}

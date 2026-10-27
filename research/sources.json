@@ -1,0 +1,310 @@
+{
+  "research_date": "2026-10-24",
+  "timezone": "Asia/Singapore",
+  "scope": "创建 skill 前的证据研究；尚未创建或发布 skill",
+  "source_count": 26,
+  "method": "有目的的案例搜索，非系统综述；论坛与 issue 均不用于估计发生率。",
+  "sources": [
+    {
+      "id": "S01",
+      "title": "Fallback slop: remove defensive try/catch + silent fallbacks",
+      "kind": "github_issue_and_pinned_source",
+      "url": "https://github.com/elizaOS/eliza/issues/12182",
+      "checked_on": "2026-10-24",
+      "verified": "已读 issue；核对固定提交 base.ts 的 countAgents catch，确认记录错误后 return 0。",
+      "limitation": "issue 的批量扫描与 AI 辅助分析未重跑；不认定扫描候选均为缺陷，也不认定原代码由 AI 生成。",
+      "created_at": "2026-07-03T21:59:58Z",
+      "state": "closed",
+      "state_reason": "completed",
+      "source_commit": "8a2b993282de2ca827eeb7ea915146115d2d0fc3",
+      "artifacts": [
+        {
+          "url": "https://github.com/elizaOS/eliza/blob/8a2b993282de2ca827eeb7ea915146115d2d0fc3/plugins/plugin-sql/src/base.ts#L899",
+          "lines": "899-915"
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "Remove unnecessary | undefined from types",
+      "kind": "github_merged_pr_and_source",
+      "url": "https://github.com/Comcast/react-data-grid/pull/4219",
+      "checked_on": "2026-10-24",
+      "verified": "已读 PR、6 个文件的 diff 和 head 的 DataGrid.tsx；核对计数表达式与 keydown 调用条件。PR 披露使用 Claude Code。",
+      "limitation": "未运行项目测试；PR 的 AI 披露不证明被删原代码也由 AI 生成。",
+      "created_at": "2026-10-21T23:31:11Z",
+      "state": "closed",
+      "merged": true,
+      "head_sha": "44ccfea4f12d17f6f3050eeebfed82446a3afe55",
+      "base_sha": "a41d3b48bcc9200aff93374338e9b004df74ee15",
+      "artifacts": [
+        {
+          "url": "https://github.com/Comcast/react-data-grid/blob/44ccfea4f12d17f6f3050eeebfed82446a3afe55/src/DataGrid.tsx#L370"
+        },
+        {
+          "url": "https://github.com/Comcast/react-data-grid/blob/44ccfea4f12d17f6f3050eeebfed82446a3afe55/src/DataGrid.tsx#L600"
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "title": "Remove defensive getattr on always-present fields",
+      "kind": "github_open_pr",
+      "url": "https://github.com/sgl-project/sglang/pull/39617",
+      "checked_on": "2026-10-24",
+      "verified": "已读 PR 与 4 个文件的 diff，并查 review 列表，检索时没有 review。",
+      "limitation": "未完整审查构造路径，未跑 CI；PR 未合并，页面列出的失败 CI 不能归因于本 patch。",
+      "created_at": "2026-09-15T14:51:26Z",
+      "state": "open",
+      "merged": false,
+      "head_sha": "db8d532f481f11e792dffef82811d88ea4e2ac9b",
+      "base_sha": "7ccbf5fd04f7ee23095fc38e49e749d58dc18282"
+    },
+    {
+      "id": "S04",
+      "title": "Remove defensive .copy() before dimensionality reduction",
+      "kind": "github_open_pr_and_pinned_source",
+      "url": "https://github.com/novonordisk-research/PALM/pull/12",
+      "checked_on": "2026-10-24",
+      "verified": "已读 diff、base 提交的 dimred.py 与 composite_model.py；NoReduction 返回输入，PCA 使用 dot。",
+      "limitation": "内存收益未实测。删除 copy 在 NoReduction 路径改变对象别名；是否违反要求仍需调用方契约。原代码 AI 来源未知。",
+      "created_at": "2026-05-04T08:14:18Z",
+      "state": "open",
+      "merged": false,
+      "head_sha": "052fc8b4b0e0b41baa14b2caed5f8564a4cd22ac",
+      "base_sha": "8cf063e614c920baf0398fbafdc4b5b19c9c0a87",
+      "artifacts": [
+        {
+          "url": "https://github.com/novonordisk-research/PALM/blob/8cf063e614c920baf0398fbafdc4b5b19c9c0a87/src/model/dimred.py"
+        },
+        {
+          "url": "https://github.com/novonordisk-research/PALM/blob/8cf063e614c920baf0398fbafdc4b5b19c9c0a87/src/model/composite_model.py#L201"
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "title": "Coding Models Are Doing Too Much",
+      "kind": "author_research_blog",
+      "url": "https://nrehiew.github.io/blog/minimal_editing/",
+      "checked_on": "2026-10-24",
+      "verified": "读取 over-editing 定义、off-by-one 案例与实验构建说明；追到作者代码仓库和论文。",
+      "limitation": "作者实验不是生产故障复现；本轮未重跑。"
+    },
+    {
+      "id": "S06",
+      "title": "When Models Edit Too Much: public code repository",
+      "kind": "research_repository",
+      "url": "https://github.com/nreHieW/over-editing",
+      "checked_on": "2026-10-24",
+      "verified": "读取 README 的基准、指标、提示条件、代码与数据目录说明。",
+      "limitation": "未下载或运行基准；没有把 README 结果当作独立复现。"
+    },
+    {
+      "id": "S07",
+      "title": "Why is it so bad at basic coding skills?",
+      "kind": "reddit_firsthand_discussion",
+      "url": "https://www.reddit.com/r/ClaudeCode/comments/1wfihk3/why_is_it_so_bad_at_basic_coding_skills/",
+      "checked_on": "2026-10-24",
+      "verified": "读取主帖及包含嵌套异常处理示意的回复；主帖描述注释被后续当作需求。",
+      "limitation": "示意代码不完整；个人反馈不证明发生率。"
+    },
+    {
+      "id": "S08",
+      "title": "How to avoid overengineering?",
+      "kind": "reddit_firsthand_discussion",
+      "url": "https://www.reddit.com/r/ClaudeCode/comments/1uepqau/how_to_avoid_overengineering/",
+      "checked_on": "2026-10-24",
+      "verified": "读取讨论，定位 ZedIsAPrimeNumber 对重复校验、旧数据和畸形输入的反馈。",
+      "limitation": "没有公开完整实验流水线；其他回复中的硬门槛和产品推荐没有视为已验证方案。"
+    },
+    {
+      "id": "S09",
+      "title": "How do you stop Codex/Claude from overengineering small coding tasks?",
+      "kind": "reddit_firsthand_discussion",
+      "url": "https://www.reddit.com/r/codex/comments/1vf5elq/how_do_you_stop_codexclaude_from_overengineering/",
+      "checked_on": "2026-10-24",
+      "verified": "读取主帖的 endpoint 适配案例、简化后测试仍过，以及 review 循环反馈。",
+      "limitation": "没有完整 patch 或执行日志；不引用极端 race 比喻作真实故障条件。"
+    },
+    {
+      "id": "S10",
+      "title": "Bounded codebase work expands into verification and governance layers",
+      "kind": "github_firsthand_issue",
+      "url": "https://github.com/openai/codex/issues/39059",
+      "checked_on": "2026-10-24",
+      "verified": "经 GitHub API 读取全文和状态，提取自我扩张的状态、schema、gate 与自产证据机制。",
+      "limitation": "专有生产源码未公开；本轮未独立复现，不把机制描述当作已证实训练原因。",
+      "created_at": "2026-08-17T19:42:40Z",
+      "state": "open",
+      "state_reason": null
+    },
+    {
+      "id": "S11",
+      "title": "Codex over-tests routine changes and ignores release-only UI test scope",
+      "kind": "github_firsthand_issue",
+      "url": "https://github.com/openai/codex/issues/35593",
+      "checked_on": "2026-10-24",
+      "verified": "读取 issue 和全部 2 条评论；报告称 focused suites 通过后运行全量 Xcode UI 约 98 分钟。",
+      "limitation": "没有私有日志附件；耗时为报告者自述，未独立计时。",
+      "created_at": "2026-07-27T10:49:52Z",
+      "state": "open",
+      "state_reason": null
+    },
+    {
+      "id": "S12",
+      "title": "Opus 4.6 (1M) ignores rules in long sessions",
+      "kind": "github_firsthand_issue",
+      "url": "https://github.com/anthropics/claude-code/issues/43716",
+      "checked_on": "2026-10-24",
+      "verified": "读取全文与全部 6 条评论；核对 6 文件指令系统案例及机器人不活跃关闭记录。",
+      "limitation": "无公开完整 patch；closed / not_planned 不代表已修复。",
+      "created_at": "2026-04-05T01:04:16Z",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "id": "S13",
+      "title": "GitHub Actions infinite loop when a Stop hook fails",
+      "kind": "github_reproduction_report",
+      "url": "https://github.com/anthropics/claude-code/issues/3573",
+      "checked_on": "2026-10-24",
+      "verified": "读取包含配置、日志和复现步骤的 issue。",
+      "limitation": "旧版 1.0.52 报告；本轮没有复现，不推断当前版本仍存在。报告中的 shell 根因说明未独立确认。",
+      "created_at": "2025-07-15T19:05:21Z",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "id": "S14",
+      "title": "Agents recursively spawn subagents and cause OOM",
+      "kind": "github_reproduction_report",
+      "url": "https://github.com/anthropics/claude-code/issues/4850",
+      "checked_on": "2026-10-24",
+      "verified": "读取同名 agent 自调用片段、环境、复现与退出描述。",
+      "limitation": "旧版 1.0.63 报告且已关闭；不推断当前仍有缺陷。",
+      "created_at": "2025-07-31T11:07:09Z",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "id": "S15",
+      "title": "感叹 Codex 的过度设计。",
+      "kind": "v2ex_firsthand_discussion",
+      "url": "https://www.v2ex.com/t/1250482",
+      "checked_on": "2026-10-24",
+      "verified": "读取主帖与可访问回复；主帖称约 15 小时、约 2 万行，回复要求公开上下文并提出插件影响可能。",
+      "limitation": "提示词、源码、计费记录不全；不采用未经核对的额度倍数或插件因果说法。"
+    },
+    {
+      "id": "S16",
+      "title": "Over-editing refers to modifying code beyond what is necessary",
+      "kind": "hacker_news_discussion",
+      "url": "https://news.ycombinator.com/item?id=47866913",
+      "checked_on": "2026-10-24",
+      "verified": "读取正负两类反馈、异常默认值抱怨、项目情境与最小 diff 的反向问题；追到原作者文章。",
+      "limitation": "个人经历各异；关于奖励机制、商业动机的猜测未采信。"
+    },
+    {
+      "id": "S17",
+      "title": "Claude prompting best practices",
+      "kind": "official_documentation",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices",
+      "checked_on": "2026-10-24",
+      "verified": "读取 Overeagerness、Subagent orchestration 及相关提示段。",
+      "limitation": "部分行为说明限定型号；文档建议不是跨版本效果保证。"
+    },
+    {
+      "id": "S18",
+      "title": "Codex Prompting Guide",
+      "kind": "official_documentation",
+      "url": "https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide",
+      "checked_on": "2026-10-24",
+      "verified": "读取 Tight error handling、coherent edits、reuse 与循环相关段落。",
+      "limitation": "有明确版本与 harness 背景；本报告没有照搬整份提示作为 skill。"
+    },
+    {
+      "id": "S19",
+      "title": "Using GPT-6: testing and verification",
+      "kind": "official_documentation",
+      "url": "https://developers.openai.com/api/docs/guides/latest-model",
+      "checked_on": "2026-10-24",
+      "verified": "读取 Testing and verification 段及任务范围说明。",
+      "limitation": "该 URL 会随时间改变；这里只记录研究日指导，不代表所有型号默认表现相同。"
+    },
+    {
+      "id": "S20",
+      "title": "Rethinking skills and prompts for GPT-6 Astra",
+      "kind": "official_guidance_article",
+      "url": "https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra",
+      "checked_on": "2026-10-24",
+      "verified": "读取 skill 描述负担、重复读文档、过度测试及完成条件等段落。",
+      "limitation": "产品指导而非独立效能实验；不作为当前开发环境外的新授权。",
+      "published_on": "2026-09-11"
+    },
+    {
+      "id": "S21",
+      "title": "Early-2025 experienced open-source developer productivity study",
+      "kind": "primary_research",
+      "url": "https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/",
+      "checked_on": "2026-10-24",
+      "verified": "读取方法、样本和主要结果：16 人、246 个任务、早期 2025 工具；完成时间增加 19%。",
+      "limitation": "不是当前模型评估；不能归因于过度防御这一单一原因。",
+      "published_on": "2025-07-10"
+    },
+    {
+      "id": "S22",
+      "title": "Changing the developer productivity experiment design",
+      "kind": "primary_research_update",
+      "url": "https://metr.org/blog/2026-02-24-uplift-update/",
+      "checked_on": "2026-10-24",
+      "verified": "读取新实验选择效应、多 agent 计时限制与方向性结果。",
+      "limitation": "作者明确称数据不足以可靠估计当前提速幅度。",
+      "published_on": "2026-02-24"
+    },
+    {
+      "id": "S23",
+      "title": "Official code-simplifier agent",
+      "kind": "official_repository_prompt",
+      "url": "https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md",
+      "checked_on": "2026-10-24",
+      "verified": "读取 raw 文件全文；聚焦保留功能、可读性、最近改动与避免过度简化。",
+      "limitation": "main 为可变引用；提示词存在不证明每次执行都遵循，也不证明实际没有运行测试。"
+    },
+    {
+      "id": "S24",
+      "title": "Code Simplifier Plugin alters strings",
+      "kind": "github_firsthand_issue",
+      "url": "https://github.com/anthropics/claude-plugins-official/issues/208",
+      "checked_on": "2026-10-24",
+      "verified": "读取 API issue；报告简化 Python 脚本时改写多行 LLM prompt 字符串。",
+      "limitation": "没有独立复现；提出的全面字符串禁改是用户建议，不能直接推广到所有任务。",
+      "created_at": "2026-01-12T17:56:44Z",
+      "state": "open",
+      "state_reason": null
+    },
+    {
+      "id": "S25",
+      "title": "Simplifier / SDK verifier assert results without executing verification",
+      "kind": "github_issue_and_prompt_inspection",
+      "url": "https://github.com/anthropics/claude-plugins-official/issues/4785",
+      "checked_on": "2026-10-24",
+      "verified": "读取 issue 开头、示例和当前 code-simplifier 原文件，核对其验证措辞。",
+      "limitation": "未核对 issue 中所有另一 agent 的断言；缺少显式测试步骤不等于运行时从不测试。",
+      "created_at": "2026-08-02T06:39:41Z",
+      "state": "open",
+      "state_reason": null
+    },
+    {
+      "id": "S26",
+      "title": "When Models Edit Too Much: On the Fidelity of Minimal Code Edits, v2",
+      "kind": "primary_research_abstract",
+      "url": "https://arxiv.org/abs/2609.04061v2",
+      "checked_on": "2026-10-24",
+      "verified": "读取 arXiv 摘要与版本信息：400 个问题；保留指令降低超额编辑距离、降低新增认知复杂度。",
+      "limitation": "本轮未读完整 PDF、未复现实验；受控修复基准不等于生产效率。",
+      "submitted_on": "2026-09-03",
+      "revised_on": "2026-10-20"
+    }
+  ]
+}

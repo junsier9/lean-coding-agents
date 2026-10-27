@@ -1,0 +1,37 @@
+{
+  "study": "v4",
+  "recovery": {
+    "recovered_at": "2026-10-25T17:12:45.358776+00:00",
+    "key": "replication--xb-012-click-3152--r2--baseline",
+    "accepted": true,
+    "model_calls": 0,
+    "original_tracked_bytes_unchanged": true,
+    "only_additional_copy_exclusion": ".task-pytest-tmp",
+    "all_original_failed_grading_cost_retained": true,
+    "frozen_guard_and_source_code_unchanged": true,
+    "original_checkpoint_sha256": "0F6D5F283AB0456E74DBAEED9F2AA0402D234F665FA15D2DF3BC02494C1CA69A",
+    "grading_attempts": [
+      {
+        "started_at": "2026-10-25T05:57:55.075746+00:00",
+        "seconds": 0.14000000001396984,
+        "status": "failed",
+        "error_type": "Error",
+        "error": "[('{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v4\\\\work\\\\replication\\\\xb-012-click-3152\\\\r2\\\\baseline\\\\.task-pytest-tmp\\\\pytest', '{PROJECT_ROOT}\\\\.local\\\\production-runtime\\\\real-v4\\\\grades\\\\replication\\\\replication--xb-012-click-3152--r2--baseline\\\\.task-pytest-tmp\\\\pytest', \"[WinError 5] 拒绝访问。: '{PROJECT_ROOT}\\\\\\\\.local\\\\\\\\production-runtime\\\\\\\\real-v4\\\\\\\\work\\\\\\\\replication\\\\\\\\xb-012-click-3152\\\\\\\\r2\\\\\\\\baseline\\\\\\\\.task-pytest-tmp\\\\\\\\pytest'\")]"
+      },
+      {
+        "started_at": "2026-10-25T17:12:42.692292+00:00",
+        "seconds": 2.344,
+        "status": "completed"
+      }
+    ]
+  },
+  "raw_recovery_report_sha256": "53059A794C544321FF91DC79FF54E0B4535EF4CCF6DBD491D0F2ED541F9B642B",
+  "original_phase_failures_sha256": "996E183A1B258241173BCF4CB92EF52B2DFBBE33DD2081FF8663E5ADA0229AC2",
+  "original_phase_failures_preserved_byte_for_byte": true,
+  "candidate_or_frozen_grader_or_statistics_changed": false,
+  "paired_treatment_was_already_completed": true,
+  "final_cached_resume_will_prohibit_new_model_launches": true,
+  "final_cached_resume_completed": true,
+  "final_cached_resume_new_model_calls": 0,
+  "final_cached_resume_log_sha256": "B2BEEE67314AC71D3E368D3EA7CBC8BA92200C696B58C57C8A9EF444A56E8391"
+}

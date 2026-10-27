@@ -1,0 +1,10 @@
+{
+  "id": "negative-extra-01",
+  "family": "read-only",
+  "expected_load": false,
+  "task": "请阅读 service.py，解释 demo() 的返回值以及产生该结果的原因。再说明把 totals 的参数换成同样内容的 list 时，结果是否相同。只做文字说明，不修改任何文件。",
+  "files": {
+    "service.py": "def totals(values):\n    count = sum(1 for _ in values)\n    amount = sum(values)\n    return count, amount\n\n\ndef demo():\n    values = iter([2, 3, 5])\n    return totals(values)\n"
+  },
+  "hidden_tests": {}
+}

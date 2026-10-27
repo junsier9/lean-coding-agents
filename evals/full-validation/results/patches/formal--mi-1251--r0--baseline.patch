@@ -1,0 +1,68 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 2229563..7613ebb 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4407,6 +4407,8 @@ def value_chain(*args):
+ 
+     Multiple levels of nesting are not flattened.
+ 
++    Exceptions raised while iterating over an argument are propagated.
++
+     """
+     scalar_types = (str, bytes)
+     for value in args:
+@@ -4414,9 +4416,11 @@ def value_chain(*args):
+             yield value
+             continue
+         try:
+-            yield from value
++            iterator = iter(value)
+         except TypeError:
+             yield value
++        else:
++            yield from iterator
+ 
+ 
+ def product_index(element, *iterables, repeat=1):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 03b1206..acf43f9 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5074,6 +5074,37 @@ class ValueChainTests(TestCase):
+         expected = [1, (2, (3,)), 'foo', ['bar', ['baz']], 'tic', 'key', obj]
+         self.assertEqual(actual, expected)
+ 
++    def test_iteration_type_error(self):
++        for values, expected in [([5], []), (['ab', 'cde', 5], [2, 3])]:
++            with self.subTest(values=values):
++                actual = mi.value_chain(map(len, values), 'tail')
++                for value in expected:
++                    self.assertEqual(next(actual), value)
++                with self.assertRaises(TypeError):
++                    next(actual)
++
++    def test_sequence_type_error(self):
++        error = TypeError('iteration failed')
++
++        class Sequence:
++            def __getitem__(self, index):
++                if index == 0:
++                    return 'first'
++                raise error
++
++        actual = mi.value_chain(Sequence())
++        self.assertEqual(next(actual), 'first')
++        with self.assertRaises(TypeError) as raised:
++            next(actual)
++        self.assertIs(raised.exception, error)
++
++    def test_non_iterable(self):
++        class NonIterable:
++            __iter__ = None
++
++        values = [None, object(), NonIterable()]
++        self.assertEqual(list(mi.value_chain(*values)), values)
++
+ 
+ class ProductIndexTests(TestCase):
+     def test_basic(self):

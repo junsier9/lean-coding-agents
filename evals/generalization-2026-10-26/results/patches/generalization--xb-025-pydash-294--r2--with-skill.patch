@@ -1,0 +1,133 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 3dd4dc0..f52a82c 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -7,6 +7,7 @@ Numerical/mathematical related functions.
+ from __future__ import annotations
+ 
+ from collections.abc import Sized
++from fractions import Fraction
+ import math
+ import operator
+ import typing as t
+@@ -1269,10 +1270,18 @@ def call_math_operator(value1, value2, op, default):
+ 
+ 
+ def rounder(func, x, precision):
+-    precision = pow(10, precision)
++    factor = pow(10, precision)
+ 
+     def rounder_func(item):
+-        return func(item * precision) / precision
++        if (
++            func in (math.floor, math.ceil)
++            and type(item) in (int, float)
++            and math.isfinite(item)
++        ):
++            # Scale the decimal representation exactly on both sides of rounding.
++            scale = Fraction(10) ** precision
++            return float(func(Fraction(str(item)) * scale) / scale)
++        return func(item * factor) / factor
+ 
+     result = None
+ 
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 91f609f..6c40a59 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -24,7 +24,15 @@ def test_add(case, expected):
+     [
+         ((4.006,), 5),
+         ((6.004, 2), 6.01),
++        ((0.07, 2), 0.07),
++        ((-0.29, 2), -0.29),
++        ((-1.005, 2), -1.0),
+         ((6040, -2), 6100),
++        ((300000.0, -5), 300000.0),
++        ((300001.0, -5), 400000.0),
++        ((-300000.0, -5), -300000.0),
++        ((-300001.0, -5), -300000.0),
++        ((300000, -5), 300000.0),
+         (([4.006, 6.004], 2), [4.01, 6.01]),
+     ],
+ )
+@@ -60,7 +68,15 @@ def test_divide(dividend, divisor, expected):
+     [
+         ((4.006,), 4),
+         ((0.046, 2), 0.04),
++        ((0.29, 2), 0.29),
++        ((-0.07, 2), -0.07),
++        ((-1.005, 2), -1.01),
+         ((4060, -2), 4000),
++        ((300000.0, -5), 300000.0),
++        ((300001.0, -5), 300000.0),
++        ((-300000.0, -5), -300000.0),
++        ((-300001.0, -5), -400000.0),
++        ((-300000, -5), -300000.0),
+         (([4.006, 0.046], 2), [4.0, 0.04]),
+     ],
+ )
+@@ -68,6 +84,63 @@ def test_floor(case, expected):
+     assert _.floor(*case) == expected
+ 
+ 
++@parametrize("function,expected", [(_.floor, [0.28, 0.29, 0.29]), (_.ceil, [0.29, 0.29, 0.3])])
++def test_directed_rounding_near_boundary(function, expected):
++    values = [math.nextafter(0.29, -math.inf), 0.29, math.nextafter(0.29, math.inf)]
++    assert function(values, 2) == expected
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("value,precision", [(1e308, 2), (-1e308, 2), (1e-308, 308), (5e-324, 324)])
++def test_directed_rounding_extreme_finite_values(function, value, precision):
++    assert function(value, precision) == value
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("collection", [list, tuple, iter])
++def test_directed_rounding_collections(function, collection):
++    assert function(collection([0.07, 0.29, -0.07, -0.29, Decimal("0.29")]), 2) == [
++        0.07,
++        0.29,
++        -0.07,
++        -0.29,
++        0.29,
++    ]
++
++
++@parametrize("function", [_.floor, _.ceil])
++def test_directed_rounding_call_forms(function):
++    assert function(x=0.29, precision=2) == 0.29
++    assert getattr(_._(0.29), function.__name__)(precision=2).value() == 0.29
++
++
++@parametrize("function", [_.floor, _.ceil])
++def test_directed_rounding_preserves_numeric_protocol(function):
++    class CustomFloat(float):
++        def __mul__(self, factor):
++            return 1.25 * factor
++
++    assert function(CustomFloat(0.29), 2) == 1.25
++
++
++@parametrize("function", [_.floor, _.ceil, _.round_])
++@parametrize("precision", [0, 2, -2])
++@parametrize(
++    "value,error",
++    [(math.nan, ValueError), (math.inf, OverflowError), (-math.inf, OverflowError)],
++)
++@parametrize("as_collection", [False, True])
++def test_rounding_nonfinite_errors(function, precision, value, error, as_collection):
++    with pytest.raises(error):
++        function([1.0, value] if as_collection else value, precision)
++
++
++@parametrize("function", [_.floor, _.ceil, _.round_])
++@parametrize("value", [None, "junk", [0.29, None]])
++def test_rounding_invalid_inputs(function, value):
++    assert function(value, 2) is None
++
++
+ @parametrize(
+     "case,expected",
+     [

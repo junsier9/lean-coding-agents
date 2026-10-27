@@ -1,0 +1,74 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index e46cddc..de7c306 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -215,6 +215,8 @@ def copy_function(orig, copy_dict=True):
+                        name=orig.__name__,
+                        argdefs=getattr(orig, "__defaults__", None),
+                        closure=getattr(orig, "__closure__", None))
++    if not _IS_PY2:
++        ret.__kwdefaults__ = orig.__kwdefaults__
+     if copy_dict:
+         ret.__dict__.update(orig.__dict__)
+     return ret
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 634ad7d..ae7d1cd 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -13,6 +13,56 @@ def wrappable_varkw_func(a, b, **kw):
+     return a, b
+ 
+ 
++@pytest.mark.parametrize('copy_dict', (True, False))
++def test_copy_function_kwonly_defaults(copy_dict):
++    callee = lambda x, *, y=2: x * y
++    callee.custom = 'attribute'
++
++    callee_copy = funcutils.copy_function(callee, copy_dict=copy_dict)
++
++    assert callee_copy is not callee
++    assert inspect.signature(callee_copy) == inspect.signature(callee)
++    assert callee_copy(21) == callee(21) == 42
++    assert callee_copy(x=21) == callee(x=21) == 42
++    assert callee_copy(21, y=3) == callee(21, y=3) == 63
++    assert callee_copy.__dict__ == (callee.__dict__ if copy_dict else {})
++
++    with pytest.raises(TypeError):
++        callee_copy(21, 3)
++
++
++@pytest.mark.parametrize('optional_default', (False, True))
++def test_copy_function_required_kwonly(optional_default):
++    if optional_default:
++        def callee(x=21, *, y, z=2):
++            return x * y * z
++    else:
++        def callee(x=21, *, y):
++            return x * y
++
++    callee_copy = funcutils.copy_function(callee)
++
++    assert inspect.signature(callee_copy) == inspect.signature(callee)
++    assert callee_copy(y=2) == callee(y=2)
++    with pytest.raises(TypeError):
++        callee_copy()
++
++
++def test_copy_function_method_kwonly_defaults():
++    class Multiplier:
++        factor = 1
++
++        def multiply(instance, x=21, *, y=2):
++            return instance.factor * x * y
++
++        multiply_copy = funcutils.copy_function(multiply)
++
++    multiplier = Multiplier()
++    assert multiplier.multiply_copy() == multiplier.multiply() == 42
++    assert multiplier.multiply_copy(y=3) == multiplier.multiply(y=3) == 63
++    assert Multiplier.multiply_copy(instance=multiplier) == 42
++
++
+ def pita_wrap(flag=False):
+ 
+     def cedar_dec(func):

@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-24T21:55:15.645401+00:00",
+  "case_id": "d09",
+  "case_sha256": "866B0E1BA4B22BC041CAEB6EB874E75D762B878797FA9ACE56F49544AD5577AE",
+  "evidence_class": "development_regression_only",
+  "phases": {
+    "initial": {
+      "exit_code": 1,
+      "tests": 15,
+      "failures": 1,
+      "errors": 4,
+      "seconds": 0.125,
+      "log_sha256": "61BA35EC9902382E0C5847763F1FF8A847A6BA64DC9BE30D4F2226CDB10793D8"
+    },
+    "reference": {
+      "exit_code": 0,
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.094,
+      "log_sha256": "8260CEE7C77EECF9BD2BD0D6639FEF6760EABD82D5202CCB0AD7E29DF7050E97"
+    },
+    "optimized_initial": {
+      "exit_code": 1,
+      "tests": 15,
+      "failures": 1,
+      "errors": 4,
+      "seconds": 0.187,
+      "log_sha256": "1D61F5D6A296E16757FF48F2AFEA2ABF22F86630A35F3220426ED56C5C1604B8"
+    },
+    "optimized_reference": {
+      "exit_code": 0,
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 0.188,
+      "log_sha256": "8260CEE7C77EECF9BD2BD0D6639FEF6760EABD82D5202CCB0AD7E29DF7050E97"
+    }
+  },
+  "eligible": true,
+  "model_calls": 0,
+  "network_calls": 0,
+  "candidate_skill_or_solver_results_read": false,
+  "no_current_frozen_experiment_modified": true,
+  "limit": "Small synthetic stdlib case; no claim of production holdout or field reliability."
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "d01",
+    "family": "validated_immutable_pipeline",
+    "critical": true,
+    "file": "d01.json",
+    "sha256": "746CFCC64EB07EB681FFE6C624F93428D381B7C4134B73BC0C0390F4EE353FDC"
+  },
+  {
+    "id": "d02",
+    "family": "mixed_bypass_paths",
+    "critical": true,
+    "file": "d02.json",
+    "sha256": "6FC75CAD8894F9F92B2CAD4BD08BE77619F15A33688A59B314DDA7EF28289455"
+  },
+  {
+    "id": "d03",
+    "family": "ownership_snapshots",
+    "critical": true,
+    "file": "d03.json",
+    "sha256": "1CBBD15F46524AB2E452D47177EB23714248D777DA9FB39D9AEF373CE8DC0AFD"
+  },
+  {
+    "id": "d04",
+    "family": "boundary_error_translation",
+    "critical": true,
+    "file": "d04.json",
+    "sha256": "92A94D90B998C0C8B646D8BA0C516A854988B2BE087359C9DD616EE24442CEEE"
+  },
+  {
+    "id": "d05",
+    "family": "bounded_idempotent_retry",
+    "critical": true,
+    "file": "d05.json",
+    "sha256": "4F93EFCE133EF40436F091C7E50D8249F37B4B37847839D468FBE51176C635AC"
+  },
+  {
+    "id": "d06",
+    "family": "sqlite_transaction_cleanup",
+    "critical": true,
+    "file": "d06.json",
+    "sha256": "5CC66CF4B60393FE58EDCCDBABC8B0325A2B7933D7365AD1060788131F90B773"
+  },
+  {
+    "id": "d07",
+    "family": "async_cancellation_cleanup",
+    "critical": true,
+    "file": "d07.json",
+    "sha256": "7C06A4E802690AA9AF6DD4D0B7270093AE09F7929484523728A87C8DFD0B31ED"
+  },
+  {
+    "id": "d08",
+    "family": "plugin_mutation_invalidates_validation",
+    "critical": true,
+    "file": "d08.json",
+    "sha256": "3468ABEBD1254B20B4024CC77EC936CDEC12979335E13998F21C60AC1792C8F5"
+  }
+]

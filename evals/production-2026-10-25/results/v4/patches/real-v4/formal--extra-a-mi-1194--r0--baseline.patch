@@ -1,0 +1,54 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index ce22bdc..5116e18 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -151,7 +151,11 @@ def tail(n, iterable):
+     >>> list(t)
+     ['E', 'F', 'G']
+ 
++    If *n* is negative, raise :exc:`ValueError`.
++
+     """
++    if n < 0:
++        raise ValueError('n must be non-negative')
+     try:
+         size = len(iterable)
+     except TypeError:
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 15d54fc..5b96cfc 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -72,6 +72,33 @@ class TabulateTests(TestCase):
+ class TailTests(TestCase):
+     """Tests for ``tail()``"""
+ 
++    def test_negative(self):
++        for n in (-1, -3):
++            for sequence in ('', 'ABCDEFG', [], [1, 2, 3]):
++                for iterable in (sequence, iter(sequence)):
++                    with self.subTest(n=n, iterable=iterable):
++                        self.assertRaises(ValueError, mi.tail, n, iterable)
++
++    def test_zero(self):
++        for sequence in ('', 'ABCDEFG', [], [1, 2, 3]):
++            for iterable in (sequence, iter(sequence)):
++                with self.subTest(iterable=iterable):
++                    self.assertEqual(list(mi.tail(0, iterable)), [])
++
++    def test_empty(self):
++        for n in (1, 8):
++            for sequence in ('', [], (), range(0)):
++                for iterable in (sequence, iter(sequence)):
++                    with self.subTest(n=n, iterable=iterable):
++                        self.assertEqual(list(mi.tail(n, iterable)), [])
++
++    def test_sequences(self):
++        for sequence in ([0, 1, 2], (0, 1, 2), range(3)):
++            for n, expected in ((1, [2]), (3, [0, 1, 2]), (8, [0, 1, 2])):
++                for iterable in (sequence, iter(sequence)):
++                    with self.subTest(n=n, iterable=iterable):
++                        self.assertEqual(list(mi.tail(n, iterable)), expected)
++
+     def test_iterator_greater(self):
+         """Length of iterator is greater than requested tail"""
+         self.assertEqual(list(mi.tail(3, iter('ABCDEFG'))), list('EFG'))

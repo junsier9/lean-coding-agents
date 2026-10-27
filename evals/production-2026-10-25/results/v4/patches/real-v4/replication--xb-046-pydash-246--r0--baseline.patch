@@ -1,0 +1,42 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index e14991a..754d51e 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2849,7 +2849,12 @@ def iterinterleave(*arrays):
+ def iterintersperse(iterable, separator):
+     """Iteratively intersperse iterable."""
+     iterable = iter(iterable)
+-    yield next(iterable)
++    try:
++        first = next(iterable)
++    except StopIteration:
++        return
++
++    yield first
+     for item in iterable:
+         yield separator
+         yield item
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index c9740c5..344f2ac 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -368,6 +368,19 @@ def test_intersperse(case, expected):
+     assert _.intersperse(*case) == expected
+ 
+ 
++@parametrize(
++    "iterable_type",
++    [list, tuple, iter, lambda items: (item for item in items)],
++    ids=["list", "tuple", "iterator", "generator"],
++)
++@parametrize(
++    "items,expected",
++    [([], []), ([None], [None]), ([0, False, None], [0, "x", False, "x", None])],
++)
++def test_intersperse_iterables(iterable_type, items, expected):
++    assert _.intersperse(iterable_type(items), "x") == expected
++
++
+ @parametrize("case,expected", [([1, 2, 3], 3), ([], None)])
+ def test_last(case, expected):
+     assert _.last(case) == expected

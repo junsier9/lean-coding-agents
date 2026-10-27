@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-10-24T15:43:56.567873+00:00",
+  "stage": "Before any completed formal or replication aggregate analysis",
+  "pre_registered_exception": "Missing usage remains unknown; token proof unavailable unless a conservative full bound is available.",
+  "method": "If and only if skill costs are entirely exact and missing costs occur only in baseline, nonnegative missing baseline costs give a known baseline lower bound and a paired-bootstrap ratio upper bound. No actual cost, ratio point estimate or actual two-sided CI is imputed.",
+  "unchanged": [
+    "20 tasks per batch",
+    "3 repeats per arm",
+    "frozen allocation",
+    "same task-cluster weights and seed",
+    "20000 draws",
+    "one-sided97.5 upper <0.90",
+    "quality gate",
+    "both disjoint batches must pass",
+    "sample-size planning remains original complete pilot"
+  ],
+  "files_sha256": {
+    "preregistered-protocol.json": "EEDE558723B8E998169624A387057A2386AD45FBE4FC58E4F64976C6A8E95DEE",
+    "analyze.py": "308FC2E8076BA93C74353BDF8156AE86C7E3767C2616BF301F43EE086CD337C3",
+    "bound_analysis.py": "6129C7C9B44685B4656F0E86A3550690DC385C7A8C812691A7AF117A55118304",
+    "test_bound_analysis.py": "0A04951D49133139FA904707F1F973D300D7BB48C9D3C8AD086597D1F5D98117",
+    "validate_all.py": "745F421F5A25C7016DDE3232B1112489E94F153592B66D849B4CB11D45303102",
+    "results/missing-usage-bound-method-review.json": "FA744D239D27D7587EA02C05D00ED5E1DCD704C21AFE53F30CACB8E6093FD151"
+  },
+  "combined_harness_tests": 32,
+  "input_records_rewritten": false
+}

@@ -1,0 +1,10 @@
+{
+  "id": "negative-extra-02",
+  "family": "read-only",
+  "expected_load": false,
+  "task": "同事以为 start({}) 和 start({'PORT': 'abc'}) 都会返回 8080，实际运行却报错。请根据 service.py 按执行顺序解释两个调用分别产生什么异常，以及现有 except 为什么没有处理它们。仅回答排错分析，不改代码或其他文件。",
+  "files": {
+    "service.py": "class ConfigError(ValueError):\n    pass\n\ndef parse_port(text):\n    port = int(text)\n    if not 1 <= port <= 65535:\n        raise ConfigError('port out of range')\n    return port\n\ndef start(env):\n    try:\n        return parse_port(env['PORT'])\n    except ConfigError:\n        return 8080\n"
+  },
+  "hidden_tests": {}
+}

@@ -1,0 +1,117 @@
+diff --git a/docs/callbacks.rst b/docs/callbacks.rst
+index b9dca86..bbcb1f7 100644
+--- a/docs/callbacks.rst
++++ b/docs/callbacks.rst
+@@ -24,6 +24,17 @@ The arguments passed to most callbacks are:
+ 
+ where ``item`` is an element of ``obj``, ``index`` is the ``dict`` or ``list`` index, and ``obj`` is the original object being passed in. But not all callbacks support these arguments. Some functions support fewer callback arguments. See :ref:`API Reference <api>` for more details.
+ 
++When used as iteratees, :func:`pydash.floor`, :func:`pydash.ceil`, and :func:`pydash.round_` receive only the item and use their default precision of ``0``. Use a ``lambda`` or :func:`pydash.partial` to specify a different precision.
++
++
++.. doctest::
++
++    >>> import pydash
++    >>> pydash.count_by([4.3, 6.1, 6.4], pydash.floor)
++    {4.0: 1, 6.0: 2}
++    >>> pydash.map_([4.32, 6.18], pydash.partial(pydash.floor, precision=1))
++    [4.3, 6.1]
++
+ 
+ .. doctest::
+ 
+diff --git a/src/pydash/utilities.py b/src/pydash/utilities.py
+index e55e5d2..2086c7f 100644
+--- a/src/pydash/utilities.py
++++ b/src/pydash/utilities.py
+@@ -478,7 +478,11 @@ def iteratee(func):
+         Return :func:`properties` callback when `func` is a ``tuple``.
+     """
+     if callable(func):
+-        cbk = func
++        if func is pyd.floor or func is pyd.ceil or func is pyd.round_:
++            # Collection indexes and keys must not become rounding precision.
++            cbk = pyd.unary(func)
++        else:
++            cbk = func
+     else:
+         if isinstance(func, int):
+             func = str(func)
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index cbdabcd..042367c 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -1,4 +1,5 @@
+ from collections import namedtuple
++from functools import partial
+ import math
+ from operator import attrgetter, itemgetter, methodcaller
+ 
+@@ -37,6 +38,67 @@ def test_count_by(case, expected):
+     assert _.count_by(*case) == expected
+ 
+ 
++@parametrize(
++    "collection",
++    [
++        pytest.param([4.3, 6.1, 6.4, -2.3], id="list"),
++        pytest.param((4.3, 6.1, 6.4, -2.3), id="tuple"),
++        pytest.param({"a": 4.3, "b": 6.1, "c": 6.4, "d": -2.3}, id="string-keys"),
++        pytest.param({-2: 4.3, 1: 6.1, 7: 6.4, 0: -2.3}, id="integer-keys"),
++    ],
++)
++@parametrize(
++    "operation,iteratee,expected",
++    [
++        (_.count_by, _.floor, {4: 1, 6: 2, -3: 1}),
++        (_.count_by, _.ceil, {5: 1, 7: 2, -2: 1}),
++        (_.count_by, _.round_, {4: 1, 6: 2, -2: 1}),
++        (_.map_, _.floor, [4, 6, 6, -3]),
++        (_.map_, _.ceil, [5, 7, 7, -2]),
++        (_.map_, _.round_, [4, 6, 6, -2]),
++    ],
++)
++def test_rounding_iteratees_use_default_precision(collection, operation, iteratee, expected):
++    assert operation(collection, iteratee) == expected
++
++
++@parametrize("collection_type", [list, tuple])
++@parametrize(
++    "operation,iteratee,expected",
++    [
++        (_.group_by, _.floor, {4: [4.3], 6: [6.1, 6.4], -3: [-2.3]}),
++        (_.group_by, _.ceil, {5: [4.3], 7: [6.1, 6.4], -2: [-2.3]}),
++        (_.group_by, _.round_, {4: [4.3], 6: [6.1, 6.4], -2: [-2.3]}),
++        (_.key_by, _.floor, {4: 4.3, 6: 6.4, -3: -2.3}),
++        (_.key_by, _.ceil, {5: 4.3, 7: 6.4, -2: -2.3}),
++        (_.key_by, _.round_, {4: 4.3, 6: 6.4, -2: -2.3}),
++    ],
++)
++def test_rounding_iteratees_with_single_argument(collection_type, operation, iteratee, expected):
++    assert operation(collection_type([4.3, 6.1, 6.4, -2.3]), iteratee) == expected
++
++
++@parametrize(
++    "make_iteratee",
++    [
++        lambda func: partial(func, precision=1),
++        lambda func: _.partial(func, precision=1),
++        lambda func: _.partial_right(func, 1),
++        lambda func: lambda value: func(value, 1),
++    ],
++)
++@parametrize(
++    "rounding,expected",
++    [
++        (_.floor, [4.3, 6.1, -2.4]),
++        (_.ceil, [4.4, 6.2, -2.3]),
++        (_.round_, [4.3, 6.2, -2.3]),
++    ],
++)
++def test_rounding_iteratees_with_explicit_precision(make_iteratee, rounding, expected):
++    assert _.map_([4.32, 6.18, -2.34], make_iteratee(rounding)) == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

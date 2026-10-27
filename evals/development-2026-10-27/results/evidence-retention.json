@@ -1,0 +1,12 @@
+{
+  "archive": ".local/v6-development-evidence.zip",
+  "archive_sha256": "9A1012A1DAA8A64D7EAE94F9051838FA0A299AC65BCC391CCF27DEEB01E53EB4",
+  "bytes": 3011481,
+  "entries": 774,
+  "all_entry_hashes_and_crc_verified": true,
+  "native_attempts": 13,
+  "evidence_class": "known_development_and_interrupted_artifact_recovery_only",
+  "original12_and_supplemental1_separate": true,
+  "public_upload_of_private_archive": false,
+  "fresh_generalization_model_calls": 0
+}

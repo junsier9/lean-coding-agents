@@ -1,0 +1,72 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 66808a8..d1de58a 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Avoid extra blank lines in command help when the help text is empty
++    after cleaning indentation and truncating at ``\f``.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/core.py b/src/click/core.py
+index d61f7ba..0d3df9f 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1361,12 +1361,12 @@ class Command(BaseCommand):
+     def format_help_text(self, ctx: Context, formatter: HelpFormatter) -> None:
+         """Writes the help text to the formatter if it exists."""
+         text = self.help if self.help is not None else ""
++        text = inspect.cleandoc(text).partition("\f")[0]
+ 
+         if self.deprecated:
+             text = _("(Deprecated) {text}").format(text=text)
+ 
+-        if text:
+-            text = inspect.cleandoc(text).partition("\f")[0]
++        if text.strip():
+             formatter.write_paragraph()
+ 
+             with formatter.indentation():
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 1cbf32b..19c3dc6 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -296,6 +298,29 @@ def test_truncating_docstring(runner):
+     ]
+ 
+ 
++@pytest.mark.parametrize(
++    "doc",
++    [None, "", " \n\t ", "\n    \f", "\n    \f\n    Hidden details.\n    "],
++)
++@pytest.mark.parametrize("deprecated", [False, True])
++def test_formatting_empty_help(runner, doc, deprecated):
++    def cli():
++        pass
++
++    cli.__doc__ = doc
++    cli = click.command(deprecated=deprecated)(cli)
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    expected = "Usage: cli [OPTIONS]\n\n"
++
++    if deprecated:
++        expected += "  (Deprecated)\n\n"
++
++    expected += "Options:\n  --help  Show this message and exit.\n"
++    assert result.output == expected
++
++
+ def test_removing_multiline_marker(runner):
+     @click.group()
+     def cli():

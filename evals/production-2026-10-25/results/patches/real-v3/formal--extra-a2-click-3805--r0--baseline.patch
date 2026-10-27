@@ -1,0 +1,99 @@
+diff --git a/src/click/_utils.py b/src/click/_utils.py
+index 05ee2e9..d321567 100644
+--- a/src/click/_utils.py
++++ b/src/click/_utils.py
+@@ -18,6 +18,12 @@ class Sentinel(enum.Enum):
+     def __repr__(self) -> str:
+         return f"{self.__class__.__name__}.{self.name}"
+ 
++    def __reduce_ex__(
++        self, protocol: int
++    ) -> tuple[t.Callable[..., Sentinel], tuple[type[Sentinel], str]]:
++        # Look up by name since the object() value can't preserve its identity.
++        return getattr, (self.__class__, self.name)
++
+ 
+ UNSET: t.Literal[Sentinel.UNSET] = Sentinel.UNSET
+ """Sentinel used to indicate that a value is not set."""
+diff --git a/tests/test_utils/test_sentinel.py b/tests/test_utils/test_sentinel.py
+index 1dd5b15..f6f555f 100644
+--- a/tests/test_utils/test_sentinel.py
++++ b/tests/test_utils/test_sentinel.py
+@@ -1,6 +1,12 @@
++import copy
++import pickle
+ from decimal import Decimal
+ from fractions import Fraction
+ 
++import pytest
++
++import click
++from click._utils import Sentinel
+ from click._utils import UNSET
+ 
+ 
+@@ -50,3 +56,64 @@ def test_unset_sentinel():
+         assert value is not real_value
+ 
+     assert value not in real_values
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++@pytest.mark.parametrize("copy_func", [copy.copy, copy.deepcopy])
++def test_sentinel_copy(sentinel, copy_func):
++    assert copy_func(sentinel) is sentinel
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++@pytest.mark.parametrize("protocol", range(pickle.HIGHEST_PROTOCOL + 1))
++def test_sentinel_pickle(sentinel, protocol):
++    assert pickle.loads(pickle.dumps(sentinel, protocol)) is sentinel
++
++
++def _pickle_roundtrip(value):
++    return pickle.loads(pickle.dumps(value))
++
++
++@pytest.mark.parametrize("copy_func", [copy.copy, copy.deepcopy, _pickle_roundtrip])
++@pytest.mark.parametrize("param_class", [click.Option, click.Argument])
++def test_parameter_copy(param_class, copy_func):
++    decls = ["--example-value"] if param_class is click.Option else ["example-value"]
++    original = param_class(decls, required=False)
++    param = copy_func(original)
++
++    assert param is not original
++    assert param.name == "example_value"
++    assert param.opts == original.opts
++    assert param.default is UNSET
++
++    command = click.Command("cli", params=[param])
++    with command.make_context("cli", []) as ctx:
++        assert ctx.params == {"example_value": None}
++
++
++@pytest.mark.parametrize("copy_func", [copy.copy, copy.deepcopy, _pickle_roundtrip])
++@pytest.mark.parametrize(
++    ("kwargs", "expected_default"),
++    [
++        ({}, None),
++        ({"is_flag": True}, False),
++        ({"is_flag": True, "multiple": True}, ()),
++        ({"default": None}, None),
++        ({"default": 0}, 0),
++        ({"flag_value": "fast", "default": True}, "fast"),
++    ],
++)
++def test_option_copy_defaults(copy_func, kwargs, expected_default):
++    original = click.Option(["-v", "--example-value", "value"], **kwargs)
++    option = copy_func(original)
++
++    assert option is not original
++    assert option.name == "value"
++    assert option.opts == ["-v", "--example-value"]
++    assert option.default is original.default
++    assert option.flag_value == original.flag_value
++    assert option.to_info_dict()["default"] == expected_default
++
++    command = click.Command("cli", params=[option])
++    with command.make_context("cli", []) as ctx:
++        assert ctx.params == {"value": expected_default}

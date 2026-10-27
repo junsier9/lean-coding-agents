@@ -1,0 +1,62 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 8208426..a5dd971 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -896,11 +896,10 @@ def number_format(
+         int_part = num_parts[0]
+         dec_part = (num_parts + [""])[1]
+ 
+-        # Reverse the integer part, chop it into groups of 3, join on `order_separator`, and then
+-        # un-reverse the string.
+-        int_part = order_separator.join(chop(int_part[::-1], 3))[::-1]
++        sign = "-" if int_part.startswith("-") else ""
++        int_part = order_separator.join(chop_right(int_part[len(sign) :], 3))
+ 
+-        text = decimal_separator.join(pyd.compact([int_part, dec_part]))
++        text = sign + decimal_separator.join(pyd.compact([int_part, dec_part]))
+ 
+     return text
+ 
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 0fe8985..d8f914f 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal
+ import re
+ from urllib.parse import parse_qsl, urlsplit
+ 
+@@ -435,12 +436,33 @@ def test_lower_first(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        ((0,), "0"),
+         ((1234,), "1,234"),
+         ((1234567890,), "1,234,567,890"),
+         ((1234, 2), "1,234.00"),
+         ((1234, 1), "1,234.0"),
+         ((1234, 2, ",", "."), "1.234,00"),
++        ((-9,), "-9"),
++        ((-99,), "-99"),
++        ((-999,), "-999"),
++        ((-1000,), "-1,000"),
++        ((-12345,), "-12,345"),
++        ((-999999,), "-999,999"),
++        ((-1000000,), "-1,000,000"),
++        ((-999999999,), "-999,999,999"),
++        ((-999.5,), "-1,000"),
++        ((-999.125, 2), "-999.12"),
++        ((-999999.875, 2), "-999,999.88"),
++        ((-0.125, 2), "-0.12"),
++        ((-0.004, 2), "-0.00"),
++        ((-0.0, 2), "-0.00"),
++        ((Decimal("-999999.125"), 2), "-999,999.12"),
++        ((-999999.5, 2, ",", "."), "-999.999,50"),
++        ((-999999, 2, ",", ""), "-999999,00"),
++        ((-123456.75, 2, "::", "<>"), "-123<>456::75"),
++        ((123456.75, 2, "::", "<>"), "123<>456::75"),
+         (("1234",), ""),
++        ((1234, -1), ""),
+     ],
+ )
+ def test_number_format(case, expected):

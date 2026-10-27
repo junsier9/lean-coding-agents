@@ -1,0 +1,17 @@
+{
+  "discovery_root": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\native-loading-smoke\\explicit",
+  "debug_exit_code": 0,
+  "repo_skill_path_present": true,
+  "full_body_visible_in_initial_prompt": false,
+  "skill_sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF",
+  "source": "https://learn.chatgpt.com/docs/build-skills",
+  "separate_from_performance_comparison": true,
+  "repo_skill_catalog_metadata_present": true,
+  "catalog_path_format": "Aliased r5/lean-coding/SKILL.md; raw absolute-path substring probe was not an adequate discovery test.",
+  "full_body_absent_before_activation": true,
+  "initial_absolute_substring_probe": false,
+  "resolved_catalog_alias": "r5",
+  "resolved_catalog_root": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\native-loading-smoke\\explicit\\.agents\\skills",
+  "catalog_alias_root_verified": true,
+  "prompt_probe_only_not_model_behavior_test": true
+}

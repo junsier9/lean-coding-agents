@@ -1,0 +1,190 @@
+{
+  "reviewed_at": "2026-10-25T01:14:27.714141+00:00",
+  "scope": "All13 untracked-listing warnings in completed first343 native calls; original formal-only snapshot retained privately",
+  "entries": [
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r2--with-skill",
+      "directory": ".test-tmp",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "0E4E106CFE9C781EE563F683B2FD854D0A41B5EE50AB02803D00D3A817C35139"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r2--baseline",
+      "directory": ".pytest-tmp-shared-flags",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "917A59C3AD4419DCD30A7ACA95CDF03E14736FE02B121B7142B06BE7F5BA87F6"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r0--baseline",
+      "directory": ".pytest-tmp-sentinel-18953232a9224b96b79e7a7e4c1d619a",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "3E480F1A0384C92D81548AFD2CA964BBBC1649D6F95451C141E08CD03861705C"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r0--with-skill",
+      "directory": ".pytest-tmp-sentinel",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "826D01DD70AA783DD07DC7AE2BC009382B26B05D2DC028609127C377E79E2E05"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--with-skill",
+      "directory": ".tmp-sentinel-checks",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "654185D9EDA386491330DE765C2639054593C7701EA320F82D5E6402272BB6AD"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r0--baseline",
+      "directory": ".task-local-tmp",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "05F8A8F4F183A1744FDD3268A042D3FFE795EA24ECFFAAED4CC5A670AEAD57FB"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r2--baseline",
+      "directory": ".maintenance-pytest-tmp",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "FB6A3B4DD3E06EAC7C3C2D41B59A07594AD0F8BBA790CE0F02981C0419D3A2FD"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--extra-a2-click-3805--r1--baseline",
+      "directory": ".test-tmp",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "18A195A7139BF2C1CAC78ED6673709D080A1E364ADD741472E94947D7FEC46CE"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "formal--xb-013-click-3079--r0--with-skill",
+      "directory": ".pt-shared-default",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "DC80A6271630FE303F301C6289DA604E93C01635D88B735304E4D1D5B9742A14"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3884--r0--baseline",
+      "directory": ".pytest-tmp-task",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "D6CF7F387774231B88410A6AF3D8DF8CFC2D12DA6706C215D94578610B7F11C5"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3884--r2--baseline",
+      "directory": ".pytest-show-envvar-20261025",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "A592BC191A9968307D303959C63680D52A006CAA10D7A0CE6120ED686F2270C3"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r0--with-skill",
+      "directory": ".pytest-local-temp-source",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "75A155C51B34F38A752C025302770D30D42DA77D9A6142130F6AC71CDDDBA232"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    },
+    {
+      "branch": "real-v3",
+      "key": "replication--extra-a2-click-3484--r1--with-skill",
+      "directory": ".pytest-temp-source-9bda0e4cbff54667aa5636339da3203b",
+      "classification": "Model-created pytest runtime output",
+      "setup_command_sha256": [
+        "F44106DE61292C6C5814C5FC08ECEBE6EF6782DB6B0057E37AAA7DAC3324209F"
+      ],
+      "no_tracked_source_files_below_directory": true,
+      "not_a_symlink_or_junction": true,
+      "contents_not_enumerable_or_archived": true,
+      "original_workspace_retained": true,
+      "no_run_or_failure_excluded_from_analysis": true
+    }
+  ],
+  "manual_native_setup_commands_reviewed": true,
+  "limitation": "These inaccessible temporary test outputs are absent from file enumeration and private ZIP. Original workspaces and full native commands/output remain retained; tracked production bytes, frozen grading and costs are preserved."
+}

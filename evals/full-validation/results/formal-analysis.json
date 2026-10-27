@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "phase": "formal",
+  "task_count": 20,
+  "bootstrap": {
+    "unit": "paired_complete_task_cluster",
+    "draws": 20000,
+    "seed": 20261024,
+    "repeats_per_arm": 3,
+    "task_ids_in_sampling_order": [
+      "b-02-click-2730",
+      "b-04-click-2680",
+      "b-05-click-2421",
+      "b-09-click-2058",
+      "b-29-click-1142",
+      "b-33-click-874",
+      "boltons-403",
+      "boltons-410",
+      "boltons-418",
+      "boltons-428",
+      "boltons-443-table",
+      "boltons-458",
+      "boltons-pearson-zero",
+      "mi-1028",
+      "mi-1088",
+      "mi-1125",
+      "mi-1248",
+      "mi-1251",
+      "mi-1261",
+      "mi-1276"
+    ],
+    "both_arms_and_all_repeats_kept_together": true,
+    "undefined_draws_dropped": false,
+    "method": "percentile; inverted empirical CDF; undefined draws invalidate CI"
+  },
+  "integrity": {
+    "ok": false,
+    "structure_ok": true,
+    "input_record_count": 298,
+    "selected_record_count": 120,
+    "other_phase_record_counts": {
+      "pilot": 60,
+      "replication": 118
+    },
+    "task_count": 20,
+    "complete_task_count": 20,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 120,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [
+      {
+        "code": "usage_unavailable",
+        "scope": "token",
+        "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+        "record_index": 133,
+        "case_id": "mi-1248"
+      }
+    ],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "observed_totals": {
+    "baseline": {
+      "record_count": 60,
+      "accepted": 57,
+      "completed": 60,
+      "unfinished": 0,
+      "rejected": 3,
+      "reported_token_total": 26330005.0,
+      "reported_token_count": 59,
+      "reported_token_total_is_partial": true,
+      "exact_usage_count": 59,
+      "reported_wall_seconds": 14856.263,
+      "reported_wall_count": 60,
+      "reported_wall_total_is_partial": false
+    },
+    "with-skill": {
+      "record_count": 60,
+      "accepted": 57,
+      "completed": 60,
+      "unfinished": 0,
+      "rejected": 3,
+      "reported_token_total": 23232411.0,
+      "reported_token_count": 60,
+      "reported_token_total_is_partial": false,
+      "exact_usage_count": 60,
+      "reported_wall_seconds": 13575.411,
+      "reported_wall_count": 60,
+      "reported_wall_total_is_partial": false
+    }
+  },
+  "quality": {
+    "available": true,
+    "baseline_success_rate": 0.95,
+    "skill_success_rate": 0.95,
+    "success_rate_difference_skill_minus_baseline": 0.0,
+    "observed_gate_pass": true,
+    "success_rate_difference_ci95": {
+      "level": 0.95,
+      "quantile_method": "inverted_cdf",
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "negative_infinite_draws": 0,
+      "finite_draws": 20000,
+      "draws": 20000,
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "available": true
+    },
+    "degraded_tasks": [],
+    "worsened_repeat_pairs": [],
+    "interpretation": "Observed batch gate only; not a universal safety or noninferiority guarantee.",
+    "degraded_task_count": 0,
+    "worsened_repeat_pair_count": 0
+  },
+  "metrics": {
+    "token": {
+      "available": false,
+      "ratio": null,
+      "ratio_status": "unavailable",
+      "gain": null,
+      "ratio_ci95": null,
+      "gain_ci95": null,
+      "upper_one_sided_97_5": null,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": false,
+      "batch_criterion_met": false,
+      "reason": "Missing, partial, or invalid usage; no zero imputation."
+    },
+    "time": {
+      "available": true,
+      "ratio": 0.9137837018636514,
+      "ratio_status": "finite",
+      "gain": 0.08621629813634857,
+      "ratio_ci95": {
+        "level": 0.95,
+        "quantile_method": "inverted_cdf",
+        "undefined_draws": 0,
+        "positive_infinite_draws": 0,
+        "negative_infinite_draws": 0,
+        "finite_draws": 20000,
+        "draws": 20000,
+        "interval": [
+          0.8553307412076229,
+          0.9752848920325144
+        ],
+        "available": true
+      },
+      "gain_ci95": [
+        0.02471510796748555,
+        0.14466925879237713
+      ],
+      "upper_one_sided_97_5": 0.9752848920325144,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": true,
+      "batch_criterion_met": false,
+      "cost_total": {
+        "baseline": 14856.263000000003,
+        "with-skill": 13575.410999999998
+      },
+      "accepted_total": {
+        "baseline": 57,
+        "with-skill": 57
+      },
+      "cost_per_accepted": {
+        "baseline": 260.6361929824562,
+        "with-skill": 238.16510526315787
+      }
+    }
+  },
+  "minimum_confirmatory_task_count_satisfied": true,
+  "pilot_planned_task_count_match": "Parent controller must check the frozen pilot-derived batch size.",
+  "final_stability_claim": "Not decided here; require same metric and quality gate in both formal and replication.",
+  "interpretation": [
+    "All failed and unfinished attempts contribute recorded costs; no task is removed for poor outcomes.",
+    "Only the selected phase is analyzed. Duplicate/incomplete clusters block batch evidence.",
+    "Missing usage blocks token evidence independently; valid wall-time evidence remains reportable.",
+    "Quality intervals are descriptive; the observed gate is not a statistical no-regression guarantee.",
+    "Percentile coverage and pilot-based power are approximations on this curated task corpus."
+  ]
+}

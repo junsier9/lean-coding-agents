@@ -1,0 +1,12 @@
+{
+  "prepared_at": "2026-10-24T22:29:43.736168+00:00",
+  "evidence_class": "development_regression_only",
+  "native_model_calls": 0,
+  "case_files_sha256": {
+    "d09.json": "866B0E1BA4B22BC041CAEB6EB874E75D762B878797FA9ACE56F49544AD5577AE",
+    "xb-059-cachetools-436.json": "29281EC7887415774E1CC627E3898FB7BBA32CFBE75DF8ED7C6BEA29A778B487"
+  },
+  "d09_independently_authored_and_preflighted": true,
+  "real_case_previously_revealed_and_never_counted_as_fresh": true,
+  "original_task_source_and_guard_bytes_preserved": true
+}

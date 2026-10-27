@@ -1,0 +1,67 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index e90b893..c718a8a 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1206,7 +1206,7 @@ class bucket:
+         while True:
+             # If we've cached some items that match the target value, emit
+             # the first one and evict it from the cache.
+-            if self._cache[value]:
++            if self._cache.get(value):
+                 yield self._cache[value].popleft()
+             # Otherwise we need to advance the parent iterator to search for
+             # a matching item, caching the rest.
+@@ -1218,7 +1218,7 @@ class bucket:
+                         return
+                     item_value = self._key(item)
+                     if item_value == value:
+-                        yield item
++                        self._cache[value].append(item)
+                         break
+                     elif self._validator(item_value):
+                         self._cache[item_value].append(item)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4401dc6..4366c63 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1081,6 +1081,40 @@ class BucketTests(TestCase):
+         # Checking in-ness shouldn't advance the iterator
+         self.assertEqual(next(D[10]), 10)
+ 
++    def test_missing_bucket_does_not_add_key(self):
++        for iterable, keys in (([], []), ([10, 20, 11], [10, 20])):
++            with self.subTest(iterable=iterable):
++                D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))
++                self.assertEqual(list(D[40]), [])
++                self.assertEqual(list(D), keys)
++                self.assertEqual(list(D[50]), [])
++                self.assertEqual(list(D), keys)
++                self.assertEqual(list(D[10]), iterable[::2])
++                self.assertEqual(list(D[20]), iterable[1::2])
++                self.assertEqual(list(D), keys)
++
++    def test_missing_membership_does_not_add_key(self):
++        for iterable, keys in (([], []), ([10, 20, 11], [10, 20])):
++            with self.subTest(iterable=iterable):
++                D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))
++                self.assertNotIn(40, D)
++                self.assertEqual(list(D), keys)
++                self.assertNotIn(50, D)
++                self.assertEqual(list(D), keys)
++                self.assertEqual(list(D[10]), iterable[::2])
++                self.assertEqual(list(D[20]), iterable[1::2])
++                self.assertEqual(list(D), keys)
++
++    def test_rejected_keys_do_not_advance(self):
++        iterable = iter([0, 1, 2])
++        D = mi.bucket(iterable, key=lambda x: x, validator=lambda x: x % 2)
++        self.assertEqual(list(D[0]), [])
++        self.assertNotIn(2, D)
++        self.assertEqual(next(iterable), 0)
++        self.assertEqual(list(D), [1])
++        self.assertEqual(list(D[1]), [1])
++        self.assertEqual(list(D), [1])
++
+     def test_validator(self):
+         iterable = count(0)
+         key = lambda x: int(str(x)[0])  # First digit of each number

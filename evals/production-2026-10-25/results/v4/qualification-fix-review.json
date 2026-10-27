@@ -1,0 +1,4297 @@
+{
+  "tested_code_sha256": "5B3263CEA6936E263B34B7C82AE110CF606FDAF2AD27957F109AC53716CD6D03",
+  "unresolved_reproduced_implementation_defects": 0,
+  "original_invalid_combinations_now_rejected": true,
+  "valid_complete_fixture_accepted": true,
+  "review_id": "production-final-qualification-independent-fix-retest-2026-10-25",
+  "language": "zh-CN",
+  "scope": "仅复测修复后的发布判定实现，不评判真实 skill 有效性，不读取新40题、真实 v4 结果、skill正文、私有标签或固定生产解。",
+  "prior_review": {
+    "file": ".local/production-qualification-review.json",
+    "sha256": "3ded57abdfc385387470e33203cab009bf4011b29a4f2d3a43e3a2e048b89292",
+    "reviewed_code_sha256": "B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00",
+    "modified": false
+  },
+  "result_summary": {
+    "final_unique_scenarios": 60,
+    "valid_scenarios_accepted": 3,
+    "invalid_scenarios_rejected": 57,
+    "unexpected_final_outcomes": 0,
+    "old_false_acceptance_combinations_rejected": 12,
+    "required_reports_missing_rejected": 17,
+    "verifier_not_called_when_required_report_missing": 17,
+    "verifier_called_once_in_other_scenarios": 43,
+    "real_model_calls": 0,
+    "real_native_evidence_verification_calls": 0
+  },
+  "method": {
+    "isolation": "每场景在项目 .local 内新建 TemporaryDirectory，断言绝对路径位于该临时根。qualify.HERE/PROJECT 与 study_config.HERE/PROJECT/BASE 在调用前均改指该隔离根；全部报告、候选、标签、原始行和ZIP均为合成物，退出后清理。",
+    "actual_qualification": "真实加载并执行 SHA 5B3263... 的 qualify_release.py、benefit_gate.py 和 study_config.py。",
+    "actual_statistics": "真实调用冻结 replay_analysis.replay -> assess.assess -> full-validation/analyze.py，不模拟统计重算。正例分析由这条真实路径生成；qualify 再对同一240行独立执行相同重放。统计观察wrapper只记录phase/行数并立即调用真实函数。",
+    "actual_io_primitives": "最终60场景把 runner.py 中 read/write/digest/utc 四个函数的实际 AST 原样编译执行，包含真实原子写入和SHA256；不导入该运行器其余CLI transport，不用自定义I/O实现替换最终观察。",
+    "only_simulated_component": "verify_evidence 模块在导入 qualifier 前替换为可观察的测试替身，从未加载真实验证组件，也未触及真实v4目录。替身严格断言调用无位置参数、require_archive=True、version='v4'，记录每次调用。",
+    "verifier_return_contract": "通常返回独立保留的合成v4原生完整性证明；另有返回失败、抛异常、失败证明与当前报告一致等反例。对错配摘要/行的场景，刻意保持原先正证明以单独验证qualifier真实重放和交叉绑定防线；这不声称真实验证组件会接受无效数据。",
+    "synthetic_proofs": "隔离夹具内 qualification-fix-review.json 的四个证明字段使用合成真值，以测试被要求的调用链；并非为真实研究伪造review。amendment匹配真实被测代码hash、原始合成control hash、冻结policy hash和合成review hash；文档时间没有倒填。",
+    "positive_input": "两批各20题、双臂各3次共240行，repo/phase/case/repeat/arm完整且唯一；baseline每次1000token/10秒，treatment每次700token/7秒，全部验收。完整候选的body/UI摘要、三阶段summary hash、两文件包、私有留存ZIP/hash/size/CRC与记录一致。八对合成盲审来自实际合成题。",
+    "no_research_mutation": "没有修改真实代码、研究数据、协议、评分、旧报告或skill；只持久写本报告，其他文件均在隔离临时目录。"
+  },
+  "observed_positive_cases": [
+    {
+      "probe": "complete_valid_synthetic_bundle",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "valid_complete_near_break_even_no_material_claim",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "valid_exact95percent_both_arms",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    }
+  ],
+  "original_issue_retests": [
+    {
+      "id": "Q01",
+      "checks": [
+        "真实统计重放拒绝formal复用为replication",
+        "拒绝v3分析标志/原始240重复/验收标志与摘要矛盾",
+        "拒绝完整性study错配及replay=False"
+      ],
+      "outcome": "原对应组合全部拒绝。"
+    },
+    {
+      "id": "Q02",
+      "checks": [
+        "旧候选skill摘要被拒绝",
+        "即使重绑freeze中的summary hash，旧候选body身份仍被拒绝",
+        "同候选但summary内容改变导致旧hash失配也被拒绝"
+      ],
+      "outcome": "候选和完整阶段摘要绑定反例均拒绝。"
+    },
+    {
+      "id": "Q03",
+      "checks": [
+        "盲态泄露标志True"
+      ],
+      "outcome": "blinded_review=False，整体拒绝。"
+    },
+    {
+      "id": "Q04",
+      "checks": [
+        "真实ZIP三entry、SKILL.md同名重复且最后项hash正确"
+      ],
+      "outcome": "two_file_package=False，整体拒绝。"
+    },
+    {
+      "id": "Q05",
+      "checks": [
+        "留存CRC声明False",
+        "留存ZIP缺失",
+        "原生验证组件返回失败/抛异常/与报告一致的False证明"
+      ],
+      "outcome": "均拒绝，没有读取实际归档或原生验证器。"
+    },
+    {
+      "id": "Q06",
+      "checks": [
+        "过期material flag=True而U=.99与真实重算不一致",
+        "真实重算U约.99的合法正收益夹具"
+      ],
+      "outcome": "前者拒绝；后者可以完成资格组合，但两个至少10%声明均为False。"
+    }
+  ],
+  "proof_chain_retests": {
+    "frozen_policy_and_code": "真实复制的冻结 release-requirements 字节通过固定policy hash；真实被测代码hash与合成review/修复amendment一致。",
+    "negative_cases": [
+      "缺修复amendment",
+      "缺独立fix-review",
+      "amendment声称门槛改变",
+      "amendment声称模型/评分/统计改变",
+      "原control hash不符",
+      "review未解决缺陷数1",
+      "重绑review hash后未解决缺陷仍1",
+      "重绑review hash后原反例未全部拒绝",
+      "重绑review hash后完整正例未通过"
+    ],
+    "outcome": "全部拒绝。"
+  },
+  "harness_correction_history": {
+    "initial_pass": "首次52场景中，stage/control文件为生成冻结hash而提前写入；最初的omit夹具只跳过再次写入，没有移除已有文件，4个被命名为missing的场景实际并未缺文件。这是测试夹具问题，不能算发布判定缺陷。",
+    "correction": "显式移除对应夹具文件后执行54场景，并补入两份新必要报告的缺失反例；17种真实缺失均在调用验证器前拒绝。",
+    "final_confirmation": "又用真实runner四个I/O原语和真实统计重放执行完整60个唯一场景，3正例通过、57反例拒绝。保留各轮观察以免抹去夹具诊断。",
+    "preliminary_52_results": [
+      {
+        "probe": "complete_valid_synthetic_bundle",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "missing_required_report:formal-analysis.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: formal-analysis.json"
+      },
+      {
+        "probe": "missing_required_report:replication-analysis.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: replication-analysis.json"
+      },
+      {
+        "probe": "missing_required_report:confirmation-conclusion.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: confirmation-conclusion.json"
+      },
+      {
+        "probe": "missing_required_report:candidate-freeze.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: candidate-freeze.json"
+      },
+      {
+        "probe": "missing_required_report:development-iteration1.json",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "missing_required_report:safety-iteration1.json",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "missing_required_report:routing-iteration1.json",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "missing_required_report:blind-review-summary.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: blind-review-summary.json"
+      },
+      {
+        "probe": "missing_required_report:trace-audit.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: trace-audit.json"
+      },
+      {
+        "probe": "missing_required_report:trace-adjudication.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: trace-adjudication.json"
+      },
+      {
+        "probe": "missing_required_report:untracked-output-adjudication.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: untracked-output-adjudication.json"
+      },
+      {
+        "probe": "missing_required_report:package-candidate.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: package-candidate.json"
+      },
+      {
+        "probe": "missing_required_report:evidence-integrity.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: evidence-integrity.json"
+      },
+      {
+        "probe": "missing_required_report:evidence-retention.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: evidence-retention.json"
+      },
+      {
+        "probe": "missing_required_report:pre-model-qualification-control.json",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "incomplete_native_runs",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "development_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": false,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "critical_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": false,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "routing_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": false,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "unsafe_blind_summary",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "blind_sources_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "trace_pending_flag",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": false,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "global_install_modified",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": false,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "evidence_integrity_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "blindness_explicitly_violated",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "retention_crc_explicitly_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": false
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "integrity_wrong_study",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "integrity_analysis_replay_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "stage_hash_other_candidate",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "freeze_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Package candidate differs from the tested frozen bundle"
+      },
+      {
+        "probe": "code_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "pre_model_control_after_real_start",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "less_than240_raw_rows",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Fix the decision code before the first fresh native attempt"
+      },
+      {
+        "probe": "below95percent_quality",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "different_endpoints_between_batches",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "formal_analysis_reused_as_replication",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "analysis_study_labels_v3",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "240_duplicate_real_rows",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "raw_acceptance_disagrees_with_analyses",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "private_evidence_archive_absent",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "FileNotFoundError",
+        "message": "[Errno 2] No such file or directory: '{PROJECT_ROOT}\\\\.local\\\\qualification-review-1_bdkvdy\\\\.local\\\\production-v4-evidence.zip'"
+      },
+      {
+        "probe": "zip_three_entries_with_duplicate_name",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": false,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "material_flags_disagree_with_upper_bound",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "verification_component_returns_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "verification_component_raises",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "synthetic native verification failure"
+      },
+      {
+        "probe": "amendment_thresholds_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "amendment_model_statistics_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "amendment_original_control_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "fix_review_unresolved_defect",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "valid_complete_near_break_even_no_material_claim",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "valid_exact95percent_both_arms",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "honest_recomputed_task_level_quality_loss",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": false,
+          "same_endpoint_positive": false,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      }
+    ],
+    "corrected_54_results": [
+      {
+        "probe": "complete_valid_synthetic_bundle",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "missing_required_report:formal-analysis.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: formal-analysis.json"
+      },
+      {
+        "probe": "missing_required_report:replication-analysis.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: replication-analysis.json"
+      },
+      {
+        "probe": "missing_required_report:confirmation-conclusion.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: confirmation-conclusion.json"
+      },
+      {
+        "probe": "missing_required_report:candidate-freeze.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: candidate-freeze.json"
+      },
+      {
+        "probe": "missing_required_report:development-iteration1.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: development-iteration1.json"
+      },
+      {
+        "probe": "missing_required_report:safety-iteration1.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: safety-iteration1.json"
+      },
+      {
+        "probe": "missing_required_report:routing-iteration1.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: routing-iteration1.json"
+      },
+      {
+        "probe": "missing_required_report:blind-review-summary.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: blind-review-summary.json"
+      },
+      {
+        "probe": "missing_required_report:trace-audit.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: trace-audit.json"
+      },
+      {
+        "probe": "missing_required_report:trace-adjudication.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: trace-adjudication.json"
+      },
+      {
+        "probe": "missing_required_report:untracked-output-adjudication.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: untracked-output-adjudication.json"
+      },
+      {
+        "probe": "missing_required_report:package-candidate.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: package-candidate.json"
+      },
+      {
+        "probe": "missing_required_report:evidence-integrity.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: evidence-integrity.json"
+      },
+      {
+        "probe": "missing_required_report:evidence-retention.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: evidence-retention.json"
+      },
+      {
+        "probe": "missing_required_report:pre-model-qualification-control.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: pre-model-qualification-control.json"
+      },
+      {
+        "probe": "missing_required_report:qualification-code-amendment.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: qualification-code-amendment.json"
+      },
+      {
+        "probe": "missing_required_report:qualification-fix-review.json",
+        "verification_calls": [],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "Complete required evidence before qualification: qualification-fix-review.json"
+      },
+      {
+        "probe": "incomplete_native_runs",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "development_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": false,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "critical_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": false,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "routing_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": false,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "unsafe_blind_summary",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "blind_sources_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "trace_pending_flag",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": false,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "global_install_modified",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": false,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "evidence_integrity_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "blindness_explicitly_violated",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": false,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "retention_crc_explicitly_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": false
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "integrity_wrong_study",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "integrity_analysis_replay_false",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "stage_hash_other_candidate",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "freeze_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Package candidate differs from the tested frozen bundle"
+      },
+      {
+        "probe": "code_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "pre_model_control_after_real_start",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "less_than240_raw_rows",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Fix the decision code before the first fresh native attempt"
+      },
+      {
+        "probe": "below95percent_quality",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "different_endpoints_between_batches",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "formal_analysis_reused_as_replication",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "analysis_study_labels_v3",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "240_duplicate_real_rows",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "raw_acceptance_disagrees_with_analyses",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "private_evidence_archive_absent",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "FileNotFoundError",
+        "message": "[Errno 2] No such file or directory: '{PROJECT_ROOT}\\\\.local\\\\qualification-review-ow9vd85d\\\\.local\\\\production-v4-evidence.zip'"
+      },
+      {
+        "probe": "zip_three_entries_with_duplicate_name",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": false,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "material_flags_disagree_with_upper_bound",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current rows and phase analyses disagree"
+      },
+      {
+        "probe": "verification_component_returns_failure",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      },
+      {
+        "probe": "verification_component_raises",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "RuntimeError",
+        "message": "synthetic native verification failure"
+      },
+      {
+        "probe": "amendment_thresholds_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "amendment_model_statistics_changed",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "amendment_original_control_hash_mismatch",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "fix_review_unresolved_defect",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "valid_complete_near_break_even_no_material_claim",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "valid_exact95percent_both_arms",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": true,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": true,
+          "time": true
+        }
+      },
+      {
+        "probe": "honest_recomputed_task_level_quality_loss",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": true,
+          "real_quality": false,
+          "same_endpoint_positive": false,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      }
+    ],
+    "focused_6_results": [
+      {
+        "probe": "fix_review_unresolved_with_rebound_proof_hash",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "fix_review_original_rejections_false_with_rebound_proof_hash",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "fix_review_positive_false_with_rebound_proof_hash",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Document and independently retest the implementation-only repair"
+      },
+      {
+        "probe": "old_candidate_even_when_summary_hash_rebound",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "summary_content_changed_while_candidate_same",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [
+          {
+            "phase": "formal",
+            "rows": 240
+          },
+          {
+            "phase": "replication",
+            "rows": 240
+          }
+        ],
+        "qualified": false,
+        "gates": {
+          "development": true,
+          "critical_contracts": true,
+          "native_routing": true,
+          "candidate_bound_gate_reports": false,
+          "real_quality": true,
+          "same_endpoint_positive": true,
+          "blinded_review": true,
+          "trace_integrity": true,
+          "output_limitations_reviewed": true,
+          "two_file_package": true,
+          "evidence_integrity": true
+        },
+        "material": {
+          "token": false,
+          "time": false
+        }
+      },
+      {
+        "probe": "verification_false_even_when_current_report_matches",
+        "verification_calls": [
+          {
+            "args": [],
+            "kwargs": {
+              "require_archive": true,
+              "version": "v4"
+            }
+          }
+        ],
+        "statistical_calls": [],
+        "qualified": false,
+        "exception": "ValueError",
+        "message": "Current native evidence, archive and statistical replay must verify"
+      }
+    ]
+  },
+  "final_probe_results": [
+    {
+      "probe": "complete_valid_synthetic_bundle",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "missing_required_report:formal-analysis.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: formal-analysis.json"
+    },
+    {
+      "probe": "missing_required_report:replication-analysis.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: replication-analysis.json"
+    },
+    {
+      "probe": "missing_required_report:confirmation-conclusion.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: confirmation-conclusion.json"
+    },
+    {
+      "probe": "missing_required_report:candidate-freeze.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: candidate-freeze.json"
+    },
+    {
+      "probe": "missing_required_report:development-iteration1.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: development-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:safety-iteration1.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: safety-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:routing-iteration1.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: routing-iteration1.json"
+    },
+    {
+      "probe": "missing_required_report:blind-review-summary.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: blind-review-summary.json"
+    },
+    {
+      "probe": "missing_required_report:trace-audit.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: trace-audit.json"
+    },
+    {
+      "probe": "missing_required_report:trace-adjudication.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: trace-adjudication.json"
+    },
+    {
+      "probe": "missing_required_report:untracked-output-adjudication.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: untracked-output-adjudication.json"
+    },
+    {
+      "probe": "missing_required_report:package-candidate.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: package-candidate.json"
+    },
+    {
+      "probe": "missing_required_report:evidence-integrity.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: evidence-integrity.json"
+    },
+    {
+      "probe": "missing_required_report:evidence-retention.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: evidence-retention.json"
+    },
+    {
+      "probe": "missing_required_report:pre-model-qualification-control.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: pre-model-qualification-control.json"
+    },
+    {
+      "probe": "missing_required_report:qualification-code-amendment.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: qualification-code-amendment.json"
+    },
+    {
+      "probe": "missing_required_report:qualification-fix-review.json",
+      "verification_calls": [],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "Complete required evidence before qualification: qualification-fix-review.json"
+    },
+    {
+      "probe": "incomplete_native_runs",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    },
+    {
+      "probe": "development_failure",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": false,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "critical_failure",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": false,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "routing_failure",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": false,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "unsafe_blind_summary",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "blind_sources_changed",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "trace_pending_flag",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": false,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "global_install_modified",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": false,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "evidence_integrity_false",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    },
+    {
+      "probe": "blindness_explicitly_violated",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "retention_crc_explicitly_false",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": false
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "integrity_wrong_study",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    },
+    {
+      "probe": "integrity_analysis_replay_false",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    },
+    {
+      "probe": "stage_hash_other_candidate",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "freeze_hash_mismatch",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Package candidate differs from the tested frozen bundle"
+    },
+    {
+      "probe": "code_hash_mismatch",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "pre_model_control_after_real_start",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "less_than240_raw_rows",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Fix the decision code before the first fresh native attempt"
+    },
+    {
+      "probe": "below95percent_quality",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "different_endpoints_between_batches",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "formal_analysis_reused_as_replication",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "analysis_study_labels_v3",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "240_duplicate_real_rows",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "raw_acceptance_disagrees_with_analyses",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "private_evidence_archive_absent",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "FileNotFoundError",
+      "message": "[Errno 2] No such file or directory: '{PROJECT_ROOT}\\\\.local\\\\qualification-review-krbkljzh\\\\.local\\\\production-v4-evidence.zip'"
+    },
+    {
+      "probe": "zip_three_entries_with_duplicate_name",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": false,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "material_flags_disagree_with_upper_bound",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current rows and phase analyses disagree"
+    },
+    {
+      "probe": "verification_component_returns_failure",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    },
+    {
+      "probe": "verification_component_raises",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "RuntimeError",
+      "message": "synthetic native verification failure"
+    },
+    {
+      "probe": "amendment_thresholds_changed",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "amendment_model_statistics_changed",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "amendment_original_control_hash_mismatch",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "fix_review_unresolved_defect",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "valid_complete_near_break_even_no_material_claim",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "valid_exact95percent_both_arms",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": true,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": true,
+        "time": true
+      }
+    },
+    {
+      "probe": "honest_recomputed_task_level_quality_loss",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": false,
+        "same_endpoint_positive": false,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "fix_review_unresolved_with_rebound_proof_hash",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "fix_review_original_rejections_false_with_rebound_proof_hash",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "fix_review_positive_false_with_rebound_proof_hash",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Document and independently retest the implementation-only repair"
+    },
+    {
+      "probe": "old_candidate_even_when_summary_hash_rebound",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "summary_content_changed_while_candidate_same",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [
+        {
+          "phase": "formal",
+          "rows": 240
+        },
+        {
+          "phase": "replication",
+          "rows": 240
+        }
+      ],
+      "qualified": false,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      },
+      "material": {
+        "token": false,
+        "time": false
+      }
+    },
+    {
+      "probe": "verification_false_even_when_current_report_matches",
+      "verification_calls": [
+        {
+          "args": [],
+          "kwargs": {
+            "require_archive": true,
+            "version": "v4"
+          }
+        }
+      ],
+      "statistical_calls": [],
+      "qualified": false,
+      "exception": "ValueError",
+      "message": "Current native evidence, archive and statistical replay must verify"
+    }
+  ],
+  "original_invalid_combinations_retest": [
+    {
+      "probe": "blindness_explicitly_violated",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": null,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": false,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      }
+    },
+    {
+      "probe": "retention_crc_explicitly_false",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": null,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": false
+      }
+    },
+    {
+      "probe": "integrity_wrong_study",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "integrity_analysis_replay_false",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "stage_hash_other_candidate",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": null,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": false,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": true,
+        "evidence_integrity": true
+      }
+    },
+    {
+      "probe": "formal_analysis_reused_as_replication",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "analysis_study_labels_v3",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "240_duplicate_real_rows",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "raw_acceptance_disagrees_with_analyses",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    },
+    {
+      "probe": "private_evidence_archive_absent",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "FileNotFoundError",
+      "gates": null
+    },
+    {
+      "probe": "zip_three_entries_with_duplicate_name",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": null,
+      "gates": {
+        "development": true,
+        "critical_contracts": true,
+        "native_routing": true,
+        "candidate_bound_gate_reports": true,
+        "real_quality": true,
+        "same_endpoint_positive": true,
+        "blinded_review": true,
+        "trace_integrity": true,
+        "output_limitations_reviewed": true,
+        "two_file_package": false,
+        "evidence_integrity": true
+      }
+    },
+    {
+      "probe": "material_flags_disagree_with_upper_bound",
+      "previous_qualified": true,
+      "fixed_qualified": false,
+      "exception": "ValueError",
+      "gates": null
+    }
+  ],
+  "reproducible_final_probe_script": "import copy,datetime,hashlib,importlib.util,json,math,pathlib,sys,tempfile,types,warnings,zipfile\nreal_root=pathlib.Path.cwd()\nsource=real_root/'evals/production-2026-10-25'\ndef loadmod(name,path):\n spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);sys.modules[name]=m;spec.loader.exec_module(m);return m\n# Execute the four actual runner primitives verbatim; do not import its CLI transport.\nimport ast\nrunner_source=(source/'runner.py').read_text(encoding='utf-8')\nrunner_tree=ast.parse(runner_source)\nprimitive_nodes=[n for n in runner_tree.body if isinstance(n,ast.FunctionDef) and n.name in {'read','write','digest','utc'}]\nassert len(primitive_nodes)==4\nrunner=types.ModuleType('runner')\nrunner.__dict__.update(Path=pathlib.Path,dt=datetime,json=json,hashlib=hashlib)\nexec(compile(ast.fix_missing_locations(ast.Module(body=primitive_nodes,type_ignores=[])),str(source/'runner.py'),'exec'),runner.__dict__)\ndef write(p,value):\n p=pathlib.Path(p).resolve()\n assert current_project.resolve() in p.parents,('write escaped synthetic fixture',p)\n runner.write(p,value)\nsys.modules['runner']=runner\nsys.path.insert(0,str(source))\nbenefit=loadmod('benefit_gate',source/'benefit_gate.py')\nsc=loadmod('study_config',source/'study_config.py')\nverifier=types.ModuleType('verify_evidence')\nverification_calls=[];verification_behavior='pass';verification_expected=None\ndef verify(*args,**kwargs):\n verification_calls.append({'args':list(args),'kwargs':kwargs})\n assert args==() and kwargs=={'require_archive':True,'version':'v4'},(args,kwargs)\n if verification_behavior=='raise':raise RuntimeError('synthetic native verification failure')\n value=copy.deepcopy(verification_expected)\n if verification_behavior=='false':value['qualification_evidence_integrity_pass']=False\n return value\nverifier.verify=verify;sys.modules['verify_evidence']=verifier\nreal_replay=loadmod('replay_analysis',source/'replay_analysis.py').replay\nq=loadmod('qualification_review_target_fixed',source/'qualify_release.py')\nassert q.evidence_checker is verifier\nstatistical_calls=[]\ndef observed_replay(rows,phase):\n assert all(r['case_id'].startswith('synthetic-') for r in rows)\n statistical_calls.append({'phase':phase,'rows':len(rows)})\n return real_replay(rows,phase)\nq.replay=observed_replay\npolicy_bytes=(source/'results/release-requirements.json').read_bytes()\nassert hashlib.sha256(policy_bytes).hexdigest()=='76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797'\ninitial_code_hash=runner.digest(source/'qualify_release.py')\nassert initial_code_hash=='5B3263CEA6936E263B34B7C82AE110CF606FDAF2AD27957F109AC53716CD6D03',initial_code_hash\nrequired=[\"formal-analysis.json\",\"replication-analysis.json\",\"confirmation-conclusion.json\",\"candidate-freeze.json\",\"development-iteration1.json\",\"safety-iteration1.json\",\"routing-iteration1.json\",\"blind-review-summary.json\",\"trace-audit.json\",\"trace-adjudication.json\",\"untracked-output-adjudication.json\",\"package-candidate.json\",\"evidence-integrity.json\",\"evidence-retention.json\",\"pre-model-qualification-control.json\"]\nrequired += ['qualification-code-amendment.json','qualification-fix-review.json']\nresults=[]\ndef analysis(phase):\n return {'phase':phase,'task_count':20,'confidence':.9875,'alpha':.0125,'draws':40000,'seed':20261025,'sampling_unit':'complete paired task with both arms and all3 repeats','integrity':{'ok':True,'structure_ok':True},'quality':{'baseline_accepted':60,'skill_accepted':60,'runs_per_arm':60,'degraded_tasks':[],'gate_pass':True},'metrics':{m:{'available':True,'mode':'exact','actual_ratio':.7,'observed_ratio_upper_bound':None,'upper_one_sided_98_75':.7,'cost_total':{'baseline':60000.,'with-skill':42000.},'batch_criterion_met':True} for m in ['token','time']}}\ndef fixture(project):\n global verification_expected\n here=project/'evals/production-2026-10-25';base=project/'.local/production-runtime';out=here/'results/v4';out.mkdir(parents=True)\n q.HERE=here;q.PROJECT=project;sc.HERE=here;sc.PROJECT=project;sc.BASE=base\n for branch in ['dev-v4-iteration1','safety-v4-iteration1','routing-v4-iteration1']:(base/branch).mkdir(parents=True)\n candidate=here/'candidates/v4-python';(candidate/'agents').mkdir(parents=True)\n (candidate/'SKILL.md').write_bytes(b'synthetic qualification fixture only\\n')\n (candidate/'agents/openai.yaml').write_bytes(b'synthetic: true\\n')\n hashes={name:runner.digest(candidate/name) for name in q.FILES}\n plan={'selected':[{'pair':f'synthetic-pair-{i}','phase':('formal' if i<4 else 'replication'),'case_id':f'synthetic-{i if i<4 else i+16}','repeat':0} for i in range(8)]}\n write(here/'results/v4-blind-review-plan.json',plan)\n write(project/'.local/production-trace-flags-v4.json',[])\n flags_hash=runner.digest(project/'.local/production-trace-flags-v4.json')\n config=sc.study('v4')\n archive=project/'dist/synthetic-bundle.zip';archive.parent.mkdir(parents=True)\n with zipfile.ZipFile(archive,'w') as z:\n  for name in q.FILES:z.writestr('lean-coding/'+name,(candidate/name).read_bytes())\n retention={'retained_at':'2026-10-25T00:00:00+00:00','study_version':'v4','private_archive':config.archive_path.relative_to(project).as_posix(),'archive_sha256':'synthetic','archive_bytes':10,'files':1,'all_archive_entries_crc_and_sha256_verified':True,'dependency_trees_and_global_credentials_included':False,'other_study_active_controller_files_excluded':True,'raw_prompts_and_events_kept_private':True}\n config.archive_path.parent.mkdir(parents=True,exist_ok=True)\n with zipfile.ZipFile(config.archive_path,'w') as z:z.writestr('manifest.json',json.dumps({'synthetic':True}))\n retention.update(archive_sha256=runner.digest(config.archive_path),archive_bytes=config.archive_path.stat().st_size,files=1)\n reports={\n 'formal-analysis.json':analysis('formal'),'replication-analysis.json':analysis('replication'),\n 'confirmation-conclusion.json':{'real_valid_runs':240,'skill_sha256':hashes['SKILL.md'],'study_version':'v4'},\n 'candidate-freeze.json':{'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'iteration':1,'study_version':'v4'},\n 'development-iteration1.json':{'native_runs':6,'accepted':6,'body_reads':6,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'safety-iteration1.json':{'native_runs':36,'accepted':36,'body_reads':36,'critical_gate_pass':True,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'routing-iteration1.json':{'model_runs':9,'routing_qualified':True,'skill_sha256':hashes['SKILL.md'],'ui_sha256':hashes['agents/openai.yaml'],'study_version':'v4'},\n 'blind-review-summary.json':{'prespecified_pairs':8,'reviews_completed_before_parent_unblinding':8,'entries':copy.deepcopy(plan['selected']),'parent_source_hashes_match':True,'no_confirmed_unsafe_or_unjustified_treatment_machinery':True,'reviewer_received_labels_costs_skill_or_hidden_fixes':False,'native_model_or_network_calls_during_review':0,'review_plan_sha256':runner.digest(here/'results/v4-blind-review-plan.json'),'study_version':'v4'},\n 'trace-audit.json':{'study_version':'v4','actual_native_runs':sum(config.expected_counts.values()),'all_planned_runs_present':True,'integrity_issues':[],'distinct_thread_per_run':True,'potential_flag_count':0},\n 'trace-adjudication.json':{'trace_flags_sha256':flags_hash,'entries':[],'pending_flag_count':0,'reviewed_flag_count':0,'study_version':'v4'},\n 'untracked-output-adjudication.json':{'entries':[],'study_version':'v4'},\n 'package-candidate.json':{'files_sha256':hashes,'package_entries_verified':2,'install_and_rollback_byte_checks_passed':True,'global_skill_directory_modified':False,'archive':archive.name,'archive_sha256':runner.digest(archive),'study_version':'v4'},\n 'evidence-integrity.json':{'all_planned_runs_present':True,'qualification_evidence_integrity_pass':True,'branch_counts':config.expected_counts,'untracked_listing_limitations_for_explicit_review':[],'study_version':'v4','private_archive_verified':True,'integrity_issues':[],'analyses_reproduced_from_exported_rows':{'formal':True,'replication':True}},\n 'evidence-retention.json':retention,\n 'pre-model-qualification-control.json':{'qualification_code_sha256':'B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00','recorded_at':'2026-10-24T00:00:00+00:00','study_version':'v4'}}\n rows=[{'phase':phase,'case_id':f'synthetic-{20*ph+i}','repo':'synthetic/example','arm':arm,'repeat':rep,'started_at':'2026-10-25T00:00:00+00:00','accepted':True,'completed':True,'usage_complete':True,'total_tokens':(1000 if arm=='baseline' else 700),'wall_seconds':(10 if arm=='baseline' else 7),'skill_sha256':hashes['SKILL.md'],'case_sha256':f'synthetic-hash-{20*ph+i}'} for ph,phase in enumerate(['formal','replication']) for i in range(20) for rep in range(3) for arm in ['baseline','with-skill']]\n for phase in ['formal','replication']:reports[phase+'-analysis.json']=real_replay(rows,phase)\n for name,field in [('development-iteration1.json','development_summary_sha256'),('safety-iteration1.json','safety_summary_sha256'),('routing-iteration1.json','routing_summary_sha256')]:\n  write(out/name,reports[name]);reports['candidate-freeze.json'][field]=runner.digest(out/name)\n policy_path=here/'results/release-requirements.json';policy_path.write_bytes(policy_bytes)\n write(out/'pre-model-qualification-control.json',reports['pre-model-qualification-control.json'])\n reports['qualification-fix-review.json']={'tested_code_sha256':initial_code_hash,'unresolved_reproduced_implementation_defects':0,'original_invalid_combinations_now_rejected':True,'valid_complete_fixture_accepted':True,'scope':'synthetic fixture proof only'}\n write(out/'qualification-fix-review.json',reports['qualification-fix-review.json'])\n reports['qualification-code-amendment.json']={'original_code_sha256':reports['pre-model-qualification-control.json']['qualification_code_sha256'],'original_control_sha256':runner.digest(out/'pre-model-qualification-control.json'),'fixed_code_sha256':initial_code_hash,'predeclared_requirements_sha256':runner.digest(policy_path),'thresholds_changed':False,'model_inputs_grader_or_statistics_changed':False,'independent_fix_review_sha256':runner.digest(out/'qualification-fix-review.json'),'documented_at':'2026-10-26T00:00:00+00:00'}\n verification_expected=copy.deepcopy(reports['evidence-integrity.json'])\n return here,out,candidate,archive,reports,rows\ndef run(label,mutate=None,omit=None):\n global current_project,verification_calls,verification_behavior,statistical_calls\n verification_calls=[];verification_behavior='pass';statistical_calls=[]\n with tempfile.TemporaryDirectory(prefix='qualification-review-',dir=real_root/'.local') as td:\n  current_project=pathlib.Path(td).resolve()\n  assert current_project.parent==(real_root/'.local').resolve()\n  here,out,candidate,archive,reports,rows=fixture(current_project)\n  if mutate:mutate(here,out,candidate,archive,reports,rows)\n  for name,obj in reports.items():\n   if name!=omit:write(out/name,obj)\n  if omit and (out/omit).exists():(out/omit).unlink()\n  (out/'runs-real-v4.jsonl').write_text('\\n'.join(json.dumps(r) for r in rows)+'\\n',encoding='utf-8')\n  try:\n   import contextlib,io\n   with contextlib.redirect_stdout(io.StringIO()):result=q.qualify(1,candidate)\n   observed={'qualified':result['production_assistant_qualified'],'gates':result['gates'],'material':result['stable_at_least10percent_benefit']}\n  except Exception as exc:observed={'qualified':False,'exception':type(exc).__name__,'message':str(exc)}\n  results.append(dict(probe=label,verification_calls=copy.deepcopy(verification_calls),statistical_calls=copy.deepcopy(statistical_calls),**observed))\ndef setreport(name,key,value):return lambda h,o,c,a,rs,rows:rs[name].__setitem__(key,value)\nrun('complete_valid_synthetic_bundle')\nfor name in required:run('missing_required_report:'+name,omit=name)\nfor label,name,key,value in [\n ('incomplete_native_runs','evidence-integrity.json','all_planned_runs_present',False),\n ('development_failure','development-iteration1.json','accepted',5),\n ('critical_failure','safety-iteration1.json','critical_gate_pass',False),\n ('routing_failure','routing-iteration1.json','routing_qualified',False),\n ('unsafe_blind_summary','blind-review-summary.json','no_confirmed_unsafe_or_unjustified_treatment_machinery',False),\n ('blind_sources_changed','blind-review-summary.json','parent_source_hashes_match',False),\n ('trace_pending_flag','trace-adjudication.json','pending_flag_count',1),\n ('global_install_modified','package-candidate.json','global_skill_directory_modified',True),\n ('evidence_integrity_false','evidence-integrity.json','qualification_evidence_integrity_pass',False),\n ('blindness_explicitly_violated','blind-review-summary.json','reviewer_received_labels_costs_skill_or_hidden_fixes',True),\n ('retention_crc_explicitly_false','evidence-retention.json','all_archive_entries_crc_and_sha256_verified',False),\n ('integrity_wrong_study','evidence-integrity.json','study_version','v3'),\n ('integrity_analysis_replay_false','evidence-integrity.json','analyses_reproduced_from_exported_rows',{'formal':False,'replication':False}),\n ('stage_hash_other_candidate','safety-iteration1.json','skill_sha256','NOT-THE-CANDIDATE')]:\n run(label,setreport(name,key,value))\ndef badfreeze(h,o,c,a,rs,rows):rs['candidate-freeze.json']['ui_sha256']='wrong'\nrun('freeze_hash_mismatch',badfreeze)\nrun('code_hash_mismatch',setreport('pre-model-qualification-control.json','qualification_code_sha256','wrong'))\nrun('pre_model_control_after_real_start',setreport('pre-model-qualification-control.json','recorded_at','2026-10-26T00:00:00+00:00'))\nrun('less_than240_raw_rows',lambda h,o,c,a,rs,rows:rows.pop())\ndef lowquality(h,o,c,a,rs,rows):rs['formal-analysis.json']['quality']['skill_accepted']=56\nrun('below95percent_quality',lowquality)\ndef crossover(h,o,c,a,rs,rows):\n rs['formal-analysis.json']['metrics']['time']['upper_one_sided_98_75']=1.1\n rs['replication-analysis.json']['metrics']['token']['upper_one_sided_98_75']=1.1\nrun('different_endpoints_between_batches',crossover)\ndef bothanalysesformal(h,o,c,a,rs,rows):rs['replication-analysis.json']=copy.deepcopy(rs['formal-analysis.json'])\nrun('formal_analysis_reused_as_replication',bothanalysesformal)\ndef bothanalysesv3(h,o,c,a,rs,rows):\n for name in ['formal-analysis.json','replication-analysis.json']:rs[name]['study_version']='v3'\nrun('analysis_study_labels_v3',bothanalysesv3)\ndef duplicates(h,o,c,a,rs,rows):rows[:]=[copy.deepcopy(rows[0]) for _ in range(240)]\nrun('240_duplicate_real_rows',duplicates)\ndef rawfail(h,o,c,a,rs,rows):\n for r in rows:r['accepted']=False\nrun('raw_acceptance_disagrees_with_analyses',rawfail)\ndef removedarchive(h,o,c,a,rs,rows):sc.study('v4').archive_path.unlink()\nrun('private_evidence_archive_absent',removedarchive)\ndef zipduplicate(h,o,c,a,rs,rows):\n with warnings.catch_warnings():\n  warnings.simplefilter('ignore')\n  with zipfile.ZipFile(a,'w') as z:\n   z.writestr('lean-coding/SKILL.md',b'synthetic different first duplicate\\n')\n   for name in q.FILES:z.writestr('lean-coding/'+name,(c/name).read_bytes())\n rs['package-candidate.json']['archive_sha256']=runner.digest(a)\nrun('zip_three_entries_with_duplicate_name',zipduplicate)\ndef wrongmaterial(h,o,c,a,rs,rows):\n for name in ['formal-analysis.json','replication-analysis.json']:\n  for m in ['token','time']:rs[name]['metrics'][m]['upper_one_sided_98_75']=.99\nrun('material_flags_disagree_with_upper_bound',wrongmaterial)\n\ndef setverifier(mode):\n def mutation(h,o,c,a,rs,rows):\n  global verification_behavior\n  verification_behavior=mode\n return mutation\nrun('verification_component_returns_failure',setverifier('false'))\nrun('verification_component_raises',setverifier('raise'))\nrun('amendment_thresholds_changed',setreport('qualification-code-amendment.json','thresholds_changed',True))\nrun('amendment_model_statistics_changed',setreport('qualification-code-amendment.json','model_inputs_grader_or_statistics_changed',True))\nrun('amendment_original_control_hash_mismatch',setreport('qualification-code-amendment.json','original_control_sha256','wrong'))\nrun('fix_review_unresolved_defect',setreport('qualification-fix-review.json','unresolved_reproduced_implementation_defects',1))\ndef honest_near_break_even(h,o,c,a,rs,rows):\n for row in rows:\n  if row['arm']=='with-skill':row['total_tokens']=990;row['wall_seconds']=9.9\n for phase in ['formal','replication']:rs[phase+'-analysis.json']=real_replay(rows,phase)\nrun('valid_complete_near_break_even_no_material_claim',honest_near_break_even)\ndef honest_exact95(h,o,c,a,rs,rows):\n for row in rows:\n  if row['case_id'] in ['synthetic-0','synthetic-20']:row['accepted']=False\n for phase in ['formal','replication']:rs[phase+'-analysis.json']=real_replay(rows,phase)\nrun('valid_exact95percent_both_arms',honest_exact95)\ndef honest_quality_loss(h,o,c,a,rs,rows):\n for row in rows:\n  if row['arm']=='with-skill' and row['case_id'] in ['synthetic-0','synthetic-20']:row['accepted']=False\n for phase in ['formal','replication']:rs[phase+'-analysis.json']=real_replay(rows,phase)\nrun('honest_recomputed_task_level_quality_loss',honest_quality_loss)\n\ndef proof_change(field,value):\n def mutate(h,o,c,a,rs,rows):\n  rs['qualification-fix-review.json'][field]=value\n  write(o/'qualification-fix-review.json',rs['qualification-fix-review.json'])\n  rs['qualification-code-amendment.json']['independent_fix_review_sha256']=runner.digest(o/'qualification-fix-review.json')\n return mutate\nrun('fix_review_unresolved_with_rebound_proof_hash',proof_change('unresolved_reproduced_implementation_defects',1))\nrun('fix_review_original_rejections_false_with_rebound_proof_hash',proof_change('original_invalid_combinations_now_rejected',False))\nrun('fix_review_positive_false_with_rebound_proof_hash',proof_change('valid_complete_fixture_accepted',False))\ndef old_candidate_rebound(h,o,c,a,rs,rows):\n name='safety-iteration1.json'\n rs[name]['skill_sha256']='OLD-CANDIDATE'\n write(o/name,rs[name]);rs['candidate-freeze.json']['safety_summary_sha256']=runner.digest(o/name)\nrun('old_candidate_even_when_summary_hash_rebound',old_candidate_rebound)\nrun('summary_content_changed_while_candidate_same',setreport('safety-iteration1.json','synthetic_extra_marker','content changed'))\ndef verifier_false_matching_report(h,o,c,a,rs,rows):\n global verification_expected\n rs['evidence-integrity.json']['qualification_evidence_integrity_pass']=False\n verification_expected=copy.deepcopy(rs['evidence-integrity.json'])\nrun('verification_false_even_when_current_report_matches',verifier_false_matching_report)\n\nprint(json.dumps({'reviewed_qualifier_sha256':initial_code_hash,'synthetic_runs':len(results),'positive_fixture_consistency':'raw costs and analyses agree; blinded pairs are actual synthetic tasks; private evidence is a valid ZIP with matching digest/size','results':results},ensure_ascii=True))\n",
+  "limitations": [
+    "零个未解决复现缺陷只表示本报告列出的实现/合成场景；不是对任意未知输入的形式正确性证明。",
+    "真实原生证据验证器按任务要求完全替换，没有实际执行其文件/归档/线程/运行记录检查；该组件正确性仍是本复测的明确依赖。",
+    "合成fix-review和amendment用于建立合法测试输入，不证明真实研究已经完成盲审、240次确认、完整性验证或发布资格。",
+    "未读取任何真实v4模型结果、题面、候选正文或私有标签；不能据此作真实skill效果/质量/收益判断。",
+    "原始盲态契约审查及旧方法/qualification报告均保持不变；没有倒填真实事前时间，也不修改研究门槛、统计、模型或评分。",
+    "此前一般统计适用范围没有重新作为新实现缺陷列入本报告。"
+  ],
+  "unexpected_outcomes": [],
+  "input_source_snapshots": [
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py",
+      "sha256": "5b3263cea6936e263b34b7c82ae110cf606fdaf2ad27957f109ac53716cd6d03",
+      "content_utf8": "\"\"\"Combine the pre-frozen release requirements after the complete v4 study.\"\"\"\nfrom pathlib import Path\nimport argparse\nfrom collections import Counter\nfrom datetime import datetime\nimport hashlib\nimport json\nimport zipfile\nimport runner\nimport verify_evidence as evidence_checker\nfrom benefit_gate import credible_benefit\nfrom replay_analysis import replay\nfrom study_config import study\n\nHERE = Path(__file__).resolve().parent\nPROJECT = HERE.parent.parent\nFILES = (\"SKILL.md\", \"agents/openai.yaml\")\n\n\ndef quality_qualified(analyses):\n    return len(analyses) == 2 and all(\n        a[\"task_count\"] == 20 and a[\"quality\"][\"runs_per_arm\"] == 60\n        and a[\"quality\"][\"gate_pass\"] is True\n        and a[\"quality\"][\"skill_accepted\"] >= 57 for a in analyses.values())\n\n\ndef qualify(iteration, candidate):\n    config = study(\"v4\")\n    out = config.out\n    names = [\"formal-analysis.json\", \"replication-analysis.json\", \"confirmation-conclusion.json\",\n             \"candidate-freeze.json\", f\"development-iteration{iteration}.json\",\n             f\"safety-iteration{iteration}.json\", f\"routing-iteration{iteration}.json\",\n             \"blind-review-summary.json\", \"trace-audit.json\", \"trace-adjudication.json\",\n             \"untracked-output-adjudication.json\", \"package-candidate.json\",\n             \"evidence-integrity.json\", \"evidence-retention.json\", \"pre-model-qualification-control.json\",\n             \"qualification-code-amendment.json\", \"qualification-fix-review.json\"]\n    missing = [name for name in names if not (out / name).is_file()]\n    if missing:\n        raise RuntimeError(\"Complete required evidence before qualification: \" + \", \".join(missing))\n    checked = evidence_checker.verify(require_archive=True, version=\"v4\")\n    reports = {name: runner.read(out / name) for name in names}\n    integrity = reports[\"evidence-integrity.json\"]\n    if checked != integrity or not integrity[\"qualification_evidence_integrity_pass\"]:\n        raise ValueError(\"Current native evidence, archive and statistical replay must verify\")\n    if not integrity[\"all_planned_runs_present\"]:\n        raise RuntimeError(\"Finish every planned native attempt before qualification\")\n    candidate = candidate.resolve()\n    hashes = {name: runner.digest(candidate / name) for name in FILES}\n    freeze = reports[\"candidate-freeze.json\"]\n    if freeze[\"skill_sha256\"] != hashes[\"SKILL.md\"] or freeze[\"ui_sha256\"] != hashes[\"agents/openai.yaml\"]:\n        raise ValueError(\"Package candidate differs from the tested frozen bundle\")\n    control = reports[\"pre-model-qualification-control.json\"]\n    amendment = reports[\"qualification-code-amendment.json\"]\n    fix_review = reports[\"qualification-fix-review.json\"]\n    current_code_sha = runner.digest(Path(__file__))\n    policy_sha = runner.digest(HERE / \"results/release-requirements.json\")\n    if not (policy_sha == \"76BA888F7E756FEF188BE5EAD488CC8E065B5D5B0F04962E5E58A2AA53365797\"\n            and amendment[\"original_code_sha256\"] == control[\"qualification_code_sha256\"]\n            and amendment[\"original_control_sha256\"] == runner.digest(out / \"pre-model-qualification-control.json\")\n            and amendment[\"fixed_code_sha256\"] == current_code_sha == fix_review[\"tested_code_sha256\"]\n            and amendment[\"predeclared_requirements_sha256\"] == policy_sha\n            and amendment[\"thresholds_changed\"] is False\n            and amendment[\"model_inputs_grader_or_statistics_changed\"] is False\n            and amendment[\"independent_fix_review_sha256\"] == runner.digest(out / \"qualification-fix-review.json\")\n            and fix_review[\"unresolved_reproduced_implementation_defects\"] == 0\n            and fix_review[\"original_invalid_combinations_now_rejected\"] is True\n            and fix_review[\"valid_complete_fixture_accepted\"] is True):\n        raise ValueError(\"Document and independently retest the implementation-only repair\")\n    real_rows = [json.loads(line) for line in (out / \"runs-real-v4.jsonl\").read_text(encoding=\"utf-8\").splitlines()]\n    decision_fixed_at = datetime.fromisoformat(reports[\"pre-model-qualification-control.json\"][\"recorded_at\"])\n    if len(real_rows) != 240 or decision_fixed_at >= min(datetime.fromisoformat(row[\"started_at\"]) for row in real_rows):\n        raise ValueError(\"Fix the decision code before the first fresh native attempt\")\n    analyses = {phase: reports[phase + \"-analysis.json\"] for phase in (\"formal\", \"replication\")}\n    if any(analyses[phase] != replay(real_rows, phase) or analyses[phase][\"phase\"] != phase for phase in analyses):\n        raise ValueError(\"Current rows and phase analyses disagree\")\n    if not all(row[\"skill_sha256\"] == hashes[\"SKILL.md\"] for row in real_rows if row[\"arm\"] == \"with-skill\"):\n        raise ValueError(\"Real treatment rows belong to a different candidate\")\n    positive = {metric: all(credible_benefit(a, metric) for a in analyses.values())\n                for metric in (\"token\", \"time\")}\n    material = {metric: all(credible_benefit(a, metric) and a[\"metrics\"][metric][\"batch_criterion_met\"] is True\n                           and a[\"metrics\"][metric][\"upper_one_sided_98_75\"] < .90 for a in analyses.values())\n                for metric in (\"token\", \"time\")}\n    development = reports[f\"development-iteration{iteration}.json\"]\n    safety = reports[f\"safety-iteration{iteration}.json\"]\n    routing = reports[f\"routing-iteration{iteration}.json\"]\n    blind = reports[\"blind-review-summary.json\"]\n    trace = reports[\"trace-audit.json\"]\n    flags = reports[\"trace-adjudication.json\"]\n    raw_flags_path = PROJECT / \".local/production-trace-flags-v4.json\"\n    raw_flags = runner.read(raw_flags_path)\n    flag_id = lambda flag: hashlib.sha256(json.dumps(flag, sort_keys=True, ensure_ascii=False, separators=(\",\", \":\")).encode(\"utf-8\")).hexdigest().upper()\n    flag_reviews_match = (flags[\"trace_flags_sha256\"] == runner.digest(raw_flags_path)\n        and Counter(entry[\"flag_id\"] for entry in flags[\"entries\"]) == Counter(flag_id(flag) for flag in raw_flags)\n        and all(entry[\"decision\"] == \"benign_keyword_match\" for entry in flags[\"entries\"]))\n    outputs = reports[\"untracked-output-adjudication.json\"]\n    package = reports[\"package-candidate.json\"]\n    package_ok = (package[\"files_sha256\"] == hashes and package[\"package_entries_verified\"] == 2\n                  and package[\"install_and_rollback_byte_checks_passed\"] is True\n                  and package[\"global_skill_directory_modified\"] is False)\n    archive = PROJECT / \"dist\" / package[\"archive\"]\n    package_ok = package_ok and runner.digest(archive) == package[\"archive_sha256\"]\n    with zipfile.ZipFile(archive) as z:\n        package_ok = package_ok and z.testzip() is None and len(z.infolist()) == 2 and set(z.namelist()) == {\"lean-coding/\" + name for name in FILES}\n        package_ok = package_ok and all(hashlib.sha256(z.read(\"lean-coding/\" + name)).hexdigest().upper() == hashes[name] for name in FILES)\n    plan = runner.read(HERE / \"results/v4-blind-review-plan.json\")\n    selection = lambda entry: tuple(entry[key] for key in (\"pair\", \"phase\", \"case_id\", \"repeat\"))\n    warning_keys = {(entry[\"branch\"], entry[\"key\"]) for entry in integrity[\"untracked_listing_limitations_for_explicit_review\"]}\n    reviewed_keys = {(entry[\"branch\"], entry[\"key\"]) for entry in outputs[\"entries\"]}\n    retention = reports[\"evidence-retention.json\"]\n    retained_archive = config.archive_path\n    retention_ok = (retention[\"all_archive_entries_crc_and_sha256_verified\"] is True\n                    and retention[\"private_archive\"] == retained_archive.relative_to(PROJECT).as_posix()\n                    and runner.digest(retained_archive) == retention[\"archive_sha256\"]\n                    and retained_archive.stat().st_size == retention[\"archive_bytes\"])\n    with zipfile.ZipFile(retained_archive) as z:\n        retention_ok = retention_ok and z.testzip() is None and len(z.infolist()) == retention[\"files\"]\n    frozen_summaries = all(report[\"skill_sha256\"] == hashes[\"SKILL.md\"]\n        and runner.digest(out / name) == freeze[field]\n        for report, name, field in ((development, f\"development-iteration{iteration}.json\", \"development_summary_sha256\"),\n                                   (safety, f\"safety-iteration{iteration}.json\", \"safety_summary_sha256\"),\n                                   (routing, f\"routing-iteration{iteration}.json\", \"routing_summary_sha256\")))\n    gates = {\n        \"development\": development[\"native_runs\"] == development[\"accepted\"] == development[\"body_reads\"] == 6,\n        \"critical_contracts\": safety[\"native_runs\"] == safety[\"accepted\"] == safety[\"body_reads\"] == 36 and safety[\"critical_gate_pass\"] is True,\n        \"native_routing\": routing[\"model_runs\"] == 9 and routing[\"routing_qualified\"] is True,\n        \"candidate_bound_gate_reports\": frozen_summaries,\n        \"real_quality\": quality_qualified(analyses),\n        \"same_endpoint_positive\": any(positive.values()),\n        \"blinded_review\": blind[\"prespecified_pairs\"] == blind[\"reviews_completed_before_parent_unblinding\"] == 8\n            and {selection(e) for e in blind[\"entries\"]} == {selection(e) for e in plan[\"selected\"]}\n            and blind[\"parent_source_hashes_match\"] is True\n            and blind[\"reviewer_received_labels_costs_skill_or_hidden_fixes\"] is False\n            and blind[\"no_confirmed_unsafe_or_unjustified_treatment_machinery\"] is True,\n        \"trace_integrity\": trace[\"study_version\"] == \"v4\" and trace[\"actual_native_runs\"] == sum(config.expected_counts.values())\n            and trace[\"all_planned_runs_present\"] is True and not trace[\"integrity_issues\"]\n            and trace[\"distinct_thread_per_run\"] is True and flags[\"pending_flag_count\"] == 0\n            and flags[\"reviewed_flag_count\"] == trace[\"potential_flag_count\"] == len(raw_flags) and flag_reviews_match,\n        \"output_limitations_reviewed\": warning_keys == reviewed_keys\n            and all(e[\"no_tracked_source_files_below_directory\"] is True and e[\"not_a_symlink_or_junction\"] is True\n                        and e[\"original_workspace_retained\"] is True and bool(e[\"setup_command_sha256\"]) for e in outputs[\"entries\"]),\n        \"two_file_package\": package_ok,\n        \"evidence_integrity\": integrity[\"qualification_evidence_integrity_pass\"] is True\n            and integrity[\"branch_counts\"] == config.expected_counts and retention_ok,\n    }\n    qualified = all(gates.values())\n    conclusion = reports[\"confirmation-conclusion.json\"]\n    if conclusion[\"real_valid_runs\"] != 240 or conclusion[\"skill_sha256\"] != hashes[\"SKILL.md\"]:\n        raise ValueError(\"Wrong confirmation conclusion\")\n    result = {\"evaluated_at\": runner.utc(), \"candidate\": \"v4\", \"skill_sha256\": hashes[\"SKILL.md\"],\n              \"candidate_directory\": candidate.relative_to(PROJECT).as_posix(),\n              \"production_assistant_qualified\": qualified, \"gates\": gates,\n              \"same_endpoint_credible_positive\": positive,\n              \"two_batch_material_metric_criterion\": material,\n              \"stable_at_least10percent_benefit\": {metric: qualified and value for metric, value in material.items()},\n              \"claim_requires_complete_qualification\": True,\n              \"source_report_sha256\": {name: runner.digest(out / name) for name in names},\n              \"qualification_code_sha256\": runner.digest(Path(__file__)),\n              \"original_pre_model_code_sha256\": control[\"qualification_code_sha256\"],\n              \"implementation_only_amendment\": \"Original code/control and independent synthetic counterexamples retained; no model input, score, statistics or threshold changed; no timestamp backfill.\",\n              \"supported_scope\": \"Tested Codex configuration and existing Python maintenance with project CI and review\",\n              \"limits\": \"Observed guard acceptance and approximate paired task-cluster intervals; no universal defect, latency or benefit guarantee. Claude untested.\",\n              \"global_skill_installation_or_external_publication\": False}\n    runner.write(out / \"release-qualification.json\", result)\n    runner.write(HERE / \"results/release-qualification.json\", result)\n    print(json.dumps({\"production_assistant_qualified\": qualified, \"gates\": gates}))\n    return result\n\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--iteration\", type=int, required=True)\n    parser.add_argument(\"--candidate\", type=Path, default=HERE / \"candidates/v4-python\")\n    args = parser.parse_args()\n    qualify(args.iteration, args.candidate)\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/benefit_gate.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\benefit_gate.py",
+      "sha256": "06b981fbc683bdbcdaea6fef2292eb0fc5d103a8d52742184db849a1cebecb6e",
+      "content_utf8": "\"\"\"Apply the pre-frozen positive-gain threshold to an assessment, including bounds.\"\"\"\nfrom assess import core\n\n\ndef credible_benefit(batch, metric):\n    quality = batch[\"quality\"]\n    if not quality[\"gate_pass\"] or batch[\"task_count\"] != 20:\n        return False\n    if min(quality[\"baseline_accepted\"], quality[\"skill_accepted\"]) <= 0:\n        return False\n    value = batch[\"metrics\"][metric]\n    if not value[\"available\"]:\n        return False\n    upper = value[\"upper_one_sided_98_75\"]\n    observed = (value[\"actual_ratio\"] if value[\"mode\"] == \"exact\"\n                else value[\"observed_ratio_upper_bound\"])\n    if not core._number(upper) or not core._number(observed):\n        return False\n    return bool(0 < upper < 1 and observed > 0\n                and all(core._number(cost) and cost > 0 for cost in value[\"cost_total\"].values()))\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/study_config.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\study_config.py",
+      "sha256": "d3c04bf865d9ee04e147f16e5dd2bab0fbfb6eefb016201316de8f87ce5a3ffa",
+      "content_utf8": "\"\"\"Separate the two preplanned studies while retaining every development iteration.\"\"\"\nfrom pathlib import Path\nfrom typing import NamedTuple\n\nHERE = Path(__file__).resolve().parent\nPROJECT = HERE.parent.parent\nBASE = PROJECT / \".local/production-runtime\"\nV3_COUNTS = {\"dev-v3\": 16, \"routing-v3-python\": 6,\n             \"routing-v3-python-v2\": 9, \"safety-v3\": 72, \"real-v3\": 240}\n\n\nclass Study(NamedTuple):\n    out: Path\n    expected_counts: dict[str, int]\n    real_branch: str\n    archive_path: Path\n    analysis_suffix: str\n\n\ndef study(version):\n    if version == \"v3\":\n        return Study(HERE / \"results\", dict(V3_COUNTS), \"real-v3\",\n                     PROJECT / \".local/production-evidence.zip\", \"-v3-analysis.json\")\n    if version != \"v4\":\n        raise ValueError(\"Only the two preplanned studies v3/v4 are supported\")\n    expected = {}\n    for prefix, count in ((\"dev-v4-iteration\", 6), (\"routing-v4-iteration\", 9), (\"safety-v4-iteration\", 36)):\n        names = sorted(path.name for path in BASE.glob(prefix + \"*\") if path.is_dir())\n        # Before model work starts, the unexecuted mandatory gates stay visible.\n        for name in names or [prefix + \"1\"]:\n            expected[name] = count\n    expected[\"real-v4\"] = 240\n    return Study(HERE / \"results/v4\", expected, \"real-v4\",\n                 PROJECT / \".local/production-v4-evidence.zip\", \"-analysis.json\")\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/replay_analysis.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\replay_analysis.py",
+      "sha256": "f640b143bc824cd2962c38d0bcfac588cd6fcd7668d5bcb0574dafa6112a9bba",
+      "content_utf8": "\"\"\"Replay the controller's exact phase input scope, including audit diagnostics.\"\"\"\nfrom pathlib import Path\nimport argparse\nimport json\nfrom assess import assess\n\n\ndef replay(rows, phase):\n    if any(row[\"phase\"] not in {\"formal\", \"replication\"} for row in rows):\n        raise ValueError(\"Use only the real-corpus rows, not development or routing records\")\n    # Formal was assessed before any replication row existed. Replication was\n    # assessed with both phases in the journal; retain that diagnostic context.\n    inputs = [row for row in rows if row[\"phase\"] == \"formal\"] if phase == \"formal\" else rows\n    return assess(inputs, phase)\n\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--records\", type=Path, required=True)\n    parser.add_argument(\"--phase\", choices=(\"formal\", \"replication\"), required=True)\n    parser.add_argument(\"--output\", type=Path, required=True)\n    args = parser.parse_args()\n    assert args.output.resolve() != args.records.resolve()\n    rows = [json.loads(line) for line in args.records.read_text(encoding=\"utf-8\").splitlines() if line.strip()]\n    result = replay(rows, args.phase)\n    args.output.parent.mkdir(parents=True, exist_ok=True)\n    args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False), encoding=\"utf-8\")\n    print(json.dumps({\"phase\": args.phase, \"output\": str(args.output), \"task_count\": result[\"task_count\"]}))\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/assess.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\assess.py",
+      "sha256": "123dab93df04cabe231fe1db87e3ee856cfba87ff42ac10a265b9d8a2b835b6a",
+      "content_utf8": "\"\"\"Frozen98.75% paired task-cluster assessment for this production iteration.\"\"\"\nfrom pathlib import Path\nimport argparse\nimport json\nimport math\nimport sys\nimport numpy as np\n\nHERE = Path(__file__).resolve().parent\nsys.path.insert(0, str(HERE.parent / \"full-validation\"))\nimport analyze as core\n\nALPHA = .0125\nDRAWS = 40000\nSEED = 20261025\n\n\ndef assess(rows, phase, draws=DRAWS):\n    prepared = core._prepare(rows, phase)\n    result = {\"phase\": phase, \"task_count\": len(prepared[\"task_ids\"]),\n              \"integrity\": prepared[\"integrity\"], \"metrics\": {},\n              \"confidence\": 1 - ALPHA, \"alpha\": ALPHA, \"draws\": draws, \"seed\": SEED,\n              \"sampling_unit\": \"complete paired task with both arms and all3 repeats\"}\n    if not prepared[\"structure_ok\"]:\n        result[\"quality\"] = {\"gate_pass\": False}\n        return result\n    n = len(prepared[\"task_ids\"])\n    accepted = np.array([[sum(int(row[\"accepted\"]) for row in prepared[\"groups\"][case]\n                              if row[\"arm\"] == arm) for arm in core.ARMS]\n                         for case in prepared[\"task_ids\"]], dtype=np.int64)\n    totals = accepted.sum(axis=0)\n    degraded = [case for i, case in enumerate(prepared[\"task_ids\"]) if accepted[i, 1] < accepted[i, 0]]\n    quality = bool(totals[1] >= totals[0] and not degraded)\n    result[\"quality\"] = {\"baseline_accepted\": int(totals[0]), \"skill_accepted\": int(totals[1]),\n                         \"runs_per_arm\": n * 3, \"degraded_tasks\": degraded, \"gate_pass\": quality}\n    costs, modes = {}, {}\n    if prepared[\"time_ok\"]:\n        costs[\"time\"], _ = core._arrays(prepared, \"wall_seconds\")\n        modes[\"time\"] = \"exact\"\n    if prepared[\"token_ok\"]:\n        costs[\"token\"], _ = core._arrays(prepared, \"total_tokens\")\n        modes[\"token\"] = \"exact\"\n    else:\n        missing = [row for row in prepared[\"rows\"] if row.get(\"usage_complete\") is not True\n                   or not core._number(row.get(\"total_tokens\"))]\n        valid_bound = bool(missing) and all(row[\"arm\"] == \"baseline\" and\n                     row.get(\"usage_complete\") is False and row.get(\"total_tokens\") is None\n                     for row in missing)\n        known = [row for row in prepared[\"rows\"] if row not in missing]\n        valid_bound = valid_bound and all(row.get(\"usage_complete\") is True and\n                      core._number(row.get(\"total_tokens\")) for row in known)\n        if valid_bound:\n            bound_costs = np.zeros((n, 2), dtype=float)\n            for i, case in enumerate(prepared[\"task_ids\"]):\n                for row in prepared[\"groups\"][case]:\n                    if row[\"usage_complete\"]:\n                        bound_costs[i, core.ARMS.index(row[\"arm\"])] += row[\"total_tokens\"]\n            costs[\"token\"] = bound_costs\n            modes[\"token\"] = \"baseline_cost_lower_bound_only\"\n        result[\"missing_usage\"] = [{key: row[key] for key in (\"case_id\", \"repeat\", \"arm\")} for row in missing]\n    samples = {metric: np.empty(draws, dtype=float) for metric in costs}\n    rng = np.random.default_rng(SEED)\n    for start in range(0, draws, 1000):\n        stop = min(start + 1000, draws)\n        indices = rng.integers(0, n, size=(stop - start, n))\n        sampled_accepted = accepted[indices].sum(axis=1)\n        for metric, values in costs.items():\n            samples[metric][start:stop] = core._ratio(values[indices].sum(axis=1), sampled_accepted)\n    for metric in (\"token\", \"time\"):\n        if metric not in costs:\n            result[\"metrics\"][metric] = {\"available\": False, \"batch_criterion_met\": False}\n            continue\n        values = samples[metric]\n        total_cost = costs[metric].sum(axis=0)\n        observed = float(core._ratio(total_cost, totals))\n        undefined = int(np.isnan(values).sum())\n        upper = None if undefined else float(np.quantile(values, 1 - ALPHA, method=\"inverted_cdf\"))\n        positive = bool(np.all(totals > 0) and np.all(total_cost > 0) and math.isfinite(observed) and observed > 0)\n        exact = modes[metric] == \"exact\"\n        item = {\"available\": upper is not None, \"mode\": modes[metric],\n                \"actual_ratio\": core._public_number(observed) if exact else None,\n                \"observed_ratio_upper_bound\": core._public_number(observed) if not exact else None,\n                \"upper_one_sided_98_75\": upper,\n                \"gain\": 1 - observed if exact else None,\n                \"gain_lower_confidence_bound\": 1 - upper if upper is not None else None,\n                \"undefined_draws\": undefined, \"positive_infinite_draws\": int(np.isposinf(values).sum()),\n                \"cost_total\": {arm: float(total_cost[i]) for i, arm in enumerate(core.ARMS)},\n                \"cost_total_is_lower_bound\": {\"baseline\": not exact, \"with-skill\": False},\n                \"batch_criterion_met\": bool(n >= 20 and quality and positive and upper is not None and upper < .90)}\n        if exact and not undefined:\n            bounds = np.quantile(values, [ALPHA, 1 - ALPHA], method=\"inverted_cdf\")\n            item[\"ratio_interval97_5\"] = bounds.tolist()\n            item[\"gain_interval97_5\"] = [1 - float(bounds[1]), 1 - float(bounds[0])]\n        result[\"metrics\"][metric] = item\n    return core._json_safe(result)\n\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--records\", type=Path, required=True)\n    parser.add_argument(\"--phase\", choices=(\"formal\", \"replication\"), required=True)\n    parser.add_argument(\"--output\", type=Path, required=True)\n    args = parser.parse_args()\n    assert args.output.resolve() != args.records.resolve()\n    rows = [json.loads(line) for line in args.records.read_text(encoding=\"utf-8\").splitlines() if line.strip()]\n    result = assess(rows, args.phase)\n    args.output.parent.mkdir(parents=True, exist_ok=True)\n    args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False), encoding=\"utf-8\")\n    print(json.dumps({\"phase\": args.phase, \"quality\": result[\"quality\"], \"metrics\": result[\"metrics\"]}))\n"
+    },
+    {
+      "file": "evals/full-validation/analyze.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\full-validation\\analyze.py",
+      "sha256": "308fc2e8076ba93c74353bdf8156ae86c7e3767c2616bf301f43ee086cd337c3",
+      "content_utf8": "\"\"\"Preregistered paired task-cluster analysis; standard library plus NumPy only.\n\nNo solver, grader, network, or package-install calls are made here. Failed and\nunfinished attempts retain their recorded costs. Repeats are never sampling\nunits: one bootstrap draw selects whole tasks, keeping both arms and all three\nrepeats. API results use float infinity for extended-real boundaries and None\nfor undefined values. The CLI writes strict JSON, encoding infinities as the\nstrings \"Infinity\" and \"-Infinity\".\n\nThe two-sided 95% percentile interval's upper endpoint is also the one-sided\n97.5% bound. A batch threshold is not a final claim: the parent controller must\nrequire the same metric to pass in both disjoint confirmatory batches.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nfrom collections import Counter, defaultdict\nimport json\nimport math\nfrom numbers import Real\nfrom pathlib import Path\nfrom statistics import NormalDist\nfrom typing import Any, Iterable, Mapping\n\nimport numpy as np\n\nARMS = (\"baseline\", \"with-skill\")\nPHASES = (\"pilot\", \"formal\", \"replication\")\nREPEATS = (0, 1, 2)\nBOOTSTRAP_SEED = 20261024\nEXPECTED_PILOT_TASKS = 10\nMIN_TASKS = 20\nMAX_TASKS = 80\nCURRENT_ELIGIBLE_TASKS = 61\nTHRESHOLD = 0.90\nPLANNING_ALTERNATIVE = 0.80\nSD_FLOOR = 0.05\nEXPECTED_KEYS = {(arm, repeat) for arm in ARMS for repeat in REPEATS}\n\n\ndef _number(value: Any) -> bool:\n    return (\n        isinstance(value, Real)\n        and not isinstance(value, bool)\n        and math.isfinite(float(value))\n        and value >= 0\n    )\n\n\ndef _prepare(records: Iterable[Mapping[str, Any]], phase: str) -> dict[str, Any]:\n    if phase not in PHASES:\n        raise ValueError(f\"phase must be one of {PHASES}\")\n    rows = list(records)\n    selected: list[dict[str, Any]] = []\n    issues: list[dict[str, Any]] = []\n    excluded = Counter()\n\n    def issue(code: str, scope: str, message: str, **details: Any) -> None:\n        issues.append({\"code\": code, \"scope\": scope, \"message\": message, **details})\n\n    for index, row in enumerate(rows, 1):\n        if not isinstance(row, Mapping):\n            issue(\"invalid_record\", \"all\", \"Record is not an object.\", record_index=index)\n            continue\n        record_phase = row.get(\"phase\")\n        if not isinstance(record_phase, str) or record_phase not in PHASES:\n            issue(\"invalid_phase\", \"all\", \"Missing or unknown phase.\", record_index=index)\n            continue\n        if record_phase != phase:\n            excluded[record_phase] += 1\n            continue\n        r = dict(row)\n        r[\"_record_index\"] = index\n        selected.append(r)\n        case_id = r.get(\"case_id\")\n        detail = {\"record_index\": index, \"case_id\": case_id}\n        if not isinstance(case_id, str) or not case_id.strip():\n            issue(\"invalid_case_id\", \"all\", \"case_id must be a nonempty string.\", **detail)\n        if not isinstance(r.get(\"repo\"), str) or not r[\"repo\"].strip():\n            issue(\"invalid_repo\", \"all\", \"repo must be a nonempty string.\", **detail)\n        if not isinstance(r.get(\"arm\"), str) or r[\"arm\"] not in ARMS:\n            issue(\"invalid_arm\", \"all\", \"arm is not baseline or with-skill.\", **detail)\n        if type(r.get(\"repeat\")) is not int or r[\"repeat\"] not in REPEATS:\n            issue(\"invalid_repeat\", \"all\", \"repeat must be an integer from 0 to 2.\", **detail)\n        for name in (\"accepted\", \"completed\"):\n            if type(r.get(name)) is not bool:\n                issue(\"invalid_\" + name, \"all\", f\"{name} must be Boolean.\", **detail)\n        if r.get(\"accepted\") is True and r.get(\"completed\") is False:\n            issue(\"accepted_unfinished\", \"all\", \"An unfinished run cannot be accepted.\", **detail)\n        if not _number(r.get(\"wall_seconds\")):\n            issue(\"invalid_wall_seconds\", \"time\", \"Wall time must be finite and nonnegative.\", **detail)\n        if type(r.get(\"usage_complete\")) is not bool:\n            issue(\"invalid_usage_complete\", \"token\", \"usage_complete must be Boolean.\", **detail)\n        if not _number(r.get(\"total_tokens\")) or r.get(\"usage_complete\") is not True:\n            issue(\n                \"usage_unavailable\", \"token\",\n                \"Exact token usage is unavailable; missing or partial usage is never zero.\",\n                **detail,\n            )\n\n    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)\n    for row in selected:\n        if isinstance(row.get(\"case_id\"), str) and row[\"case_id\"].strip():\n            groups[row[\"case_id\"]].append(row)\n    task_ids = sorted(groups)\n    duplicate_keys = []\n    incomplete = []\n    repo_conflicts = []\n    complete_task_ids = []\n    for case_id in task_ids:\n        task = groups[case_id]\n        valid_key_rows = [\n            r for r in task\n            if isinstance(r.get(\"arm\"), str) and r[\"arm\"] in ARMS\n            and type(r.get(\"repeat\")) is int and r[\"repeat\"] in REPEATS\n        ]\n        counts = Counter((r[\"arm\"], r[\"repeat\"]) for r in valid_key_rows)\n        for (arm, repeat), count in sorted(counts.items()):\n            if count > 1:\n                duplicate_keys.append(\n                    {\"case_id\": case_id, \"arm\": arm, \"repeat\": repeat, \"count\": count}\n                )\n        missing = sorted(EXPECTED_KEYS - set(counts))\n        if missing or len(task) != 6 or any(count != 1 for count in counts.values()):\n            incomplete.append({\n                \"case_id\": case_id,\n                \"record_count\": len(task),\n                \"missing_run_keys\": [{\"arm\": arm, \"repeat\": repeat} for arm, repeat in missing],\n            })\n        else:\n            complete_task_ids.append(case_id)\n        repos = sorted({r[\"repo\"] for r in task if isinstance(r.get(\"repo\"), str)})\n        if len(repos) != 1:\n            repo_conflicts.append({\"case_id\": case_id, \"repos\": repos})\n    if duplicate_keys:\n        issue(\"duplicate_run_keys\", \"all\", \"Duplicate run keys are not deduplicated or averaged.\")\n    if incomplete:\n        issue(\"incomplete_task_clusters\", \"all\", \"Every task must contain both arms and all three repeats.\")\n    if repo_conflicts:\n        issue(\"repo_conflict\", \"all\", \"A case_id refers to conflicting repositories.\")\n    if not selected or not task_ids:\n        issue(\"empty_phase\", \"all\", \"No analyzable task records in the selected phase.\")\n\n    structure_ok = not any(x[\"scope\"] == \"all\" for x in issues)\n    integrity = {\n        \"ok\": not issues,\n        \"structure_ok\": structure_ok,\n        \"input_record_count\": len(rows),\n        \"selected_record_count\": len(selected),\n        \"other_phase_record_counts\": dict(sorted(excluded.items())),\n        \"task_count\": len(task_ids),\n        \"complete_task_count\": len(complete_task_ids),\n        \"expected_runs_per_task\": 6,\n        \"expected_selected_run_count\": 6 * len(task_ids),\n        \"duplicate_run_keys\": duplicate_keys,\n        \"incomplete_tasks\": incomplete,\n        \"repo_conflicts\": repo_conflicts,\n        \"issues\": issues,\n        \"no_record_repair_or_silent_deduplication\": True,\n        \"incomplete_tasks_not_silently_removed\": True,\n    }\n    return {\n        \"rows\": selected, \"groups\": groups, \"task_ids\": task_ids,\n        \"integrity\": integrity, \"structure_ok\": structure_ok,\n        \"token_ok\": structure_ok and not any(x[\"scope\"] == \"token\" for x in issues),\n        \"time_ok\": structure_ok and not any(x[\"scope\"] == \"time\" for x in issues),\n    }\n\n\ndef _arrays(prepared: dict[str, Any], field: str) -> tuple[np.ndarray, np.ndarray]:\n    ids = prepared[\"task_ids\"]\n    costs = np.zeros((len(ids), 2), dtype=float)\n    accepted = np.zeros((len(ids), 2), dtype=np.int64)\n    for i, case_id in enumerate(ids):\n        for row in prepared[\"groups\"][case_id]:\n            j = ARMS.index(row[\"arm\"])\n            costs[i, j] += float(row[field])\n            accepted[i, j] += int(row[\"accepted\"])\n    return costs, accepted\n\n\ndef _ratio(costs: np.ndarray, accepted: np.ndarray) -> np.ndarray:\n    \"\"\"Last axis is baseline, skill; retain infinity and undefined 0/0.\"\"\"\n    costs = np.asarray(costs, dtype=float)\n    accepted = np.asarray(accepted, dtype=float)\n    with np.errstate(divide=\"ignore\", invalid=\"ignore\", over=\"ignore\"):\n        per_accepted = costs / accepted\n        return per_accepted[..., 1] / per_accepted[..., 0]\n\n\ndef _public_number(value: Any) -> float | None:\n    value = float(value)\n    return None if math.isnan(value) else value\n\n\ndef _interval(values: np.ndarray) -> dict[str, Any]:\n    \"\"\"Do not drop undefined draws or interpolate across infinity.\"\"\"\n    undefined = int(np.isnan(values).sum())\n    result: dict[str, Any] = {\n        \"level\": 0.95,\n        \"quantile_method\": \"inverted_cdf\",\n        \"undefined_draws\": undefined,\n        \"positive_infinite_draws\": int(np.isposinf(values).sum()),\n        \"negative_infinite_draws\": int(np.isneginf(values).sum()),\n        \"finite_draws\": int(np.isfinite(values).sum()),\n        \"draws\": len(values),\n        \"interval\": None,\n        \"available\": False,\n    }\n    if undefined:\n        result[\"reason\"] = \"Undefined bootstrap draws retained; percentile CI is not defined.\"\n        return result\n    q = np.quantile(values, [0.025, 0.975], method=\"inverted_cdf\")\n    result.update(available=True, interval=[float(q[0]), float(q[1])])\n    return result\n\n\ndef _observed_totals(rows: list[dict[str, Any]]) -> dict[str, Any]:\n    totals = {}\n    for arm in ARMS:\n        arm_rows = [r for r in rows if r.get(\"arm\") == arm]\n        token_rows = [r for r in arm_rows if _number(r.get(\"total_tokens\"))]\n        time_rows = [r for r in arm_rows if _number(r.get(\"wall_seconds\"))]\n        totals[arm] = {\n            \"record_count\": len(arm_rows),\n            \"accepted\": sum(r.get(\"accepted\") is True for r in arm_rows),\n            \"completed\": sum(r.get(\"completed\") is True for r in arm_rows),\n            \"unfinished\": sum(r.get(\"completed\") is False for r in arm_rows),\n            \"rejected\": sum(r.get(\"accepted\") is False for r in arm_rows),\n            \"reported_token_total\": (\n                sum(float(r[\"total_tokens\"]) for r in token_rows) if token_rows else None\n            ),\n            \"reported_token_count\": len(token_rows),\n            \"reported_token_total_is_partial\": any(\n                r.get(\"usage_complete\") is not True or not _number(r.get(\"total_tokens\"))\n                for r in arm_rows\n            ),\n            \"exact_usage_count\": sum(\n                r.get(\"usage_complete\") is True and _number(r.get(\"total_tokens\"))\n                for r in arm_rows\n            ),\n            \"reported_wall_seconds\": (\n                sum(float(r[\"wall_seconds\"]) for r in time_rows) if time_rows else None\n            ),\n            \"reported_wall_count\": len(time_rows),\n            \"reported_wall_total_is_partial\": len(time_rows) != len(arm_rows),\n        }\n    return totals\n\n\ndef analyze_records(\n    records: Iterable[Mapping[str, Any]], phase: str, bootstrap_draws: int = 20000\n) -> dict[str, Any]:\n    \"\"\"Analyze one phase; resample complete task clusters, not individual runs.\"\"\"\n    if type(bootstrap_draws) is not int or bootstrap_draws < 1:\n        raise ValueError(\"bootstrap_draws must be a positive integer\")\n    p = _prepare(records, phase)\n    n = len(p[\"task_ids\"])\n    totals = _observed_totals(p[\"rows\"])\n    quality: dict[str, Any] = {\n        \"available\": p[\"structure_ok\"],\n        \"baseline_success_rate\": None, \"skill_success_rate\": None,\n        \"success_rate_difference_skill_minus_baseline\": None,\n        \"observed_gate_pass\": False, \"success_rate_difference_ci95\": None,\n        \"degraded_tasks\": [], \"worsened_repeat_pairs\": [],\n        \"interpretation\": \"Observed batch gate only; not a universal safety or noninferiority guarantee.\",\n    }\n    data: dict[str, tuple[np.ndarray, np.ndarray]] = {}\n    for metric, field in ((\"token\", \"total_tokens\"), (\"time\", \"wall_seconds\")):\n        if p[metric + \"_ok\"]:\n            data[metric] = _arrays(p, field)\n    accepted = None\n    if p[\"structure_ok\"]:\n        accepted = np.array([\n            [sum(r[\"accepted\"] for r in p[\"groups\"][case_id] if r[\"arm\"] == arm) for arm in ARMS]\n            for case_id in p[\"task_ids\"]\n        ], dtype=np.int64)\n        success_totals = accepted.sum(axis=0)\n        rates = success_totals / (3 * n)\n        quality.update(\n            baseline_success_rate=float(rates[0]),\n            skill_success_rate=float(rates[1]),\n            success_rate_difference_skill_minus_baseline=float(rates[1] - rates[0]),\n            observed_gate_pass=bool(success_totals[1] >= success_totals[0]),\n        )\n        for i, case_id in enumerate(p[\"task_ids\"]):\n            if accepted[i, 1] < accepted[i, 0]:\n                quality[\"degraded_tasks\"].append({\n                    \"case_id\": case_id, \"repo\": p[\"groups\"][case_id][0][\"repo\"],\n                    \"baseline_accepted\": int(accepted[i, 0]),\n                    \"skill_accepted\": int(accepted[i, 1]),\n                    \"success_rate_difference\": float((accepted[i, 1] - accepted[i, 0]) / 3),\n                })\n            lookup = {(r[\"arm\"], r[\"repeat\"]): r for r in p[\"groups\"][case_id]}\n            for repeat in REPEATS:\n                if lookup[(\"baseline\", repeat)][\"accepted\"] and not lookup[(\"with-skill\", repeat)][\"accepted\"]:\n                    quality[\"worsened_repeat_pairs\"].append({\"case_id\": case_id, \"repeat\": repeat})\n    quality[\"degraded_task_count\"] = len(quality[\"degraded_tasks\"])\n    quality[\"worsened_repeat_pair_count\"] = len(quality[\"worsened_repeat_pairs\"])\n\n    samples = {name: np.empty(bootstrap_draws, dtype=float) for name in data}\n    quality_samples = np.empty(bootstrap_draws, dtype=float) if accepted is not None else None\n    if p[\"structure_ok\"]:\n        rng = np.random.default_rng(BOOTSTRAP_SEED)\n        # Bounded allocations; the same task indices pair both arms and metrics.\n        for start in range(0, bootstrap_draws, 1000):\n            stop = min(start + 1000, bootstrap_draws)\n            index = rng.integers(0, n, size=(stop - start, n))\n            drawn_accepted = accepted[index].sum(axis=1)\n            if quality_samples is not None:\n                quality_samples[start:stop] = (drawn_accepted[:, 1] - drawn_accepted[:, 0]) / (3 * n)\n            for name, (costs, _) in data.items():\n                samples[name][start:stop] = _ratio(costs[index].sum(axis=1), drawn_accepted)\n        quality[\"success_rate_difference_ci95\"] = _interval(quality_samples)\n    metrics: dict[str, Any] = {}\n    minimum_count_ok = n >= MIN_TASKS\n    for name in (\"token\", \"time\"):\n        m: dict[str, Any] = {\n            \"available\": name in data, \"ratio\": None, \"ratio_status\": \"unavailable\",\n            \"gain\": None, \"ratio_ci95\": None, \"gain_ci95\": None,\n            \"upper_one_sided_97_5\": None, \"material_gain_threshold_ratio\": THRESHOLD,\n            \"bound_below_0_90\": False, \"finite_estimand_observed\": False,\n            \"batch_criterion_met\": False,\n        }\n        if name not in data:\n            m[\"reason\"] = (\n                \"Task/run integrity failed.\" if not p[\"structure_ok\"]\n                else \"Missing, partial, or invalid usage; no zero imputation.\" if name == \"token\"\n                else \"Missing or invalid wall time.\"\n            )\n            metrics[name] = m\n            continue\n        costs, successes = data[name]\n        cost_sum = costs.sum(axis=0)\n        accepted_sum = successes.sum(axis=0)\n        r = float(_ratio(cost_sum, accepted_sum))\n        with np.errstate(divide=\"ignore\", invalid=\"ignore\"):\n            cpa = cost_sum / accepted_sum\n        interval = _interval(samples[name])\n        estimable = bool(\n            np.all(accepted_sum > 0) and np.all(cost_sum > 0) and math.isfinite(r) and r > 0\n        )\n        m.update(\n            ratio=_public_number(r),\n            ratio_status=\"undefined\" if math.isnan(r) else \"infinite\" if math.isinf(r) else \"finite\",\n            gain=_public_number(1 - r),\n            cost_total={arm: float(cost_sum[i]) for i, arm in enumerate(ARMS)},\n            accepted_total={arm: int(accepted_sum[i]) for i, arm in enumerate(ARMS)},\n            cost_per_accepted={arm: _public_number(cpa[i]) for i, arm in enumerate(ARMS)},\n            ratio_ci95=interval,\n            finite_estimand_observed=estimable,\n        )\n        if interval[\"available\"]:\n            low, high = interval[\"interval\"]\n            m[\"gain_ci95\"] = [1 - high, 1 - low]\n            m[\"upper_one_sided_97_5\"] = high\n            m[\"bound_below_0_90\"] = bool(high < THRESHOLD)\n        m[\"batch_criterion_met\"] = bool(\n            phase in (\"formal\", \"replication\") and minimum_count_ok\n            and quality[\"observed_gate_pass\"] and estimable\n            and m[\"bound_below_0_90\"] and interval[\"available\"]\n        )\n        if not estimable:\n            m[\"boundary_note\"] = (\n                \"Zero accepted counts or zero cost make a finite positive comparison nonestimable; \"\n                \"extended-real boundaries are reported, not treated as proof.\"\n            )\n        metrics[name] = m\n\n    return {\n        \"schema_version\": 1, \"phase\": phase, \"task_count\": n,\n        \"bootstrap\": {\n            \"unit\": \"paired_complete_task_cluster\", \"draws\": bootstrap_draws,\n            \"seed\": BOOTSTRAP_SEED, \"repeats_per_arm\": 3,\n            \"task_ids_in_sampling_order\": p[\"task_ids\"],\n            \"both_arms_and_all_repeats_kept_together\": True,\n            \"undefined_draws_dropped\": False,\n            \"method\": \"percentile; inverted empirical CDF; undefined draws invalidate CI\",\n        },\n        \"integrity\": p[\"integrity\"], \"observed_totals\": totals,\n        \"quality\": quality, \"metrics\": metrics,\n        \"minimum_confirmatory_task_count_satisfied\": minimum_count_ok,\n        \"pilot_planned_task_count_match\": \"Parent controller must check the frozen pilot-derived batch size.\",\n        \"final_stability_claim\": \"Not decided here; require same metric and quality gate in both formal and replication.\",\n        \"interpretation\": [\n            \"All failed and unfinished attempts contribute recorded costs; no task is removed for poor outcomes.\",\n            \"Only the selected phase is analyzed. Duplicate/incomplete clusters block batch evidence.\",\n            \"Missing usage blocks token evidence independently; valid wall-time evidence remains reportable.\",\n            \"Quality intervals are descriptive; the observed gate is not a statistical no-regression guarantee.\",\n            \"Percentile coverage and pilot-based power are approximations on this curated task corpus.\",\n        ],\n    }\n\n\ndef sample_size(pilot_records: Iterable[Mapping[str, Any]]) -> dict[str, Any]:\n    \"\"\"Task-delete jackknife SD of log overall cost-per-accepted ratio.\"\"\"\n    p = _prepare(pilot_records, \"pilot\")\n    n = len(p[\"task_ids\"])\n    delta = math.log(THRESHOLD) - math.log(PLANNING_ALTERNATIVE)\n    z_sum = NormalDist().inv_cdf(0.975) + NormalDist().inv_cdf(0.80)\n    estimates: dict[str, Any] = {}\n    for name, field in ((\"token\", \"total_tokens\"), (\"time\", \"wall_seconds\")):\n        result: dict[str, Any] = {\"available\": False, \"required_n\": None}\n        if not p[name + \"_ok\"] or n < 2:\n            result[\"reason\"] = \"Pilot has invalid/missing measurements or fewer than two complete task clusters.\"\n            estimates[name] = result\n            continue\n        costs, accepted = _arrays(p, field)\n        c_sum, a_sum = costs.sum(axis=0), accepted.sum(axis=0)\n        leave_cost = c_sum - costs\n        leave_accepted = a_sum - accepted\n        valid = bool(\n            np.all(c_sum > 0) and np.all(a_sum > 0)\n            and np.all(leave_cost > 0) and np.all(leave_accepted > 0)\n        )\n        if not valid:\n            result[\"reason\"] = \"Full or leave-one-task-out log ratio is undefined/nonfinite; planning cannot assume zero variance.\"\n            estimates[name] = result\n            continue\n        theta = float(np.log(_ratio(c_sum, a_sum)))\n        leave_theta = np.log(_ratio(leave_cost, leave_accepted))\n        pseudovalues = n * theta - (n - 1) * leave_theta\n        if not math.isfinite(theta) or not np.isfinite(pseudovalues).all():\n            result[\"reason\"] = \"Jackknife log-ratio pseudovalues are nonfinite.\"\n            estimates[name] = result\n            continue\n        raw_sd = float(np.std(pseudovalues, ddof=1))\n        sd = max(SD_FLOOR, raw_sd)\n        required = math.ceil((z_sum * sd / delta) ** 2)\n        result.update(\n            available=True, log_ratio=theta,\n            jackknife_pseudovalues=[float(x) for x in pseudovalues],\n            jackknife_pseudovalue_sd=raw_sd, planning_sd=sd,\n            sd_floor=SD_FLOOR, required_n=required,\n        )\n        estimates[name] = result\n    available = all(e[\"available\"] for e in estimates.values())\n    raw_n = max(e[\"required_n\"] for e in estimates.values()) if available else None\n    target = min(MAX_TASKS, max(MIN_TASKS, raw_n)) if raw_n is not None else None\n    protocol_pilot_ok = n == EXPECTED_PILOT_TASKS\n    shortfall = max(0, n + 2 * target - CURRENT_ELIGIBLE_TASKS) if target is not None else None\n    return {\n        \"schema_version\": 1, \"pilot_task_count\": n,\n        \"expected_pilot_task_count\": EXPECTED_PILOT_TASKS,\n        \"protocol_pilot_task_count_satisfied\": protocol_pilot_ok,\n        \"planning_available\": available and protocol_pilot_ok,\n        \"planning_status\": \"available\" if available and protocol_pilot_ok else \"unavailable\",\n        \"formula\": \"ceil(((z(.975)+z(.80))*SD/(log(.90)-log(.80)))**2)\",\n        \"planning_alternative_ratio\": PLANNING_ALTERNATIVE,\n        \"null_boundary_ratio\": THRESHOLD, \"nominal_power\": 0.80,\n        \"power_scope\": \"per_confirmatory_batch\",\n        \"two_batch_joint_power_if_independent_and_each_exactly_0_80\": 0.64,\n        \"metrics\": estimates, \"required_n_before_cap\": raw_n,\n        \"target_tasks_per_confirmatory_batch\": target,\n        \"minimum_per_batch\": MIN_TASKS, \"maximum_per_batch\": MAX_TASKS,\n        \"underpowered\": bool(raw_n > MAX_TASKS) if raw_n is not None else None,\n        \"adequacy_claim_permitted\": bool(available and protocol_pilot_ok and raw_n <= MAX_TASKS),\n        \"current_eligible_tasks\": CURRENT_ELIGIBLE_TASKS,\n        \"independent_tasks_required_total\": n + 2 * target if target is not None else None,\n        \"untouched_tasks_after_pilot\": max(0, CURRENT_ELIGIBLE_TASKS - n),\n        \"additional_eligible_tasks_needed_before_formal\": shortfall,\n        \"extension_required_before_formal\": bool(shortfall) if shortfall is not None else None,\n        \"integrity\": p[\"integrity\"],\n        \"notes\": [\n            \"Use the maximum required N across token and time, then apply minimum 20/maximum 80 per batch.\",\n            \"If uncapped N exceeds 80, the cap is underpowered relative to the planning approximation.\",\n            \"An unavailable metric or undefined log ratio does not default to N=20.\",\n            \"Formal and replication require distinct tasks and the same frozen target size.\",\n            \"Ten-task pilot variance is uncertain; nominal power is not guaranteed realized power.\",\n            \"Requiring both batches to pass does not provide 80% joint power; .80 each gives approximately .64 before quality gates.\",\n        ],\n    }\n\n\ndef _json_safe(value: Any) -> Any:\n    if isinstance(value, float) and not math.isfinite(value):\n        if math.isnan(value):\n            return None\n        return \"Infinity\" if value > 0 else \"-Infinity\"\n    if isinstance(value, dict):\n        return {key: _json_safe(item) for key, item in value.items()}\n    if isinstance(value, (tuple, list)):\n        return [_json_safe(item) for item in value]\n    return value\n\n\ndef main(argv: list[str] | None = None) -> int:\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--records\", required=True, type=Path)\n    parser.add_argument(\"--phase\", required=True, choices=PHASES)\n    parser.add_argument(\"--output\", required=True, type=Path)\n    args = parser.parse_args(argv)\n    records = []\n    with args.records.open(encoding=\"utf-8-sig\") as source:\n        for line_number, line in enumerate(source, 1):\n            if not line.strip():\n                continue\n            try:\n                records.append(json.loads(line))\n            except json.JSONDecodeError as exc:\n                parser.error(f\"Invalid JSONL at line {line_number}: {exc}\")\n    result = analyze_records(records, args.phase)\n    if args.phase == \"pilot\":\n        result[\"sample_size\"] = sample_size(records)\n    # A mistaken output path must not overwrite the source records.\n    if args.output.resolve() == args.records.resolve():\n        parser.error(\"--output must differ from --records\")\n    args.output.parent.mkdir(parents=True, exist_ok=True)\n    args.output.write_text(\n        json.dumps(_json_safe(result), ensure_ascii=False, indent=2, allow_nan=False) + \"\\n\",\n        encoding=\"utf-8\",\n    )\n    print(json.dumps({\n        \"phase\": args.phase, \"task_count\": result[\"task_count\"],\n        \"structure_ok\": result[\"integrity\"][\"structure_ok\"],\n        \"token_batch_criterion_met\": result[\"metrics\"][\"token\"][\"batch_criterion_met\"],\n        \"time_batch_criterion_met\": result[\"metrics\"][\"time\"][\"batch_criterion_met\"],\n        \"output\": str(args.output),\n    }, ensure_ascii=False))\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/results/release-requirements.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\results\\release-requirements.json",
+      "sha256": "76ba888f7e756fef188be5ead488cc8e065b5d5b0f04962e5e58a2aa53365797",
+      "content_utf8": "{\r\n  \"frozen_at\": \"2026-10-24T20:40:13.300429+00:00\",\r\n  \"protocol_sha256\": \"BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F\",\r\n  \"skill_sha256\": \"026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE\",\r\n  \"new_real_model_runs_before_addition\": 0,\r\n  \"scope\": \"Additional release-fitness requirement; no change to case allocation, scores, analysis or original>=10% threshold\",\r\n  \"required_for_production_assistant_qualification\": [\r\n    \"All frozen critical treatment contracts pass in ordinary and optimized modes\",\r\n    \"Native relevant-edit routing and negative scope checks pass\",\r\n    \"Real treatment acceptance>=baseline in each batch, no task-level accepted-count regression and>=95% treatment acceptance\",\r\n    \"Same efficiency endpoint has its existing one-sided98.75% upper ratio<1.00 in both real batches\",\r\n    \"Independent blinded review finds no confirmed unsafe or unjustified treatment machinery\",\r\n    \"Two-file package install/rollback and evidence integrity checks pass\"\r\n  ],\r\n  \"credible_positive_benefit_threshold_ratio\": 1.0,\r\n  \"material_benefit_claim_threshold_ratio\": 0.9,\r\n  \"same_confidence_bound_for_nested_thresholds\": true,\r\n  \"alpha_note\": \"Both thresholds use the same upper confidence bound for each endpoint; nested claims do not add a separate test. Original2 endpoints x2 confirmatory candidates budget is retained. Bootstrap coverage remains approximate.\",\r\n  \"minimum10percent_claim_still_requires_both_batches_below0_90\": true,\r\n  \"missing_usage_policy_unchanged\": true,\r\n  \"no_universal_or_unattended_production_guarantee\": true\r\n}"
+    },
+    {
+      "file": "evals/production-2026-10-25/protocol-v4.json",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\protocol-v4.json",
+      "sha256": "d8c56960c4cac7c4a6ba3e73ed8a4ceef0f448bb6ccaba36e2a8077ca164e746",
+      "content_utf8": "{\n  \"experiment\": \"lean-coding-python-production-confirmation-slot2\",\n  \"status\": \"planned_before_any_v4_native_model_calls\",\n  \"parent_protocol\": \"protocol.json\",\n  \"parent_protocol_sha256\": \"BE8C9BEC416B386980DD5F398B4A3E74C0C30F954A9863DCFE9F2173C3E2163F\",\n  \"parent_release_requirements\": \"results/release-requirements.json\",\n  \"confirmation_slot\": 2,\n  \"maximum_confirmatory_candidates_in_this_study\": 2,\n  \"scope\": \"User-selected Codex + Python production maintenance; Claude remains excluded\",\n  \"first_confirmation_must_complete_before_v4_model_work\": true,\n  \"candidate\": {\n    \"initial_draft\": \"candidates/v4-python-draft/SKILL.md\",\n    \"initial_draft_sha256\": \"086AD88F21493E879D3C64F7A5AED6D7FF049F1BA74F88F02492C59DAE55A67F\",\n    \"status\": \"Development draft; final body and metadata frozen after all development gates, before first new real case\",\n    \"reason\": \"Reproducible legal class-call compatibility failures in a revealed first-round case; preserve public signatures/call forms/protocols and metadata explicitly\",\n    \"not_selected_using_interim_efficiency_metrics\": true,\n    \"no_real_case_specific_names_or_magic_error_messages_in_rules\": true,\n    \"keep_all_development_versions_and_outcomes\": true,\n    \"no_changes_after_real_confirmation_begins\": true\n  },\n  \"development\": {\n    \"cases\": [\"New independent development-next/d09.json\", \"Revealed cachetools436 first-round source and unchanged whole-file guard\"],\n    \"candidate_repeats_per_case\": 3,\n    \"planned_calls_per_development_iteration\": 6,\n    \"gate\": \"All accepted and all skill bodies read; synthetic d09 normal and -O counts both match nonzero reference\",\n    \"purpose\": \"Development only; neither task is a fresh production holdout or efficiency confirmation\",\n    \"refinement\": \"Only concrete behavior or oracle-fidelity failures justify revisions; preserve every version and cost. No real confirmation outcome is available for the new40 cases.\"\n  },\n  \"critical_regression\": {\n    \"source\": \"Unchanged holdout-sealed-v2 twelve contracts, previously tested in slot1\",\n    \"case_manifest_sha256\": \"7FEEF291F22A0ABFA65E8B098157687BB6F4CFFF8247C951AD11120220EAC65A\",\n    \"arms\": [\"with-skill\"],\n    \"repeats_per_case\": 3,\n    \"planned_calls\": 36,\n    \"gate\": \"All36 accepted; all normal and optimized counts match frozen nonzero reference; all bodies read\",\n    \"baseline_context\": \"Previous unchanged no-skill arm passed36/36; no new comparative efficiency claim from these regressions\",\n    \"not_a_new_independent_holdout\": true\n  },\n  \"routing_regression\": {\n    \"requests\": \"Same nine frozen relevant-edit and negative-scope requests used for v3-python-v2\",\n    \"planned_calls\": 9,\n    \"gate\": \"Three related edits load final rule body and pass contracts; six negatives satisfy original no-body-read and intended-scope checks\",\n    \"not_a_population_false_positive_rate_estimate\": true,\n    \"any_metadata_revision_before_real_calls_requires_new_hash_and_preserved_routing_history\": true\n  },\n  \"new_real_confirmation\": {\n    \"selection\": \"results/second-corpus-selection.json\",\n    \"selection_rule\": \"First40 adequate cases in the previously frozen87-case reserve order; independent outcome-blind contract review\",\n    \"all_cases_previously_unexecuted\": true,\n    \"no_overlap_with_prior50_or_first_confirmation40\": true,\n    \"tasks_per_batch\": 20,\n    \"batches\": [\"formal\", \"replication\"],\n    \"arms\": [\"baseline\", \"with-skill\"],\n    \"repeats_per_arm\": 3,\n    \"planned_calls\": 240,\n    \"grading\": \"Same unchanged pinned upstream whole-file guard and overlay hashes\",\n    \"all_failed_costs_retained\": true,\n    \"both_batches_complete_even_if_formal_release_or_material_gain_gate_fails\": true,\n    \"outcome_based_case_replacement_or_resizing\": false\n  },\n  \"unchanged_efficiency_inference\": {\n    \"assessment\": \"assess.py, same frozen implementation as slot1\",\n    \"unit\": \"Complete paired task, both arms and all3 repeats\",\n    \"draws\": 40000,\n    \"seed\": 20261025,\n    \"quantile\": \"inverted_cdf\",\n    \"per_endpoint_alpha_for_this_second_slot\": 0.0125,\n    \"one_sided_confidence\": 0.9875,\n    \"credible_positive_release\": \"Same endpoint upper ratio<1.00 in both batches\",\n    \"stable_at_least10percent_claim\": \"Same endpoint upper ratio<0.90 in both batches\",\n    \"quality\": \"Each batch treatment>=95%, accepted>=baseline and no task-level accepted-count loss\",\n    \"missing_usage\": \"No zero fill or fabricated point estimate; original baseline-only conservative bound policy unchanged\",\n    \"alpha_budget\": \"Consumes remaining original slot. No new alpha or additional confirmatory candidate. Coverage remains approximate, scoped to this study.\"\n  },\n  \"unchanged_execution\": {\n    \"configured_model\": \"gpt-6.1-sol\",\n    \"reasoning\": \"xhigh\",\n    \"maximum_simultaneous_native_solver_processes\": 3,\n    \"fresh_context_and_workspace_per_attempt\": true,\n    \"balanced_seeded_pair_order\": true,\n    \"cli_timeout_seconds\": 600,\n    \"grade_timeout_seconds\": 60,\n    \"paid_cli_checkpoint_before_grade\": true,\n    \"grading_recovery_never_repeats_model\": true,\n    \"no_global_config_changes_or_model_substitution\": true,\n    \"forbid_solver_network_install_delegation_commit_and_cross_run_access\": true,\n    \"resource_limit\": \"On an actual provider limit, stop queued model launches; do not purchase, reset or substitute. Partial cohorts do not establish the fixed-sample claim.\"\n  },\n  \"release\": {\n    \"requires\": [\"Development and critical regressions\", \"Native routing\", \"Both fresh real quality gates\", \"Same credible-positive endpoint in both batches\", \"Eight prespecified blinded pair reviews\", \"Package install and rollback\", \"Raw/data integrity and statistical reproduction\"],\n    \"review_selection\": \"Four pairs per batch, repeat0, seed20261026; random A/B labels seed20261027; freeze before model work\",\n    \"not_universal_correctness_or_unattended_deployment_authorization\": true,\n    \"no_external_publication_during_comparison\": true\n  }\n}\n"
+    }
+  ],
+  "reviewed_code_evidence": [
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "lines": [
+        30,
+        44
+      ],
+      "note": "17份证据要求和真实可信验证组件调用/返回值核对。",
+      "source_sha256": "5b3263cea6936e263b34b7c82ae110cf606fdaf2ad27957f109ac53716cd6d03",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+    },
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "lines": [
+        52,
+        82
+      ],
+      "note": "中性修复证明链、真实重放和材料收益上界条件。",
+      "source_sha256": "5b3263cea6936e263b34b7c82ae110cf606fdaf2ad27957f109ac53716cd6d03",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+    },
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "lines": [
+        97,
+        121
+      ],
+      "note": "实际ZIP条目、留存档案和候选/阶段摘要绑定。",
+      "source_sha256": "5b3263cea6936e263b34b7c82ae110cf606fdaf2ad27957f109ac53716cd6d03",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+    },
+    {
+      "file": "evals/production-2026-10-25/qualify_release.py",
+      "lines": [
+        122,
+        154
+      ],
+      "note": "盲态、各gate与最终收益声明组合。",
+      "source_sha256": "5b3263cea6936e263b34b7c82ae110cf606fdaf2ad27957f109ac53716cd6d03",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\qualify_release.py"
+    }
+  ],
+  "runner_primitives_source_snapshot": {
+    "file": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\runner.py",
+    "whole_file_sha256": "849c8631100dc83f6f11956f19c1404dd4222f2ef9b70bcf3da13d206b728c46",
+    "functions": {
+      "utc": "def utc():\n    return dt.datetime.now(dt.timezone.utc).isoformat()",
+      "read": "def read(path):\n    return json.loads(Path(path).read_text(encoding=\"utf-8\"))",
+      "write": "def write(path, value):\n    path = Path(path)\n    path.parent.mkdir(parents=True, exist_ok=True)\n    temporary = path.with_suffix(path.suffix + \".tmp\")\n    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding=\"utf-8\")\n    temporary.replace(path)",
+      "digest": "def digest(path):\n    return hashlib.sha256(Path(path).read_bytes()).hexdigest().upper()"
+    },
+    "remaining_module_not_imported": true
+  },
+  "saved_at_utc": "2026-10-25T02:45:29.489489+00:00",
+  "probe_script_sha256": "5613d0a7759d22f0f6ab7326fe1bbdc193b89fc47d5e86a05974286af4dc5246",
+  "total_synthetic_fixture_executions_including_harness_diagnostics": 172
+}

@@ -1,0 +1,119 @@
+diff --git a/boltons/ioutils.py b/boltons/ioutils.py
+index 47f2b6a..3719fc8 100644
+--- a/boltons/ioutils.py
++++ b/boltons/ioutils.py
+@@ -116,7 +116,12 @@ class SpooledIOBase(object):
+         return self.buffer.isatty()
+ 
+     def next(self):
+-        return self.readline()
++        line = self.readline()
++        if not line:
++            raise StopIteration
++        return line
++
++    __next__ = next
+ 
+     @property
+     def closed(self):
+@@ -165,7 +170,7 @@ class SpooledIOBase(object):
+         return self.len
+ 
+     def __iter__(self):
+-        yield self.readline()
++        return self
+ 
+     def __enter__(self):
+         return self
+diff --git a/tests/test_ioutils.py b/tests/test_ioutils.py
+index a798dcb..533314b 100644
+--- a/tests/test_ioutils.py
++++ b/tests/test_ioutils.py
+@@ -146,8 +146,85 @@ class BaseTestMixin(object):
+         """Make sure iter works as expected"""
+         self.spooled_flo.write(self.test_str)
+         self.spooled_flo.seek(0)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.test_str)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.data_type())
++        self.assertIs(iter(self.spooled_flo), self.spooled_flo)
++        self.assertEqual([x for x in self.spooled_flo], [self.test_str])
++        self.assertEqual([x for x in self.spooled_flo], [])
++
++    def test_iter_all_lines(self):
++        """Iterate through blank lines and an optional final newline."""
++        for rolled in (False, True):
++            for trailing_newline in (False, True):
++                lines = [self.test_str + self.linesep, self.linesep,
++                         self.test_str]
++                if trailing_newline:
++                    lines[-1] += self.linesep
++                with type(self.spooled_flo)() as flo:
++                    flo.write(self.data_type().join(lines))
++                    if rolled:
++                        flo.rollover()
++                    flo.seek(0)
++                    self.assertEqual([line for line in flo], lines)
++                    self.assertEqual([line for line in flo], [])
++                    self.assertRaises(StopIteration, next, flo)
++                self.assertTrue(flo.closed)
++
++    def test_next_empty(self):
++        """Empty streams end immediately through both next APIs."""
++        for rolled in (False, True):
++            with type(self.spooled_flo)() as flo:
++                if rolled:
++                    flo.rollover()
++                self.assertEqual([line for line in flo], [])
++                self.assertRaises(StopIteration, next, flo)
++                self.assertRaises(StopIteration, flo.next)
++                self.assertIsNone(next(flo, None))
++
++    def test_next_read_seek(self):
++        """Iteration shares the read cursor and can resume after seeking."""
++        for rolled in (False, True):
++            with type(self.spooled_flo)() as flo:
++                flo.write(self.test_str_lines)
++                if rolled:
++                    flo.rollover()
++                flo.seek(0)
++                lines = self.test_str_lines.splitlines(True)
++                self.assertEqual(next(flo), lines[0])
++                self.assertEqual(flo.tell(), len(lines[0]))
++                self.assertEqual(flo.read(1), lines[1][:1])
++                self.assertEqual(flo.next(), lines[1][1:])
++                self.assertRaises(StopIteration, next, flo)
++                self.assertRaises(StopIteration, flo.next)
++                self.assertEqual(flo.read(), self.data_type())
++                self.assertEqual(flo.readline(), self.data_type())
++                flo.seek(0)
++                self.assertEqual(flo.next(), lines[0])
++                self.assertEqual(next(flo), lines[1])
++                self.assertIsNone(next(flo, None))
++
++    def test_iteration_class_calls(self):
++        """Keep the original receiver usable as a keyword argument."""
++        flo = self.spooled_flo
++        flo.write(self.test_str)
++        flo.seek(0)
++        self.assertIs(type(flo).__iter__(self=flo), flo)
++        self.assertEqual(type(flo).next(self=flo), self.test_str)
++        flo.seek(0)
++        self.assertEqual(type(flo).__next__(self=flo), self.test_str)
++        with self.assertRaises(StopIteration):
++            type(flo).next(self=flo)
++        with self.assertRaises(StopIteration):
++            type(flo).__next__(self=flo)
++
++    def test_next_closed(self):
++        """Iteration must propagate closed-stream errors."""
++        for rolled in (False, True):
++            with type(self.spooled_flo)() as flo:
++                flo.write(self.test_str)
++                if rolled:
++                    flo.rollover()
++                flo.seek(0)
++            self.assertRaises(ValueError, next, flo)
++            self.assertRaises(ValueError, flo.next)
+ 
+     def test_buf_property(self):
+         """'buf' property returns the same value as getvalue()"""

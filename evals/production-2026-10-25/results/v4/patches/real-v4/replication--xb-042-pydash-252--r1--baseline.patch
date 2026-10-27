@@ -1,0 +1,44 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 36cf0ef..e7cba2e 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -118,7 +118,8 @@ def chunk(array: t.Sequence[T], size: int = 1) -> t.List[t.Sequence[T]]:
+         size: Chunk size. Defaults to ``1``.
+ 
+     Returns:
+-        New list containing chunks of `array`.
++        New list containing chunks of `array`, or an empty list if `size` is less than ``1`` or
++        `array` is empty.
+ 
+     Example:
+ 
+@@ -127,6 +128,9 @@ def chunk(array: t.Sequence[T], size: int = 1) -> t.List[t.Sequence[T]]:
+ 
+     .. versionadded:: 1.1.0
+     """
++    if size < 1 or not array:
++        return []
++
+     chunks = int(ceil(len(array) / float(size)))
+     return [array[i * size : (i + 1) * size] for i in range(chunks)]
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index e01d463..ad53cce 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -11,6 +11,15 @@ parametrize = pytest.mark.parametrize
+ @parametrize(
+     "case,expected",
+     [
++        (([],), []),
++        (([], 0), []),
++        (([], -1), []),
++        (([], 2), []),
++        (((), 0), []),
++        (("", 0), []),
++        (([1, 2, 3, 4, 5], 0), []),
++        (([1, 2, 3, 4, 5], -1), []),
++        (([1, 2, 3, 4, 5], -2), []),
+         (([1, 2, 3, 4, 5],), [[1], [2], [3], [4], [5]]),
+         (([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]),
+         (([1, 2, 3, 4, 5], 3), [[1, 2, 3], [4, 5]]),

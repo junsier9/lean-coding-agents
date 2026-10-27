@@ -1,0 +1,93 @@
+diff --git a/src/pydash/helpers.py b/src/pydash/helpers.py
+index cd137c7..dfe1a66 100644
+--- a/src/pydash/helpers.py
++++ b/src/pydash/helpers.py
+@@ -44,6 +44,10 @@ def callit(iteratee, *args, **kwargs):
+     argcount = kwargs["argcount"] if "argcount" in kwargs else getargcount(iteratee, maxargs)
+     argstop = min([maxargs, argcount])
+ 
++    # Rounding iteratees use their default precision, not the collection index or key.
++    if iteratee is pyd.floor or iteratee is pyd.ceil or iteratee is pyd.round_:
++        argstop = min(argstop, 1)
++
+     return iteratee(*args[:argstop])
+ 
+ 
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index cbdabcd..50a5061 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -37,6 +37,49 @@ def test_count_by(case, expected):
+     assert _.count_by(*case) == expected
+ 
+ 
++@parametrize(
++    "iteratee,rounded,counts",
++    [
++        (_.floor, [4, 6, 6, -3], {4: 1, 6: 2, -3: 1}),
++        (_.ceil, [5, 7, 7, -2], {5: 1, 7: 2, -2: 1}),
++        (_.round_, [4, 6, 7, -3], {4: 1, 6: 1, 7: 1, -3: 1}),
++    ],
++)
++@parametrize(
++    "collection",
++    [
++        [4.3, 6.1, 6.8, -2.7],
++        {"a": 4.3, "b": 6.1, "c": 6.8, "d": -2.7},
++        {2: 4.3, 0: 6.1, -1: 6.8, 5: -2.7},
++    ],
++)
++def test_rounding_iteratees(collection, iteratee, rounded, counts):
++    assert _.count_by(collection, iteratee) == counts
++    assert _.map_(collection, iteratee) == rounded
++
++
++@parametrize(
++    "iteratee,expected",
++    [(_.floor, [4.3, 6.1]), (_.ceil, [4.4, 6.2]), (_.round_, [4.4, 6.2])],
++)
++def test_rounding_iteratees_with_explicit_precision(iteratee, expected):
++    values = [4.36, 6.16]
++    assert _.map_(values, _.partial(iteratee, precision=1)) == expected
++    assert _.map_(values, _.partial_right(iteratee, 1)) == expected
++
++
++def test_iteratee_receives_optional_index_and_collection():
++    values = [4.3, 6.1, 6.8]
++    calls = []
++
++    def iteratee(value, index=0, collection=None):
++        calls.append((value, index, collection))
++        return index
++
++    assert _.map_(values, iteratee) == [0, 1, 2]
++    assert calls == [(4.3, 0, values), (6.1, 1, values), (6.8, 2, values)]
++
++
+ @parametrize(
+     "case,expected",
+     [
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index f7b4144..b199ab5 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -241,6 +241,19 @@ def test_round_(case, expected):
+     assert _.round_(*case) == expected
+ 
+ 
++@parametrize("func,expected", [(_.floor, 3.2), (_.ceil, 3.3), (_.round_, 3.3)])
++def test_rounding_call_forms(func, expected):
++    assert func(3.275, 1) == expected
++    assert func(3.275, precision=1) == expected
++    assert func(x=3.275, precision=1) == expected
++
++
++@parametrize("func", [_.floor, _.ceil, _.round_])
++def test_rounding_invalid_precision(func):
++    with pytest.raises(TypeError):
++        func(3.275, precision="invalid")
++
++
+ @parametrize(
+     "case,expected",
+     [

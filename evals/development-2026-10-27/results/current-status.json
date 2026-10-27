@@ -1,0 +1,15 @@
+{
+  "evaluated_at": "2026-10-27T10:05:43.157053+00:00",
+  "candidate": "v6-python",
+  "known_development_attempts": 13,
+  "contract_accepted": 12,
+  "normal_completions": 11,
+  "complete_usage": 11,
+  "full_body_outputs": 13,
+  "original_development_gate_passed": false,
+  "supplemental_recovery_gate_passed": false,
+  "fresh_tasks_run": 0,
+  "no_model_result_replaced_or_missing_usage_imputed": true,
+  "no_generalization_efficiency_or_production_qualification_claim": true,
+  "external_agensi_submission": false
+}

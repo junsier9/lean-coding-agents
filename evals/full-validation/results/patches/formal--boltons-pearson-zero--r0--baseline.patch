@@ -1,0 +1,85 @@
+diff --git a/boltons/statsutils.py b/boltons/statsutils.py
+index b00fa09..a13cc9e 100644
+--- a/boltons/statsutils.py
++++ b/boltons/statsutils.py
+@@ -466,7 +466,10 @@ class Stats:
+         elif round(c2, precision) == 0:
+             return 3  # Gamma
+         else:
+-            k = c1 ** 2 / (4 * c0 * c2)
++            denominator = 4 * c0 * c2
++            if denominator == 0:
++                return 6  # Type VI (infinite kappa)
++            k = c1 ** 2 / denominator
+             if k < 0:
+                 return 1  # Beta
+             elif round(k, precision) == 1:
+diff --git a/tests/test_statsutils.py b/tests/test_statsutils.py
+index 6c55053..5991c35 100644
+--- a/tests/test_statsutils.py
++++ b/tests/test_statsutils.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from boltons.statsutils import Stats, mode
+ 
+ 
+@@ -20,6 +22,58 @@ def test_pearson_type_covers_kappa_ge_zero():
+         assert Stats(data).pearson_type in (0, 1, 2, 3, 4, 5, 6, 7)
+ 
+ 
++@pytest.mark.parametrize('skewness,kurtosis,expected', [
++    (0.5, 4.0, 4),
++    (1.5, 54 / 7, 5),
++    (2.0, 10.0, 6),
++    (1.0, 4.0, 1),
++])
++def test_pearson_type_exact_moments(skewness, kurtosis, expected):
++    # Supply moments directly so sampling error cannot move a boundary.
++    stats = Stats([0, 1])
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    assert stats.pearson_type == expected
++
++
++@pytest.mark.parametrize('skewness,kurtosis', [
++    (2.0, 3.0),
++    (-2.0, 3.0),
++    (4.0, 12.0),
++    (-4.0, 12.0),
++])
++def test_pearson_type_zero_denominator(skewness, kurtosis):
++    # c0 is exactly zero; the remaining asymmetric case is Type VI.
++    stats = Stats([0, 1])
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    assert stats.pearson_type == 6
++
++
++@pytest.mark.parametrize('skewness,kurtosis,expected', [
++    (0.0, 3.0, 0),  # Normal takes precedence even though c2 is zero.
++    (0.01, 3.0, 0),  # Keep the existing rounded normal boundary.
++    (0.0, 0.0, 2),  # Symmetric Beta takes precedence when c0 is zero.
++    (0.0, 4.0, 7),
++    (1.0, 4.5, 3),  # Gamma takes precedence when c2 is zero.
++    (1.0, 4.49, 3),  # Keep the existing rounded Gamma boundary.
++])
++def test_pearson_type_boundary_precedence(skewness, kurtosis, expected):
++    stats = Stats([0, 1])
++    stats._skewness = skewness
++    stats._kurtosis = kurtosis
++    assert stats.pearson_type == expected
++
++
++@pytest.mark.parametrize('precision,expected', [(0, 5), (3, 6)])
++def test_pearson_type_precision(precision, expected):
++    stats = Stats([0, 1])
++    stats._skewness = 2.0
++    stats._kurtosis = 12.0
++    stats._pearson_precision = precision
++    assert stats.pearson_type == expected
++
++
+ def test_mode():
+     assert Stats([2, 1, 3, 1]).mode == 1
+     # ties resolve to the value seen first in the data

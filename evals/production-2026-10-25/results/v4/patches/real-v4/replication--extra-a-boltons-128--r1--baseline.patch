@@ -1,0 +1,125 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index 4dcfc5c..b84fbf0 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -10,12 +10,12 @@ def clamp(x, lower=None, upper=None):
+ 
+     Args:
+         x (int or float): Number to be clamped.
+-        lower (int or float): Minimum value for x.
+-        upper (int or float): Maximum value for x.
++        lower (int or float): Minimum value for x, or None for no minimum.
++        upper (int or float): Maximum value for x, or None for no maximum.
+ 
+-    The returned value is guaranteed to be between *lower* and
+-    *upper*. Integers, floats, and other comparable types can be
+-    mixed.
++    Either bound can be omitted or set to ``None`` to leave that side
++    unbounded. The returned value is limited by the specified bounds.
++    Integers, floats, and other comparable types can be mixed.
+ 
+     >>> clamp(1.0, 0, 5)
+     1.0
+@@ -23,16 +23,26 @@ def clamp(x, lower=None, upper=None):
+     0
+     >>> clamp(101.0, 0, 5)
+     5
++    >>> clamp(-1.0, lower=0)
++    0
++    >>> clamp(101.0, upper=5)
++    5
++    >>> clamp(101.0)
++    101.0
+ 
+     Similar to `numpy's clip`_ function.
+ 
+     .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html
+ 
+     """
+-    if upper < lower:
++    if lower is not None and upper is not None and upper < lower:
+         raise ValueError('expected upper bound (%r) >= lower bound (%r)'
+                          % (upper, lower))
+-    return min(max(x, lower), upper)
++    if lower is not None:
++        x = max(x, lower)
++    if upper is not None:
++        x = min(x, upper)
++    return x
+ 
+ 
+ def ceil(x, options=None):
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index e5b536d..ba0e1ee 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,6 +1,8 @@
+ 
+-from pytest import raises
+-from boltons.mathutils import ceil, floor
++from math import isnan
++
++from pytest import mark, raises
++from boltons.mathutils import ceil, clamp, floor
+ 
+ 
+ OPTIONS = [1618, 1378, 166, 1521, 2347, 2016, 879, 2123,
+@@ -14,6 +16,58 @@ VALID_UPPER = 2314
+ VALID_BETWEEN = 248.5
+ 
+ 
++@mark.parametrize('value, bounds, expected', [
++    (3, {}, 3),
++    (3, {'lower': None, 'upper': None}, 3),
++    (-3, {'lower': 0}, 0),
++    (3, {'lower': 0}, 3),
++    (-3, {'upper': 0}, -3),
++    (3, {'upper': 0}, 0),
++    (-3, {'lower': 0, 'upper': None}, 0),
++    (3, {'lower': None, 'upper': 0}, 0),
++    (-1.0, {'lower': 0, 'upper': 5}, 0),
++    (1.0, {'lower': 0, 'upper': 5}, 1.0),
++    (101.0, {'lower': 0, 'upper': 5}, 5),
++    (0, {'lower': 0, 'upper': 5}, 0),
++    (5, {'lower': 0, 'upper': 5}, 5),
++    (3, {'lower': 2, 'upper': 2}, 2),
++    (float('inf'), {}, float('inf')),
++    (float('-inf'), {}, float('-inf')),
++    (float('inf'), {'lower': 0}, float('inf')),
++    (float('-inf'), {'lower': 0}, 0),
++    (float('inf'), {'upper': 0}, 0),
++    (float('-inf'), {'upper': 0}, float('-inf')),
++    (3, {'lower': float('-inf'), 'upper': float('inf')}, 3),
++    (10 ** 1000, {}, 10 ** 1000),
++    (10 ** 1000, {'lower': 0}, 10 ** 1000),
++    (-10 ** 1000, {'upper': 0}, -10 ** 1000),
++    (10 ** 1000, {'upper': 10 ** 999}, 10 ** 999),
++    (-10 ** 1000, {'lower': -10 ** 999}, -10 ** 999),
++    (3, {'lower': float('nan')}, 3),
++    (3, {'upper': float('nan')}, 3),
++    (3, {'lower': float('nan'), 'upper': 2}, 2),
++    (3, {'lower': 4, 'upper': float('nan')}, 4),
++])
++def test_clamp(value, bounds, expected):
++    assert clamp(value, **bounds) == expected
++
++
++@mark.parametrize('bounds', [
++    {},
++    {'lower': None, 'upper': None},
++    {'lower': 0},
++    {'upper': 5},
++    {'lower': 0, 'upper': 5},
++])
++def test_clamp_nan(bounds):
++    assert isnan(clamp(float('nan'), **bounds))
++
++
++def test_clamp_inverted_bounds():
++    with raises(ValueError):
++        clamp(3, 5, 0)
++
++
+ def test_ceil_basic():
+     assert ceil(VALID_LOWER, OPTIONS) == VALID_LOWER
+     assert ceil(VALID_UPPER, OPTIONS) == VALID_UPPER

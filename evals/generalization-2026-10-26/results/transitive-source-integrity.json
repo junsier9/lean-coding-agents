@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-27T09:02:07.364017+00:00",
+  "audit_class": "post_run_read_only_supplement",
+  "all_match": true,
+  "files_sha256": {
+    "evals/production-2026-10-25/runner.py": "849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46",
+    "evals/production-2026-10-25/prepare_second_real.py": "1F50C2486B8FBD2429436F71892BA442B104B8F72F148FAA4C47C7F5E5084586",
+    "evals/production-2026-10-25/audit_production_trace.py": "0B9FB7DCF075CAD28476D0A25A2BFD5807D74053792C1078507AF5DC3222D8CF",
+    "evals/production-2026-10-25/export_results.py": "DFDB7C9BF06E67560DFFA8079005922DF2F53013737DF542DAD7ECC5930DBBD8",
+    "evals/production-2026-10-25/resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "evals/full-validation/preflight.py": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+    "evals/full-validation/run_experiment.py": "28933EEB19B622CB7EC2FF8A394DFBD3466B305B5471F9E835119231940A9884"
+  },
+  "pre_batch_commit": "64cede4",
+  "v4_frozen_bindings_reused": [
+    "runner_sha256",
+    "resource_gate_sha256",
+    "upstream_grader_sha256",
+    "transport_sha256"
+  ],
+  "limits": "New freeze did not individually bind every transitive implementation. This later audit checks unchanged bytes against a pre-batch commit and existing v4 bindings; it does not backdate the new freeze or attest all imported OS/runtime code."
+}

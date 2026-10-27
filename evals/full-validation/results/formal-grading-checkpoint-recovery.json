@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-24T13:51:24.202643+00:00",
+  "changed_rule": "Recognize .pytest-tmp directory as well as .pytest-tmp-* and .pytest-local-tmp; regular files and links remain included.",
+  "candidate": "formal--b-29-click-1142--r0--with-skill",
+  "production_python_files_preserved": 17,
+  "frozen_overlay_files_restored": 22,
+  "original_client_seconds_preserved_in_checkpoint": 183.75,
+  "original_total_tokens_preserved_in_checkpoint": 545881,
+  "prior_failed_grading_seconds_retained": 0.06300000008195639,
+  "model_rerun_required": false,
+  "grading_resume_after_current_phase_exits": true,
+  "skill_metrics_and_acceptance_unchanged": true,
+  "preflight_sha256": "DE9EF8AFA0C2171AE413F1E89AFC59F558ACD3BC3494DAB176BD05788D1054DD",
+  "additional_confirmed_pytest_temp_directory": ".test-tmp",
+  "additional_copy_validation": {
+    "key": "formal--b-29-click-1142--r1--with-skill",
+    "production_preserved": 17,
+    "frozen_overlay_restored": 22,
+    "client_seconds": 350.93700000003446,
+    "tokens": 541811,
+    "prior_failed_grade_seconds": 0.062000000034458935
+  },
+  "directory_rule": "Actual directories with .pytest- or .test-tmp prefix; ordinary files and symlinks unchanged.",
+  "baseline_copy_validation": {
+    "key": "formal--b-02-click-2730--r2--baseline",
+    "production_preserved": 16,
+    "frozen_overlay_restored": 31,
+    "client_seconds": 289.85899999993853,
+    "tokens": 611350,
+    "failed_grade_seconds": 0.062000000034458935
+  },
+  "style_copy_validation": {
+    "key": "formal--b-09-click-2058--r2--with-skill",
+    "production_preserved": 17,
+    "frozen_overlay_restored": 22,
+    "client_seconds": 246.26599999994505,
+    "tokens": 483943,
+    "failed_grade_seconds": 0.0779999999795109
+  }
+}

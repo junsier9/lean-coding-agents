@@ -1,0 +1,99 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 4b70796..8cad6f6 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.0
+ 
+ Unreleased
+ 
++-   Fix usage formatting when ``options_metavar`` is an empty string or
++    ``None``.
+ -   Drop support for Python 2 and 3.5.
+ -   Adds a repr to Command, showing the command name for friendlier
+     debugging. :issue:`1267`, :pr:`1295`
+diff --git a/src/click/core.py b/src/click/core.py
+index 403a282..424dd4b 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1033,7 +1033,9 @@ class Command(BaseCommand):
+     .. versionchanged:: 2.0
+        Added the `context_settings` parameter.
+     .. versionchanged:: 8.0
+-       Added repr showing the command name
++       Added repr showing the command name.
++       The ``options_metavar`` parameter can be an empty string or
++       ``None`` to hide the options placeholder.
+     .. versionchanged:: 7.1
+        Added the `no_args_is_help` parameter.
+ 
+@@ -1048,6 +1050,9 @@ class Command(BaseCommand):
+                    help page after everything else.
+     :param short_help: the short help to use for this command.  This is
+                        shown on the command listing of the parent command.
++    :param options_metavar: how to display options in the usage line.
++                            An empty string or ``None`` hides the
++                            placeholder.
+     :param add_help_option: by default each command registers a ``--help``
+                             option.  This can be disabled by this parameter.
+     :param no_args_is_help: this controls what happens if no arguments are
+@@ -1139,7 +1144,9 @@ class Command(BaseCommand):
+         """Returns all the pieces that go into the usage line and returns
+         it as a list of strings.
+         """
+-        rv = [self.options_metavar]
++        rv = []
++        if self.options_metavar:
++            rv.append(self.options_metavar)
+         for param in self.get_params(ctx):
+             rv.extend(param.get_usage_pieces(ctx))
+         return rv
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 407f0aa..fd37c40 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -49,6 +51,39 @@ def test_basic_functionality(runner):
+     ]
+ 
+ 
++@pytest.mark.parametrize(
++    ("options_metavar", "usage"),
++    [
++        ("", "Usage: cli SRC [DEST]"),
++        (None, "Usage: cli SRC [DEST]"),
++        ("[FLAGS]", "Usage: cli [FLAGS] SRC [DEST]"),
++    ],
++)
++@pytest.mark.parametrize(("args", "exit_code"), [(["--help"], 0), ([], 2)])
++def test_options_metavar(runner, options_metavar, usage, args, exit_code):
++    @click.command(options_metavar=options_metavar)
++    @click.argument("src")
++    @click.argument("dest", required=False)
++    def cli(src, dest):
++        pass
++
++    result = runner.invoke(cli, args)
++    assert result.exit_code == exit_code
++    assert result.output.splitlines()[0] == usage
++
++
++@pytest.mark.parametrize("options_metavar", ["", None])
++def test_group_no_options_metavar(runner, options_metavar):
++    @click.group(options_metavar=options_metavar)
++    @click.argument("src")
++    def cli(src):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert result.exit_code == 0
++    assert result.output.splitlines()[0] == "Usage: cli SRC COMMAND [ARGS]..."
++
++
+ def test_wrapping_long_options_strings(runner):
+     @click.group()
+     def cli():

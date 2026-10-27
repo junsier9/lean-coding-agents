@@ -1,0 +1,59 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 15b14a3..27fdc1d 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -137,9 +137,13 @@ class BarrelList(list):
+             self.lists[0].insert(index, item)
+             self._balance_list(0)
+         else:
++            index = operator.index(index)
+             list_idx, rel_idx = self._translate_index(index)
++            # Insertion clips out-of-range indices to either end.
+             if list_idx is None:
+-                raise IndexError()
++                list_idx, rel_idx = 0, 0
++            elif index >= len(self):
++                rel_idx = len(self.lists[list_idx])
+             self.lists[list_idx].insert(rel_idx, item)
+             self._balance_list(list_idx)
+         return
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index b70977b..8a3c40f 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -59,6 +61,27 @@ def test_sort_barrel_list():
+     assert bl[0] == 0
+     assert bl[-1] == 99999
+ 
++
++@pytest.mark.parametrize('split', [False, True])
++@pytest.mark.parametrize('index', [
++    -sys.maxsize, -100001, -100000, -99999, -1,
++    0, 1, 50000, 99999, 100000, 100001, sys.maxsize,
++])
++def test_barrel_list_insert_bounds(split, index):
++    expected = list(range(100000))
++    bl = BarrelList(expected)
++    if split:
++        bl._balance_list(0)
++        assert len(bl.lists) > 1
++    else:
++        assert len(bl.lists) == 1
++
++    expected.insert(index, 'inserted')
++    assert bl.insert(index, 'inserted') is None
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++
++
+ # roughly increasing random integers
+ # [ord(i) * x for i, x in zip(os.urandom(1024), range(1024))]
+ TEST_INTS = [0, 74, 96, 183, 456, 150, 1098, 665, 1752, 1053, 190,

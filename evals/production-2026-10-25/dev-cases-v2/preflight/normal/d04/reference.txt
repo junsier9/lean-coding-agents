@@ -1,0 +1,16 @@
+test_availability_translation_and_cause (test_contract.Contract.test_availability_translation_and_cause) ... ok
+test_cancellation_propagates (test_contract.Contract.test_cancellation_propagates) ... ok
+test_invalid_ids_before_storage (test_contract.Contract.test_invalid_ids_before_storage) ... ok
+test_malformed_record (test_contract.Contract.test_malformed_record) ... ok
+test_missing_subclass (test_contract.Contract.test_missing_subclass) ... ok
+test_none_record_is_corruption (test_contract.Contract.test_none_record_is_corruption) ... ok
+test_normal (test_contract.Contract.test_normal) ... ok
+test_normalization_bug_propagates (test_contract.Contract.test_normalization_bug_propagates) ... ok
+test_optional_missing (test_contract.Contract.test_optional_missing) ... ok
+test_success_does_not_mutate_record (test_contract.Contract.test_success_does_not_mutate_record) ... ok
+test_unexpected_store_error (test_contract.Contract.test_unexpected_store_error) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.001s
+
+OK

@@ -1,0 +1,204 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 2debd78..edc87e4 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Restore support for ``multiple=True`` with boolean and value flags,
++    using an empty tuple when no flags are passed.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/docs/options.rst b/docs/options.rst
+index 5c23bad..12b5784 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -223,6 +223,11 @@ single characters.
+ 
+     @click.option("--format", multiple=True, default=["json"])
+ 
++Flags also support ``multiple=True``, including boolean flags and custom
++``flag_value`` options. Each occurrence adds its value to the result tuple
++in command line order. Without an explicit default, omitting the flags
++produces an empty tuple.
++
+ 
+ Counting
+ --------
+diff --git a/src/click/core.py b/src/click/core.py
+index b03a760..d68b7bb 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2491,6 +2491,9 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.1.4
++        The ``multiple`` and ``is_flag`` parameters can be used together.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2571,7 +2574,7 @@ class Option(Parameter):
+             self._flag_needs_value = flag_value is not None
+ 
+         if is_flag and default_is_missing and not self.required:
+-            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = False
++            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = () if multiple else False
+ 
+         if flag_value is None:
+             flag_value = not self.default
+@@ -2622,9 +2625,6 @@ class Option(Parameter):
+                 if self.is_flag:
+                     raise TypeError("'count' is not valid with 'is_flag'.")
+ 
+-            if self.multiple and self.is_flag:
+-                raise TypeError("'multiple' is not valid with 'is_flag', use 'count'.")
+-
+     def to_info_dict(self) -> t.Dict[str, t.Any]:
+         info_dict = super().to_info_dict()
+         info_dict.update(
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 0e438eb..836b15e 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -26,6 +28,41 @@ def test_multiple_defaults(runner):
+     assert result.output.splitlines() == ["23.0", "42.0"]
+ 
+ 
++@pytest.mark.parametrize(
++    "kwargs",
++    [
++        {"is_flag": True},
++        {"flag_value": True},
++        {"flag_value": False},
++        {"flag_value": "value"},
++        {"flag_value": 42},
++    ],
++)
++def test_multiple_flag_defaults(runner, kwargs):
++    @click.command()
++    @click.option("--flag", multiple=True, **kwargs)
++    def cli(flag):
++        return flag
++
++    assert cli.params[0].default == ()
++    result = runner.invoke(cli, [], standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == ()
++
++
++@pytest.mark.parametrize("default", [None, (), (False, True)])
++def test_multiple_flag_explicit_default(runner, default):
++    @click.command()
++    @click.option("--flag", multiple=True, is_flag=True, default=default)
++    def cli(flag):
++        return flag
++
++    assert cli.params[0].default is default
++    result = runner.invoke(cli, [], standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (() if default is None else default)
++
++
+ def test_nargs_plus_multiple(runner):
+     @click.command()
+     @click.option(
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d4090c7..06944da 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -118,6 +118,74 @@ def test_multiple_required(runner):
+     assert "Error: Missing option '-m' / '--message'." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("kwargs", "value"),
++    [
++        ({"is_flag": True}, True),
++        ({"flag_value": True}, True),
++        ({"flag_value": False}, False),
++        ({"flag_value": "value"}, "value"),
++        ({"flag_value": 42}, 42),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "count"),
++    [(["--flag"], 1), (["--flag", "--flag"], 2), (["-fff"], 3)],
++)
++def test_multiple_flags(runner, kwargs, value, args, count):
++    @click.command()
++    @click.option("--flag", "-f", multiple=True, **kwargs)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (value,) * count
++
++
++def test_multiple_boolean_flags(runner):
++    @click.command()
++    @click.option("--flag/--no-flag", multiple=True)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(
++        cli, ["--flag", "--no-flag", "--flag"], standalone_mode=False
++    )
++    assert result.exit_code == 0
++    assert result.return_value == (True, False, True)
++
++
++def test_multiple_flag_values(runner):
++    @click.command()
++    @click.option("--upper", "mode", flag_value="upper", multiple=True)
++    @click.option("--lower", "mode", flag_value="lower", multiple=True)
++    def cli(mode):
++        return mode
++
++    result = runner.invoke(
++        cli, ["--upper", "--lower", "--upper"], standalone_mode=False
++    )
++    assert result.exit_code == 0
++    assert result.return_value == ("upper", "lower", "upper")
++
++
++@pytest.mark.parametrize("kwargs", [{"is_flag": True}, {"flag_value": "value"}])
++def test_multiple_flags_required(runner, kwargs):
++    @click.command()
++    @click.option("--flag", multiple=True, required=True, **kwargs)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, [])
++    assert result.exit_code == 2
++    assert "Missing option '--flag'" in result.output
++
++    result = runner.invoke(cli, ["--flag", "--flag"], standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (cli.params[0].flag_value,) * 2
++
++
+ @pytest.mark.parametrize(
+     ("multiple", "nargs", "default"),
+     [
+@@ -911,10 +979,6 @@ def test_is_bool_flag_is_correctly_set(option, expected):
+     [
+         ({"count": True, "multiple": True}, "'count' is not valid with 'multiple'."),
+         ({"count": True, "is_flag": True}, "'count' is not valid with 'is_flag'."),
+-        (
+-            {"multiple": True, "is_flag": True},
+-            "'multiple' is not valid with 'is_flag', use 'count'.",
+-        ),
+     ],
+ )
+ def test_invalid_flag_combinations(runner, kwargs, message):

@@ -1,0 +1,92 @@
+{
+  "audit_time_utc": "2026-10-26T01:35:49.834443+00:00",
+  "audit_class": "post_start_supplemental_read_only_input_integrity",
+  "prior_metadata_files_checked": 3060,
+  "prior_attempt_matches_selected": [],
+  "source_and_archive_checks": [
+    {
+      "case_id": "extra-a-boltons-178",
+      "frozen_source_and_archive_hash_checks": 39
+    },
+    {
+      "case_id": "extra-a-boltons-332",
+      "frozen_source_and_archive_hash_checks": 40
+    },
+    {
+      "case_id": "extra-a-boltons-338",
+      "frozen_source_and_archive_hash_checks": 40
+    },
+    {
+      "case_id": "extra-a-boltons-445",
+      "frozen_source_and_archive_hash_checks": 40
+    },
+    {
+      "case_id": "extra-a-boltons-450",
+      "frozen_source_and_archive_hash_checks": 40
+    },
+    {
+      "case_id": "extra-a-boltons-472",
+      "frozen_source_and_archive_hash_checks": 40
+    },
+    {
+      "case_id": "extra-a-mi-1119",
+      "frozen_source_and_archive_hash_checks": 9
+    },
+    {
+      "case_id": "extra-a-mi-1182",
+      "frozen_source_and_archive_hash_checks": 9
+    },
+    {
+      "case_id": "extra-a2-boltons-64",
+      "frozen_source_and_archive_hash_checks": 26
+    },
+    {
+      "case_id": "extra-a2-click-3578",
+      "frozen_source_and_archive_hash_checks": 35
+    },
+    {
+      "case_id": "mi-1260",
+      "frozen_source_and_archive_hash_checks": 9
+    },
+    {
+      "case_id": "xb-008-click-3434",
+      "frozen_source_and_archive_hash_checks": 35
+    },
+    {
+      "case_id": "xb-019-click-2550",
+      "frozen_source_and_archive_hash_checks": 26
+    },
+    {
+      "case_id": "xb-022-pydash-348",
+      "frozen_source_and_archive_hash_checks": 30
+    },
+    {
+      "case_id": "xb-025-pydash-294",
+      "frozen_source_and_archive_hash_checks": 29
+    },
+    {
+      "case_id": "xb-028-pydash-283",
+      "frozen_source_and_archive_hash_checks": 29
+    },
+    {
+      "case_id": "xb-037-pydash-260",
+      "frozen_source_and_archive_hash_checks": 28
+    },
+    {
+      "case_id": "xb-039-pydash-256",
+      "frozen_source_and_archive_hash_checks": 28
+    },
+    {
+      "case_id": "xb-043-pydash-251",
+      "frozen_source_and_archive_hash_checks": 28
+    },
+    {
+      "case_id": "xb-044-pydash-250",
+      "frozen_source_and_archive_hash_checks": 28
+    }
+  ],
+  "source_all_match": true,
+  "source_or_driver_changed": false,
+  "limits": "Original freeze only screened completed journals; this supplemental audit also screens prior native attempt metadata. It does not retrospectively change pre-freeze coverage or prove absent unlogged work.",
+  "private_metadata_index_sha256": "1993448C9E90CD6D9A3ED07DBCE47B9CC0ACF6195E1A46B7BC2576AE4C6AC725"
+}

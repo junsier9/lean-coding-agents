@@ -1,0 +1,45 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index e14991a..754d51e 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2849,7 +2849,12 @@ def iterinterleave(*arrays):
+ def iterintersperse(iterable, separator):
+     """Iteratively intersperse iterable."""
+     iterable = iter(iterable)
+-    yield next(iterable)
++    try:
++        first = next(iterable)
++    except StopIteration:
++        return
++
++    yield first
+     for item in iterable:
+         yield separator
+         yield item
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index c9740c5..f00d67f 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -280,6 +280,7 @@ def test_initial(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([], [1, 2, 3]), []),
+         (([[10, 20], [30, 40], [50, 60]], [1, 2, 3]), [10, 20, 1, 2, 3, 30, 40, 1, 2, 3, 50, 60]),
+         (
+             ([[[10, 20]], [[30, 40]], [50, [60]]], [1, 2, 3]),
+@@ -356,6 +357,14 @@ def test_intersection_with(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([], 10), []),
++        (((), 10), []),
++        ((iter(()), 10), []),
++        (((item for item in ()), 10), []),
++        (([None], 10), [None]),
++        (([0, False, None], None), [0, None, False, None, None]),
++        ((iter([1, 2, 3]), 10), [1, 10, 2, 10, 3]),
++        (((item for item in [1, 2, 3]), None), [1, None, 2, None, 3]),
+         (([1, 2, 3, 4], 10), [1, 10, 2, 10, 3, 10, 4]),
+         (([1, 2, 3, 4], [0, 0, 0]), [1, [0, 0, 0], 2, [0, 0, 0], 3, [0, 0, 0], 4]),
+         (

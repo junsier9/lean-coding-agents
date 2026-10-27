@@ -1,0 +1,34 @@
+{
+  "native_model_calls": 0,
+  "checks": [
+    {
+      "case": "case-01",
+      "stage": "base",
+      "exit_code": 0,
+      "stdout": "[1, 4]\n",
+      "stderr_last_line": ""
+    },
+    {
+      "case": "case-01",
+      "stage": "candidate",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr_last_line": "TypeError: '<' not supported between instances of 'Index' and 'int'"
+    },
+    {
+      "case": "case-03",
+      "stage": "base",
+      "exit_code": 0,
+      "stdout": "(3, 10)\n",
+      "stderr_last_line": ""
+    },
+    {
+      "case": "case-03",
+      "stage": "candidate",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr_last_line": "NotImplementedError: signature unavailable"
+    }
+  ],
+  "newly_exposed_development_evidence_only": true
+}

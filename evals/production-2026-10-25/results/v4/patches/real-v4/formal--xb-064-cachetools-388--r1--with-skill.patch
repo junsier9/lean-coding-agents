@@ -1,0 +1,69 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..11e45e6 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -76,6 +76,8 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is None:
++            return self.__wrapped__
+         wrapper = self.Wrapper(obj)
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..37f58dc 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,5 +1,6 @@
+ import unittest
+ import warnings
++from unittest.mock import create_autospec
+ 
+ 
+ from cachetools import Cache, cachedmethod, keys
+@@ -364,6 +365,44 @@ class MethodDecoratorTestMixin:
+         self.assertEqual(cached.get(0), 1)
+         self.assertEqual(len(cache), 1)
+ 
++    def test_decorator_class_access(self):
++        for name in ("get", "get_info"):
++            with self.subTest(method=name):
++                cached = Cached(self.cache(2))
++                with warnings.catch_warnings():
++                    warnings.simplefilter("error")
++                    method = getattr(Cached, name)
++                    self.assertEqual(method.__name__, name)
++                    self.assertEqual(method(cached, 0), 0)
++                    self.assertEqual(method(self=cached, value=1), 1)
++
++    def test_decorator_autospec(self):
++        for instance in (False, True):
++            with self.subTest(instance=instance):
++                with warnings.catch_warnings():
++                    warnings.simplefilter("error")
++                    mocked = create_autospec(Cached, instance=instance)
++                    for name in (
++                        "get",
++                        "get_typed",
++                        "get_info",
++                        "get_lock",
++                        "get_lock_info",
++                        "get_cond",
++                        "get_cond_error",
++                        "get_cond_info",
++                        "get_lock_cond",
++                        "get_lock_cond_info",
++                    ):
++                        with self.subTest(method=name):
++                            method = getattr(mocked, name)
++                            method(mocked, 42)
++                            method.assert_called_once_with(mocked, 42)
++                            with self.assertRaises(TypeError):
++                                method()
++                            with self.assertRaises(TypeError):
++                                method(mocked, 1, 2)
++
+     def test_decorator_attributes(self):
+         cache = self.cache(2)
+         cached = Cached(cache)

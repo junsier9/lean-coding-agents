@@ -1,0 +1,1285 @@
+{
+  "pair": "05",
+  "review_type": "independent arm-label-blinded code and behavior review",
+  "task": "median 对迭代器或生成器抛出 TypeError。请让这些声明支持的 Iterable 输入正常计算奇数、偶数和经 iteratee 转换的数据，并保持空输入行为。",
+  "comparison": "same",
+  "preferred_arm": null,
+  "runtime_ast_equal_excluding_docstrings": true,
+  "summary": "A/B 的 median 执行逻辑相同：先完成既有的变换与排序，再对该结果求长，取消对原始 Iterable 必须 Sized 的假设。两侧各通过8组本地行为探针；A 额外增加迭代器文档示例。没有确认的不安全修改或无需求机制，声明范围外输入的行为扩展单独记录为未明确契约边界。",
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "A-J01",
+          "file": "A/src/pydash/numerical.py",
+          "line": 640,
+          "title": "复用既有排序结果，使非Sized Iterable也能确定有效长度",
+          "evidence": "原始声明支持 Iterable，但在任何迭代之前直接 len(collection)。移动原本就需要的 iteratee+sorted 物化，让长度来自已处理的有限序列，而非要求迭代器提供 len；没有额外先复制一次原始集合。奇数、偶数和单项结果正确，既有有长输入也保持行为。",
+          "additional_locations": [
+            "base/src/pydash/numerical.py:614",
+            "base/src/pydash/numerical.py:638",
+            "base/src/pydash/numerical.py:643",
+            "A/src/pydash/numerical.py:641"
+          ],
+          "probe_ids": [
+            "collection_shapes",
+            "single_pass_iterable"
+          ]
+        },
+        {
+          "id": "A-J02",
+          "file": "A/src/pydash/numerical.py",
+          "line": 640,
+          "title": "回调与所有权沿用现有 producer 协议",
+          "evidence": "仍通过 iteriteratee 取得转换值。探针验证一元/二元/三元回调、索引/键、属性简写与 mapping 值；三元回调仍收到原 collection 对象。输入 list/记录未被排序改写，单次迭代器按原值各消费一次。",
+          "additional_locations": [
+            "A/src/pydash/helpers.py:113",
+            "A/src/pydash/helpers.py:127",
+            "A/src/pydash/helpers.py:128"
+          ],
+          "probe_ids": [
+            "callable_iteratees",
+            "shorthand_and_mapping",
+            "does_not_mutate_input",
+            "single_pass_iterable"
+          ]
+        },
+        {
+          "id": "A-J03",
+          "file": "A/src/pydash/numerical.py",
+          "line": 644,
+          "title": "保留约定空结果，同时不把真实执行失败当空输入",
+          "evidence": "有效空 list/tuple/dict/iterator/generator 仍为 NaN，空输入不执行 iteratee，包含内建 int 转换器。非空迭代或回调抛出的 ValueError/RuntimeError 按原异常对象传播，没有新增宽捕获或正常值兜底。新增文档示例直接对应本题支持的 iterator。",
+          "additional_locations": [
+            "A/src/pydash/numerical.py:635",
+            "A/src/pydash/numerical.py:642"
+          ],
+          "probe_ids": [
+            "empty_inputs",
+            "iterator_failures",
+            "iteratee_failures"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "A-U01",
+          "file": "A/src/pydash/numerical.py",
+          "line": 640,
+          "confirmed_defect": false,
+          "title": "声明范围外输入的拒绝/兼容契约未明确",
+          "observation": "原实现对 None、整数、普通 object 和非Iterable属性对象因 len 而抛 TypeError；新实现复用 helper 后，前三者为 NaN，有数值属性的对象可按属性值计算。A/B 相同。",
+          "evidence": "helpers.iterator 既有的 else 分支会迭代 __dict__，无属性时为空。median 的可见重载只声明 Mapping/Iterable，题面未规定范围外输入必须保持 TypeError，也未给出需要拒绝这些输入的 caller。",
+          "additional_locations": [
+            "A/src/pydash/helpers.py:131",
+            "A/src/pydash/helpers.py:139",
+            "A/src/pydash/helpers.py:142"
+          ],
+          "interpretation": "记录具体行为扩展，但不将未声明输入的策略假设升级为已确认缺陷，也不据此要求新增 guard。"
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "B-J01",
+          "file": "B/src/pydash/numerical.py",
+          "line": 638,
+          "title": "相同的排序/求长调整满足实际 Iterable 契约",
+          "evidence": "先利用已有排序生成结果，再求长和取中点，与 A 的执行 AST 相同。排序列表是当前中位数算法既有需要，不能因为出现列表就当成无依据的防御性复制；此实现没有再增加一份原始输入副本。",
+          "additional_locations": [
+            "B/src/pydash/numerical.py:639",
+            "B/src/pydash/numerical.py:643"
+          ],
+          "probe_ids": [
+            "collection_shapes",
+            "single_pass_iterable"
+          ]
+        },
+        {
+          "id": "B-J02",
+          "file": "B/src/pydash/numerical.py",
+          "line": 638,
+          "title": "保留转换协议、原对象身份与不改写输入的行为",
+          "evidence": "回调仍由未改动的 iteriteratee 执行，原集合对象传给三元回调；mapping/属性简写和索引变换仍有效。单次输入消费以及 list/记录不变的本地结果与 A 相同。",
+          "additional_locations": [
+            "B/src/pydash/helpers.py:113",
+            "B/src/pydash/helpers.py:128"
+          ],
+          "probe_ids": [
+            "callable_iteratees",
+            "shorthand_and_mapping",
+            "does_not_mutate_input",
+            "single_pass_iterable"
+          ]
+        },
+        {
+          "id": "B-J03",
+          "file": "B/src/pydash/numerical.py",
+          "line": 642,
+          "title": "空输入返回与真实异常传播区分保持",
+          "evidence": "有效空输入返回 NaN，但迭代器和 iteratee 的实际错误继续传播。新增候选测试包含失败路径，是有当前接口依据的验证；它不改变生产实现，也未被用于按测试数量判优。",
+          "probe_ids": [
+            "empty_inputs",
+            "iterator_failures",
+            "iteratee_failures"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "B-U01",
+          "file": "B/src/pydash/numerical.py",
+          "line": 638,
+          "confirmed_defect": false,
+          "title": "声明范围外输入的行为扩展与 A 相同",
+          "observation": "None、整数和无属性对象由 TypeError 变为 NaN；非Iterable属性对象可按其数值属性计算。",
+          "additional_locations": [
+            "B/src/pydash/helpers.py:131",
+            "B/src/pydash/helpers.py:142"
+          ],
+          "interpretation": "这是复用既有 helper 的具体效果。当前声明/题面未规定这些输入的拒绝策略，因此仅作共享契约边界记录，不判为缺陷或推荐额外防御层。"
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": "Bundled Python 3.12.14; standard library only; -B and PYTHONDONTWRITEBYTECODE=1",
+    "isolation": "Only permitted src/pydash packages were copied into a new reviewer temporary directory; each copied variant was imported in a separate local subprocess.",
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_tests_executed": false,
+    "groups": [
+      "List/tuple/iterator/generator singleton, odd and even medians",
+      "Unary and index-based callbacks, ternary original-collection identity",
+      "Property shorthand, mapping values and mapping-key callbacks",
+      "Empty list/tuple/dict/iterator/generator remain NaN without calling callback, including builtin int",
+      "Non-Sized one-shot iterator yields each value once",
+      "Input list and record values are not reordered or mutated",
+      "Iterator ValueError and RuntimeError preserve original exception identity",
+      "Iteratee ValueError preserves original exception identity across collection shapes"
+    ],
+    "outside_signature_observations": "None/scalar/plain-object/attribute-object outcomes are recorded without treating an unspecified rejection policy as a probe failure.",
+    "counting_limit": "Eight overlapping probe groups, not independent task-quality samples. Most base failures share the original len-on-iterator cause.",
+    "source_sha256": "ACF1F277E55909F55687BA4D8B01CBB8DC66F915EE80C70CD4C9E8CD2BD4209F",
+    "source": "import json\nimport math\nfrom pathlib import Path\nimport sys\n\nsys.dont_write_bytecode = True\nsys.path.insert(0, str(Path(sys.argv[1]).resolve()))\nimport pydash as pyd\n\n\ndef require(condition, message):\n    if not condition:\n        raise AssertionError(message)\n\n\ndef generator(values):\n    yield from values\n\n\nFACTORIES = [('list', list), ('tuple', tuple), ('iterator', iter), ('generator', generator)]\n\n\ndef collection_shapes():\n    rows = []\n    for name, factory in FACTORIES:\n        for values, expected in [([7], 7), ([5, 1, 3], 3), ([4, 1, 3, 2], 2.5)]:\n            result = pyd.median(factory(values))\n            require(result == expected, 'wrong median for ' + name)\n            rows.append({'factory': name, 'values': values, 'median': result})\n    return rows\n\n\ndef callable_iteratees():\n    rows = []\n    for name, factory in FACTORIES:\n        require(pyd.median(factory([5, 1, 3]), lambda value: -value) == -3, 'unary iteratee')\n        require(pyd.median(factory([4, 1, 3, 2]), lambda value: value ** 2) == 6.5, 'even mapped median')\n        source = factory([5, 1, 3])\n        calls = []\n        def inspect_source(value, key, collection):\n            require(collection is source, 'callback original-collection identity changed')\n            calls.append([key, value])\n            return value + key\n        result = pyd.median(source, inspect_source)\n        require(result == 5 and calls == [[0, 5], [1, 1], [2, 3]], 'callback index/order changed')\n        rows.append({'factory': name, 'mapped_median': result, 'calls': calls, 'original_source_identity': True})\n    return rows\n\n\ndef shorthand_and_mapping():\n    rows = []\n    records = [{'score': 9}, {'score': 1}, {'score': 5}, {'score': 3}]\n    for name, factory in FACTORIES:\n        result = pyd.median(factory(records), 'score')\n        require(result == 4, 'property shorthand median')\n        rows.append({'factory': name, 'median': result})\n    mapping = {'one': {'score': 3}, 'two': {'score': 1}, 'three': {'score': 2}}\n    require(pyd.median(mapping, 'score') == 2, 'mapping values/property path changed')\n    numbers = {'a': 1, 'bb': 2, 'ccc': 3}\n    require(pyd.median(numbers, lambda value, key: value + len(key)) == 4, 'mapping key callback changed')\n    return {'records': rows, 'mapping_property_median': 2, 'mapping_key_median': 4}\n\n\ndef empty_inputs():\n    rows = []\n    for name, factory in FACTORIES + [('dict', dict)]:\n        calls = []\n        def unexpected(value):\n            calls.append(value)\n            raise RuntimeError('empty input must not call iteratee')\n        for iteratee_name, iteratee in [('none', None), ('callback', unexpected), ('builtin_int', int)]:\n            result = pyd.median(factory([]), iteratee)\n            require(math.isnan(result), 'empty input changed from NaN')\n            rows.append({'factory': name, 'iteratee': iteratee_name, 'is_nan': True})\n        require(calls == [], 'empty input evaluated iteratee')\n    return rows\n\n\ndef single_pass_iterable():\n    class Stream:\n        def __init__(self):\n            self.values = iter([5, 1, 3])\n            self.visited = []\n        def __iter__(self):\n            return self\n        def __next__(self):\n            value = next(self.values)\n            self.visited.append(value)\n            return value\n    source = Stream()\n    require(pyd.median(source) == 3, 'non-Sized iterator median')\n    require(source.visited == [5, 1, 3], 'iterator values consumed more than once')\n    return {'visited': source.visited, 'median': 3}\n\n\ndef does_not_mutate_input():\n    values = [5, 1, 3]\n    require(pyd.median(values) == 3 and values == [5, 1, 3], 'source list reordered')\n    records = [{'n': 5}, {'n': 1}, {'n': 3}]\n    require(pyd.median(records, 'n') == 3, 'record median')\n    require(records == [{'n': 5}, {'n': 1}, {'n': 3}], 'record collection mutated')\n    return {'values': values, 'records': records}\n\n\ndef iterator_failures():\n    rows = []\n    for kind in [ValueError, RuntimeError]:\n        failure = kind('iteration failure')\n        def broken():\n            yield 1\n            raise failure\n        caught = None\n        try:\n            pyd.median(broken())\n        except BaseException as error:\n            caught = error\n        require(caught is failure, 'iterator failure replaced or treated as empty')\n        rows.append({'exception': kind.__name__, 'original_identity': True})\n    return rows\n\n\ndef iteratee_failures():\n    rows = []\n    for name, factory in FACTORIES:\n        failure = ValueError('transform failure')\n        def transform(value):\n            raise failure\n        caught = None\n        try:\n            pyd.median(factory([1, 2, 3]), transform)\n        except BaseException as error:\n            caught = error\n        require(caught is failure, 'iteratee failure replaced or treated as empty')\n        rows.append({'factory': name, 'original_identity': True})\n    return rows\n\n\nresults = {}\nfor function in [collection_shapes, callable_iteratees, shorthand_and_mapping, empty_inputs,\n                 single_pass_iterable, does_not_mutate_input, iterator_failures, iteratee_failures]:\n    try:\n        results[function.__name__] = {'passed': True, 'observed': function()}\n    except BaseException as error:\n        results[function.__name__] = {'passed': False, 'exception': type(error).__name__, 'message': str(error)}\n\nclass AttributeObject:\n    def __init__(self):\n        self.a, self.b, self.c = 1, 3, 2\n\noutside = []\nfor label, value in [('None', None), ('integer', 3), ('plain_object', object()), ('attribute_object', AttributeObject())]:\n    try:\n        result = pyd.median(value)\n        outside.append({'kind': label, 'exception': None, 'outcome': 'NaN' if math.isnan(result) else result})\n    except BaseException as error:\n        outside.append({'kind': label, 'exception': type(error).__name__, 'outcome': None})\n\nprint(json.dumps({'module_file': str(Path(pyd.__file__).resolve()),\n                  'passed': sum(result['passed'] for result in results.values()), 'total': len(results),\n                  'results': results, 'outside_declared_iterable_contract_observations': outside}))\n",
+    "temporary_work_directory_removed": true
+  },
+  "probe_results": {
+    "base": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair05-review-q82itoem\\base\\pydash\\__init__.py",
+      "passed": 1,
+      "total": 8,
+      "results": {
+        "collection_shapes": {
+          "passed": false,
+          "exception": "TypeError",
+          "message": "object of type 'list_iterator' has no len()"
+        },
+        "callable_iteratees": {
+          "passed": false,
+          "exception": "TypeError",
+          "message": "object of type 'list_iterator' has no len()"
+        },
+        "shorthand_and_mapping": {
+          "passed": false,
+          "exception": "TypeError",
+          "message": "object of type 'list_iterator' has no len()"
+        },
+        "empty_inputs": {
+          "passed": false,
+          "exception": "TypeError",
+          "message": "object of type 'list_iterator' has no len()"
+        },
+        "single_pass_iterable": {
+          "passed": false,
+          "exception": "TypeError",
+          "message": "object of type 'Stream' has no len()"
+        },
+        "does_not_mutate_input": {
+          "passed": true,
+          "observed": {
+            "values": [
+              5,
+              1,
+              3
+            ],
+            "records": [
+              {
+                "n": 5
+              },
+              {
+                "n": 1
+              },
+              {
+                "n": 3
+              }
+            ]
+          }
+        },
+        "iterator_failures": {
+          "passed": false,
+          "exception": "AssertionError",
+          "message": "iterator failure replaced or treated as empty"
+        },
+        "iteratee_failures": {
+          "passed": false,
+          "exception": "AssertionError",
+          "message": "iteratee failure replaced or treated as empty"
+        }
+      },
+      "outside_declared_iterable_contract_observations": [
+        {
+          "kind": "None",
+          "exception": "TypeError",
+          "outcome": null
+        },
+        {
+          "kind": "integer",
+          "exception": "TypeError",
+          "outcome": null
+        },
+        {
+          "kind": "plain_object",
+          "exception": "TypeError",
+          "outcome": null
+        },
+        {
+          "kind": "attribute_object",
+          "exception": "TypeError",
+          "outcome": null
+        }
+      ]
+    },
+    "A": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair05-review-q82itoem\\A\\pydash\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "collection_shapes": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "list",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "list",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "generator",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "generator",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "generator",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            }
+          ]
+        },
+        "callable_iteratees": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "tuple",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "iterator",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "generator",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            }
+          ]
+        },
+        "shorthand_and_mapping": {
+          "passed": true,
+          "observed": {
+            "records": [
+              {
+                "factory": "list",
+                "median": 4.0
+              },
+              {
+                "factory": "tuple",
+                "median": 4.0
+              },
+              {
+                "factory": "iterator",
+                "median": 4.0
+              },
+              {
+                "factory": "generator",
+                "median": 4.0
+              }
+            ],
+            "mapping_property_median": 2,
+            "mapping_key_median": 4
+          }
+        },
+        "empty_inputs": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "list",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "list",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            }
+          ]
+        },
+        "single_pass_iterable": {
+          "passed": true,
+          "observed": {
+            "visited": [
+              5,
+              1,
+              3
+            ],
+            "median": 3
+          }
+        },
+        "does_not_mutate_input": {
+          "passed": true,
+          "observed": {
+            "values": [
+              5,
+              1,
+              3
+            ],
+            "records": [
+              {
+                "n": 5
+              },
+              {
+                "n": 1
+              },
+              {
+                "n": 3
+              }
+            ]
+          }
+        },
+        "iterator_failures": {
+          "passed": true,
+          "observed": [
+            {
+              "exception": "ValueError",
+              "original_identity": true
+            },
+            {
+              "exception": "RuntimeError",
+              "original_identity": true
+            }
+          ]
+        },
+        "iteratee_failures": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "original_identity": true
+            },
+            {
+              "factory": "tuple",
+              "original_identity": true
+            },
+            {
+              "factory": "iterator",
+              "original_identity": true
+            },
+            {
+              "factory": "generator",
+              "original_identity": true
+            }
+          ]
+        }
+      },
+      "outside_declared_iterable_contract_observations": [
+        {
+          "kind": "None",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "integer",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "plain_object",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "attribute_object",
+          "exception": null,
+          "outcome": 2
+        }
+      ]
+    },
+    "B": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair05-review-q82itoem\\B\\pydash\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "collection_shapes": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "list",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "list",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "tuple",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "iterator",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            },
+            {
+              "factory": "generator",
+              "values": [
+                7
+              ],
+              "median": 7
+            },
+            {
+              "factory": "generator",
+              "values": [
+                5,
+                1,
+                3
+              ],
+              "median": 3
+            },
+            {
+              "factory": "generator",
+              "values": [
+                4,
+                1,
+                3,
+                2
+              ],
+              "median": 2.5
+            }
+          ]
+        },
+        "callable_iteratees": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "tuple",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "iterator",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            },
+            {
+              "factory": "generator",
+              "mapped_median": 5,
+              "calls": [
+                [
+                  0,
+                  5
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ],
+              "original_source_identity": true
+            }
+          ]
+        },
+        "shorthand_and_mapping": {
+          "passed": true,
+          "observed": {
+            "records": [
+              {
+                "factory": "list",
+                "median": 4.0
+              },
+              {
+                "factory": "tuple",
+                "median": 4.0
+              },
+              {
+                "factory": "iterator",
+                "median": 4.0
+              },
+              {
+                "factory": "generator",
+                "median": 4.0
+              }
+            ],
+            "mapping_property_median": 2,
+            "mapping_key_median": 4
+          }
+        },
+        "empty_inputs": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "list",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "list",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "tuple",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "iterator",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "generator",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "none",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "callback",
+              "is_nan": true
+            },
+            {
+              "factory": "dict",
+              "iteratee": "builtin_int",
+              "is_nan": true
+            }
+          ]
+        },
+        "single_pass_iterable": {
+          "passed": true,
+          "observed": {
+            "visited": [
+              5,
+              1,
+              3
+            ],
+            "median": 3
+          }
+        },
+        "does_not_mutate_input": {
+          "passed": true,
+          "observed": {
+            "values": [
+              5,
+              1,
+              3
+            ],
+            "records": [
+              {
+                "n": 5
+              },
+              {
+                "n": 1
+              },
+              {
+                "n": 3
+              }
+            ]
+          }
+        },
+        "iterator_failures": {
+          "passed": true,
+          "observed": [
+            {
+              "exception": "ValueError",
+              "original_identity": true
+            },
+            {
+              "exception": "RuntimeError",
+              "original_identity": true
+            }
+          ]
+        },
+        "iteratee_failures": {
+          "passed": true,
+          "observed": [
+            {
+              "factory": "list",
+              "original_identity": true
+            },
+            {
+              "factory": "tuple",
+              "original_identity": true
+            },
+            {
+              "factory": "iterator",
+              "original_identity": true
+            },
+            {
+              "factory": "generator",
+              "original_identity": true
+            }
+          ]
+        }
+      },
+      "outside_declared_iterable_contract_observations": [
+        {
+          "kind": "None",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "integer",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "plain_object",
+          "exception": null,
+          "outcome": "NaN"
+        },
+        {
+          "kind": "attribute_object",
+          "exception": null,
+          "outcome": 2
+        }
+      ]
+    }
+  },
+  "source_immutability": {
+    "files_verified": 231,
+    "all_audited_bytes_unchanged": true,
+    "source_hashes": {
+      "base/.gitignore": "CBE227262D23001C1B0F9C0B276C0018EAA232083840B4DDC342521813D05FB8",
+      "base/.readthedocs.yaml": "8B2F502A7A3A02133C0C26AAE5B15BA8E72B54E5D31D95394992C3F70ED9BA38",
+      "base/AUTHORS.rst": "500D24575A59F94212161326C44A3DF44786F12C6F6B30F13477624448F1E2A8",
+      "base/CHANGELOG.rst": "260FAA9C49CAD4B7A5C341EE79FABD57244FE98C0B5DFE80C6A4E4E729D086F7",
+      "base/CONTRIBUTING.rst": "ED412E09DA3066BAFCC3E0B1A3014D02B638431DD352DAE25A9462DD147E2D07",
+      "base/DEVGUIDE.rst": "CC782CDB6EE11791CFD6312B5681FB4EF42170FD7D43541E91083F57AC57DC21",
+      "base/LICENSE.rst": "1BBA57C33CCE44A00D2EDF0794E14BD0C6DC1569A4E78D834C8F4103B8E9623F",
+      "base/MANIFEST.in": "F71F607A55CBFBFD265EEC5F72FE4501A736E642F9FBFFBE5B6F3B576C3B964E",
+      "base/pyproject.toml": "4B5FEBBDEE40E30BD5D7514E6DD3AC867A69C04B0A8E50C1F69747D84EF26BD7",
+      "base/README.rst": "5A3F6AA696DDAC7ABA3A7C9FA56B71CEEE9B55D27E3189DD5DF40B1D43570C16",
+      "base/requirements.txt": "9D6D2C2E18451CD8EB86A739CBCB1664E4342EF4AE478266A3C333DD4F73674A",
+      "base/tasks.py": "CC9CA140BD694EF42961661773257D2D6E543BB24D540736AC8B8FB352879C89",
+      "base/tox.ini": "CB9F938DC655E9397DE6CCD6483F44485CED3DF585367F0B68B84E9CE3C9D44E",
+      "base/docs/api.rst": "EA6CF83E76C9447336BC66031D662EFB7098E89DEE2FA0FCE46139F5C6252E7B",
+      "base/docs/authors.rst": "0BA8E9A403475AE12773CFCE9FC7A32BCE591E9801A1ADDE71927982F51D901B",
+      "base/docs/callbacks.rst": "C3D5AA236FFA93BDC82FF4B8CC4726E4D810692C8F447E0CB1F02F817A8F00CF",
+      "base/docs/chaining.rst": "F5D09622236C59921EDE364234E2D7677747CF669D1EEBD387B4148D9D3CAE13",
+      "base/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "base/docs/conf.py": "81E6286B41C389BA3EE2F20CECE4894ABDB25AF16C22F5B0A85B0429C5A2F1A2",
+      "base/docs/contributing.rst": "87D5C7434971FF248A817426C2A84940B3C3ED51251DDCAED6BB8A7D85AFAD80",
+      "base/docs/deeppath.rst": "6CBB572165B472A508ADF08FACC5AF270177DB6989A1223AE7A55826F1D97B93",
+      "base/docs/devguide.rst": "9C08D89A25A29F5443B97DB77393A7B675D8B6B33F21C67BBD439BC1B0B1C35A",
+      "base/docs/differences.rst": "0CAB0DEAA5828BB8A602694B26CBBBD1A1A0C7816F26563064169C832A4DBDE3",
+      "base/docs/index.rst": "B405CBCEC1E7F09B4F00A3199421D136005C2CA1A519CFA1F6D22922208DE1FB",
+      "base/docs/installation.rst": "66C398A3D2ADE14265DABF8347AC9C802A03FD8B31153462F1F9F1086D232CD1",
+      "base/docs/kudos.rst": "70C8908995DDE66ED95CDCF04ABEC1A6F203FDB03DDC79DF48B0DD38C0425920",
+      "base/docs/license.rst": "7194660AC4F461FE947F725BC7910C16D901CF57D748925F36B7CC45607362BC",
+      "base/docs/Makefile": "AD438F2ABDA8C9A084D9C367A1E11D428B3DE493D1E11F9DF1AAFE4ED0AAFD57",
+      "base/docs/quickstart.rst": "89DE5297C53260D6E82C453795B6886AED76BE6FEB77D4912DA08996F98FB6AE",
+      "base/docs/templating.rst": "A33D33AD2DEB689F6BB95B57F2C28D64C36D4F3CDC97A057655A463FAA56E6F6",
+      "base/docs/upgrading.rst": "BA241716C3E7065508FF9F957507047772B9F2D63055D569E9A2A0B1A4D9F244",
+      "base/docs/versioning.rst": "12148D0C19E3F13259E2C27D86A724E2B80CA63851F34E7E30463C32CCE8A9F7",
+      "base/scripts/chaining_type_generator.py": "1DBDCEE54E3A764DEE297E2E9755553A315683D8869BDBED641BF394F3A704C7",
+      "base/scripts/mypy_doctests_generator.py": "9C00B897C6E267F3CF7552509E02C11892ABD0AEFDA722C11D0BDD93AD7FF67A",
+      "base/tests/conftest.py": "742D0D5951E069EC0EFCE6C54E0ABE63D42274FACE5407740FDBB79A046D76C8",
+      "base/tests/helpers.py": "F08C49163157308DF2EF9C46DD3EC7F3622A9D19220EE7C5F087C837862A9678",
+      "base/tests/test_annotations.py": "7D9B144F2DE95F3E5D1D4E577216D46899DA50A635541E6B7931A07E036B9738",
+      "base/tests/test_arrays.py": "60EEC3495A5CCB8F568F86788C611F631C7E8AB91F4A0DC1303C5CFA54B1A638",
+      "base/tests/test_chaining.py": "C93B4542579AD999F5D2FE5FF58CD4422CA14E2638B5FDD633E4DA3EC87CFA23",
+      "base/tests/test_collections.py": "8D0F9FBA53AE1E0E0D1F1E870BF73B03FE7867930568A3C3B95D516742387F63",
+      "base/tests/test_functions.py": "FC8B66C77E5B873C23E8DD5D5919C35A2EF839DA4E671B68D5F49F315046158E",
+      "base/tests/test_numerical.py": "15E0E3061F501E102B1947329970A0F0D0E06C13001CABC18B92D688A529D002",
+      "base/tests/test_objects.py": "7D5AB65769C311FB97CBC38C4707C51B7262343EDE4C3CD0414CD449330A143A",
+      "base/tests/test_predicates.py": "03C1E366375513356C188C96A081047BD76230EBD901DBC8A5C9B01088453E45",
+      "base/tests/test_strings.py": "ADB155954A0993FB248A49C04E383123F936D97826E4198631B68ECC7E9E4727",
+      "base/tests/test_utilities.py": "B26BA4547BBFADB6970BF24055958FD2B9857B6F58135090A7A54117A06FC093",
+      "base/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/.github/workflows/main.yml": "5E6069F99624F06D70D86AF5EC802D1457391C729B6DCE863A2FB3228F6F7EB9",
+      "base/docs/_templates/.gitignore": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/src/pydash/arrays.py": "276FDC6C919A4D6450A2C96562D7898AF9D870D5311131FC67DDEBCC32AA2884",
+      "base/src/pydash/collections.py": "CFB1C23C3A0AD8C738E0E4CF7B3111E853B06ED219B6B7AEFB300E3717BE5ACE",
+      "base/src/pydash/exceptions.py": "133F30BB7FBDC1EEC48FFC6FD476C6060B90339A766664BDC12EC54A79AFAB8C",
+      "base/src/pydash/functions.py": "FAE3C2E4513042B1454F5A5F0D3BDB6B82C271FCD45806C470159B0216BA01D4",
+      "base/src/pydash/helpers.py": "DF241626BB4BFD40FD26CA5BE7CA90340AA4ECADD06CB95F9285BDEB78955BFA",
+      "base/src/pydash/numerical.py": "4C52E02E06D8E675E9EFE12A00A39B8651489ADB7834695D591790C981197720",
+      "base/src/pydash/objects.py": "43A2988E689E5F713CD5A389D1C33C0351EE4B679A95195AE2E7F07CBD0DCD57",
+      "base/src/pydash/predicates.py": "E228C7945C6AFE7B8A804015E5476092293C7F0F9383D54090CA29E7CECBF8F0",
+      "base/src/pydash/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/src/pydash/strings.py": "2E7C284DBDEBE78FEF54CC413D72817E68D06BB66667C4BE7796CBEFCDD3504B",
+      "base/src/pydash/types.py": "CA64B1B6177869E7BE1A255106E15FCA527A9D3BFE0CFC0ECA8ABD9E4AFF19D8",
+      "base/src/pydash/utilities.py": "854DEB46F5D87129D0725427564FB09C1BEF9CB5F17F69519450B0557D286FA5",
+      "base/src/pydash/__init__.py": "4AE71A4FBB6962CC727E34FB789FE2B81DAFDBB5B4FA13A68C44EC2F68E6093A",
+      "base/src/pydash/chaining/all_funcs.py": "F23488F8BF8426413417BAFA25466301D1D8C37475B014F7FED19974826B8E73",
+      "base/src/pydash/chaining/all_funcs.pyi": "394B1298D424F13390F3C9D597055D4DD5195842A4D2E7C86E344C69393B1FDE",
+      "base/src/pydash/chaining/chaining.py": "9A71CC08EE719C2D93E575A2A7ACC9DFF85C57B4A5E37FAE5617B0D306B0EE16",
+      "base/src/pydash/chaining/__init__.py": "3978F776E3EA8C12EA69AC8782F36EF61581D465C1BC9999EF084A389DAA5F95",
+      "base/tests/pytest_mypy_testing/test_arrays.py": "1DB87A58C7C9533A101EA84AEE648CBAA73B264FE5737FAF82411E19F7F9008B",
+      "base/tests/pytest_mypy_testing/test_chaining.py": "A082FA63433120FD9C34BC0F5E3DF3DC10B1DF366EFA003F8E1746DC8BE8B589",
+      "base/tests/pytest_mypy_testing/test_collections.py": "B08A59CFA3E3521DCD07293381BAD381F4645EB62591F91481298962C82494F5",
+      "base/tests/pytest_mypy_testing/test_functions.py": "4842B0DD36F2F419A7A3D272F1CA1D4FD400DC954B18EDB8BD7363849DA705B7",
+      "base/tests/pytest_mypy_testing/test_numerical.py": "9E6935BD9F10A9DFF62F610BBC6D88614523302BA29F9C9C9BED51E7222AAD63",
+      "base/tests/pytest_mypy_testing/test_objects.py": "43D09E364C6E41848788E9BB5FA886D614FAE926805F12F0C3F703125C2032CC",
+      "base/tests/pytest_mypy_testing/test_predicates.py": "200AE2EC53C1AB7FF326593674EE2695C8BA509FD930F8309830267F00FB6366",
+      "base/tests/pytest_mypy_testing/test_strings.py": "CA7FF3745D6E6E1EC1B6591D4FEA414860D5D54A8CC090404ADF0C56DB53458D",
+      "base/tests/pytest_mypy_testing/test_utilities.py": "8A47E68C8FFE2AD2D3BA30BA40F188285C1B91899A641AE1322AEF4B20109B6A",
+      "base/tests/pytest_mypy_testing/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/.gitignore": "CBE227262D23001C1B0F9C0B276C0018EAA232083840B4DDC342521813D05FB8",
+      "A/.readthedocs.yaml": "8B2F502A7A3A02133C0C26AAE5B15BA8E72B54E5D31D95394992C3F70ED9BA38",
+      "A/AUTHORS.rst": "500D24575A59F94212161326C44A3DF44786F12C6F6B30F13477624448F1E2A8",
+      "A/CHANGELOG.rst": "260FAA9C49CAD4B7A5C341EE79FABD57244FE98C0B5DFE80C6A4E4E729D086F7",
+      "A/CONTRIBUTING.rst": "ED412E09DA3066BAFCC3E0B1A3014D02B638431DD352DAE25A9462DD147E2D07",
+      "A/DEVGUIDE.rst": "CC782CDB6EE11791CFD6312B5681FB4EF42170FD7D43541E91083F57AC57DC21",
+      "A/LICENSE.rst": "1BBA57C33CCE44A00D2EDF0794E14BD0C6DC1569A4E78D834C8F4103B8E9623F",
+      "A/MANIFEST.in": "F71F607A55CBFBFD265EEC5F72FE4501A736E642F9FBFFBE5B6F3B576C3B964E",
+      "A/pyproject.toml": "4B5FEBBDEE40E30BD5D7514E6DD3AC867A69C04B0A8E50C1F69747D84EF26BD7",
+      "A/README.rst": "5A3F6AA696DDAC7ABA3A7C9FA56B71CEEE9B55D27E3189DD5DF40B1D43570C16",
+      "A/requirements.txt": "9D6D2C2E18451CD8EB86A739CBCB1664E4342EF4AE478266A3C333DD4F73674A",
+      "A/tasks.py": "CC9CA140BD694EF42961661773257D2D6E543BB24D540736AC8B8FB352879C89",
+      "A/tox.ini": "CB9F938DC655E9397DE6CCD6483F44485CED3DF585367F0B68B84E9CE3C9D44E",
+      "A/docs/api.rst": "EA6CF83E76C9447336BC66031D662EFB7098E89DEE2FA0FCE46139F5C6252E7B",
+      "A/docs/authors.rst": "0BA8E9A403475AE12773CFCE9FC7A32BCE591E9801A1ADDE71927982F51D901B",
+      "A/docs/callbacks.rst": "C3D5AA236FFA93BDC82FF4B8CC4726E4D810692C8F447E0CB1F02F817A8F00CF",
+      "A/docs/chaining.rst": "F5D09622236C59921EDE364234E2D7677747CF669D1EEBD387B4148D9D3CAE13",
+      "A/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "A/docs/conf.py": "81E6286B41C389BA3EE2F20CECE4894ABDB25AF16C22F5B0A85B0429C5A2F1A2",
+      "A/docs/contributing.rst": "87D5C7434971FF248A817426C2A84940B3C3ED51251DDCAED6BB8A7D85AFAD80",
+      "A/docs/deeppath.rst": "6CBB572165B472A508ADF08FACC5AF270177DB6989A1223AE7A55826F1D97B93",
+      "A/docs/devguide.rst": "9C08D89A25A29F5443B97DB77393A7B675D8B6B33F21C67BBD439BC1B0B1C35A",
+      "A/docs/differences.rst": "0CAB0DEAA5828BB8A602694B26CBBBD1A1A0C7816F26563064169C832A4DBDE3",
+      "A/docs/index.rst": "B405CBCEC1E7F09B4F00A3199421D136005C2CA1A519CFA1F6D22922208DE1FB",
+      "A/docs/installation.rst": "66C398A3D2ADE14265DABF8347AC9C802A03FD8B31153462F1F9F1086D232CD1",
+      "A/docs/kudos.rst": "70C8908995DDE66ED95CDCF04ABEC1A6F203FDB03DDC79DF48B0DD38C0425920",
+      "A/docs/license.rst": "7194660AC4F461FE947F725BC7910C16D901CF57D748925F36B7CC45607362BC",
+      "A/docs/Makefile": "AD438F2ABDA8C9A084D9C367A1E11D428B3DE493D1E11F9DF1AAFE4ED0AAFD57",
+      "A/docs/quickstart.rst": "89DE5297C53260D6E82C453795B6886AED76BE6FEB77D4912DA08996F98FB6AE",
+      "A/docs/templating.rst": "A33D33AD2DEB689F6BB95B57F2C28D64C36D4F3CDC97A057655A463FAA56E6F6",
+      "A/docs/upgrading.rst": "BA241716C3E7065508FF9F957507047772B9F2D63055D569E9A2A0B1A4D9F244",
+      "A/docs/versioning.rst": "12148D0C19E3F13259E2C27D86A724E2B80CA63851F34E7E30463C32CCE8A9F7",
+      "A/scripts/chaining_type_generator.py": "1DBDCEE54E3A764DEE297E2E9755553A315683D8869BDBED641BF394F3A704C7",
+      "A/scripts/mypy_doctests_generator.py": "9C00B897C6E267F3CF7552509E02C11892ABD0AEFDA722C11D0BDD93AD7FF67A",
+      "A/tests/conftest.py": "742D0D5951E069EC0EFCE6C54E0ABE63D42274FACE5407740FDBB79A046D76C8",
+      "A/tests/helpers.py": "F08C49163157308DF2EF9C46DD3EC7F3622A9D19220EE7C5F087C837862A9678",
+      "A/tests/test_annotations.py": "7D9B144F2DE95F3E5D1D4E577216D46899DA50A635541E6B7931A07E036B9738",
+      "A/tests/test_arrays.py": "60EEC3495A5CCB8F568F86788C611F631C7E8AB91F4A0DC1303C5CFA54B1A638",
+      "A/tests/test_chaining.py": "C93B4542579AD999F5D2FE5FF58CD4422CA14E2638B5FDD633E4DA3EC87CFA23",
+      "A/tests/test_collections.py": "8D0F9FBA53AE1E0E0D1F1E870BF73B03FE7867930568A3C3B95D516742387F63",
+      "A/tests/test_functions.py": "FC8B66C77E5B873C23E8DD5D5919C35A2EF839DA4E671B68D5F49F315046158E",
+      "A/tests/test_numerical.py": "5524EF6E702A5E074074F9A41469EF6C8FE367F7DBF311B52B157F9E3028FEB1",
+      "A/tests/test_objects.py": "7D5AB65769C311FB97CBC38C4707C51B7262343EDE4C3CD0414CD449330A143A",
+      "A/tests/test_predicates.py": "03C1E366375513356C188C96A081047BD76230EBD901DBC8A5C9B01088453E45",
+      "A/tests/test_strings.py": "ADB155954A0993FB248A49C04E383123F936D97826E4198631B68ECC7E9E4727",
+      "A/tests/test_utilities.py": "B26BA4547BBFADB6970BF24055958FD2B9857B6F58135090A7A54117A06FC093",
+      "A/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/.github/workflows/main.yml": "5E6069F99624F06D70D86AF5EC802D1457391C729B6DCE863A2FB3228F6F7EB9",
+      "A/docs/_templates/.gitignore": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/src/pydash/arrays.py": "276FDC6C919A4D6450A2C96562D7898AF9D870D5311131FC67DDEBCC32AA2884",
+      "A/src/pydash/collections.py": "CFB1C23C3A0AD8C738E0E4CF7B3111E853B06ED219B6B7AEFB300E3717BE5ACE",
+      "A/src/pydash/exceptions.py": "133F30BB7FBDC1EEC48FFC6FD476C6060B90339A766664BDC12EC54A79AFAB8C",
+      "A/src/pydash/functions.py": "FAE3C2E4513042B1454F5A5F0D3BDB6B82C271FCD45806C470159B0216BA01D4",
+      "A/src/pydash/helpers.py": "DF241626BB4BFD40FD26CA5BE7CA90340AA4ECADD06CB95F9285BDEB78955BFA",
+      "A/src/pydash/numerical.py": "C923E13168C1BE29812BABB7CB7CA896504812ED5F904E8F9F68E38990D86EF5",
+      "A/src/pydash/objects.py": "43A2988E689E5F713CD5A389D1C33C0351EE4B679A95195AE2E7F07CBD0DCD57",
+      "A/src/pydash/predicates.py": "E228C7945C6AFE7B8A804015E5476092293C7F0F9383D54090CA29E7CECBF8F0",
+      "A/src/pydash/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/src/pydash/strings.py": "2E7C284DBDEBE78FEF54CC413D72817E68D06BB66667C4BE7796CBEFCDD3504B",
+      "A/src/pydash/types.py": "CA64B1B6177869E7BE1A255106E15FCA527A9D3BFE0CFC0ECA8ABD9E4AFF19D8",
+      "A/src/pydash/utilities.py": "854DEB46F5D87129D0725427564FB09C1BEF9CB5F17F69519450B0557D286FA5",
+      "A/src/pydash/__init__.py": "4AE71A4FBB6962CC727E34FB789FE2B81DAFDBB5B4FA13A68C44EC2F68E6093A",
+      "A/src/pydash/chaining/all_funcs.py": "F23488F8BF8426413417BAFA25466301D1D8C37475B014F7FED19974826B8E73",
+      "A/src/pydash/chaining/all_funcs.pyi": "394B1298D424F13390F3C9D597055D4DD5195842A4D2E7C86E344C69393B1FDE",
+      "A/src/pydash/chaining/chaining.py": "9A71CC08EE719C2D93E575A2A7ACC9DFF85C57B4A5E37FAE5617B0D306B0EE16",
+      "A/src/pydash/chaining/__init__.py": "3978F776E3EA8C12EA69AC8782F36EF61581D465C1BC9999EF084A389DAA5F95",
+      "A/tests/pytest_mypy_testing/test_arrays.py": "1DB87A58C7C9533A101EA84AEE648CBAA73B264FE5737FAF82411E19F7F9008B",
+      "A/tests/pytest_mypy_testing/test_chaining.py": "A082FA63433120FD9C34BC0F5E3DF3DC10B1DF366EFA003F8E1746DC8BE8B589",
+      "A/tests/pytest_mypy_testing/test_collections.py": "B08A59CFA3E3521DCD07293381BAD381F4645EB62591F91481298962C82494F5",
+      "A/tests/pytest_mypy_testing/test_functions.py": "4842B0DD36F2F419A7A3D272F1CA1D4FD400DC954B18EDB8BD7363849DA705B7",
+      "A/tests/pytest_mypy_testing/test_numerical.py": "9E6935BD9F10A9DFF62F610BBC6D88614523302BA29F9C9C9BED51E7222AAD63",
+      "A/tests/pytest_mypy_testing/test_objects.py": "43D09E364C6E41848788E9BB5FA886D614FAE926805F12F0C3F703125C2032CC",
+      "A/tests/pytest_mypy_testing/test_predicates.py": "200AE2EC53C1AB7FF326593674EE2695C8BA509FD930F8309830267F00FB6366",
+      "A/tests/pytest_mypy_testing/test_strings.py": "CA7FF3745D6E6E1EC1B6591D4FEA414860D5D54A8CC090404ADF0C56DB53458D",
+      "A/tests/pytest_mypy_testing/test_utilities.py": "8A47E68C8FFE2AD2D3BA30BA40F188285C1B91899A641AE1322AEF4B20109B6A",
+      "A/tests/pytest_mypy_testing/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/.gitignore": "CBE227262D23001C1B0F9C0B276C0018EAA232083840B4DDC342521813D05FB8",
+      "B/.readthedocs.yaml": "8B2F502A7A3A02133C0C26AAE5B15BA8E72B54E5D31D95394992C3F70ED9BA38",
+      "B/AUTHORS.rst": "500D24575A59F94212161326C44A3DF44786F12C6F6B30F13477624448F1E2A8",
+      "B/CHANGELOG.rst": "260FAA9C49CAD4B7A5C341EE79FABD57244FE98C0B5DFE80C6A4E4E729D086F7",
+      "B/CONTRIBUTING.rst": "ED412E09DA3066BAFCC3E0B1A3014D02B638431DD352DAE25A9462DD147E2D07",
+      "B/DEVGUIDE.rst": "CC782CDB6EE11791CFD6312B5681FB4EF42170FD7D43541E91083F57AC57DC21",
+      "B/LICENSE.rst": "1BBA57C33CCE44A00D2EDF0794E14BD0C6DC1569A4E78D834C8F4103B8E9623F",
+      "B/MANIFEST.in": "F71F607A55CBFBFD265EEC5F72FE4501A736E642F9FBFFBE5B6F3B576C3B964E",
+      "B/pyproject.toml": "4B5FEBBDEE40E30BD5D7514E6DD3AC867A69C04B0A8E50C1F69747D84EF26BD7",
+      "B/README.rst": "5A3F6AA696DDAC7ABA3A7C9FA56B71CEEE9B55D27E3189DD5DF40B1D43570C16",
+      "B/requirements.txt": "9D6D2C2E18451CD8EB86A739CBCB1664E4342EF4AE478266A3C333DD4F73674A",
+      "B/tasks.py": "CC9CA140BD694EF42961661773257D2D6E543BB24D540736AC8B8FB352879C89",
+      "B/tox.ini": "CB9F938DC655E9397DE6CCD6483F44485CED3DF585367F0B68B84E9CE3C9D44E",
+      "B/docs/api.rst": "EA6CF83E76C9447336BC66031D662EFB7098E89DEE2FA0FCE46139F5C6252E7B",
+      "B/docs/authors.rst": "0BA8E9A403475AE12773CFCE9FC7A32BCE591E9801A1ADDE71927982F51D901B",
+      "B/docs/callbacks.rst": "C3D5AA236FFA93BDC82FF4B8CC4726E4D810692C8F447E0CB1F02F817A8F00CF",
+      "B/docs/chaining.rst": "F5D09622236C59921EDE364234E2D7677747CF669D1EEBD387B4148D9D3CAE13",
+      "B/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "B/docs/conf.py": "81E6286B41C389BA3EE2F20CECE4894ABDB25AF16C22F5B0A85B0429C5A2F1A2",
+      "B/docs/contributing.rst": "87D5C7434971FF248A817426C2A84940B3C3ED51251DDCAED6BB8A7D85AFAD80",
+      "B/docs/deeppath.rst": "6CBB572165B472A508ADF08FACC5AF270177DB6989A1223AE7A55826F1D97B93",
+      "B/docs/devguide.rst": "9C08D89A25A29F5443B97DB77393A7B675D8B6B33F21C67BBD439BC1B0B1C35A",
+      "B/docs/differences.rst": "0CAB0DEAA5828BB8A602694B26CBBBD1A1A0C7816F26563064169C832A4DBDE3",
+      "B/docs/index.rst": "B405CBCEC1E7F09B4F00A3199421D136005C2CA1A519CFA1F6D22922208DE1FB",
+      "B/docs/installation.rst": "66C398A3D2ADE14265DABF8347AC9C802A03FD8B31153462F1F9F1086D232CD1",
+      "B/docs/kudos.rst": "70C8908995DDE66ED95CDCF04ABEC1A6F203FDB03DDC79DF48B0DD38C0425920",
+      "B/docs/license.rst": "7194660AC4F461FE947F725BC7910C16D901CF57D748925F36B7CC45607362BC",
+      "B/docs/Makefile": "AD438F2ABDA8C9A084D9C367A1E11D428B3DE493D1E11F9DF1AAFE4ED0AAFD57",
+      "B/docs/quickstart.rst": "89DE5297C53260D6E82C453795B6886AED76BE6FEB77D4912DA08996F98FB6AE",
+      "B/docs/templating.rst": "A33D33AD2DEB689F6BB95B57F2C28D64C36D4F3CDC97A057655A463FAA56E6F6",
+      "B/docs/upgrading.rst": "BA241716C3E7065508FF9F957507047772B9F2D63055D569E9A2A0B1A4D9F244",
+      "B/docs/versioning.rst": "12148D0C19E3F13259E2C27D86A724E2B80CA63851F34E7E30463C32CCE8A9F7",
+      "B/scripts/chaining_type_generator.py": "1DBDCEE54E3A764DEE297E2E9755553A315683D8869BDBED641BF394F3A704C7",
+      "B/scripts/mypy_doctests_generator.py": "9C00B897C6E267F3CF7552509E02C11892ABD0AEFDA722C11D0BDD93AD7FF67A",
+      "B/tests/conftest.py": "742D0D5951E069EC0EFCE6C54E0ABE63D42274FACE5407740FDBB79A046D76C8",
+      "B/tests/helpers.py": "F08C49163157308DF2EF9C46DD3EC7F3622A9D19220EE7C5F087C837862A9678",
+      "B/tests/test_annotations.py": "7D9B144F2DE95F3E5D1D4E577216D46899DA50A635541E6B7931A07E036B9738",
+      "B/tests/test_arrays.py": "60EEC3495A5CCB8F568F86788C611F631C7E8AB91F4A0DC1303C5CFA54B1A638",
+      "B/tests/test_chaining.py": "C93B4542579AD999F5D2FE5FF58CD4422CA14E2638B5FDD633E4DA3EC87CFA23",
+      "B/tests/test_collections.py": "8D0F9FBA53AE1E0E0D1F1E870BF73B03FE7867930568A3C3B95D516742387F63",
+      "B/tests/test_functions.py": "FC8B66C77E5B873C23E8DD5D5919C35A2EF839DA4E671B68D5F49F315046158E",
+      "B/tests/test_numerical.py": "6E85B505A4BB6C5DDC1250E3979C5928EF533D32EFF3D585D779C5C5ED463D24",
+      "B/tests/test_objects.py": "7D5AB65769C311FB97CBC38C4707C51B7262343EDE4C3CD0414CD449330A143A",
+      "B/tests/test_predicates.py": "03C1E366375513356C188C96A081047BD76230EBD901DBC8A5C9B01088453E45",
+      "B/tests/test_strings.py": "ADB155954A0993FB248A49C04E383123F936D97826E4198631B68ECC7E9E4727",
+      "B/tests/test_utilities.py": "B26BA4547BBFADB6970BF24055958FD2B9857B6F58135090A7A54117A06FC093",
+      "B/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/.github/workflows/main.yml": "5E6069F99624F06D70D86AF5EC802D1457391C729B6DCE863A2FB3228F6F7EB9",
+      "B/docs/_templates/.gitignore": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/src/pydash/arrays.py": "276FDC6C919A4D6450A2C96562D7898AF9D870D5311131FC67DDEBCC32AA2884",
+      "B/src/pydash/collections.py": "CFB1C23C3A0AD8C738E0E4CF7B3111E853B06ED219B6B7AEFB300E3717BE5ACE",
+      "B/src/pydash/exceptions.py": "133F30BB7FBDC1EEC48FFC6FD476C6060B90339A766664BDC12EC54A79AFAB8C",
+      "B/src/pydash/functions.py": "FAE3C2E4513042B1454F5A5F0D3BDB6B82C271FCD45806C470159B0216BA01D4",
+      "B/src/pydash/helpers.py": "DF241626BB4BFD40FD26CA5BE7CA90340AA4ECADD06CB95F9285BDEB78955BFA",
+      "B/src/pydash/numerical.py": "A88BAE7A706A0B11CEDB039B9883441AAA9207EF9D8CB8D87F9DF950A64BF5E6",
+      "B/src/pydash/objects.py": "43A2988E689E5F713CD5A389D1C33C0351EE4B679A95195AE2E7F07CBD0DCD57",
+      "B/src/pydash/predicates.py": "E228C7945C6AFE7B8A804015E5476092293C7F0F9383D54090CA29E7CECBF8F0",
+      "B/src/pydash/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/src/pydash/strings.py": "2E7C284DBDEBE78FEF54CC413D72817E68D06BB66667C4BE7796CBEFCDD3504B",
+      "B/src/pydash/types.py": "CA64B1B6177869E7BE1A255106E15FCA527A9D3BFE0CFC0ECA8ABD9E4AFF19D8",
+      "B/src/pydash/utilities.py": "854DEB46F5D87129D0725427564FB09C1BEF9CB5F17F69519450B0557D286FA5",
+      "B/src/pydash/__init__.py": "4AE71A4FBB6962CC727E34FB789FE2B81DAFDBB5B4FA13A68C44EC2F68E6093A",
+      "B/src/pydash/chaining/all_funcs.py": "F23488F8BF8426413417BAFA25466301D1D8C37475B014F7FED19974826B8E73",
+      "B/src/pydash/chaining/all_funcs.pyi": "394B1298D424F13390F3C9D597055D4DD5195842A4D2E7C86E344C69393B1FDE",
+      "B/src/pydash/chaining/chaining.py": "9A71CC08EE719C2D93E575A2A7ACC9DFF85C57B4A5E37FAE5617B0D306B0EE16",
+      "B/src/pydash/chaining/__init__.py": "3978F776E3EA8C12EA69AC8782F36EF61581D465C1BC9999EF084A389DAA5F95",
+      "B/tests/pytest_mypy_testing/test_arrays.py": "1DB87A58C7C9533A101EA84AEE648CBAA73B264FE5737FAF82411E19F7F9008B",
+      "B/tests/pytest_mypy_testing/test_chaining.py": "A082FA63433120FD9C34BC0F5E3DF3DC10B1DF366EFA003F8E1746DC8BE8B589",
+      "B/tests/pytest_mypy_testing/test_collections.py": "B08A59CFA3E3521DCD07293381BAD381F4645EB62591F91481298962C82494F5",
+      "B/tests/pytest_mypy_testing/test_functions.py": "4842B0DD36F2F419A7A3D272F1CA1D4FD400DC954B18EDB8BD7363849DA705B7",
+      "B/tests/pytest_mypy_testing/test_numerical.py": "9E6935BD9F10A9DFF62F610BBC6D88614523302BA29F9C9C9BED51E7222AAD63",
+      "B/tests/pytest_mypy_testing/test_objects.py": "43D09E364C6E41848788E9BB5FA886D614FAE926805F12F0C3F703125C2032CC",
+      "B/tests/pytest_mypy_testing/test_predicates.py": "200AE2EC53C1AB7FF326593674EE2695C8BA509FD930F8309830267F00FB6366",
+      "B/tests/pytest_mypy_testing/test_strings.py": "CA7FF3745D6E6E1EC1B6591D4FEA414860D5D54A8CC090404ADF0C56DB53458D",
+      "B/tests/pytest_mypy_testing/test_utilities.py": "8A47E68C8FFE2AD2D3BA30BA40F188285C1B91899A641AE1322AEF4B20109B6A",
+      "B/tests/pytest_mypy_testing/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "task.json": "DF6A4FAB6ADC796EE537364A11A26795178C321F3BC5BED511D1DED4E921AC31",
+      "A.patch": "6C948C7C07B5CB8CFF77DA92C8A81BB95EF195DDF2C6CB886D0C2C514408ED83",
+      "B.patch": "1846DB02632EA96CD703E8FF1CA88D652F0820C2DB0C8516A7494B468ADDCA0E"
+    },
+    "production_python_modules_AST_compared": 15
+  },
+  "limitations": [
+    "Local descriptive review, not a complete pydash, numeric edge-domain, infinite-stream or performance validation.",
+    "Only this pair's task/base/A/B/patch artifacts were read; no current skill, label mapping, costs, hidden grader, reference fix or other pair result was opened.",
+    "This agent has prior context from unrelated synthetic fixture/oracle work, not a zero-background fresh review. This median task was not one of those authored fixtures.",
+    "A finite input is required by the existing sorting-based algorithm; no new streaming algorithm was requested or assumed.",
+    "Labels were not connected across pairs, and code size or candidate test volume was not used to assign a preference."
+  ],
+  "reviewed_at": "2026-10-24T23:32:05.002166+00:00"
+}

@@ -1,0 +1,61 @@
+test_anonymous_warm_cache (test_contract.Contract.test_anonymous_warm_cache) ... FAIL
+test_authorized (test_contract.Contract.test_authorized) ... ok
+test_authorizer_every_request (test_contract.Contract.test_authorizer_every_request) ... FAIL
+test_denied_before_repository (test_contract.Contract.test_denied_before_repository) ... ok
+test_fresh_cache_no_repository (test_contract.Contract.test_fresh_cache_no_repository) ... ok
+test_invalid_keys (test_contract.Contract.test_invalid_keys) ... ok
+test_none_cached (test_contract.Contract.test_none_cached) ... ok
+test_repository_failure_not_cached (test_contract.Contract.test_repository_failure_not_cached) ... ok
+test_revoke_warm_cache (test_contract.Contract.test_revoke_warm_cache) ... FAIL
+test_tenant_collision (test_contract.Contract.test_tenant_collision) ... FAIL
+
+======================================================================
+FAIL: test_anonymous_warm_cache (test_contract.Contract.test_anonymous_warm_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h11\initial\test_contract.py", line 32, in test_anonymous_warm_cache
+    with self.assertRaises(PermissionDenied):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: PermissionDenied not raised
+
+======================================================================
+FAIL: test_authorizer_every_request (test_contract.Contract.test_authorizer_every_request)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h11\initial\test_contract.py", line 48, in test_authorizer_every_request
+    self.assertEqual(self.auth.calls, [("u", "A")] * 3)
+AssertionError: Lists differ: [('u', 'A')] != [('u', 'A'), ('u', 'A'), ('u', 'A')]
+
+Second list contains 2 additional elements.
+First extra element 1:
+('u', 'A')
+
+- [('u', 'A')]
++ [('u', 'A'), ('u', 'A'), ('u', 'A')]
+
+======================================================================
+FAIL: test_revoke_warm_cache (test_contract.Contract.test_revoke_warm_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h11\initial\test_contract.py", line 27, in test_revoke_warm_cache
+    with self.assertRaises(PermissionDenied):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: PermissionDenied not raised
+
+======================================================================
+FAIL: test_tenant_collision (test_contract.Contract.test_tenant_collision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\holdout-sealed\.preflight-work\h11\initial\test_contract.py", line 22, in test_tenant_collision
+    self.assertEqual(self.service.get("u", "B", "doc"), "B-value")
+AssertionError: 'A-value' != 'B-value'
+- A-value
+? ^
++ B-value
+? ^
+
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+FAILED (failures=4)

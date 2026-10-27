@@ -1,0 +1,40 @@
+diff --git a/app.py b/app.py
+index 345c5e4..5be31a3 100644
+--- a/app.py
++++ b/app.py
+@@ -1,15 +1,27 @@
+ from db import TransferError, InsufficientFunds, balance
+ 
+ def transfer(conn, source, destination, cents):
++    """Commit one complete transfer without taking ownership of the connection."""
++    if conn.in_transaction:
++        raise TransferError("active transaction")
+     if type(cents) is not int or cents <= 0:
+         raise TransferError("cents")
+     if source == destination:
+         raise TransferError("same account")
+-    if balance(conn, source) < cents:
+-        raise InsufficientFunds("balance")
+-    conn.execute("UPDATE accounts SET balance=balance-? WHERE id=?", (cents, source))
+-    conn.commit()
+-    balance(conn, destination)
+-    conn.execute("UPDATE accounts SET balance=balance+? WHERE id=?", (cents, destination))
+-    conn.execute("INSERT INTO audit VALUES (?,?,?)", (source, destination, cents))
+-    conn.commit()
++
++    try:
++        # Explicit transaction control also works with SQLite autocommit enabled.
++        conn.execute("BEGIN")
++        source_balance = balance(conn, source)
++        balance(conn, destination)
++        if source_balance < cents:
++            raise InsufficientFunds("balance")
++        conn.execute("UPDATE accounts SET balance=balance-? WHERE id=?", (cents, source))
++        conn.execute("UPDATE accounts SET balance=balance+? WHERE id=?", (cents, destination))
++        conn.execute("INSERT INTO audit VALUES (?,?,?)", (source, destination, cents))
++        conn.execute("COMMIT")
++    except BaseException:
++        # Some SQLite errors already roll back the transaction themselves.
++        if conn.in_transaction:
++            conn.execute("ROLLBACK")
++        raise

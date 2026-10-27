@@ -1,0 +1,38 @@
+{
+  "documented_at": "2026-10-24T22:55:14.845232+00:00",
+  "extends": "grading-temp-copy-amendment-v2.json",
+  "entries": [
+    {
+      "key": "formal--extra-a2-click-3805--r1--with-skill",
+      "copy_exclusion": ".tmp-sentinel-checks",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "778742EE20A976CD61192E31318F186EA74CA71EBBE6FB0635C7A6E623441E2A"
+    },
+    {
+      "key": "formal--xb-013-click-3079--r0--baseline",
+      "copy_exclusion": ".task-local-tmp",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "B3BC8D70F6EA377A1CEDD7718533888ED51A5402BDEFB22E80ECC03392045F2A"
+    },
+    {
+      "key": "formal--extra-a2-click-3805--r2--baseline",
+      "copy_exclusion": ".maintenance-pytest-tmp",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "095F2A7B4DC7ED9175DD379E8BEB1550849A2B81273102D1FFBE21F14740B924"
+    },
+    {
+      "key": "formal--xb-013-click-3079--r0--with-skill",
+      "copy_exclusion": ".pt-shared-default",
+      "no_tracked_files_in_excluded_directory": true,
+      "original_checkpoint_sha256": "46B63B366FAD1E39F11FFE191A3CD7E8B86FEF9A5FDABF9D3F5B95D165FA8C33"
+    }
+  ],
+  "model_reruns": 0,
+  "sources_tests_thresholds_and_original_measurements_unchanged": true,
+  "all_failed_grading_costs_retained": true,
+  "only_exact_observed_runtime_directory_exclusions": true,
+  "original_phase_failure_file_retained_byte_for_byte": false,
+  "phase_failure_entries_retained_in_original_checkpoints": true,
+  "phase_summary_after_first_resume_retained_sha256": "439E7FF51046EA303E0D9F816E3BF21A0786521D47DEDD3192DD70B774889B17",
+  "retention_correction": "Initial phase-failures.json was overwritten by the existing controller on its next failure; its three entries remain in saved original checkpoints. The later one-entry summary is copied before the next restart."
+}

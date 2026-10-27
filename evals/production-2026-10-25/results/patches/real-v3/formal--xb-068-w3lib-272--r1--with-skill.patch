@@ -1,0 +1,47 @@
+diff --git a/tests/test_url.py b/tests/test_url.py
+index 65d6b22..8f2176b 100644
+--- a/tests/test_url.py
++++ b/tests/test_url.py
+@@ -1432,6 +1432,23 @@ class TestCanonicalizeUrl:
+             == "http://user:pass@www.example.com/do?a=1#frag"
+         )
+ 
++    @pytest.mark.parametrize("url_factory", [str, str.encode, parse_url, urlparse])
++    @pytest.mark.parametrize(
++        ("url", "expected"),
++        [
++            ("http://[::1]/?b=2&a=1#frag", "http://[::1]/?a=1&b=2"),
++            ("http://[::1]?b=2&a=1#frag", "http://[::1]/?a=1&b=2"),
++            (
++                "https://UsEr:PaSs@[2001:DB8::1]:8443/path?b=2&a=%23#frag",
++                "https://UsEr:PaSs@[2001:db8::1]:8443/path?a=%23&b=2",
++            ),
++        ],
++    )
++    def test_ipv6_fragments(self, url_factory, url, expected):
++        url = url_factory(url)
++        assert canonicalize_url(url) == expected
++        assert canonicalize_url(url, keep_fragments=True) == f"{expected}#frag"
++
+     def test_dont_convert_safe_characters(self):
+         # dont convert safe characters to percent encoding representation
+         assert (
+diff --git a/w3lib/_url.py b/w3lib/_url.py
+index 0fc540d..46d1e3d 100644
+--- a/w3lib/_url.py
++++ b/w3lib/_url.py
+@@ -658,7 +658,13 @@ def _urlsplit(  # pylint: disable=too-many-locals,too-many-statements
+             open_br_pos = idx
+         elif char == "]" and closing_br_pos == -1:
+             closing_br_pos = idx
+-        if slash_pos != question_pos != hash_pos != open_br_pos != closing_br_pos != -1:
++        if -1 not in (
++            slash_pos,
++            question_pos,
++            hash_pos,
++            open_br_pos,
++            closing_br_pos,
++        ):
+             break
+ 
+     if url[:2] == "//":

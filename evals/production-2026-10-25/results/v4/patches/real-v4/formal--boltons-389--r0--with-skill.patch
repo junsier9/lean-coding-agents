@@ -1,0 +1,56 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 06b9da2..50355e0 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -307,8 +307,7 @@ class BarrelList(list):
+             for li in self.lists:
+                 li.sort()
+             tmp_sorted = sorted(chain.from_iterable(self.lists))
+-            del self.lists[:]
+-            self.lists[0] = tmp_sorted
++            self.lists[:] = [tmp_sorted]
+             self._balance_list(0)
+ 
+     def reverse(self):
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index 8fe5514..691c818 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -51,6 +53,29 @@ def test_barrel_list():
+     bl3[:20:2] = range(0, -10, -1)
+     assert bl3[6] == -3  # some truly tricky stepping/slicing works
+ 
++
++@pytest.mark.parametrize('sort', [
++    pytest.param(lambda bl: bl.sort(), id='bound'),
++    pytest.param(lambda bl: BarrelList.sort(self=bl), id='receiver-keyword'),
++])
++def test_barrel_list_sort_after_split_and_delete(sort):
++    expected = list(range(100000, 0, -1))
++    bl = BarrelList(expected)
++    assert bl.pop(50000) == expected.pop(50000)
++    assert len(bl.lists) > 1
++
++    del bl[10:5000]
++    del expected[10:5000]
++    expected.sort()
++
++    assert sort(bl) is None
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++    assert bl[0] == expected[0]
++    assert bl[-1] == expected[-1]
++    assert len(bl.lists) > 1
++    assert all(0 < len(part) <= bl._cur_size_limit for part in bl.lists)
++
+ # roughly increasing random integers
+ # [ord(i) * x for i, x in zip(os.urandom(1024), range(1024))]
+ TEST_INTS = [0, 74, 96, 183, 456, 150, 1098, 665, 1752, 1053, 190,

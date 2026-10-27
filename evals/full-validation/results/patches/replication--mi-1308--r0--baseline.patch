@@ -1,0 +1,82 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 940b800..7b42428 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -1182,7 +1182,7 @@ class bucket:
+         self._it = iter(iterable)
+         self._key = key
+         self._cache = defaultdict(deque)
+-        self._validator = validator or (lambda x: True)
++        self._validator = (lambda x: True) if validator is None else validator
+ 
+     def __contains__(self, value):
+         if not self._validator(value):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 1fdf22a..931aeb5 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -1091,6 +1091,64 @@ class BucketTests(TestCase):
+         self.assertNotIn(0, D._cache)  # Don't store non-valid entries
+         self.assertEqual(list(D[0]), [])
+ 
++    def test_falsy_validator(self):
++        class CallableSet(set):
++            __call__ = set.__contains__
++
++        operations = {
++            'getitem': lambda D: list(D[10]),
++            'contains': lambda D: 10 in D,
++            'iter': list,
++        }
++        items = [10, 20, 11, 21]
++        for name, operation in operations.items():
++            with self.subTest(operation=name):
++                iterable = iter(items)
++                D = mi.bucket(
++                    iterable,
++                    key=lambda x: 10 * (x // 10),
++                    validator=CallableSet(),
++                )
++                expected = False if name == 'contains' else []
++                self.assertEqual(operation(D), expected)
++                # Rejected lookups must leave the source untouched.
++                remaining = [] if name == 'iter' else items
++                self.assertEqual(list(iterable), remaining)
++                self.assertEqual(list(D), [])
++
++    def test_falsy_validator_with_accepted_keys(self):
++        class FalsyValidator:
++            def __bool__(self):
++                return False
++
++            def __call__(self, value):
++                return value != 20
++
++        D = mi.bucket(
++            [20, 10, 30, 21, 11, 31],
++            key=lambda x: 10 * (x // 10),
++            validator=FalsyValidator(),
++        )
++        self.assertNotIn(20, D)
++        self.assertEqual(list(D[20]), [])
++        self.assertIn(30, D)
++        self.assertEqual(set(D), {10, 30})
++        self.assertEqual(list(D[10]), [10, 11])
++        self.assertEqual(list(D[30]), [30, 31])
++
++    def test_none_validator(self):
++        for kwargs in ({}, {'validator': None}):
++            with self.subTest(kwargs=kwargs):
++                D = mi.bucket(
++                    [10, 20, 11, 21],
++                    key=lambda x: 10 * (x // 10),
++                    **kwargs,
++                )
++                self.assertIn(20, D)
++                self.assertEqual(set(D), {10, 20})
++                self.assertEqual(list(D[10]), [10, 11])
++                self.assertEqual(list(D[20]), [20, 21])
++
+     def test_list(self):
+         iterable = [10, 20, 30, 11, 21, 31, 12, 22, 23, 33]
+         D = mi.bucket(iterable, key=lambda x: 10 * (x // 10))

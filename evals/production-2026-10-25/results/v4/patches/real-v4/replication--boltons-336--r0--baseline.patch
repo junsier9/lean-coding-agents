@@ -1,0 +1,55 @@
+diff --git a/boltons/funcutils.py b/boltons/funcutils.py
+index e46cddc..9dff62b 100644
+--- a/boltons/funcutils.py
++++ b/boltons/funcutils.py
+@@ -215,6 +215,8 @@ def copy_function(orig, copy_dict=True):
+                        name=orig.__name__,
+                        argdefs=getattr(orig, "__defaults__", None),
+                        closure=getattr(orig, "__closure__", None))
++    if hasattr(orig, "__kwdefaults__"):
++        ret.__kwdefaults__ = orig.__kwdefaults__
+     if copy_dict:
+         ret.__dict__.update(orig.__dict__)
+     return ret
+diff --git a/tests/test_funcutils_fb_py3.py b/tests/test_funcutils_fb_py3.py
+index 634ad7d..ff58e33 100644
+--- a/tests/test_funcutils_fb_py3.py
++++ b/tests/test_funcutils_fb_py3.py
+@@ -9,6 +9,37 @@ from boltons.funcutils import wraps, FunctionBuilder, update_wrapper
+ import boltons.funcutils as funcutils
+ 
+ 
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_kwonly_defaults(copy_dict):
++    func = lambda x, *, y=2: x * y
++    func.custom_attr = 'copied'
++
++    func_copy = funcutils.copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy(21) == func(21) == 42
++    assert func_copy(21, y=3) == func(21, y=3) == 63
++    assert inspect.signature(func_copy) == inspect.signature(func)
++    assert hasattr(func_copy, 'custom_attr') == copy_dict
++    with pytest.raises(TypeError):
++        func_copy(21, 3)
++
++
++@pytest.mark.parametrize('copy_dict', [True, False])
++def test_copy_function_mixed_defaults(copy_dict):
++    default_items = []
++
++    def func(x=21, *, required, y=2, optional=None, items=default_items):
++        return x * y, required, optional, items
++
++    func_copy = funcutils.copy_function(func, copy_dict=copy_dict)
++
++    assert func_copy(required='value') == func(required='value')
++    assert func_copy(required='value')[-1] is default_items
++    assert inspect.signature(func_copy) == inspect.signature(func)
++    with pytest.raises(TypeError):
++        func_copy()
++
++
+ def wrappable_varkw_func(a, b, **kw):
+     return a, b
+ 

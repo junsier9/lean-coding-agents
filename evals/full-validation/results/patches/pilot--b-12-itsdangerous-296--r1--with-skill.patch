@@ -1,0 +1,96 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index ef811be..7304d8a 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -3,6 +3,9 @@ Version 2.1.1
+ 
+ Unreleased
+ 
++-   Invalid signatures with out-of-range timestamps raise
++    ``BadTimeSignature`` instead of leaking a datetime conversion error.
++
+ 
+ Version 2.1.0
+ -------------
+diff --git a/src/itsdangerous/timed.py b/src/itsdangerous/timed.py
+index 5ea957f..cdc373a 100644
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -87,6 +87,10 @@ class TimestampSigner(Signer):
+         timestamp of the signature will be returned as an aware
+         :class:`datetime.datetime` object in UTC.
+ 
++        .. versionchanged:: 2.1.1
++            Invalid signatures with out-of-range timestamps raise
++            :exc:`.BadTimeSignature` instead of a conversion error.
++
+         .. versionchanged:: 2.0
+             The timestamp is returned as a timezone-aware ``datetime``
+             in UTC rather than a naive ``datetime`` assumed to be UTC.
+@@ -124,7 +128,10 @@ class TimestampSigner(Signer):
+         # split the value and the timestamp.
+         if sig_error is not None:
+             if ts_int is not None:
+-                ts_dt = self.timestamp_to_datetime(ts_int)
++                try:
++                    ts_dt = self.timestamp_to_datetime(ts_int)
++                except (ValueError, OSError, OverflowError) as exc:
++                    raise BadTimeSignature("Malformed timestamp", payload=value) from exc
+ 
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+diff --git a/tests/test_itsdangerous/test_timed.py b/tests/test_itsdangerous/test_timed.py
+index 5504300..23d2c51 100644
+--- a/tests/test_itsdangerous/test_timed.py
++++ b/tests/test_itsdangerous/test_timed.py
+@@ -83,6 +83,35 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+ 
+         assert isinstance(exc_info.value.date_signed, datetime)
+ 
++    @pytest.mark.parametrize("timestamp", (2**40, 2**63))
++    def test_sig_error_large_timestamp(self, signer, monkeypatch, timestamp):
++        monkeypatch.setattr(signer, "get_timestamp", lambda: timestamp)
++        signed = signer.sign("my string").replace(b"my", b"other", 1)
++
++        with pytest.raises(BadTimeSignature, match="Malformed timestamp") as exc_info:
++            signer.unsign(signed)
++
++        assert exc_info.value.payload == b"other string"
++        assert exc_info.value.date_signed is None
++        assert not signer.validate(signed)
++
++    @pytest.mark.parametrize("error", (ValueError, OSError, OverflowError))
++    def test_sig_error_timestamp_conversion(self, signer, monkeypatch, error):
++        signed = signer.sign("my string").replace(b"my", b"other", 1)
++        conversion_error = error("timestamp out of range")
++
++        def timestamp_to_datetime(ts):
++            raise conversion_error
++
++        monkeypatch.setattr(signer, "timestamp_to_datetime", timestamp_to_datetime)
++
++        with pytest.raises(BadTimeSignature, match="Malformed timestamp") as exc_info:
++            signer.unsign(signed)
++
++        assert exc_info.value.payload == b"other string"
++        assert exc_info.value.date_signed is None
++        assert exc_info.value.__cause__ is conversion_error
++
+ 
+ class TestTimedSerializer(FreezeMixin, TestSerializer):
+     @pytest.fixture()
+@@ -104,3 +133,14 @@ class TestTimedSerializer(FreezeMixin, TestSerializer):
+     def test_return_payload(self, serializer, value, ts):
+         signed = serializer.dumps(value)
+         assert serializer.loads(signed, return_timestamp=True) == (value, ts)
++
++    def test_sig_error_large_timestamp(self, serializer, value, monkeypatch):
++        monkeypatch.setattr(TimestampSigner, "get_timestamp", lambda self: 2**40)
++        signed = serializer.dumps(value)[:-1]
++
++        with pytest.raises(BadTimeSignature) as exc_info:
++            serializer.loads(signed)
++
++        assert serializer.load_payload(exc_info.value.payload) == value
++        assert exc_info.value.date_signed is None
++        assert serializer.loads_unsafe(signed) == (False, value)

@@ -1,0 +1,111 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 4b70796..ae1464a 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,9 @@ Version 8.0
+ 
+ Unreleased
+ 
++-   Setting ``Command.options_metavar`` to an empty string or ``None``
++    hides the options placeholder without extra spaces or formatting
++    errors in the usage line.
+ -   Drop support for Python 2 and 3.5.
+ -   Adds a repr to Command, showing the command name for friendlier
+     debugging. :issue:`1267`, :pr:`1295`
+diff --git a/src/click/core.py b/src/click/core.py
+index 403a282..8e66d9d 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1048,6 +1048,8 @@ class Command(BaseCommand):
+                    help page after everything else.
+     :param short_help: the short help to use for this command.  This is
+                        shown on the command listing of the parent command.
++    :param options_metavar: how to show the options in the usage line.
++                            Set to an empty string or ``None`` to hide it.
+     :param add_help_option: by default each command registers a ``--help``
+                             option.  This can be disabled by this parameter.
+     :param no_args_is_help: this controls what happens if no arguments are
+@@ -1138,8 +1140,13 @@ class Command(BaseCommand):
+     def collect_usage_pieces(self, ctx):
+         """Returns all the pieces that go into the usage line and returns
+         it as a list of strings.
++
++        .. versionchanged:: 8.0
++           An empty or ``None`` ``options_metavar`` is omitted.
+         """
+-        rv = [self.options_metavar]
++        rv = []
++        if self.options_metavar:
++            rv.append(self.options_metavar)
+         for param in self.get_params(ctx):
+             rv.extend(param.get_usage_pieces(ctx))
+         return rv
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 407f0aa..7d45ef7 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -146,8 +148,47 @@ def test_formatting_empty_help_lines(runner):
+     ]
+ 
+ 
+-def test_formatting_usage_error(runner):
+-    @click.command()
++@pytest.mark.parametrize("options_metavar", ["", None])
++def test_formatting_usage_without_options_metavar(runner, options_metavar):
++    @click.command(options_metavar=options_metavar)
++    @click.argument("source")
++    @click.argument("target", required=False)
++    def cli(source, target):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert not result.exception
++    assert result.output.splitlines() == [
++        "Usage: cli SOURCE [TARGET]",
++        "",
++        "Options:",
++        "  --help  Show this message and exit.",
++    ]
++
++
++@pytest.mark.parametrize("options_metavar", ["", None])
++def test_formatting_group_usage_without_options_metavar(runner, options_metavar):
++    @click.group(options_metavar=options_metavar)
++    @click.argument("source")
++    def cli(source):
++        pass
++
++    result = runner.invoke(cli, ["--help"])
++    assert not result.exception
++    assert result.output.splitlines()[0] == "Usage: cli SOURCE COMMAND [ARGS]..."
++
++
++@pytest.mark.parametrize(
++    ("options_metavar", "usage"),
++    [
++        ("[OPTIONS]", "Usage: cmd [OPTIONS] ARG"),
++        ("[FLAGS]", "Usage: cmd [FLAGS] ARG"),
++        ("", "Usage: cmd ARG"),
++        (None, "Usage: cmd ARG"),
++    ],
++)
++def test_formatting_usage_error(runner, options_metavar, usage):
++    @click.command(options_metavar=options_metavar)
+     @click.argument("arg")
+     def cmd(arg):
+         click.echo(f"arg:{arg}")
+@@ -155,7 +196,7 @@ def test_formatting_usage_error(runner):
+     result = runner.invoke(cmd, [])
+     assert result.exit_code == 2
+     assert result.output.splitlines() == [
+-        "Usage: cmd [OPTIONS] ARG",
++        usage,
+         "Try 'cmd --help' for help.",
+         "",
+         "Error: Missing argument 'ARG'.",

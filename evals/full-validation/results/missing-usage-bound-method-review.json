@@ -1,0 +1,44 @@
+{
+  "review_date": "2026-10-24",
+  "scope": "独立方法审查；仅使用冻结协议条款与题述数学假设，未读取真实 records、模型输出或收益结果；未修改实现。",
+  "verdict": "conditionally_valid",
+  "protocol_alignment": "可落在原协议 conservative full bound 例外内，但仅支持单侧 token 收益判据；不识别实际点估计或双侧 CI，也不替代样本量规划。",
+  "mathematical_result": {
+    "per_draw": "相同 task-cluster 权重 w_i>=0 下，Cb_known*=sum(w_i Cb_known_i)<=Cb_true*=sum(w_i Cb_true_i)。在原比值有定义的边界规则下，R_true*=(Cs*/As*)/(Cb_true*/Ab*)<=R_max*=(Cs*/As*)/(Cb_known*/Ab*)。",
+    "quantile": "对完全相同的重采样 draw 数组及分位数定义，逐 draw 单调序可传递到排序统计量，因此 Q_.975(R_true*)<=Q_.975(R_max*)。",
+    "missingness": "不需要 MAR/MCAR：不等式逐个缺失成本补全都成立，缺失机制可以与成本、成功或任务相关。",
+    "limitation": "仅为相对于同法完整数据 bootstrap 上界的单调保守性；原 percentile bootstrap 的总体覆盖仍是近似，不能据此新增严格总体覆盖或安全保证。"
+  },
+  "required_conditions": [
+    "两臂、每任务全部3次重复及成功判定均完整；保留失败尝试、全部任务和原分母，不按usage完整性删行或删簇。",
+    "skill 臂每次运行的完整收费成本均精确；usage_complete 标记必须可信。skill 任一未知即不证明 token 节省。",
+    "baseline 已知部分是经核实、不重叠且非负的真实成本下界；默认只累加精确已知的完整运行成本。部分usage只有被证明为下界时才能另外计入。",
+    "原 records 的未知 total_tokens 始终保留 None；缺失项对下界不提供正贡献，不代表实际成本为0。",
+    "使用原固定seed、相同配对 task-cluster draw 权重及原分位数规则，保持两臂和全部重复在同一簇内。",
+    "保留原零成本、零成功及undefined处理。不能因整批 baseline 零成功产生扩展ratio=0就证明收益，也不能删除undefined draw。",
+    "保留至少20任务及冻结规划批量、每批观察质量gate、两批各自通过、上侧97.5%界限严格<0.90和原两项收益声明的alpha；辅助bound不是第三项声明。"
+  ],
+  "critical_edge_cases": [
+    {
+      "case": "某draw的Cs*=0且Cb_known*=0，成功数均正。",
+      "issue": "真实缺失baseline成本允许为0，此时完整数据比值是0/0；若统一把这种NaN改成Infinity，罕见Infinity可能不影响97.5%分位数，却绕过原法任何undefined draw使CI不可用的规则。",
+      "requirement": "按原扩展实数运算保留该undefined并阻断bound CI。仅正分子/零下界分母产生的Infinity可按原法保留。"
+    },
+    {
+      "case": "用baseline下界代替真实成本计算pilot jackknife SD。",
+      "issue": "SD不具单调性。10个任务的已知baseline下界都相同，看似方差为0；但一个任务的缺失baseline成本可任意大，使真实log-ratio删除任务伪值SD任意大。",
+      "requirement": "不能据此生成保守N或宣称规划功效充足；若原pilot计量不支持规划，该问题仍未解决。"
+    }
+  ],
+  "reporting": "独立标明“成本下界推导的R最大值/单侧上界”，报告已知/未知计量范围与undefined数量；实际R和实际双侧95% CI一般仍不可识别，原分析器的缺usage状态不能被伪装成完整计量。",
+  "suggested_followup": {
+    "implementation": "若获采用，可另加独立只读辅助函数，复用原簇校验和固定draw计划，返回bound及适用性；不改写records、不覆盖原实际估计字段。",
+    "synthetic_checks": [
+      "相同draw下逐步增加baseline缺失成本，完整数据上界不得高于bound上界。",
+      "缺失仅在baseline时可形成有限保守界；skill出现未知、零成功或undefined时不得证明收益。",
+      "显式覆盖Cs*=Cb_known*=0的反例，以及已知下界齐平但隐藏baseline成本高度异质的样本量反例。"
+    ],
+    "status": "本轮仅审查，未实现或执行新方法。"
+  }
+}
+

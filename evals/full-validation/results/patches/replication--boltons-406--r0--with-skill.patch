@@ -1,0 +1,52 @@
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 433eaf5..4421a20 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -149,6 +149,11 @@ def split_iter(src, sep=None, maxsplit=None):
+     >>> list(split_iter(['hi', 'hello', None, '', 'sup', False], falsy_sep))
+     [['hi', 'hello'], [], ['sup'], []]
+ 
++    With ``maxsplit=0``, all input values are yielded as a single list:
++
++    >>> list(split_iter(iter([1, None, 2]), maxsplit=0))
++    [[1, None, 2]]
++
+     See :func:`split` for a list-returning version.
+ 
+     """
+@@ -158,7 +163,7 @@ def split_iter(src, sep=None, maxsplit=None):
+     if maxsplit is not None:
+         maxsplit = int(maxsplit)
+         if maxsplit == 0:
+-            yield [src]
++            yield list(src)
+             return
+ 
+     if callable(sep):
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index f56468a..6a17be3 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -4,6 +4,8 @@ import pytest
+ 
+ from boltons.dictutils import OMD
+ from boltons.iterutils import (first,
++                               split,
++                               split_iter,
+                                pairwise,
+                                pairwise_iter,
+                                windowed,
+@@ -24,6 +26,13 @@ even = lambda x: isint(x) and x % 2 == 0
+ is_meaning_of_life = lambda x: x == 42
+ 
+ 
++@pytest.mark.parametrize('split_func', [split, split_iter])
++@pytest.mark.parametrize('src_type', [list, iter])
++@pytest.mark.parametrize('values', [[], [None, 1, None, 2, None], [[1], [2]]])
++def test_split_maxsplit_zero(split_func, src_type, values):
++    assert list(split_func(src_type(values), maxsplit=0)) == [values]
++
++
+ class TestFirst:
+     def test_empty_iterables(self):
+         """

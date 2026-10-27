@@ -1,0 +1,783 @@
+{
+  "runs_checked": 300,
+  "file_comparisons": 27246,
+  "counts": {
+    "initial_git_bytes_exactly_match_archive": 27054,
+    "initial_git_matches_after_crlf_normalization": 192
+  },
+  "unresolved": [],
+  "initial_git_crlf_normalizations": [
+    {
+      "key": "pilot--boltons-404--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-404--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-404--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-404--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-404--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-404--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-404--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "pilot--boltons-474--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "pilot--boltons-474--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-443-table--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-443-table--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-458--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-458--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-410--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-410--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-418--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-418--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-403--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-403--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-428--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-428--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "formal--boltons-pearson-zero--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-438--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-438--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-424--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-424--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-302--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-302--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-406--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-406--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-401--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-401--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-416--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-416--r2--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r0--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r0--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r0--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r0--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r1--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r1--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r1--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r1--with-skill",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r2--baseline",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r2--baseline",
+      "path": "docs/make.bat"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r2--with-skill",
+      "path": "LICENSE"
+    },
+    {
+      "key": "replication--boltons-onetoone-empty--r2--with-skill",
+      "path": "docs/make.bat"
+    }
+  ],
+  "not_in_initial_git_but_current_match": [],
+  "scope": "Initial Git tree. Ignored files checked against current bytes are explicitly weaker evidence of initial presence.",
+  "model_workspaces_modified": false,
+  "original_archive_hashes_verified": true
+}

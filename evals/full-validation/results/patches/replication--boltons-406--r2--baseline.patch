@@ -1,0 +1,80 @@
+diff --git a/boltons/iterutils.py b/boltons/iterutils.py
+index 433eaf5..acdeda7 100644
+--- a/boltons/iterutils.py
++++ b/boltons/iterutils.py
+@@ -127,11 +127,15 @@ def split_iter(src, sep=None, maxsplit=None):
+       * a single-argument callable that returns True when a separator is
+         encountered
+ 
+-    ``split_iter()`` yields lists of non-separator values. A separator will
+-    never appear in the output.
++    ``split_iter()`` yields lists of non-separator values. Once *maxsplit*
++    splits have occurred, the remaining values are yielded without further
++    splitting. If *maxsplit* is ``0``, a single list containing all input
++    values is yielded, including any separators.
+ 
+     >>> list(split_iter(['hi', 'hello', None, None, 'sup', None, 'soap', None]))
+     [['hi', 'hello'], ['sup'], ['soap']]
++    >>> list(split_iter(iter(['hi', None, 'hello']), maxsplit=0))
++    [['hi', None, 'hello']]
+ 
+     Note that ``split_iter`` is based on :func:`str.split`, so if
+     *sep* is ``None``, ``split()`` **groups** separators. If empty lists
+@@ -158,7 +162,7 @@ def split_iter(src, sep=None, maxsplit=None):
+     if maxsplit is not None:
+         maxsplit = int(maxsplit)
+         if maxsplit == 0:
+-            yield [src]
++            yield list(src)
+             return
+ 
+     if callable(sep):
+diff --git a/tests/test_iterutils.py b/tests/test_iterutils.py
+index f56468a..29f5a8f 100644
+--- a/tests/test_iterutils.py
++++ b/tests/test_iterutils.py
+@@ -4,6 +4,8 @@ import pytest
+ 
+ from boltons.dictutils import OMD
+ from boltons.iterutils import (first,
++                               split,
++                               split_iter,
+                                pairwise,
+                                pairwise_iter,
+                                windowed,
+@@ -24,6 +26,35 @@ even = lambda x: isint(x) and x % 2 == 0
+ is_meaning_of_life = lambda x: x == 42
+ 
+ 
++@pytest.mark.parametrize('split_func', [split, split_iter])
++@pytest.mark.parametrize('src_factory', [list, iter])
++@pytest.mark.parametrize('values', [[], [None, 1, None, 2, None], [[1], [], [2]]])
++def test_split_maxsplit_zero(split_func, src_factory, values):
++    src = src_factory(values)
++
++    assert list(split_func(src, maxsplit=0)) == [values]
++
++
++def test_split_iter_maxsplit_zero_generator():
++    consumed = []
++
++    def source():
++        for value in [1, None, 2]:
++            consumed.append(value)
++            yield value
++
++    def sep(value):
++        pytest.fail('maxsplit=0 must not evaluate the separator')
++
++    src = source()
++    groups = split_iter(src, sep=sep, maxsplit=0)
++    assert consumed == []
++    assert next(groups) == [1, None, 2]
++    assert consumed == [1, None, 2]
++    assert list(src) == []
++    assert list(groups) == []
++
++
+ class TestFirst:
+     def test_empty_iterables(self):
+         """

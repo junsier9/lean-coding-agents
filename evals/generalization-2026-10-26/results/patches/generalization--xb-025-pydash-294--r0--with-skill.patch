@@ -1,0 +1,149 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 3dd4dc0..4d812a4 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -7,6 +7,7 @@ Numerical/mathematical related functions.
+ from __future__ import annotations
+ 
+ from collections.abc import Sized
++from decimal import Decimal
+ import math
+ import operator
+ import typing as t
+@@ -18,8 +19,6 @@ from .types import IterateeObjT, NumberNoDecimalT, NumberT, SupportsMul, Support
+ 
+ 
+ if t.TYPE_CHECKING:
+-    from decimal import Decimal  # pragma: no cover
+-
+     from _typeshed import SupportsAdd, SupportsRichComparisonT, SupportsSub  # pragma: no cover
+ 
+ 
+@@ -1269,10 +1268,21 @@ def call_math_operator(value1, value2, op, default):
+ 
+ 
+ def rounder(func, x, precision):
+-    precision = pow(10, precision)
++    factor = pow(10, precision)
+ 
+     def rounder_func(item):
+-        return func(item * precision) / precision
++        if (
++            func in (math.ceil, math.floor)
++            and type(item) is float
++            and math.isfinite(item)
++            and isinstance(precision, int)
++            and factor
++        ):
++            # Shift decimal exponents without binary scaling or Decimal context rounding.
++            coefficient, _, exponent = str(item).partition("e")
++            shifted = Decimal(f"{coefficient}e{int(exponent or 0) + precision}")
++            return float(f"{func(shifted)}e{-precision}")
++        return func(item * factor) / factor
+ 
+     result = None
+ 
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index 91f609f..e8bd1b6 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -26,6 +26,13 @@ def test_add(case, expected):
+         ((6.004, 2), 6.01),
+         ((6040, -2), 6100),
+         (([4.006, 6.004], 2), [4.01, 6.01]),
++        ((0.07, 2), 0.07),
++        ((-0.29, 2), -0.29),
++        ((7e-7, 7), 7e-7),
++        ((123456.0, -5), 200000.0),
++        ((-123456.0, -5), -100000.0),
++        ((math.nextafter(0.29, math.inf), 2), 0.30),
++        ((math.nextafter(0.29, -math.inf), 2), 0.29),
+     ],
+ )
+ def test_ceil(case, expected):
+@@ -62,12 +69,77 @@ def test_divide(dividend, divisor, expected):
+         ((0.046, 2), 0.04),
+         ((4060, -2), 4000),
+         (([4.006, 0.046], 2), [4.0, 0.04]),
++        ((0.29, 2), 0.29),
++        ((-0.07, 2), -0.07),
++        ((7e-7, 7), 7e-7),
++        ((123456.0, -5), 100000.0),
++        ((-123456.0, -5), -200000.0),
++        ((math.nextafter(0.29, math.inf), 2), 0.29),
++        ((math.nextafter(0.29, -math.inf), 2), 0.28),
+     ],
+ )
+ def test_floor(case, expected):
+     assert _.floor(*case) == expected
+ 
+ 
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("collection_factory", [list, tuple, iter])
++def test_directed_rounding_collections(function, collection_factory):
++    values = [0.29, 0.07, -0.29, -0.07]
++    assert function(collection_factory(values), 2) == values
++
++
++@parametrize("function,value", [(_.floor, 0.29), (_.ceil, 0.07)])
++def test_directed_rounding_call_forms(function, value):
++    assert function(x=value, precision=2) == value
++    assert getattr(_.chain(value), function.__name__)(precision=2).value() == value
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("precision", [-2, 0, 2])
++@parametrize(
++    "value,error",
++    [(math.nan, ValueError), (math.inf, OverflowError), (-math.inf, OverflowError)],
++)
++def test_directed_rounding_nonfinite(function, precision, value, error):
++    with pytest.raises(error):
++        function(value, precision)
++    with pytest.raises(error):
++        function([0.29, value], precision)
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("precision", [-2, 0, 2])
++@parametrize("value", [0.0, -0.0])
++def test_directed_rounding_zero(function, precision, value):
++    result = function(value, precision)
++    assert type(result) is float
++    assert result == 0.0
++    assert math.copysign(1, result) == 1
++
++
++@parametrize("function", [_.floor, _.ceil])
++@parametrize("value", [None, "junk", [0.29, None]])
++def test_directed_rounding_invalid_values(function, value):
++    assert function(value, 2) is None
++
++
++@parametrize("function", [_.floor, _.ceil])
++def test_directed_rounding_float_subclass(function):
++    class CustomFloat(float):
++        def __mul__(self, factor):
++            raise RuntimeError("custom multiplication failed")
++
++    with pytest.raises(RuntimeError, match="custom multiplication failed"):
++        function(CustomFloat(0.29), 2)
++
++
++@parametrize("function", [_.floor, _.ceil])
++def test_directed_rounding_underflowed_factor(function):
++    with pytest.raises(ZeroDivisionError):
++        function(0.29, -324)
++
++
+ @parametrize(
+     "case,expected",
+     [
+@@ -300,6 +372,7 @@ def test_power(case, expected):
+         ((2.499, 2), 2.50),
+         (([2.5, 2.499, 2.555], 2), [2.50, 2.50, 2.56]),
+         (("junk",), None),
++        (([0.285, 2.675], 2), [0.28, 2.68]),
+     ],
+ )
+ def test_round_(case, expected):

@@ -1,0 +1,53 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 2229563..d8891f8 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4414,9 +4414,11 @@ def value_chain(*args):
+             yield value
+             continue
+         try:
+-            yield from value
++            iterator = iter(value)
+         except TypeError:
+             yield value
++        else:
++            yield from iterator
+ 
+ 
+ def product_index(element, *iterables, repeat=1):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 03b1206..baf0f6d 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5074,6 +5074,31 @@ class ValueChainTests(TestCase):
+         expected = [1, (2, (3,)), 'foo', ['bar', ['baz']], 'tic', 'key', obj]
+         self.assertEqual(actual, expected)
+ 
++    def test_iterator_type_error(self):
++        for values in ([], ['ab', 'cde']):
++            with self.subTest(values=values):
++                result = mi.value_chain(map(len, values + [5]), 'after')
++                for value in values:
++                    self.assertEqual(next(result), len(value))
++                with self.assertRaises(TypeError):
++                    next(result)
++
++    def test_sequence_type_error(self):
++        error = TypeError('sequence failed')
++
++        class Sequence:
++            def __getitem__(self, index):
++                if index == 2:
++                    raise error
++                return index
++
++        result = mi.value_chain(Sequence())
++        self.assertEqual(next(result), 0)
++        self.assertEqual(next(result), 1)
++        with self.assertRaises(TypeError) as context:
++            next(result)
++        self.assertIs(context.exception, error)
++
+ 
+ class ProductIndexTests(TestCase):
+     def test_basic(self):

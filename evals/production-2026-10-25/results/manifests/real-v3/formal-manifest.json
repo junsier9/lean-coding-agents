@@ -1,0 +1,520 @@
+{
+  "phase": "formal",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "cases": {
+    "extra-a-boltons-437": "C7438EBF95AF8EDA45B1C3AEDD057CA96B4656822D07A8964F5EA24C4FC3FC01",
+    "extra-a-boltons-475": "D92F15FB42AECFD40DF757B65C93CBF17E987FE29922B8606B7E2156293851FB",
+    "extra-a-mi-1223": "9905DBFBAFA56A0F3C1F3FEC627F3288F9F4F1705AEA2268844867F0144F7AFA",
+    "extra-a-mi-944": "5C34ADB0C5B7320D18F02A22AC729C0AFD0350C7EF99D6C8911D98F0FCC8B25D",
+    "extra-a2-click-3805": "A2C1FC0852087A8DA8A5A697544BCDA17BA07EC150293987E28270D992FB364A",
+    "extra-a3-funcy-178": "49DDAB9716D49641F7181A7C5CD8B92F411E06413497A25CC6EDF5C70EC402A9",
+    "extra-a3-funcy-190": "7A8ABE7A352DE16BF9F32791C749A2E8177468CAB71D158CA253CBBF33C91C27",
+    "extra-a3-funcy-93": "D943B5FBA4F446F8043C43038C13E6AD2ECE494F22272FF12168B1F19AE40D47",
+    "extra-a3-toolz-603": "313929EC1224791D493552DA510002853E4E98C382C8385E931804F6A10A3A49",
+    "extra-a3-toolz-635": "20893FA495BCBE13413C7BFBED8C3CD0A9080D5F0166749E1DD59C7EC24BD895",
+    "mi-1200": "7190F5B2DB8CE3D06628B1B8B246167D625D7F2492607837B478D46D1284818D",
+    "xb-013-click-3079": "DC6FC1B53DE8F934F5B025C259B2BB1FE3E53685CF708F3962916AD8C065A80D",
+    "xb-034-pydash-263": "449CE8076B61F92C41CFAEFA2B64CD65F3BBEECE094090A07224DA1C2AD702F2",
+    "xb-041-pydash-253": "CE3BE851FF08E5D6D754BDCE4190C5A994EC5D27FE977F6434D7EBD51A895716",
+    "xb-051-pluggy-731": "A0E1E1BCF4BF817DB16C477DDE4AD99CA84F591A0C96539AFFBDEF5E73E54B93",
+    "xb-053-pluggy-646": "64EA5B08BB9853CDFC3CF3EB8DC0153DC9BF1F091CFDDD6403AC10A754BBFA19",
+    "xb-059-cachetools-436": "B6C02AE3190E5B959D3404CAC68A63E0293D909EB5F1AE29763C84A264DD8383",
+    "xb-060-cachetools-424": "43B5E8A6C31952DD03974BDEC5E1FEFE8F1A411A9CD6A3083C707E32C2DCA73B",
+    "xb-068-w3lib-272": "6756F0AB1918BF0B69F97DC4DBA5632B2465C4B78815B2FBFE61A872FF68B954",
+    "xb-069-w3lib-85": "E3B8D85A1883F3A9D4E80A0C1775555ECD8F97AF99A8C2B3F698BB8EC2993BE6"
+  },
+  "seed": 20261025,
+  "repeats": 3,
+  "arms": [
+    "baseline",
+    "with-skill"
+  ],
+  "workers": 3,
+  "schedule": [
+    {
+      "case_id": "extra-a3-toolz-603",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-93",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-toolz-603",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-051-pluggy-731",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a2-click-3805",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-178",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-93",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-944",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "mi-1200",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "mi-1200",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-060-cachetools-424",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-068-w3lib-272",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-toolz-635",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-190",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-041-pydash-253",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-93",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-toolz-635",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-437",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-034-pydash-263",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a2-click-3805",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-toolz-603",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-060-cachetools-424",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-013-click-3079",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-013-click-3079",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-041-pydash-253",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-013-click-3079",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-437",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-475",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-051-pluggy-731",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-475",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-053-pluggy-646",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-034-pydash-263",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-944",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-069-w3lib-85",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-toolz-635",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1223",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-060-cachetools-424",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-059-cachetools-436",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-068-w3lib-272",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-437",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-053-pluggy-646",
+      "repeat": 1,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-190",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1223",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-1223",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-034-pydash-263",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-069-w3lib-85",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-068-w3lib-272",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-069-w3lib-85",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "mi-1200",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a2-click-3805",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-053-pluggy-646",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-boltons-475",
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-178",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a-mi-944",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "xb-041-pydash-253",
+      "repeat": 2,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-190",
+      "repeat": 0,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "extra-a3-funcy-178",
+      "repeat": 0,
+      "arms": [
+        "with-skill",
+        "baseline"
+      ]
+    },
+    {
+      "case_id": "xb-051-pluggy-731",
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "with-skill"
+      ]
+    }
+  ],
+  "grading_contract": "synthetic-unittest-normal-and-O-v1;upstream-frozen"
+}

@@ -1,0 +1,92 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 77783c7..d295dd0 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.0.2
+ 
+ Unreleased
+ 
++-   Fix ``style()`` to enable and disable overline and italic with the
++    correct ANSI codes, independently of underline.
+ -   ``is_bool_flag`` is not set to ``True`` if ``is_flag`` is ``False``.
+     :issue:`1925`
+ -   Bash version detection is locale independent. :issue:`1940`
+diff --git a/src/click/termui.py b/src/click/termui.py
+index 042fc4b..56d9010 100644
+--- a/src/click/termui.py
++++ b/src/click/termui.py
+@@ -557,6 +557,10 @@ def style(
+                   string which means that styles do not carry over.  This
+                   can be disabled to compose styles.
+ 
++    .. versionchanged:: 8.0.2
++        The ``overline`` and ``italic`` parameters use the correct ANSI
++        codes and are independent of ``underline``.
++
+     .. versionchanged:: 8.0
+         A non-string ``message`` is converted to a string.
+ 
+@@ -596,9 +600,9 @@ def style(
+     if underline is not None:
+         bits.append(f"\033[{4 if underline else 24}m")
+     if overline is not None:
+-        bits.append(f"\033[{53 if underline else 55}m")
++        bits.append(f"\033[{53 if overline else 55}m")
+     if italic is not None:
+-        bits.append(f"\033[{5 if underline else 23}m")
++        bits.append(f"\033[{3 if italic else 23}m")
+     if blink is not None:
+         bits.append(f"\033[{5 if blink else 25}m")
+     if reverse is not None:
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 23b3709..65a6d96 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -67,8 +67,10 @@ def test_echo_custom_file():
+         ({"bold": True}, "\x1b[1mx y\x1b[0m"),
+         ({"dim": True}, "\x1b[2mx y\x1b[0m"),
+         ({"underline": True}, "\x1b[4mx y\x1b[0m"),
+-        ({"overline": True}, "\x1b[55mx y\x1b[0m"),
+-        ({"italic": True}, "\x1b[23mx y\x1b[0m"),
++        ({"overline": True}, "\x1b[53mx y\x1b[0m"),
++        ({"overline": False}, "\x1b[55mx y\x1b[0m"),
++        ({"italic": True}, "\x1b[3mx y\x1b[0m"),
++        ({"italic": False}, "\x1b[23mx y\x1b[0m"),
+         ({"blink": True}, "\x1b[5mx y\x1b[0m"),
+         ({"reverse": True}, "\x1b[7mx y\x1b[0m"),
+         ({"strikethrough": True}, "\x1b[9mx y\x1b[0m"),
+@@ -80,6 +82,34 @@ def test_styling(styles, ref):
+     assert click.unstyle(ref) == "x y"
+ 
+ 
++@pytest.mark.parametrize(
++    ("underline", "underline_code"),
++    [(None, ""), (False, "\x1b[24m"), (True, "\x1b[4m")],
++)
++@pytest.mark.parametrize(
++    ("overline", "overline_code"), [(False, "\x1b[55m"), (True, "\x1b[53m")]
++)
++@pytest.mark.parametrize(
++    ("italic", "italic_code"), [(False, "\x1b[23m"), (True, "\x1b[3m")]
++)
++@pytest.mark.parametrize(("reset", "reset_code"), [(False, ""), (True, "\x1b[0m")])
++def test_styling_independent_attributes(
++    underline,
++    underline_code,
++    overline,
++    overline_code,
++    italic,
++    italic_code,
++    reset,
++    reset_code,
++):
++    styled = click.style(
++        "x y", underline=underline, overline=overline, italic=italic, reset=reset
++    )
++    assert styled == f"{underline_code}{overline_code}{italic_code}x y{reset_code}"
++    assert click.unstyle(styled) == "x y"
++
++
+ @pytest.mark.parametrize(("text", "expect"), [("\x1b[?25lx y\x1b[?25h", "x y")])
+ def test_unstyle_other_ansi(text, expect):
+     assert click.unstyle(text) == expect

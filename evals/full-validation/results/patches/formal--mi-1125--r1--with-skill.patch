@@ -1,0 +1,109 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index af04d53..bd54e0c 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4897,7 +4897,9 @@ def gray_product(*iterables, repeat=1):
+     `this section <https://www-cs-faculty.stanford.edu/~knuth/fasc2a.ps.gz>`__
+     of Donald Knuth's *The Art of Computer Programming*.
+     """
+-    all_iterables = tuple(map(tuple, iterables * repeat))
++    if repeat <= 0:
++        iterables = ()
++    all_iterables = tuple(map(tuple, iterables)) * repeat
+     iterable_count = len(all_iterables)
+     for iterable in all_iterables:
+         if len(iterable) < 2:
+@@ -4939,7 +4941,13 @@ def partial_product(*iterables, repeat=1):
+     equivalent to ``partial_product('AB', 'AB', 'AB')``.
+     """
+ 
+-    iterators = tuple(map(iter, iterables * repeat))
++    if repeat > 1:
++        # Transpose the tee copies to keep the original order of the inputs.
++        iterators = tuple(
++            chain.from_iterable(zip(*(tee(it, repeat) for it in iterables)))
++        )
++    else:
++        iterators = tuple(map(iter, iterables * repeat))
+ 
+     try:
+         prod = [next(it) for it in iterators]
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 0041ff1..53bd962 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -6025,6 +6025,34 @@ class GrayProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for iterables in [('abc',), ('abc', 'def'), ('ab', 'def')]:
++            for repeat in (1, 2, 3):
++                with self.subTest(iterables=iterables, repeat=repeat):
++                    self.assertEqual(
++                        list(
++                            mi.gray_product(
++                                *map(iter, iterables), repeat=repeat
++                            )
++                        ),
++                        list(mi.gray_product(*iterables, repeat=repeat)),
++                    )
++
++    def test_repeat_iterator_errors(self):
++        for iterable in ('', 'a'):
++            with self.subTest(iterable=iterable):
++                with self.assertRaises(ValueError):
++                    list(mi.gray_product(iter(iterable), repeat=2))
++
++    def test_nonpositive_repeat(self):
++        for repeat in (0, -1):
++            with self.subTest(repeat=repeat):
++                iterable = iter('abc')
++                self.assertEqual(
++                    list(mi.gray_product(iterable, repeat=repeat)), [()]
++                )
++                self.assertEqual(list(iterable), list('abc'))
++
+ 
+ class PartialProductTests(TestCase):
+     def test_no_iterables(self):
+@@ -6116,6 +6144,39 @@ class PartialProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for iterables in [('abc',), ('abc', 'def'), ('ab', 'def')]:
++            for repeat in (1, 2, 3):
++                with self.subTest(iterables=iterables, repeat=repeat):
++                    self.assertEqual(
++                        list(
++                            mi.partial_product(
++                                *map(iter, iterables), repeat=repeat
++                            )
++                        ),
++                        list(mi.partial_product(*iterables, repeat=repeat)),
++                    )
++
++    def test_repeat_is_lazy(self):
++        self.assertEqual(
++            list(islice(mi.partial_product(count(), repeat=2), 3)),
++            [(0, 0), (1, 0), (2, 0)],
++        )
++
++    def test_repeat_empty_iterator(self):
++        self.assertEqual(
++            list(mi.partial_product(iter('abc'), iter(''), repeat=2)), []
++        )
++
++    def test_nonpositive_repeat(self):
++        for repeat in (0, -1):
++            with self.subTest(repeat=repeat):
++                iterable = iter('abc')
++                self.assertEqual(
++                    list(mi.partial_product(iterable, repeat=repeat)), [()]
++                )
++                self.assertEqual(list(iterable), list('abc'))
++
+ 
+ class IterateTests(TestCase):
+     def test_basic(self) -> None:

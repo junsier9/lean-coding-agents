@@ -1,0 +1,81 @@
+diff --git a/funcy/calc.py b/funcy/calc.py
+index 8845b07..d55b6b0 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -26,7 +26,7 @@ def memoize(_func=None, *, key_func=None):
+     """
+     if _func is not None:
+         return memoize(key_func=key_func)(_func)
+-    return _memory_decorator({}, key_func)
++    return _memory_decorator(dict, key_func)
+ 
+ memoize.skip = SkipMemory
+ 
+@@ -36,13 +36,15 @@ def cache(timeout, *, key_func=None):
+     if isinstance(timeout, timedelta):
+         timeout = timeout.total_seconds()
+ 
+-    return _memory_decorator(CacheMemory(timeout), key_func)
++    return _memory_decorator(lambda: CacheMemory(timeout), key_func)
+ 
+ cache.skip = SkipMemory
+ 
+ 
+-def _memory_decorator(memory, key_func):
++def _memory_decorator(memory_factory, key_func):
+     def decorator(func):
++        memory = memory_factory()
++
+         @wraps(func)
+         def wrapper(*args, **kwargs):
+             # We inline this here since @memoize also targets microoptimizations
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index 05be3a5..5c0db1c 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -105,6 +105,45 @@ def test_memoize_direct_key_func():
+     assert calls == [[1, 2], [1, 2]]
+ 
+ 
++@pytest.mark.parametrize('decorate', [
++    pytest.param(memoize(), id='memoize'),
++    pytest.param(memoize(key_func=abs), id='memoize_key_func'),
++    pytest.param(cache(60), id='cache'),
++    pytest.param(cache(60, key_func=abs), id='cache_key_func'),
++    pytest.param(cache(timedelta(minutes=1)), id='cache_timedelta'),
++])
++def test_memory_decorator_reuse(decorate):
++    calls = []
++
++    @decorate
++    def inc(x):
++        calls.append(('inc', x))
++        return x + 1
++
++    @decorate
++    def double(x):
++        calls.append(('double', x))
++        return x * 2
++
++    assert inc(3) == 4
++    assert double(3) == 6
++    assert inc(3) == 4
++    assert double(3) == 6
++    assert calls == [('inc', 3), ('double', 3)]
++
++    inc.invalidate(3)
++    assert double(3) == 6
++    assert inc(3) == 4
++    assert inc(3) == 4
++    assert calls == [('inc', 3), ('double', 3), ('inc', 3)]
++
++    double.invalidate_all()
++    assert inc(3) == 4
++    assert double(3) == 6
++    assert double(3) == 6
++    assert calls == [('inc', 3), ('double', 3), ('inc', 3), ('double', 3)]
++
++
+ def test_make_lookuper():
+     @make_lookuper
+     def letter_index():

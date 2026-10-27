@@ -1,0 +1,63 @@
+diff --git a/click/testing.py b/click/testing.py
+index f13d4bf..81f5192 100644
+--- a/click/testing.py
++++ b/click/testing.py
+@@ -305,7 +305,9 @@ class CliRunner(object):
+         :param env: the environment overrides.
+         :param catch_exceptions: Whether to catch any other exceptions than
+                                  ``SystemExit``.
+-        :param extra: the keyword arguments to pass to :meth:`main`.
++        :param extra: the keyword arguments to pass to :meth:`main`. If
++                      ``prog_name`` is not given, the default from
++                      :meth:`get_default_prog_name` is used.
+         :param color: whether the output should contain color codes. The
+                       application can still override this explicitly.
+         """
+@@ -318,8 +320,9 @@ class CliRunner(object):
+                 args = shlex.split(args)
+ 
+             try:
+-                cli.main(args=args or (),
+-                         prog_name=self.get_default_prog_name(cli), **extra)
++                if 'prog_name' not in extra:
++                    extra['prog_name'] = self.get_default_prog_name(cli)
++                cli.main(args=args or (), **extra)
+             except SystemExit as e:
+                 exc_info = sys.exc_info()
+                 exit_code = e.code
+diff --git a/tests/test_testing.py b/tests/test_testing.py
+index a74c5de..1ba25d8 100644
+--- a/tests/test_testing.py
++++ b/tests/test_testing.py
+@@ -38,6 +38,31 @@ def test_runner():
+     assert result.output == 'Hello World!\nHello World!\n'
+ 
+ 
++@pytest.mark.parametrize('command_name, extra, expected_name', [
++    ('cli', {}, 'cli'),
++    (None, {}, 'root'),
++    ('cli', {'prog_name': 'custom-cli'}, 'custom-cli'),
++    (None, {'prog_name': 'custom-cli'}, 'custom-cli'),
++])
++def test_runner_prog_name(command_name, extra, expected_name):
++    @click.pass_context
++    def cli(ctx):
++        click.echo('name=%s' % ctx.info_name)
++
++    command = click.Command(command_name, callback=cli)
++    runner = CliRunner()
++
++    result = runner.invoke(command, **extra)
++    assert result.exit_code == 0
++    assert result.exception is None
++    assert result.output == 'name=%s\n' % expected_name
++
++    result = runner.invoke(command, ['--help'], **extra)
++    assert result.exit_code == 0
++    assert result.exception is None
++    assert result.output.startswith('Usage: %s [OPTIONS]\n' % expected_name)
++
++
+ def test_runner_with_stream():
+     @click.command()
+     def test():

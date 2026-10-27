@@ -1,0 +1,24 @@
+diff --git a/cache.py b/cache.py
+index 1cb4735..db97149 100644
+--- a/cache.py
++++ b/cache.py
+@@ -9,14 +9,17 @@ class RouteCache:
+     def configure(self, routes):
+         if not isinstance(routes, dict):
+             raise ConfigError("expected dict")
++        snapshot = {}
+         for name, targets in routes.items():
+             if not isinstance(name, str) or not name:
+                 raise ConfigError("invalid route name")
+             if not isinstance(targets, list):
+                 raise ConfigError("expected target list")
++            targets = list(targets)
+             if any(not isinstance(target, str) or not target for target in targets):
+                 raise ConfigError("invalid target")
+-        self._routes = dict(routes)
++            snapshot[name] = targets
++        self._routes = snapshot
+ 
+     def targets_for(self, name):
+-        return self._routes[name]
++        return self._routes[name].copy()

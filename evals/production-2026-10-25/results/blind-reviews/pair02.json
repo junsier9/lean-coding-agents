@@ -1,0 +1,632 @@
+{
+  "pair": "02",
+  "review_type": "independent arm-label-blinded code and behavior review",
+  "task": "cache.invalidate 对不存在或已经失效的键抛KeyError，重复调用不是幂等操作。请让重复失效安全完成，仍能使已缓存的键在下次访问时重新计算，并保留全部清理行为。",
+  "comparison": "same",
+  "preferred_arm": null,
+  "production_sources_A_B_byte_identical": true,
+  "documentation_A_B_byte_identical": true,
+  "summary": "A/B 的生产修改与文档相同，均满足可见题面中的幂等失效、重新计算和清理需求。未确认不安全变更或无当前依据的机制；测试组织差异不构成生产行为优劣依据。",
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "A-J01",
+          "file": "A/funcy/calc.py",
+          "line": 126,
+          "title": "缺失键默认值符合本题正常可选结果",
+          "evidence": "dict.pop 增加 None 默认值，使不存在或重复失效成为正常空操作。这里的缺失是题面明确要求，不能把此默认值本身判为吞错。invalidate 仍隐式返回 None，也不计算被装饰函数。",
+          "probe_ids": [
+            "missing_no_evaluation",
+            "recompute_and_preserve_other_key",
+            "cached_none_is_removed"
+          ]
+        },
+        {
+          "id": "A-J02",
+          "file": "A/funcy/calc.py",
+          "line": 125,
+          "title": "保留 key_func 错误和真实清理路径",
+          "evidence": "key_func 仍在 pop 参数求值时执行，未增加宽捕获；原清除、过期条目删除和 invalidate_all 的 cache.clear 均未改。局部探针验证 key_func 的 KeyError/TypeError/ValueError/RuntimeError 原对象传播，非空缓存的不可哈希键仍抛 TypeError，单键及全量清除释放缓存值引用。",
+          "additional_locations": [
+            "A/funcy/calc.py:113",
+            "A/funcy/calc.py:119",
+            "A/funcy/calc.py:129",
+            "A/funcy/calc.py:130"
+          ],
+          "probe_ids": [
+            "key_errors_remain_errors",
+            "expiration_then_calculation_failure",
+            "release_cached_references",
+            "clearing_all_and_then_invalidating"
+          ]
+        },
+        {
+          "id": "A-J03",
+          "file": "A/tests/test_calc.py",
+          "line": 138,
+          "title": "新增检查围绕本题可观察行为",
+          "evidence": "新增测试覆盖缺失/重复失效、其他键保留、自定义键参数和全量清除；没有以内部源码形状或任意行数约束实现。文档新增安全失效说明与需求一致。",
+          "additional_locations": [
+            "A/tests/test_calc.py:161",
+            "A/tests/test_calc.py:178",
+            "A/docs/calc.rst:78"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "A-U01",
+          "file": "A/funcy/calc.py",
+          "line": 126,
+          "confirmed_defect": false,
+          "title": "不可哈希的自定义键在空缓存上的错误契约未明确",
+          "observation": "本地 Python 上，空缓存且 key_func 返回 [] 时，原实现抛 KeyError，A 返回 None；非空缓存相同键仍抛 TypeError。key_func 自身抛出的异常在两者中继续传播。",
+          "interpretation": "可见调用/文档未要求支持这种不可用作字典键的 key_func 返回值，也没有规定其校验错误；因此仅记录实测边界，不判为缺陷，不据此要求新增 guard。B 行为相同。"
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "B-J01",
+          "file": "B/funcy/calc.py",
+          "line": 126,
+          "title": "缺失键默认值符合本题正常可选结果",
+          "evidence": "与 A 的生产源码逐字节相同；通过 dict.pop 的原生缺失默认值实现安全重复失效，保留实际移除、下次访问重新计算以及不执行目标函数的失效行为。",
+          "probe_ids": [
+            "missing_no_evaluation",
+            "recompute_and_preserve_other_key",
+            "custom_key_keyword_arguments",
+            "cached_none_is_removed"
+          ]
+        },
+        {
+          "id": "B-J02",
+          "file": "B/funcy/calc.py",
+          "line": 125,
+          "title": "未用宽捕获掩盖 key_func 或计算错误",
+          "evidence": "key_func 求值位置、过期删除和 cache.clear 与原实现相同。错误传播和缓存引用释放的探针结果与 A 相同；未增加校验层、复制、重试或包装器。",
+          "additional_locations": [
+            "B/funcy/calc.py:113",
+            "B/funcy/calc.py:119",
+            "B/funcy/calc.py:129",
+            "B/funcy/calc.py:130"
+          ],
+          "probe_ids": [
+            "key_errors_remain_errors",
+            "expiration_then_calculation_failure",
+            "release_cached_references",
+            "clearing_all_and_then_invalidating"
+          ]
+        },
+        {
+          "id": "B-J03",
+          "file": "B/tests/test_calc.py",
+          "line": 169,
+          "title": "错误传播回归检查有现有接口依据",
+          "evidence": "除幂等失效、清空和自定义键测试外，额外枚举 key_func 的 KeyError/TypeError/ValueError，检查不会错误计算目标函数。该检查保护原有错误行为，有实际依据；它不改变生产实现，不能因测试项更多就判 B 优于 A。",
+          "additional_locations": [
+            "B/tests/test_calc.py:114",
+            "B/tests/test_calc.py:134",
+            "B/tests/test_calc.py:153",
+            "B/docs/calc.rst:78"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "B-U01",
+          "file": "B/funcy/calc.py",
+          "line": 126,
+          "confirmed_defect": false,
+          "title": "不可哈希的自定义键在空缓存上的错误契约未明确",
+          "observation": "与 A 相同：空缓存且 key_func 返回 [] 时由原实现的 KeyError 变为 None；非空缓存仍抛 TypeError，key_func 自身异常仍传播。",
+          "interpretation": "题面与可见接口未定义该无效键输入的校验行为，当前调用没有此需求；不判为缺陷，也不建议仅据此引入额外防御层。"
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": "Bundled Python 3.12.14, standard library only, -B and PYTHONDONTWRITEBYTECODE=1",
+    "isolation": "Copied only the permitted funcy source trees to an independently created temporary directory. Imported and exercised each copied package in a separate local subprocess. Audited base/A/B trees were never edited.",
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_tests_executed": false,
+    "checks": [
+      "Absent invalidation twice returns None without evaluating the target",
+      "Hit invalidation, repeat invalidation, recomputation and unrelated key preservation",
+      "Custom key_func with equivalent positional and keyword arguments",
+      "Repeated invalidate_all followed by per-key invalidation and recomputation",
+      "Original key_func exception identity for four error classes and unhashable key failure in a nonempty cache",
+      "Expired entry cleanup followed by a computation failure and safe invalidation",
+      "Weak-reference observation of value release after single and all-key invalidation",
+      "None-valued cache entries are removed and recomputed"
+    ],
+    "correction": "The initial probe wrongly assumed dict.pop on an empty dictionary must hash an unhashable key. All three variants failed that probe assumption. It was corrected to seed a nonempty dictionary for the hashability-error check; empty-cache behavior is recorded separately as an unspecified-input observation, not a candidate defect. No candidate bytes changed.",
+    "source_sha256": "B8B75C8E21287C08886F8BC0B2747DB9F8D63D5150D51925782A8579649FBFFA",
+    "source": "import gc\nimport json\nfrom pathlib import Path\nimport sys\nimport weakref\n\nsys.dont_write_bytecode = True\nsys.path.insert(0, str(Path(sys.argv[1]).resolve()))\nfrom funcy import cache\n\n\ndef require(condition, message):\n    if not condition:\n        raise AssertionError(message)\n\n\ndef missing_no_evaluation():\n    calls = []\n    @cache(60)\n    def value(key):\n        calls.append(key)\n        return key\n    first = value.invalidate('missing')\n    second = value.invalidate('missing')\n    require(first is None and second is None, 'invalidate return contract')\n    require(calls == [], 'invalidation evaluated the cached function')\n    return {'returns_none_twice': True, 'function_calls': calls}\n\n\ndef recompute_and_preserve_other_key():\n    calls = []\n    @cache(60)\n    def value(key):\n        calls.append(key)\n        return key + str(calls.count(key))\n    require(value('a') == 'a1' and value('b') == 'b1', 'first computation')\n    require(value.invalidate('a') is None, 'hit invalidate return')\n    require(value.invalidate('a') is None, 'repeat invalidate return')\n    require(value('b') == 'b1', 'unrelated key changed')\n    require(value('a') == 'a2' and value('a') == 'a2', 'invalidated key not recomputed then cached')\n    require(calls == ['a', 'b', 'a'], 'unexpected calculation count')\n    return {'calls': calls, 'unrelated_key_retained': True}\n\n\ndef custom_key_keyword_arguments():\n    calls = []\n    @cache(60, key_func=lambda x, by=1: x)\n    def multiply(x, by=1):\n        calls.append([x, by])\n        return x * by\n    require(multiply(2, by=3) == 6, 'initial value')\n    require(multiply(2, by=4) == 6, 'custom cache key not honored')\n    require(multiply.invalidate(x=2, by=4) is None, 'keyword invalidation')\n    require(multiply.invalidate(2, by=5) is None, 'equivalent repeat invalidation')\n    require(multiply(2, by=4) == 8, 'custom key not invalidated')\n    require(calls == [[2, 3], [2, 4]], 'unexpected calculation count')\n    return {'calls': calls, 'positional_and_keyword_invalidation': True}\n\n\ndef clearing_all_and_then_invalidating():\n    calls = []\n    @cache(60)\n    def value(key):\n        calls.append(key)\n        return key\n    value('a')\n    value('b')\n    require(value.invalidate_all() is None and value.invalidate_all() is None, 'clear return')\n    require(value.invalidate('a') is None and value.invalidate('b') is None, 'already-cleared keys')\n    value('a')\n    value('b')\n    require(calls == ['a', 'b', 'a', 'b'], 'all-key cleanup failed')\n    return {'calls': calls}\n\n\ndef key_errors_remain_errors():\n    observed = []\n    for error_type in (KeyError, TypeError, ValueError, RuntimeError):\n        failure = error_type('key failed')\n        calls = []\n        def key_func(*args, **kwargs):\n            raise failure\n        @cache(60, key_func=key_func)\n        def value(key):\n            calls.append(key)\n            return key\n        caught = None\n        try:\n            value.invalidate('a')\n        except BaseException as error:\n            caught = error\n        require(caught is failure, 'key_func exception was swallowed or replaced')\n        require(calls == [], 'invalidation evaluated value function')\n        observed.append(error_type.__name__)\n    @cache(60, key_func=lambda key: key)\n    def unhashable(key):\n        return key\n    unhashable('existing')\n    caught = None\n    try:\n        unhashable.invalidate([])\n    except BaseException as error:\n        caught = error\n    require(isinstance(caught, TypeError), 'unhashable key should still fail')\n    return {'key_func_exceptions_preserved': observed, 'unhashable_key_type_error': True}\n\n\ndef expiration_then_calculation_failure():\n    calls = []\n    failure = RuntimeError('fresh calculation failed')\n    @cache(0)\n    def value(key):\n        calls.append(key)\n        if len(calls) > 1:\n            raise failure\n        return 'old'\n    require(value('a') == 'old', 'initial cache value')\n    caught = None\n    try:\n        value('a')\n    except BaseException as error:\n        caught = error\n    require(caught is failure, 'fresh calculation exception changed')\n    require(value.invalidate('a') is None, 'expired entry not safely absent')\n    require(value.invalidate('a') is None, 'repeated expired invalidation')\n    return {'function_calls': calls, 'fresh_error_propagated': True}\n\n\ndef release_cached_references():\n    released = []\n    class Value:\n        def __init__(self, key):\n            self.key = key\n        def __del__(self):\n            released.append(self.key)\n    @cache(60)\n    def value(key):\n        return Value(key)\n    first, second = value('a'), value('b')\n    first_ref, second_ref = weakref.ref(first), weakref.ref(second)\n    del first\n    value.invalidate('a')\n    gc.collect()\n    require(first_ref() is None, 'single-key invalidation retained cache value')\n    require(second_ref() is second, 'unrelated cached reference released')\n    del second\n    value.invalidate_all()\n    gc.collect()\n    require(second_ref() is None, 'all-key invalidation retained cache value')\n    require(sorted(released) == ['a', 'b'], 'cleanup observations differ')\n    return {'released': sorted(released), 'single_key_and_all_key_release': True}\n\n\ndef cached_none_is_removed():\n    calls = []\n    @cache(60)\n    def value(key):\n        calls.append(key)\n        return None\n    require(value('a') is None and value('a') is None, 'cached None result')\n    require(calls == ['a'], 'None was not cached')\n    value.invalidate('a')\n    value.invalidate('a')\n    require(value('a') is None and calls == ['a', 'a'], 'None cache entry not invalidated')\n    return {'calls': calls}\n\n\nresults = {}\nfor function in (missing_no_evaluation, recompute_and_preserve_other_key,\n                 custom_key_keyword_arguments, clearing_all_and_then_invalidating,\n                 key_errors_remain_errors, expiration_then_calculation_failure,\n                 release_cached_references, cached_none_is_removed):\n    try:\n        results[function.__name__] = {'passed': True, 'observed': function()}\n    except BaseException as error:\n        results[function.__name__] = {'passed': False, 'exception': type(error).__name__,\n                                    'message': str(error)}\n@cache(60, key_func=lambda key: [])\ndef empty_unhashable(key):\n    return key\ntry:\n    value = empty_unhashable.invalidate('a')\n    empty_observation = {'return': value, 'exception': None}\nexcept BaseException as error:\n    empty_observation = {'return': None, 'exception': type(error).__name__}\nprint(json.dumps({'package_path': str(Path(sys.modules['funcy'].__file__).resolve()),\n                  'results': results, 'passed': sum(item['passed'] for item in results.values()),\n                  'total': len(results), 'out_of_contract_observation_empty_unhashable': empty_observation}))\n",
+    "temporary_work_directory_removed": true
+  },
+  "probe_results": {
+    "base": {
+      "package_path": "{USER_HOME}\\AppData\\Local\\Temp\\pair02-review-6lm41eha\\base\\funcy\\__init__.py",
+      "results": {
+        "missing_no_evaluation": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "('missing',)"
+        },
+        "recompute_and_preserve_other_key": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "('a',)"
+        },
+        "custom_key_keyword_arguments": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "2"
+        },
+        "clearing_all_and_then_invalidating": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "('a',)"
+        },
+        "key_errors_remain_errors": {
+          "passed": true,
+          "observed": {
+            "key_func_exceptions_preserved": [
+              "KeyError",
+              "TypeError",
+              "ValueError",
+              "RuntimeError"
+            ],
+            "unhashable_key_type_error": true
+          }
+        },
+        "expiration_then_calculation_failure": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "('a',)"
+        },
+        "release_cached_references": {
+          "passed": true,
+          "observed": {
+            "released": [
+              "a",
+              "b"
+            ],
+            "single_key_and_all_key_release": true
+          }
+        },
+        "cached_none_is_removed": {
+          "passed": false,
+          "exception": "KeyError",
+          "message": "('a',)"
+        }
+      },
+      "passed": 2,
+      "total": 8,
+      "out_of_contract_observation_empty_unhashable": {
+        "return": null,
+        "exception": "KeyError"
+      }
+    },
+    "A": {
+      "package_path": "{USER_HOME}\\AppData\\Local\\Temp\\pair02-review-6lm41eha\\A\\funcy\\__init__.py",
+      "results": {
+        "missing_no_evaluation": {
+          "passed": true,
+          "observed": {
+            "returns_none_twice": true,
+            "function_calls": []
+          }
+        },
+        "recompute_and_preserve_other_key": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "b",
+              "a"
+            ],
+            "unrelated_key_retained": true
+          }
+        },
+        "custom_key_keyword_arguments": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              [
+                2,
+                3
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "positional_and_keyword_invalidation": true
+          }
+        },
+        "clearing_all_and_then_invalidating": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "b",
+              "a",
+              "b"
+            ]
+          }
+        },
+        "key_errors_remain_errors": {
+          "passed": true,
+          "observed": {
+            "key_func_exceptions_preserved": [
+              "KeyError",
+              "TypeError",
+              "ValueError",
+              "RuntimeError"
+            ],
+            "unhashable_key_type_error": true
+          }
+        },
+        "expiration_then_calculation_failure": {
+          "passed": true,
+          "observed": {
+            "function_calls": [
+              "a",
+              "a"
+            ],
+            "fresh_error_propagated": true
+          }
+        },
+        "release_cached_references": {
+          "passed": true,
+          "observed": {
+            "released": [
+              "a",
+              "b"
+            ],
+            "single_key_and_all_key_release": true
+          }
+        },
+        "cached_none_is_removed": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "a"
+            ]
+          }
+        }
+      },
+      "passed": 8,
+      "total": 8,
+      "out_of_contract_observation_empty_unhashable": {
+        "return": null,
+        "exception": null
+      }
+    },
+    "B": {
+      "package_path": "{USER_HOME}\\AppData\\Local\\Temp\\pair02-review-6lm41eha\\B\\funcy\\__init__.py",
+      "results": {
+        "missing_no_evaluation": {
+          "passed": true,
+          "observed": {
+            "returns_none_twice": true,
+            "function_calls": []
+          }
+        },
+        "recompute_and_preserve_other_key": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "b",
+              "a"
+            ],
+            "unrelated_key_retained": true
+          }
+        },
+        "custom_key_keyword_arguments": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              [
+                2,
+                3
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "positional_and_keyword_invalidation": true
+          }
+        },
+        "clearing_all_and_then_invalidating": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "b",
+              "a",
+              "b"
+            ]
+          }
+        },
+        "key_errors_remain_errors": {
+          "passed": true,
+          "observed": {
+            "key_func_exceptions_preserved": [
+              "KeyError",
+              "TypeError",
+              "ValueError",
+              "RuntimeError"
+            ],
+            "unhashable_key_type_error": true
+          }
+        },
+        "expiration_then_calculation_failure": {
+          "passed": true,
+          "observed": {
+            "function_calls": [
+              "a",
+              "a"
+            ],
+            "fresh_error_propagated": true
+          }
+        },
+        "release_cached_references": {
+          "passed": true,
+          "observed": {
+            "released": [
+              "a",
+              "b"
+            ],
+            "single_key_and_all_key_release": true
+          }
+        },
+        "cached_none_is_removed": {
+          "passed": true,
+          "observed": {
+            "calls": [
+              "a",
+              "a"
+            ]
+          }
+        }
+      },
+      "passed": 8,
+      "total": 8,
+      "out_of_contract_observation_empty_unhashable": {
+        "return": null,
+        "exception": null
+      }
+    }
+  },
+  "source_immutability": {
+    "files_verified": 204,
+    "all_audited_bytes_unchanged": true,
+    "source_hashes": {
+      "base/.gitignore": "FD6081595F7CFE2C2F2507D117E17B1791B956001B96FBCEC679A25564F9965C",
+      "base/.travis.yml": "F6EB08B817AF1A90427038BD0CF6F0285B69DB641181C0E6D6068685FB03C4F3",
+      "base/CHANGELOG": "65A0816ED69D2360ADF4897C868AB4E26B5EB808845EC1104E65CB5AECC1F7DD",
+      "base/LICENSE": "119D1E64928AC56CF9EE5C0B618668FB98001FCACB83B89D74419782BC279448",
+      "base/MANIFEST.in": "EF2C0FA8A10454A5BA8B3BCDD553936D6A70CE625C8A0AB9265C4E0F7EAAE5E2",
+      "base/README.rst": "3AD9FD292B9E85A28DA961BD883903BD0589B13F7DAED1DD0D38EA1318474940",
+      "base/setup.cfg": "9DD20A5ADA090B01DD22055F32BDAA56315D3A14B0FD168DBE12013FA09FE5B1",
+      "base/setup.py": "3431B15F5F23F87537B9547439BCCECDB0BA516CF2CA9DC723A5516620E25855",
+      "base/test_requirements.txt": "DF224092B0ADBE96826A87FFE27878E5DEDE293F3BA4C66B97CC44A5F23AF9FC",
+      "base/TODO.rst": "C09E83D90FD4F957FF928A453DCE83BE4077AE334EBCB64E517ED4DC14F6A35A",
+      "base/tox.ini": "E438D095EA12B08017B4A04752010A58A5BE6F5BAF4293D3B09E22C79B27E9F0",
+      "base/VERSION": "B28D3E4BC89658AB4C8D768F013DDF92A3612E20EDF922A81D177F1BD8C35B25",
+      "base/docs/calc.rst": "0261845D48C14AEF61F69659464B72566D1BA9254A27EEDC4F76ECBB353E80D2",
+      "base/docs/cheatsheet.rst": "B5BDC431F6B5B5B1D806339F7BE4F1E6C31B742B63119FF2B2DACF7D3CBF7897",
+      "base/docs/colls.rst": "592EB079E0DC26802F516A2E8D44963037CAF9AC68A558E85B68F02C6CB9ECF2",
+      "base/docs/conf.py": "369E375F236732902DD47158484D768554842EDB380BF79DCEF14D70C93919A8",
+      "base/docs/debug.rst": "87F750FCA1D0565492124C0D73C6BE0B8CF907CF43F67E105B2E5D8CF9C3D964",
+      "base/docs/decorators.rst": "30495DA9567ECE99D1649D331840236DC8C95E8879FBAC00C577FE80711600FD",
+      "base/docs/descriptions.html": "112C68C510D6F38664E8EB192FD96A796FAB6DC60D03D636521E03A232760B7B",
+      "base/docs/extended_fns.rst": "A7A268E441E8C4D744686F29EB9B1116A65F31337D6BFB664A1BB2C7E8420B86",
+      "base/docs/flow.rst": "10B7BEF44B0B83FA45DF1DCCF8620527280125DBAAEFA9C5E51CBF101F0F3ADC",
+      "base/docs/funcs.rst": "75F789727DB43522B61A47F3B9A132F773A0992379ADC6F61388E86C21CB26C4",
+      "base/docs/index.rst": "1D1CB633271AD854DD4914A8821536E114EBC543B16EFBDF6A4482798F2648A5",
+      "base/docs/Makefile": "6AE06A298E982B92138E08E3FC2D9B72071148E054DAF4E378900969CCB8590C",
+      "base/docs/objects.rst": "FA8E489DC32B94C279DC799E7D20F4F4E6260465204A4F7EC2EB5439203AB733",
+      "base/docs/overview.rst": "8046A1F90405FAF0D1E75114541BF40A210D6E4B93D97ECC2ECBC6E5EB340E1C",
+      "base/docs/primitives.rst": "7B459F5DC6869ADE7F5C35E858F7993D25FF3C136E466475809075E6CE1BF877",
+      "base/docs/python3.rst": "7D4C7EA56BC35D0F0BB41445D73A289C2D880A2F42276753B6D041D4C2AEF993",
+      "base/docs/seqs.rst": "5869B78B9EEF98882E26F3AC904C27BE8D1E28340F7FE3CC0781BC4FB3C68F53",
+      "base/docs/strings.rst": "E130ABD6A8426623B959C108544715DE8F6B4BE4EEA3BD6F3A2887DF1D797302",
+      "base/docs/types.rst": "746A027AEDD4C34010BEAD1CD9B4C5EA498518529B8306FAF213A35865E640EC",
+      "base/funcy/calc.py": "0911369FB499A88ACD335AF632D5FDF57268254A41CE1043F8B67C89EE91EC13",
+      "base/funcy/colls.py": "B43C3AB3A070B9FDCAE9D7AFBEE43C694C8FD2A6A1F553454B5A443EC4DC415E",
+      "base/funcy/compat.py": "902FD25F642EB92A571A2CDFA2D4EE34593F12D0D5E0E0D7D7F412547ADFBB0F",
+      "base/funcy/debug.py": "1BF28296E67C1EBDEAADC4641A733AEB3D19DA67D905ABB00BEB3674DFB3DC6D",
+      "base/funcy/decorators.py": "5E7306A71912116DCDC7B2F19CD0F50B4C36CF87302BF4515248FCFF015A9D86",
+      "base/funcy/flow.py": "D444F069AC035478C0B46E49BB9A284FA84B0DBCC47451462A689FA4697BC3B7",
+      "base/funcy/funcmakers.py": "6D968680E3909C5E4CA579D97DE5D93D8C94F72F78FAD80E44111FD420CA0FBD",
+      "base/funcy/funcolls.py": "7DF238435D650138FC3FE06ED4F46485776623F46EF6D4E4EC077FFE5506CEEF",
+      "base/funcy/funcs.py": "F15B894D7440F0AB9E845B02B16064C2CC68FC59E015C0A6DD62D1F9F75587F2",
+      "base/funcy/objects.py": "6499B2B4B4C720358ECC7B07FF8A1366341923852B774FF8BCED63F23BEB5402",
+      "base/funcy/primitives.py": "67DD4BE73F3063797D0DAC6934427AA5030448514134A34A08C6A5C37A96C9DF",
+      "base/funcy/py2.py": "334D6688E05106A7FF8A84E04D616BAE93A0AB3644A9E28887C9A3E4E35DE867",
+      "base/funcy/py3.py": "E7FA4B164977BBC995F8E797BB92D2A4B5409EE14C9FA25C99BCDEB58CE0D463",
+      "base/funcy/seqs.py": "CAC38375021DD562B3E22F5D560DF27D6D154315C1163C9DA8DC2945E57F1077",
+      "base/funcy/strings.py": "53287ABCE514F9F5FDE12430DD2B93CCF230443A3A0B280D830B566D42D54FCF",
+      "base/funcy/tree.py": "48DF6AEC601171DE7FA7291C1CCAE51F88259271D974C822FFFF009F62302A8A",
+      "base/funcy/types.py": "A70D38327B41ECAA07A6398AED09CFC8E30FEE09E4A237D4818AE767A0660049",
+      "base/funcy/_inspect.py": "B404C8F17BFF998EA0450F47E9A781BECEFBA99BDC9931B965143D13F670B8AC",
+      "base/funcy/__init__.py": "DEEB2C3877E40377DC23108327E6A828D2246E02F789A66FB67C5D0161D2646C",
+      "base/tests/test_calc.py": "EC507B10D6E8EBCC6124E00BE0A312F568D9CC31D0B1CAF597821E30574A291E",
+      "base/tests/test_colls.py": "31CFE4175862CD168191E79E1A61892B8AC7806B00E3345328A9CE46F17C0886",
+      "base/tests/test_debug.py": "905E785C926707DCBE411621DAD4CC6C0F2E36FDD195B389D377F76B34E5619D",
+      "base/tests/test_decorators.py": "535A651D420161AE24AB35B837EAD688E7875745877C133C96ED4E134AB86057",
+      "base/tests/test_flow.py": "A461E4282B02B46B68B32B3367DD726765AC3E45A9115259B7A454DD1100362C",
+      "base/tests/test_funcmakers.py": "86A083740AC7A65E157D8C1E3FEF52A46CAA86CB9163E741C5C572A0584F7F99",
+      "base/tests/test_funcolls.py": "CA5AB72618D1814EBD0A2B5F22F22275C9F96882F70501A5F5B0AAB0E24DB32B",
+      "base/tests/test_funcs.py": "A54F6E4193EE6E1B5E82FB37D12C04757D8D86B234D6B8E7FEC8814CFF2AE3A3",
+      "base/tests/test_interface.py": "43D96BE90C939778FBBC9C4943F8C33E69B50C4011DD9F513B6BDB8CBBBB834C",
+      "base/tests/test_objects.py": "4BFAB0C560DAB370EB4858ED8D17C3E54ACFA2E317E37A72419651A8370B4978",
+      "base/tests/test_seqs.py": "392CFFF9EFBD49A717EAB66DC4E4EB2AC67284429AC2B9D3D0A48E9E86F8A3FC",
+      "base/tests/test_strings.py": "DB57D498F298B5E2C636223F04742AE4C5139F274E4EA4EF2E7E6D893DE0A085",
+      "base/tests/test_tree.py": "3B2F651178110B0588B0FE89882ECF566F3644DF8E3F23AC9A2E6CEB41C25832",
+      "base/tests/test_types.py": "309BFC302B3607749BCC8EB9573A4C059AB81A653AB2EAFFF7EA2FB60F53B913",
+      "base/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/docs/_static/nhpup_1.1.js": "79F23A5E8A6D6CC7BEBB1BC695D54C4D575FB82B09DF55E70F8F7E3B1033E3B5",
+      "base/docs/_static/overrides.css": "F3388E9EB6F64CBA85146DCD3C505E6E0A38B365E6E397C32641D8C5B6D10DD7",
+      "A/.gitignore": "FD6081595F7CFE2C2F2507D117E17B1791B956001B96FBCEC679A25564F9965C",
+      "A/.travis.yml": "F6EB08B817AF1A90427038BD0CF6F0285B69DB641181C0E6D6068685FB03C4F3",
+      "A/CHANGELOG": "65A0816ED69D2360ADF4897C868AB4E26B5EB808845EC1104E65CB5AECC1F7DD",
+      "A/LICENSE": "119D1E64928AC56CF9EE5C0B618668FB98001FCACB83B89D74419782BC279448",
+      "A/MANIFEST.in": "EF2C0FA8A10454A5BA8B3BCDD553936D6A70CE625C8A0AB9265C4E0F7EAAE5E2",
+      "A/README.rst": "3AD9FD292B9E85A28DA961BD883903BD0589B13F7DAED1DD0D38EA1318474940",
+      "A/setup.cfg": "9DD20A5ADA090B01DD22055F32BDAA56315D3A14B0FD168DBE12013FA09FE5B1",
+      "A/setup.py": "3431B15F5F23F87537B9547439BCCECDB0BA516CF2CA9DC723A5516620E25855",
+      "A/test_requirements.txt": "DF224092B0ADBE96826A87FFE27878E5DEDE293F3BA4C66B97CC44A5F23AF9FC",
+      "A/TODO.rst": "C09E83D90FD4F957FF928A453DCE83BE4077AE334EBCB64E517ED4DC14F6A35A",
+      "A/tox.ini": "E438D095EA12B08017B4A04752010A58A5BE6F5BAF4293D3B09E22C79B27E9F0",
+      "A/VERSION": "B28D3E4BC89658AB4C8D768F013DDF92A3612E20EDF922A81D177F1BD8C35B25",
+      "A/docs/calc.rst": "BF6BE0C1586A28461E527A3C866C2F3A627EB612B24C6FDE8B8B8B9A3051944B",
+      "A/docs/cheatsheet.rst": "B5BDC431F6B5B5B1D806339F7BE4F1E6C31B742B63119FF2B2DACF7D3CBF7897",
+      "A/docs/colls.rst": "592EB079E0DC26802F516A2E8D44963037CAF9AC68A558E85B68F02C6CB9ECF2",
+      "A/docs/conf.py": "369E375F236732902DD47158484D768554842EDB380BF79DCEF14D70C93919A8",
+      "A/docs/debug.rst": "87F750FCA1D0565492124C0D73C6BE0B8CF907CF43F67E105B2E5D8CF9C3D964",
+      "A/docs/decorators.rst": "30495DA9567ECE99D1649D331840236DC8C95E8879FBAC00C577FE80711600FD",
+      "A/docs/descriptions.html": "112C68C510D6F38664E8EB192FD96A796FAB6DC60D03D636521E03A232760B7B",
+      "A/docs/extended_fns.rst": "A7A268E441E8C4D744686F29EB9B1116A65F31337D6BFB664A1BB2C7E8420B86",
+      "A/docs/flow.rst": "10B7BEF44B0B83FA45DF1DCCF8620527280125DBAAEFA9C5E51CBF101F0F3ADC",
+      "A/docs/funcs.rst": "75F789727DB43522B61A47F3B9A132F773A0992379ADC6F61388E86C21CB26C4",
+      "A/docs/index.rst": "1D1CB633271AD854DD4914A8821536E114EBC543B16EFBDF6A4482798F2648A5",
+      "A/docs/Makefile": "6AE06A298E982B92138E08E3FC2D9B72071148E054DAF4E378900969CCB8590C",
+      "A/docs/objects.rst": "FA8E489DC32B94C279DC799E7D20F4F4E6260465204A4F7EC2EB5439203AB733",
+      "A/docs/overview.rst": "8046A1F90405FAF0D1E75114541BF40A210D6E4B93D97ECC2ECBC6E5EB340E1C",
+      "A/docs/primitives.rst": "7B459F5DC6869ADE7F5C35E858F7993D25FF3C136E466475809075E6CE1BF877",
+      "A/docs/python3.rst": "7D4C7EA56BC35D0F0BB41445D73A289C2D880A2F42276753B6D041D4C2AEF993",
+      "A/docs/seqs.rst": "5869B78B9EEF98882E26F3AC904C27BE8D1E28340F7FE3CC0781BC4FB3C68F53",
+      "A/docs/strings.rst": "E130ABD6A8426623B959C108544715DE8F6B4BE4EEA3BD6F3A2887DF1D797302",
+      "A/docs/types.rst": "746A027AEDD4C34010BEAD1CD9B4C5EA498518529B8306FAF213A35865E640EC",
+      "A/funcy/calc.py": "DBD97DBD4837327091ED9CD794723E2761CB0DD2FF5811514ED7BF1F5F5B7A70",
+      "A/funcy/colls.py": "B43C3AB3A070B9FDCAE9D7AFBEE43C694C8FD2A6A1F553454B5A443EC4DC415E",
+      "A/funcy/compat.py": "902FD25F642EB92A571A2CDFA2D4EE34593F12D0D5E0E0D7D7F412547ADFBB0F",
+      "A/funcy/debug.py": "1BF28296E67C1EBDEAADC4641A733AEB3D19DA67D905ABB00BEB3674DFB3DC6D",
+      "A/funcy/decorators.py": "5E7306A71912116DCDC7B2F19CD0F50B4C36CF87302BF4515248FCFF015A9D86",
+      "A/funcy/flow.py": "D444F069AC035478C0B46E49BB9A284FA84B0DBCC47451462A689FA4697BC3B7",
+      "A/funcy/funcmakers.py": "6D968680E3909C5E4CA579D97DE5D93D8C94F72F78FAD80E44111FD420CA0FBD",
+      "A/funcy/funcolls.py": "7DF238435D650138FC3FE06ED4F46485776623F46EF6D4E4EC077FFE5506CEEF",
+      "A/funcy/funcs.py": "F15B894D7440F0AB9E845B02B16064C2CC68FC59E015C0A6DD62D1F9F75587F2",
+      "A/funcy/objects.py": "6499B2B4B4C720358ECC7B07FF8A1366341923852B774FF8BCED63F23BEB5402",
+      "A/funcy/primitives.py": "67DD4BE73F3063797D0DAC6934427AA5030448514134A34A08C6A5C37A96C9DF",
+      "A/funcy/py2.py": "334D6688E05106A7FF8A84E04D616BAE93A0AB3644A9E28887C9A3E4E35DE867",
+      "A/funcy/py3.py": "E7FA4B164977BBC995F8E797BB92D2A4B5409EE14C9FA25C99BCDEB58CE0D463",
+      "A/funcy/seqs.py": "CAC38375021DD562B3E22F5D560DF27D6D154315C1163C9DA8DC2945E57F1077",
+      "A/funcy/strings.py": "53287ABCE514F9F5FDE12430DD2B93CCF230443A3A0B280D830B566D42D54FCF",
+      "A/funcy/tree.py": "48DF6AEC601171DE7FA7291C1CCAE51F88259271D974C822FFFF009F62302A8A",
+      "A/funcy/types.py": "A70D38327B41ECAA07A6398AED09CFC8E30FEE09E4A237D4818AE767A0660049",
+      "A/funcy/_inspect.py": "B404C8F17BFF998EA0450F47E9A781BECEFBA99BDC9931B965143D13F670B8AC",
+      "A/funcy/__init__.py": "DEEB2C3877E40377DC23108327E6A828D2246E02F789A66FB67C5D0161D2646C",
+      "A/tests/test_calc.py": "F4E2237C340E7BC281116E7EC5A95E8F589F0DF4223C3A3E76E7FDFF8E6F7F23",
+      "A/tests/test_colls.py": "31CFE4175862CD168191E79E1A61892B8AC7806B00E3345328A9CE46F17C0886",
+      "A/tests/test_debug.py": "905E785C926707DCBE411621DAD4CC6C0F2E36FDD195B389D377F76B34E5619D",
+      "A/tests/test_decorators.py": "535A651D420161AE24AB35B837EAD688E7875745877C133C96ED4E134AB86057",
+      "A/tests/test_flow.py": "A461E4282B02B46B68B32B3367DD726765AC3E45A9115259B7A454DD1100362C",
+      "A/tests/test_funcmakers.py": "86A083740AC7A65E157D8C1E3FEF52A46CAA86CB9163E741C5C572A0584F7F99",
+      "A/tests/test_funcolls.py": "CA5AB72618D1814EBD0A2B5F22F22275C9F96882F70501A5F5B0AAB0E24DB32B",
+      "A/tests/test_funcs.py": "A54F6E4193EE6E1B5E82FB37D12C04757D8D86B234D6B8E7FEC8814CFF2AE3A3",
+      "A/tests/test_interface.py": "43D96BE90C939778FBBC9C4943F8C33E69B50C4011DD9F513B6BDB8CBBBB834C",
+      "A/tests/test_objects.py": "4BFAB0C560DAB370EB4858ED8D17C3E54ACFA2E317E37A72419651A8370B4978",
+      "A/tests/test_seqs.py": "392CFFF9EFBD49A717EAB66DC4E4EB2AC67284429AC2B9D3D0A48E9E86F8A3FC",
+      "A/tests/test_strings.py": "DB57D498F298B5E2C636223F04742AE4C5139F274E4EA4EF2E7E6D893DE0A085",
+      "A/tests/test_tree.py": "3B2F651178110B0588B0FE89882ECF566F3644DF8E3F23AC9A2E6CEB41C25832",
+      "A/tests/test_types.py": "309BFC302B3607749BCC8EB9573A4C059AB81A653AB2EAFFF7EA2FB60F53B913",
+      "A/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/docs/_static/nhpup_1.1.js": "79F23A5E8A6D6CC7BEBB1BC695D54C4D575FB82B09DF55E70F8F7E3B1033E3B5",
+      "A/docs/_static/overrides.css": "F3388E9EB6F64CBA85146DCD3C505E6E0A38B365E6E397C32641D8C5B6D10DD7",
+      "B/.gitignore": "FD6081595F7CFE2C2F2507D117E17B1791B956001B96FBCEC679A25564F9965C",
+      "B/.travis.yml": "F6EB08B817AF1A90427038BD0CF6F0285B69DB641181C0E6D6068685FB03C4F3",
+      "B/CHANGELOG": "65A0816ED69D2360ADF4897C868AB4E26B5EB808845EC1104E65CB5AECC1F7DD",
+      "B/LICENSE": "119D1E64928AC56CF9EE5C0B618668FB98001FCACB83B89D74419782BC279448",
+      "B/MANIFEST.in": "EF2C0FA8A10454A5BA8B3BCDD553936D6A70CE625C8A0AB9265C4E0F7EAAE5E2",
+      "B/README.rst": "3AD9FD292B9E85A28DA961BD883903BD0589B13F7DAED1DD0D38EA1318474940",
+      "B/setup.cfg": "9DD20A5ADA090B01DD22055F32BDAA56315D3A14B0FD168DBE12013FA09FE5B1",
+      "B/setup.py": "3431B15F5F23F87537B9547439BCCECDB0BA516CF2CA9DC723A5516620E25855",
+      "B/test_requirements.txt": "DF224092B0ADBE96826A87FFE27878E5DEDE293F3BA4C66B97CC44A5F23AF9FC",
+      "B/TODO.rst": "C09E83D90FD4F957FF928A453DCE83BE4077AE334EBCB64E517ED4DC14F6A35A",
+      "B/tox.ini": "E438D095EA12B08017B4A04752010A58A5BE6F5BAF4293D3B09E22C79B27E9F0",
+      "B/VERSION": "B28D3E4BC89658AB4C8D768F013DDF92A3612E20EDF922A81D177F1BD8C35B25",
+      "B/docs/calc.rst": "BF6BE0C1586A28461E527A3C866C2F3A627EB612B24C6FDE8B8B8B9A3051944B",
+      "B/docs/cheatsheet.rst": "B5BDC431F6B5B5B1D806339F7BE4F1E6C31B742B63119FF2B2DACF7D3CBF7897",
+      "B/docs/colls.rst": "592EB079E0DC26802F516A2E8D44963037CAF9AC68A558E85B68F02C6CB9ECF2",
+      "B/docs/conf.py": "369E375F236732902DD47158484D768554842EDB380BF79DCEF14D70C93919A8",
+      "B/docs/debug.rst": "87F750FCA1D0565492124C0D73C6BE0B8CF907CF43F67E105B2E5D8CF9C3D964",
+      "B/docs/decorators.rst": "30495DA9567ECE99D1649D331840236DC8C95E8879FBAC00C577FE80711600FD",
+      "B/docs/descriptions.html": "112C68C510D6F38664E8EB192FD96A796FAB6DC60D03D636521E03A232760B7B",
+      "B/docs/extended_fns.rst": "A7A268E441E8C4D744686F29EB9B1116A65F31337D6BFB664A1BB2C7E8420B86",
+      "B/docs/flow.rst": "10B7BEF44B0B83FA45DF1DCCF8620527280125DBAAEFA9C5E51CBF101F0F3ADC",
+      "B/docs/funcs.rst": "75F789727DB43522B61A47F3B9A132F773A0992379ADC6F61388E86C21CB26C4",
+      "B/docs/index.rst": "1D1CB633271AD854DD4914A8821536E114EBC543B16EFBDF6A4482798F2648A5",
+      "B/docs/Makefile": "6AE06A298E982B92138E08E3FC2D9B72071148E054DAF4E378900969CCB8590C",
+      "B/docs/objects.rst": "FA8E489DC32B94C279DC799E7D20F4F4E6260465204A4F7EC2EB5439203AB733",
+      "B/docs/overview.rst": "8046A1F90405FAF0D1E75114541BF40A210D6E4B93D97ECC2ECBC6E5EB340E1C",
+      "B/docs/primitives.rst": "7B459F5DC6869ADE7F5C35E858F7993D25FF3C136E466475809075E6CE1BF877",
+      "B/docs/python3.rst": "7D4C7EA56BC35D0F0BB41445D73A289C2D880A2F42276753B6D041D4C2AEF993",
+      "B/docs/seqs.rst": "5869B78B9EEF98882E26F3AC904C27BE8D1E28340F7FE3CC0781BC4FB3C68F53",
+      "B/docs/strings.rst": "E130ABD6A8426623B959C108544715DE8F6B4BE4EEA3BD6F3A2887DF1D797302",
+      "B/docs/types.rst": "746A027AEDD4C34010BEAD1CD9B4C5EA498518529B8306FAF213A35865E640EC",
+      "B/funcy/calc.py": "DBD97DBD4837327091ED9CD794723E2761CB0DD2FF5811514ED7BF1F5F5B7A70",
+      "B/funcy/colls.py": "B43C3AB3A070B9FDCAE9D7AFBEE43C694C8FD2A6A1F553454B5A443EC4DC415E",
+      "B/funcy/compat.py": "902FD25F642EB92A571A2CDFA2D4EE34593F12D0D5E0E0D7D7F412547ADFBB0F",
+      "B/funcy/debug.py": "1BF28296E67C1EBDEAADC4641A733AEB3D19DA67D905ABB00BEB3674DFB3DC6D",
+      "B/funcy/decorators.py": "5E7306A71912116DCDC7B2F19CD0F50B4C36CF87302BF4515248FCFF015A9D86",
+      "B/funcy/flow.py": "D444F069AC035478C0B46E49BB9A284FA84B0DBCC47451462A689FA4697BC3B7",
+      "B/funcy/funcmakers.py": "6D968680E3909C5E4CA579D97DE5D93D8C94F72F78FAD80E44111FD420CA0FBD",
+      "B/funcy/funcolls.py": "7DF238435D650138FC3FE06ED4F46485776623F46EF6D4E4EC077FFE5506CEEF",
+      "B/funcy/funcs.py": "F15B894D7440F0AB9E845B02B16064C2CC68FC59E015C0A6DD62D1F9F75587F2",
+      "B/funcy/objects.py": "6499B2B4B4C720358ECC7B07FF8A1366341923852B774FF8BCED63F23BEB5402",
+      "B/funcy/primitives.py": "67DD4BE73F3063797D0DAC6934427AA5030448514134A34A08C6A5C37A96C9DF",
+      "B/funcy/py2.py": "334D6688E05106A7FF8A84E04D616BAE93A0AB3644A9E28887C9A3E4E35DE867",
+      "B/funcy/py3.py": "E7FA4B164977BBC995F8E797BB92D2A4B5409EE14C9FA25C99BCDEB58CE0D463",
+      "B/funcy/seqs.py": "CAC38375021DD562B3E22F5D560DF27D6D154315C1163C9DA8DC2945E57F1077",
+      "B/funcy/strings.py": "53287ABCE514F9F5FDE12430DD2B93CCF230443A3A0B280D830B566D42D54FCF",
+      "B/funcy/tree.py": "48DF6AEC601171DE7FA7291C1CCAE51F88259271D974C822FFFF009F62302A8A",
+      "B/funcy/types.py": "A70D38327B41ECAA07A6398AED09CFC8E30FEE09E4A237D4818AE767A0660049",
+      "B/funcy/_inspect.py": "B404C8F17BFF998EA0450F47E9A781BECEFBA99BDC9931B965143D13F670B8AC",
+      "B/funcy/__init__.py": "DEEB2C3877E40377DC23108327E6A828D2246E02F789A66FB67C5D0161D2646C",
+      "B/tests/test_calc.py": "CEB6E83416E90C7E4BECBABA98457387200A9432D8E9861F0C9115C5B5FD0E46",
+      "B/tests/test_colls.py": "31CFE4175862CD168191E79E1A61892B8AC7806B00E3345328A9CE46F17C0886",
+      "B/tests/test_debug.py": "905E785C926707DCBE411621DAD4CC6C0F2E36FDD195B389D377F76B34E5619D",
+      "B/tests/test_decorators.py": "535A651D420161AE24AB35B837EAD688E7875745877C133C96ED4E134AB86057",
+      "B/tests/test_flow.py": "A461E4282B02B46B68B32B3367DD726765AC3E45A9115259B7A454DD1100362C",
+      "B/tests/test_funcmakers.py": "86A083740AC7A65E157D8C1E3FEF52A46CAA86CB9163E741C5C572A0584F7F99",
+      "B/tests/test_funcolls.py": "CA5AB72618D1814EBD0A2B5F22F22275C9F96882F70501A5F5B0AAB0E24DB32B",
+      "B/tests/test_funcs.py": "A54F6E4193EE6E1B5E82FB37D12C04757D8D86B234D6B8E7FEC8814CFF2AE3A3",
+      "B/tests/test_interface.py": "43D96BE90C939778FBBC9C4943F8C33E69B50C4011DD9F513B6BDB8CBBBB834C",
+      "B/tests/test_objects.py": "4BFAB0C560DAB370EB4858ED8D17C3E54ACFA2E317E37A72419651A8370B4978",
+      "B/tests/test_seqs.py": "392CFFF9EFBD49A717EAB66DC4E4EB2AC67284429AC2B9D3D0A48E9E86F8A3FC",
+      "B/tests/test_strings.py": "DB57D498F298B5E2C636223F04742AE4C5139F274E4EA4EF2E7E6D893DE0A085",
+      "B/tests/test_tree.py": "3B2F651178110B0588B0FE89882ECF566F3644DF8E3F23AC9A2E6CEB41C25832",
+      "B/tests/test_types.py": "309BFC302B3607749BCC8EB9573A4C059AB81A653AB2EAFFF7EA2FB60F53B913",
+      "B/tests/__init__.py": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/docs/_static/nhpup_1.1.js": "79F23A5E8A6D6CC7BEBB1BC695D54C4D575FB82B09DF55E70F8F7E3B1033E3B5",
+      "B/docs/_static/overrides.css": "F3388E9EB6F64CBA85146DCD3C505E6E0A38B365E6E397C32641D8C5B6D10DD7",
+      "task.json": "81CD4E7494755E677469A32BBA16F746FA4F5D1EAC832A6E6793AE45F8DCCF12",
+      "A.patch": "F125AF9B12F4D4CD2C332E4130391A9626B7C217E043F6E678FD9DF3ACC68BA3",
+      "B.patch": "C023669CD5FEC837F7D96C141C0BD7EE48B173130867E7DA555DA8A5633B0EF2"
+    }
+  },
+  "limitations": [
+    "This is a local descriptive semantic review, not an independent confirmatory efficiency trial or a complete test of the package.",
+    "No costs, arm mapping, current skill, hidden grader, reference fix or other pair results were opened during this review.",
+    "The agent has earlier context from authoring unrelated synthetic development fixtures and repairing their oracle; it is not a fresh reviewer with zero background. This actual cache-invalidating task was not one of those authored fixtures.",
+    "No thread stress or real external-resource workload was run; neither was added as an unsupported defect requirement.",
+    "Weak-reference probes demonstrate cache-held object reference release, not application-level resource close semantics that this cache API never promised."
+  ],
+  "reviewed_at": "2026-10-24T21:21:48.805835+00:00"
+}

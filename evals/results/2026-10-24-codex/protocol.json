@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-24",
+  "timezone": "Asia/Singapore",
+  "requested_scope": "Codex only; Claude validation skipped at user request.",
+  "skill_version": "prototype-1",
+  "skill_sha256": "9D6CD83C1EDC9B2CCF6B85242BF7C3CB09CC1EFB325A797A881031FAF35C033E",
+  "replicates_per_case_per_arm": 1,
+  "task_contexts": "Fresh independent context for every case/arm.",
+  "strata": [
+    {
+      "cases": [
+        "h01",
+        "h02"
+      ],
+      "executor": "Codex collaboration subagents",
+      "model": "Same inherited parent model; no overrides; effective ID not returned by collaboration tool."
+    },
+    {
+      "cases": [
+        "h03",
+        "h04",
+        "h05",
+        "h06"
+      ],
+      "executor": "Codex CLI",
+      "version": "0.164.0-alpha.11.1",
+      "configured_model": "gpt-6.1-sol",
+      "configured_reasoning": "xhigh",
+      "model_override": null,
+      "transport_override": null
+    }
+  ],
+  "controls": [
+    "Same initial fixture files per pair.",
+    "The only treatment is explicit loading of this project's skill.",
+    "Executors do not receive holdout checks or expected fixes.",
+    "No network, dependency installation, or delegation by executors; synthetic local project changes only."
+  ],
+  "tests": {
+    "methods": 19,
+    "seed_passed_cases": 3,
+    "seed_failed_cases": [
+      "h02",
+      "h03",
+      "h05"
+    ]
+  },
+  "limitations": [
+    "Synthetic multi-file projects rather than production repository replays.",
+    "One observation per case/arm, no statistical inference.",
+    "CLI wall time includes network and sandbox effects; reported usage is not a billing record.",
+    "CLI configured model is recorded; upstream resolved model ID is not exposed in captured events.",
+    "No Claude execution and no automatic skill-routing test."
+  ],
+  "infrastructure": [
+    {
+      "operation": "READY smoke",
+      "outcome": "Succeeded after 5 WebSocket retry messages and HTTPS fallback.",
+      "usage": {
+        "input_tokens": 19662,
+        "cached_input_tokens": 13440,
+        "output_tokens": 5
+      },
+      "included_in_skill_comparison": false
+    },
+    {
+      "operation": "Process-local supports_websockets=false override",
+      "outcome": "Rejected at config load: reserved built-in provider ID openai cannot be overridden.",
+      "model_calls": 0,
+      "included_in_skill_comparison": false
+    },
+    {
+      "operation": "Formal CLI tasks",
+      "outcome": "Use unmodified user configuration and default transport; no model or reasoning override."
+    }
+  ],
+  "follow_up": {
+    "version": "prototype-2",
+    "scope": "h01 targeted fresh-context rerun only",
+    "candidate_sha256": "0278350BA77770C4C5B4633A654DBD8B5F10A37F32067579431E3F12437CFB31",
+    "promoted_sha256": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF",
+    "same_instruction_text": true,
+    "tests_passed": 4,
+    "validation_calls_without_plugin": 0,
+    "validation_calls_with_plugin": 1
+  },
+  "harness_note": "Added negative CLI option and read-phase FileNotFoundError/PermissionError subcases; normalized nested Windows file paths in artifact accounting. Same final grader used for both arms."
+}

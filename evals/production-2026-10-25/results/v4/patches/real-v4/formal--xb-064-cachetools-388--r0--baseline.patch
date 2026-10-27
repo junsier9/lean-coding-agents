@@ -1,0 +1,46 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..244e3b4 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -76,6 +76,8 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is None:
++            return self
+         wrapper = self.Wrapper(obj)
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..fa526cc 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -77,6 +77,28 @@ class Unhashable(Cached):
+         raise TypeError("unhashable type")
+ 
+ 
++class MethodInspectionTest(unittest.TestCase):
++    def test_class_access(self):
++        class Derived(Cached):
++            pass
++
++        with warnings.catch_warnings():
++            warnings.simplefilter("error")
++            for name, descriptor in vars(Cached).items():
++                if name.startswith("get"):
++                    self.assertIs(getattr(Cached, name), descriptor)
++                    self.assertIs(getattr(Derived, name), descriptor)
++
++    def test_autospec(self):
++        from unittest.mock import create_autospec
++
++        with warnings.catch_warnings():
++            warnings.simplefilter("error")
++            cached = create_autospec(Cached)({})
++            cached.get(42)
++            cached.get.assert_called_once_with(42)
++
++
+ class MethodDecoratorTestMixin:
+     def cache(self, _minsize):
+         raise NotImplementedError

@@ -1,0 +1,63 @@
+diff --git a/tests/test_url.py b/tests/test_url.py
+index 65d6b22..bb15ffe 100644
+--- a/tests/test_url.py
++++ b/tests/test_url.py
+@@ -1432,6 +1432,39 @@ class TestCanonicalizeUrl:
+             == "http://user:pass@www.example.com/do?a=1#frag"
+         )
+ 
++    @pytest.mark.parametrize(
++        ("url", "expected", "fragment"),
++        [
++            (
++                "http://[::1]/path?b=2&a=1#frag",
++                "http://[::1]/path?a=1&b=2",
++                "frag",
++            ),
++            (
++                "http://[::1]?b=2&a=1#frag",
++                "http://[::1]/?a=1&b=2",
++                "frag",
++            ),
++            (
++                "https://UsEr:PaSs@[2001:DB8::1]:8080/path?b=2&a=1#frag",
++                "https://UsEr:PaSs@[2001:db8::1]:8080/path?a=1&b=2",
++                "frag",
++            ),
++            (
++                "http://[::1]/path?b=%23&a=1#frag?x=3&y=4#part",
++                "http://[::1]/path?a=1&b=%23",
++                "frag?x=3&y=4#part",
++            ),
++        ],
++    )
++    @pytest.mark.parametrize("as_bytes", [False, True])
++    def test_ipv6_fragments(self, url, expected, fragment, as_bytes):
++        if as_bytes:
++            url = url.encode("ascii")
++        assert canonicalize_url(url) == expected
++        assert canonicalize_url(url, keep_fragments=False) == expected
++        assert canonicalize_url(url, keep_fragments=True) == f"{expected}#{fragment}"
++
+     def test_dont_convert_safe_characters(self):
+         # dont convert safe characters to percent encoding representation
+         assert (
+diff --git a/w3lib/_url.py b/w3lib/_url.py
+index 0fc540d..f34ef2f 100644
+--- a/w3lib/_url.py
++++ b/w3lib/_url.py
+@@ -658,7 +658,13 @@ def _urlsplit(  # pylint: disable=too-many-locals,too-many-statements
+             open_br_pos = idx
+         elif char == "]" and closing_br_pos == -1:
+             closing_br_pos = idx
+-        if slash_pos != question_pos != hash_pos != open_br_pos != closing_br_pos != -1:
++        if (
++            slash_pos != -1
++            and question_pos != -1
++            and hash_pos != -1
++            and open_br_pos != -1
++            and closing_br_pos != -1
++        ):
+             break
+ 
+     if url[:2] == "//":

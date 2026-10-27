@@ -1,0 +1,196 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 2a626ab..3a2eb61 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -82,13 +82,20 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
+-        wrapper = self.Wrapper(obj)  # type: ignore
+         if obj is None:
+-            # Return the wrapper itself without modification when accessed
+-            # through the class to support class-level introspection, such
+-            # as for mocking with autospec=True in unittest.mock.
+-            pass
+-        elif self.__attrname is not None:
++            # Bind explicit instances through the descriptor so both call forms
++            # share the per-instance wrapper, statistics and pending calls.
++            @functools.wraps(self.__wrapped__)  # type: ignore
++            def unbound(obj, /, *args, **kwargs):
++                return self.__get_wrapper(obj)(*args, **kwargs)
++
++            return unbound
++
++        return self.__get_wrapper(obj)
++
++    def __get_wrapper(self, obj):
++        wrapper = self.Wrapper(obj)  # type: ignore
++        if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+             try:
+                 # In case of a race condition where another thread already replaced
+diff --git a/tests/__init__.py b/tests/__init__.py
+index 2adcc63..84ddb70 100644
+--- a/tests/__init__.py
++++ b/tests/__init__.py
+@@ -6,6 +6,7 @@ import cachetools
+ 
+ 
+ class _TestCaseProtocol(Protocol):
++    def subTest(self, msg: Any = ..., **params: Any) -> Any: ...
+     def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+     def assertNotEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+     def assertTrue(self, expr: Any, msg: Any = None) -> None: ...
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 8d519f6..e93de83 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,3 +1,4 @@
++import inspect
+ import unittest
+ import unittest.mock
+ import warnings
+@@ -103,6 +104,76 @@ class MethodDecoratorTestMixin(_TestCaseProtocol):
+         self.assertEqual(cached.get_typed(1.0), 2)
+         self.assertEqual(cached.get_typed(0.0), 3)
+ 
++    def test_decorator_class_call(self):
++        methods = (
++            "get",
++            "get_typed",
++            "get_lock",
++            "get_cond",
++            "get_lock_cond",
++            "get_info",
++            "get_lock_info",
++            "get_cond_info",
++            "get_lock_cond_info",
++        )
++        for cls in (Cached, Unhashable):
++            for name in methods:
++                for bound_first in (False, True):
++                    with self.subTest(cls=cls, method=name, bound_first=bound_first):
++                        first = cls(self.cache(2))
++                        second = cls(self.cache(2), count=100)
++                        unbound = getattr(cls, name)
++                        with warnings.catch_warnings():
++                            warnings.simplefilter("error", DeprecationWarning)
++                            if bound_first:
++                                self.assertEqual(getattr(first, name)(0), 0)
++                            self.assertEqual(unbound(first, 0), 0)
++                            bound = getattr(first, name)
++                            self.assertEqual(bound(0), 0)
++                            self.assertEqual(unbound(first, value=1), 1)
++                            self.assertEqual(bound(value=1), 1)
++                            self.assertIs(getattr(first, name), bound)
++
++                            # One class callable must dispatch to each instance.
++                            self.assertEqual(unbound(second, 0), 100)
++                            self.assertEqual(getattr(second, name)(0), 100)
++                            self.assertEqual(first.count, 2)
++                            self.assertEqual(second.count, 101)
++
++    def test_decorator_class_call_info(self):
++        for name in (
++            "get_info",
++            "get_lock_info",
++            "get_cond_info",
++            "get_lock_cond_info",
++        ):
++            with self.subTest(method=name):
++                cache = self.cache(2)
++                first = Cached(cache)
++                second = Cached(self.cache(2), count=100)
++                maxsize = cache.maxsize if isinstance(cache, Cache) else None
++                unbound = getattr(Cached, name)
++
++                self.assertEqual(unbound(first, 0), 0)
++                self.assertEqual(unbound(first, 0), 0)
++                bound = getattr(first, name)
++                self.assertEqual(bound.cache_info(), (1, 1, maxsize, 1))
++                self.assertEqual(unbound(second, 0), 100)
++                other = getattr(second, name)
++                self.assertEqual(other.cache_info(), (0, 1, maxsize, 1))
++
++                self.assertEqual(bound(1), 1)
++                self.assertEqual(unbound(first, 1), 1)
++                self.assertEqual(bound.cache_info(), (2, 2, maxsize, 2))
++                self.assertEqual(other.cache_info(), (0, 1, maxsize, 1))
++                bound.cache_clear()
++                self.assertEqual(bound.cache_info(), (0, 0, maxsize, 0))
++                self.assertEqual(other.cache_info(), (0, 1, maxsize, 1))
++                self.assertEqual(unbound(first, 0), 2)
++                self.assertEqual(bound(0), 2)
++                self.assertEqual(bound.cache_info(), (1, 1, maxsize, 1))
++                self.assertIs(getattr(first, name), bound)
++
+     def test_decorator_unhashable(self):
+         cached = Unhashable(self.cache(2))
+ 
+@@ -684,6 +755,36 @@ class NoneMethodTest(unittest.TestCase):
+ 
+ 
+ class AutospecTest(unittest.TestCase):
++    def test_class_introspection(self):
++        for info in (False, True):
++            with self.subTest(info=info):
++                factory = unittest.mock.Mock(
++                    side_effect=AssertionError("factory called during introspection")
++                )
++
++                class Cached:
++                    @cachedmethod(factory, lock=factory, condition=factory, info=info)
++                    def get(self, value):
++                        """docstring"""
++                        return value
++
++                with warnings.catch_warnings(record=True) as w:
++                    warnings.simplefilter("always")
++                    unbound = Cached.get
++                    self.assertEqual(unbound.__name__, "get")
++                    self.assertEqual(unbound.__doc__, "docstring")
++                    self.assertIs(
++                        unbound.__wrapped__, Cached.__dict__["get"].__wrapped__
++                    )
++                    self.assertEqual(
++                        inspect.signature(unbound),
++                        inspect.signature(unbound.__wrapped__),
++                    )
++                    self.assertEqual(unbound.__wrapped__(Cached(), 42), 42)
++                    unittest.mock.create_autospec(Cached, instance=True)
++                self.assertEqual(len(w), 0)
++                factory.assert_not_called()
++
+     def test_autospec_no_warnings(self):
+ 
+         with warnings.catch_warnings(record=True) as w:
+diff --git a/tests/test_threading.py b/tests/test_threading.py
+index 0e3a64f..4fc95c8 100644
+--- a/tests/test_threading.py
++++ b/tests/test_threading.py
+@@ -84,6 +84,25 @@ class ThreadingTest(unittest.TestCase):
+         self.assertEqual(info.hits, self.NTHREADS - 1)
+         self.assertEqual(info.misses, 1)
+ 
++    def test_cachedmethod_class_call_stampede(self):
++        self.cache = LRUCache(1)
++        self.count = 0
++        unbound = getattr(ThreadingTest, "method")
++        threads = [
++            threading.Thread(target=(lambda: unbound(self)) if i % 2 else self.method)
++            for i in range(self.NTHREADS)
++        ]
++        for thread in threads:
++            thread.start()
++        for thread in threads:
++            thread.join(timeout=self.TIMEOUT)
++            self.assertFalse(thread.is_alive())
++
++        self.assertEqual(self.count, 1)
++        info = self.method.cache_info()
++        self.assertEqual(info.hits, self.NTHREADS - 1)
++        self.assertEqual(info.misses, 1)
++
+     def test_cached_locked(self):
+         global count
+         count = 0

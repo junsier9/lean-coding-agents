@@ -1,0 +1,84 @@
+diff --git a/src/cachetools/__init__.py b/src/cachetools/__init__.py
+index ac02074..3b6d857 100644
+--- a/src/cachetools/__init__.py
++++ b/src/cachetools/__init__.py
+@@ -495,6 +495,7 @@ class TTLCache(_TimedCache):
+ 
+     def __setitem__(self, key, value, cache_setitem=Cache.__setitem__):
+         with self.timer as time:
++            expires = time + self.__ttl
+             self.expire(time)
+             cache_setitem(self, key, value)
+         try:
+@@ -503,7 +504,7 @@ class TTLCache(_TimedCache):
+             self.__links[key] = link = TTLCache._Link(key)
+         else:
+             link.unlink()
+-        link.expires = time + self.__ttl
++        link.expires = expires
+         link.next = root = self.__root
+         link.prev = prev = root.prev
+         prev.next = root.prev = link
+diff --git a/tests/test_ttl.py b/tests/test_ttl.py
+index e023173..8e40f14 100644
+--- a/tests/test_ttl.py
++++ b/tests/test_ttl.py
+@@ -218,6 +218,58 @@ class TTLCacheTest(unittest.TestCase, CacheTestMixin):
+         self.assertEqual([(1, 1)], list(items))
+         self.assertEqual(0, len(cache))
+ 
++    def test_ttl_datetime_overflow(self):
++        from datetime import datetime, timedelta
++
++        time = datetime.max
++        cache = TTLCache[int, int, datetime](
++            maxsize=1, ttl=timedelta(days=1), timer=lambda: time
++        )
++
++        with self.assertRaises(OverflowError):
++            cache[1] = 1
++
++        self.assertNotIn(1, cache)
++        with self.assertRaises(KeyError):
++            cache[1]
++        self.assertEqual(0, len(cache))
++        self.assertEqual(0, cache.currsize)
++        self.assertEqual([], list(cache))
++
++        time -= timedelta(days=2)
++        cache[1] = 1
++        self.assertEqual(1, cache[1])
++        time += timedelta(days=1)
++        self.assertEqual([(1, 1)], cache.expire())
++        self.assertEqual(0, cache.currsize)
++
++    def test_ttl_datetime_overflow_preserves_items(self):
++        from datetime import datetime, timedelta
++
++        for key in (1, 3):
++            with self.subTest(key=key):
++                time = datetime.max - timedelta(days=1)
++                cache = TTLCache[int, int, datetime](
++                    maxsize=2, ttl=timedelta(days=1), timer=lambda: time
++                )
++                cache[1] = 1
++                cache[2] = 2
++                time += timedelta(hours=12)
++
++                with self.assertRaises(OverflowError):
++                    cache[key] = 42
++
++                self.assertNotIn(3, cache)
++                self.assertEqual(2, len(cache))
++                self.assertEqual(2, cache.currsize)
++                self.assertEqual([1, 2], list(cache))
++                self.assertEqual((1, 1), cache.popitem())
++                self.assertEqual(2, cache[2])
++                time = datetime.max
++                self.assertEqual([(2, 2)], cache.expire())
++                self.assertEqual(0, len(cache))
++                self.assertEqual(0, cache.currsize)
++
+     def test_ttl_clear(self):
+         cache = TTLCache[int, int, int](maxsize=2, ttl=2, timer=Timer())
+ 

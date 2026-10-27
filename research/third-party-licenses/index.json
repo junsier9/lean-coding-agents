@@ -1,0 +1,1308 @@
+{
+  "scope": "Pinned base/fix license texts for evaluated or contingently selected upstream cases",
+  "case_count": 130,
+  "repository_count": 10,
+  "original_license_bytes_preserved": true,
+  "licenses": [
+    {
+      "repo": "Suor/funcy",
+      "sha256": "119D1E64928AC56CF9EE5C0B618668FB98001FCACB83B89D74419782BC279448",
+      "license_file": "Suor--funcy-119D1E64928A.txt",
+      "sources": [
+        {
+          "commit": "c33f69dc7cf811f524a791a477775228ce7025cc",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/c33f69dc7cf811f524a791a477775228ce7025cc/LICENSE"
+        },
+        {
+          "commit": "d79eaec8976402ccdee03b56283d123397f4fa61",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/d79eaec8976402ccdee03b56283d123397f4fa61/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "Suor/funcy",
+      "sha256": "DCF5A6E8E22FE9756FBF60446A5CA2E694AF6EAB3037B6E83543E27BA16D56A3",
+      "license_file": "Suor--funcy-DCF5A6E8E22F.txt",
+      "sources": [
+        {
+          "commit": "0eab928c371264cb85fb022bf13b4e9d86037f5f",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/0eab928c371264cb85fb022bf13b4e9d86037f5f/LICENSE"
+        },
+        {
+          "commit": "19e9617383cd48dfbc4074dab11df9157ece98b0",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/19e9617383cd48dfbc4074dab11df9157ece98b0/LICENSE"
+        },
+        {
+          "commit": "26b1650f233de922bb664de56e9a4cf3bcdec25f",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/26b1650f233de922bb664de56e9a4cf3bcdec25f/LICENSE"
+        },
+        {
+          "commit": "29053ffbd29d331b742e1e54ba1beaf917f2e7ba",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/29053ffbd29d331b742e1e54ba1beaf917f2e7ba/LICENSE"
+        },
+        {
+          "commit": "40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/40011cc3b9344d2c4e6ad2e3cff54b41ac7015f7/LICENSE"
+        },
+        {
+          "commit": "91098f4ea6eb54ffabfdac886baefa5260866091",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/91098f4ea6eb54ffabfdac886baefa5260866091/LICENSE"
+        },
+        {
+          "commit": "980f0279a094e1a12e28313dbee3117a068ac65a",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/980f0279a094e1a12e28313dbee3117a068ac65a/LICENSE"
+        },
+        {
+          "commit": "c1d56484226b365c84184ac01eb1bc069c175ead",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/c1d56484226b365c84184ac01eb1bc069c175ead/LICENSE"
+        },
+        {
+          "commit": "c72bfae84581458ac17fa3da3d9b92a8962ba682",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/c72bfae84581458ac17fa3da3d9b92a8962ba682/LICENSE"
+        },
+        {
+          "commit": "cdf432835a57260ec703d468e9e8ea01e0f15663",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/cdf432835a57260ec703d468e9e8ea01e0f15663/LICENSE"
+        },
+        {
+          "commit": "dfa2b3aa7662e5c594c64f4c152240aaed506db2",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/dfa2b3aa7662e5c594c64f4c152240aaed506db2/LICENSE"
+        },
+        {
+          "commit": "e0ecd3a5927051e1a90514eac64763aeeb6b5a35",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/e0ecd3a5927051e1a90514eac64763aeeb6b5a35/LICENSE"
+        },
+        {
+          "commit": "fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24",
+          "filename": "LICENSE",
+          "url": "https://github.com/Suor/funcy/blob/fc6bdb157b3ea7ea93a76ba27d6a173e2e99cb24/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "dgilland/pydash",
+      "sha256": "1BBA57C33CCE44A00D2EDF0794E14BD0C6DC1569A4E78D834C8F4103B8E9623F",
+      "license_file": "dgilland--pydash-1BBA57C33CCE.txt",
+      "sources": [
+        {
+          "commit": "08dec5c0300f6310efe4826881d1d2fa28498b70",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/08dec5c0300f6310efe4826881d1d2fa28498b70/LICENSE.rst"
+        },
+        {
+          "commit": "2dfcc0130d28ce8da795bdef8e90fc66ff98b179",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/2dfcc0130d28ce8da795bdef8e90fc66ff98b179/LICENSE.rst"
+        },
+        {
+          "commit": "338c90e0984d2d60fae66d762ffdc64a0e0e30ee",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/338c90e0984d2d60fae66d762ffdc64a0e0e30ee/LICENSE.rst"
+        },
+        {
+          "commit": "39e0464597527c3009bab4f3c7369457ccfdb276",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/39e0464597527c3009bab4f3c7369457ccfdb276/LICENSE.rst"
+        },
+        {
+          "commit": "3d36c2d5355abf872679c8c304b102bef6416802",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/3d36c2d5355abf872679c8c304b102bef6416802/LICENSE.rst"
+        },
+        {
+          "commit": "43989d9edb0a5c842246b4f23785a47f73b33bcb",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/43989d9edb0a5c842246b4f23785a47f73b33bcb/LICENSE.rst"
+        },
+        {
+          "commit": "531825d188c430ce2fdaddcaa49d8fd9e95925b0",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/531825d188c430ce2fdaddcaa49d8fd9e95925b0/LICENSE.rst"
+        },
+        {
+          "commit": "5af19c8defb4b99232857a414aa2a57512e3884c",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/5af19c8defb4b99232857a414aa2a57512e3884c/LICENSE.rst"
+        },
+        {
+          "commit": "5e6e680797ebe685ee7bdd138f0bb5bdecf0c100",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/5e6e680797ebe685ee7bdd138f0bb5bdecf0c100/LICENSE.rst"
+        },
+        {
+          "commit": "68d3047a0af1f461dda86bdf584caeb0c08fab99",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/68d3047a0af1f461dda86bdf584caeb0c08fab99/LICENSE.rst"
+        },
+        {
+          "commit": "6e3d9538d776bcac359858004e2d2f172d2d9460",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/6e3d9538d776bcac359858004e2d2f172d2d9460/LICENSE.rst"
+        },
+        {
+          "commit": "8ab88fe7fc0e6c3c779bae8b4de910de3a571ad2",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/8ab88fe7fc0e6c3c779bae8b4de910de3a571ad2/LICENSE.rst"
+        },
+        {
+          "commit": "8b755dc607765759cfa1fb3c472d0a21faa5dd43",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/8b755dc607765759cfa1fb3c472d0a21faa5dd43/LICENSE.rst"
+        },
+        {
+          "commit": "93459eac061414e1f8ea03942cc0ce12d24b439b",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/93459eac061414e1f8ea03942cc0ce12d24b439b/LICENSE.rst"
+        },
+        {
+          "commit": "938a9a1af8e0e7cd4c262de15f8dae98a38dee13",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/938a9a1af8e0e7cd4c262de15f8dae98a38dee13/LICENSE.rst"
+        },
+        {
+          "commit": "9637faab0d583b5aeb859dae3ecac2f4eb2e6db9",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/9637faab0d583b5aeb859dae3ecac2f4eb2e6db9/LICENSE.rst"
+        },
+        {
+          "commit": "9cbe36f5fc801f3576c8980b07c00f5a7956f81f",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/9cbe36f5fc801f3576c8980b07c00f5a7956f81f/LICENSE.rst"
+        },
+        {
+          "commit": "a9243365fdcefc21b5b2dfa228d563296245581e",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/a9243365fdcefc21b5b2dfa228d563296245581e/LICENSE.rst"
+        },
+        {
+          "commit": "a9adbab1d10385c72155be5d0c068c07f5c37d96",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/a9adbab1d10385c72155be5d0c068c07f5c37d96/LICENSE.rst"
+        },
+        {
+          "commit": "bdafc86cf179a50ae66dd868213ea94dfe432d04",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/bdafc86cf179a50ae66dd868213ea94dfe432d04/LICENSE.rst"
+        },
+        {
+          "commit": "d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/d0a00fb86062f1b80f0f256fef3b9ff46f6d9bd6/LICENSE.rst"
+        },
+        {
+          "commit": "db27fab41b4f889939edf7ff9a6d5e3a09d7702c",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/db27fab41b4f889939edf7ff9a6d5e3a09d7702c/LICENSE.rst"
+        },
+        {
+          "commit": "deed72d4964675fee282f368addc5acd6d724d17",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/deed72d4964675fee282f368addc5acd6d724d17/LICENSE.rst"
+        },
+        {
+          "commit": "e3e12e4909f7627c17939c1a4496114c5d8669ae",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/dgilland/pydash/blob/e3e12e4909f7627c17939c1a4496114c5d8669ae/LICENSE.rst"
+        }
+      ]
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "sha256": "C301912653A8D8C99EAB6212AA3AEA8D164EA249D8AD53C941E0558A0A5AC1E3",
+      "license_file": "mahmoud--boltons-C301912653A8.txt",
+      "sources": [
+        {
+          "commit": "0341ab3d79e6430c0e6a4149df9c92679988a534",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/0341ab3d79e6430c0e6a4149df9c92679988a534/LICENSE"
+        },
+        {
+          "commit": "0c88f25323de3ff85bcca844b9ce6cd171a80392",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/0c88f25323de3ff85bcca844b9ce6cd171a80392/LICENSE"
+        },
+        {
+          "commit": "115cded54814ee5ff0b32d9bf976fd554b0a74dd",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/115cded54814ee5ff0b32d9bf976fd554b0a74dd/LICENSE"
+        },
+        {
+          "commit": "14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/14b4f962a16f6dfbd7ccdcae82c4e77ed7f66365/LICENSE"
+        },
+        {
+          "commit": "1cdc0e9d36f3eb32608f3b34885717697643e9b8",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/1cdc0e9d36f3eb32608f3b34885717697643e9b8/LICENSE"
+        },
+        {
+          "commit": "1e61524a798ea73632029a013a7686036d5c126f",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/1e61524a798ea73632029a013a7686036d5c126f/LICENSE"
+        },
+        {
+          "commit": "25e8d6b18ecba58d358c8f46a5cea554f99bdfb2",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/25e8d6b18ecba58d358c8f46a5cea554f99bdfb2/LICENSE"
+        },
+        {
+          "commit": "270e974975984f662f998c8f6eb0ebebd964de82",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/270e974975984f662f998c8f6eb0ebebd964de82/LICENSE"
+        },
+        {
+          "commit": "3913220988e1e7c80620796fdcb4f74eb598d179",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/3913220988e1e7c80620796fdcb4f74eb598d179/LICENSE"
+        },
+        {
+          "commit": "395f690f4a24331c4554e2169ac18a15955a4eab",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/395f690f4a24331c4554e2169ac18a15955a4eab/LICENSE"
+        },
+        {
+          "commit": "3970a80f63807392e512340c25dc2db473bcba70",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/3970a80f63807392e512340c25dc2db473bcba70/LICENSE"
+        },
+        {
+          "commit": "45a251181fba4c5a4ecc05e838da1c394e1ed0e4",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/45a251181fba4c5a4ecc05e838da1c394e1ed0e4/LICENSE"
+        },
+        {
+          "commit": "46599bc0d498dd8adc3aea833ce1445feed349dd",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/46599bc0d498dd8adc3aea833ce1445feed349dd/LICENSE"
+        },
+        {
+          "commit": "4815fc8dd1768da5f2d903846d2ab994aa57b0cf",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/4815fc8dd1768da5f2d903846d2ab994aa57b0cf/LICENSE"
+        },
+        {
+          "commit": "4aa77cddb5d06def130df6f09aefab4018fa487c",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/4aa77cddb5d06def130df6f09aefab4018fa487c/LICENSE"
+        },
+        {
+          "commit": "4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d/LICENSE"
+        },
+        {
+          "commit": "55a2791b77a991bd130af9f1a2298019b318bd4a",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/55a2791b77a991bd130af9f1a2298019b318bd4a/LICENSE"
+        },
+        {
+          "commit": "55dfe5077bcb5fa76611b5f2a557ea6c442ad87c",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/55dfe5077bcb5fa76611b5f2a557ea6c442ad87c/LICENSE"
+        },
+        {
+          "commit": "57cb026b7f47cd2765a0d5acdc83849ed5f1f6a3",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/57cb026b7f47cd2765a0d5acdc83849ed5f1f6a3/LICENSE"
+        },
+        {
+          "commit": "5eb6cc045560abf320712f262346ae95fb66d448",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/5eb6cc045560abf320712f262346ae95fb66d448/LICENSE"
+        },
+        {
+          "commit": "609cabe932a1ea1423b24568644945abb1b8bb84",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/609cabe932a1ea1423b24568644945abb1b8bb84/LICENSE"
+        },
+        {
+          "commit": "620af22dbc6f17d988dbcea677273de41d4ed5af",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/620af22dbc6f17d988dbcea677273de41d4ed5af/LICENSE"
+        },
+        {
+          "commit": "6505c6b5565275d484e0e3907a471944441f0c57",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/6505c6b5565275d484e0e3907a471944441f0c57/LICENSE"
+        },
+        {
+          "commit": "6cac49ce4eba506a3582e8089bcc347c6b2fa70f",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/6cac49ce4eba506a3582e8089bcc347c6b2fa70f/LICENSE"
+        },
+        {
+          "commit": "73e22c90de25aaae3e6aed57f7438ffe57349339",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/73e22c90de25aaae3e6aed57f7438ffe57349339/LICENSE"
+        },
+        {
+          "commit": "766b5547392fe8d54c1e000098499dc556bb5cb7",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/766b5547392fe8d54c1e000098499dc556bb5cb7/LICENSE"
+        },
+        {
+          "commit": "80f9eb4296daadad85db5ef6c0fd14e2f3602fa4",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/80f9eb4296daadad85db5ef6c0fd14e2f3602fa4/LICENSE"
+        },
+        {
+          "commit": "81e44a2319ce0bef0de44f1059762b97879cb35d",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/81e44a2319ce0bef0de44f1059762b97879cb35d/LICENSE"
+        },
+        {
+          "commit": "8a2a93d8213e1fa4da30c8167ab1a18caad17a17",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/8a2a93d8213e1fa4da30c8167ab1a18caad17a17/LICENSE"
+        },
+        {
+          "commit": "8ec56cd1bff2f38dbef3ded50b24c42f8a22036b",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/8ec56cd1bff2f38dbef3ded50b24c42f8a22036b/LICENSE"
+        },
+        {
+          "commit": "93185b224ebd60df01df88d64e574a3f651987c5",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/93185b224ebd60df01df88d64e574a3f651987c5/LICENSE"
+        },
+        {
+          "commit": "961dcff3f42e73b245aef65e377fe82763b257bb",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/961dcff3f42e73b245aef65e377fe82763b257bb/LICENSE"
+        },
+        {
+          "commit": "970051b66474ac37383c5d990c169c794e20eb88",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/970051b66474ac37383c5d990c169c794e20eb88/LICENSE"
+        },
+        {
+          "commit": "979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe/LICENSE"
+        },
+        {
+          "commit": "985df86bbf511b244ce6acf7a9c3b8a0d09d0fb3",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/985df86bbf511b244ce6acf7a9c3b8a0d09d0fb3/LICENSE"
+        },
+        {
+          "commit": "9decba3e5736f61180eec274420ced0e572e30e6",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/9decba3e5736f61180eec274420ced0e572e30e6/LICENSE"
+        },
+        {
+          "commit": "a180020c760b532e8889f161d97d05647adfee8c",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/a180020c760b532e8889f161d97d05647adfee8c/LICENSE"
+        },
+        {
+          "commit": "a1ea1030ed85137e999c0bd9b11d16368d3ab241",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/a1ea1030ed85137e999c0bd9b11d16368d3ab241/LICENSE"
+        },
+        {
+          "commit": "b5c495bec206741ec25cd82ecc869e0b59bb0d10",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/b5c495bec206741ec25cd82ecc869e0b59bb0d10/LICENSE"
+        },
+        {
+          "commit": "bba729bf4539afc993a6410bdf8074b28707004a",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/bba729bf4539afc993a6410bdf8074b28707004a/LICENSE"
+        },
+        {
+          "commit": "c1c25da365cf14878cf5317147e7a09b5d124df5",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/c1c25da365cf14878cf5317147e7a09b5d124df5/LICENSE"
+        },
+        {
+          "commit": "c2b04b4cb16410d7bf9ff781c78dee3ca908dc32",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/c2b04b4cb16410d7bf9ff781c78dee3ca908dc32/LICENSE"
+        },
+        {
+          "commit": "c463d1633a075c398d6ffad7d8653064a615b696",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/c463d1633a075c398d6ffad7d8653064a615b696/LICENSE"
+        },
+        {
+          "commit": "d45cc414e33aa4e08a73e0993574df4397e2e9db",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/d45cc414e33aa4e08a73e0993574df4397e2e9db/LICENSE"
+        },
+        {
+          "commit": "e00c10a809525027b8167fbb7ac233cfc25a01f5",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/e00c10a809525027b8167fbb7ac233cfc25a01f5/LICENSE"
+        },
+        {
+          "commit": "e66cade323f5c11cebb4bd0f099e634b245adccd",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/e66cade323f5c11cebb4bd0f099e634b245adccd/LICENSE"
+        },
+        {
+          "commit": "ead236e278ca0466bf468de746b5960fb12d7e5b",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/ead236e278ca0466bf468de746b5960fb12d7e5b/LICENSE"
+        },
+        {
+          "commit": "eb659013fbe4f355561fbead2116868366ba6e26",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/eb659013fbe4f355561fbead2116868366ba6e26/LICENSE"
+        },
+        {
+          "commit": "ebc7a8f776debfa33f0b380b57a444bca75a251b",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/ebc7a8f776debfa33f0b380b57a444bca75a251b/LICENSE"
+        },
+        {
+          "commit": "ec1ff9f6728f5f857402b294c218be731c62af5f",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/ec1ff9f6728f5f857402b294c218be731c62af5f/LICENSE"
+        },
+        {
+          "commit": "efff866a3b66fdafc817894390742e1d8bc025e5",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/efff866a3b66fdafc817894390742e1d8bc025e5/LICENSE"
+        },
+        {
+          "commit": "f749174abed72b0982b15f29c3819480e0b8fa7c",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/f749174abed72b0982b15f29c3819480e0b8fa7c/LICENSE"
+        },
+        {
+          "commit": "f9c4f30511b58c543bda7e4c04193fd480f68b24",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/f9c4f30511b58c543bda7e4c04193fd480f68b24/LICENSE"
+        },
+        {
+          "commit": "fee5adb0f99f91c077c769d8efd269ef44203848",
+          "filename": "LICENSE",
+          "url": "https://github.com/mahmoud/boltons/blob/fee5adb0f99f91c077c769d8efd269ef44203848/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "more-itertools/more-itertools",
+      "sha256": "09F1C8C9E941AF3E584D59641EA9B87D83C0CB0FD007EB5EF391A7E2643C1A46",
+      "license_file": "more-itertools--more-itertools-09F1C8C9E941.txt",
+      "sources": [
+        {
+          "commit": "1806a75b836b9eff4a7885a96ece6183f5fb6409",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/1806a75b836b9eff4a7885a96ece6183f5fb6409/LICENSE"
+        },
+        {
+          "commit": "18225d856665bfc3bfdfcdbfa585290f92645daf",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/18225d856665bfc3bfdfcdbfa585290f92645daf/LICENSE"
+        },
+        {
+          "commit": "1c21c3ae9c7991b73044fe16807b70d1cac61e0b",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/1c21c3ae9c7991b73044fe16807b70d1cac61e0b/LICENSE"
+        },
+        {
+          "commit": "1da45ae4b61a832ed080f08a8833784aad0a9534",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/1da45ae4b61a832ed080f08a8833784aad0a9534/LICENSE"
+        },
+        {
+          "commit": "1dd480a08bc2a4c399c84bf21cb1558f8b5fc838",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/1dd480a08bc2a4c399c84bf21cb1558f8b5fc838/LICENSE"
+        },
+        {
+          "commit": "1ea82a711c69f590054987b5cb194157f8ce8ac4",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/1ea82a711c69f590054987b5cb194157f8ce8ac4/LICENSE"
+        },
+        {
+          "commit": "22cf656cc0458cfcee2286c0a02369da000023ad",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/22cf656cc0458cfcee2286c0a02369da000023ad/LICENSE"
+        },
+        {
+          "commit": "247e15b3a489d5805375c95dfa79486c9bd0eb1b",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/247e15b3a489d5805375c95dfa79486c9bd0eb1b/LICENSE"
+        },
+        {
+          "commit": "301c957c8a50eca09c3b6eae416508a91487b552",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/301c957c8a50eca09c3b6eae416508a91487b552/LICENSE"
+        },
+        {
+          "commit": "30ada7dd597316a3ef967911477e0a1d9f55eefe",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/30ada7dd597316a3ef967911477e0a1d9f55eefe/LICENSE"
+        },
+        {
+          "commit": "3bbe636e23bdfa359d80e6851e0c37abbc860d4c",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/3bbe636e23bdfa359d80e6851e0c37abbc860d4c/LICENSE"
+        },
+        {
+          "commit": "3e87c08ac878f4bb79349d38ac69ba75c45dc5bf",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/3e87c08ac878f4bb79349d38ac69ba75c45dc5bf/LICENSE"
+        },
+        {
+          "commit": "3ea9b009b19db0e01a83d51cee43e9935c0d657f",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/3ea9b009b19db0e01a83d51cee43e9935c0d657f/LICENSE"
+        },
+        {
+          "commit": "4ebeea3e569388911a0bec740092f3cf996d79f3",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/4ebeea3e569388911a0bec740092f3cf996d79f3/LICENSE"
+        },
+        {
+          "commit": "516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/516f0a80fb7c2c8562dbb5e318fc2a3d44f4171f/LICENSE"
+        },
+        {
+          "commit": "55fcdd8013baff9d2f5b3ab890904a0964fb61df",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/55fcdd8013baff9d2f5b3ab890904a0964fb61df/LICENSE"
+        },
+        {
+          "commit": "586ccc4d5af7263108c0f51386acff27469a28e4",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/586ccc4d5af7263108c0f51386acff27469a28e4/LICENSE"
+        },
+        {
+          "commit": "5a1d64d1915df11481dcd31ffaf7165419064116",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/5a1d64d1915df11481dcd31ffaf7165419064116/LICENSE"
+        },
+        {
+          "commit": "5d946b3590bfe92f1465c1b9b9830dd434745c84",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/5d946b3590bfe92f1465c1b9b9830dd434745c84/LICENSE"
+        },
+        {
+          "commit": "670b715b307adfe5d2fca08a87ca562cb8bfea2c",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/670b715b307adfe5d2fca08a87ca562cb8bfea2c/LICENSE"
+        },
+        {
+          "commit": "6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/6b32fbfba127d6b4aaf57d6b254b2ab5fc80ae76/LICENSE"
+        },
+        {
+          "commit": "790bb0bb2c03e7a07282e5f16f4b1fde35b8fcf5",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/790bb0bb2c03e7a07282e5f16f4b1fde35b8fcf5/LICENSE"
+        },
+        {
+          "commit": "7b9889c0b7de2189e7dd77688f7a811ce43337cc",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/7b9889c0b7de2189e7dd77688f7a811ce43337cc/LICENSE"
+        },
+        {
+          "commit": "7de169f7ad39eb1f95f8358225476e6f1a59d3d7",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/7de169f7ad39eb1f95f8358225476e6f1a59d3d7/LICENSE"
+        },
+        {
+          "commit": "7e910e00b5d227527699861040b12f50d3c70fae",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/7e910e00b5d227527699861040b12f50d3c70fae/LICENSE"
+        },
+        {
+          "commit": "81c21a8db1c922260cd673841257fb9b112c1318",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/81c21a8db1c922260cd673841257fb9b112c1318/LICENSE"
+        },
+        {
+          "commit": "8a930acd4fa0222af8209ae84806c18f260ee9a3",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/8a930acd4fa0222af8209ae84806c18f260ee9a3/LICENSE"
+        },
+        {
+          "commit": "8ff2d60e1462a6857f5a9b153d7be474f82da8b5",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/8ff2d60e1462a6857f5a9b153d7be474f82da8b5/LICENSE"
+        },
+        {
+          "commit": "926acab4ae876eea0697a885996efdf3a32bf0ac",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/926acab4ae876eea0697a885996efdf3a32bf0ac/LICENSE"
+        },
+        {
+          "commit": "9ddc55c57390707d97d96302eea1992919c8d930",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/9ddc55c57390707d97d96302eea1992919c8d930/LICENSE"
+        },
+        {
+          "commit": "9ed3dbb0ae527230cd156d91d0af305478558fba",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/9ed3dbb0ae527230cd156d91d0af305478558fba/LICENSE"
+        },
+        {
+          "commit": "a826a4e09e3f2782822c71da6670e9275735ad3e",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/a826a4e09e3f2782822c71da6670e9275735ad3e/LICENSE"
+        },
+        {
+          "commit": "aa8c480086052d4c2a64490d3214e67b7c6e674b",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/aa8c480086052d4c2a64490d3214e67b7c6e674b/LICENSE"
+        },
+        {
+          "commit": "b110a77364ec0ed5bb06194b591f97a54591dbc9",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b110a77364ec0ed5bb06194b591f97a54591dbc9/LICENSE"
+        },
+        {
+          "commit": "b2b3bf6ddc5cb652201545ba191d07400c4e89cf",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b2b3bf6ddc5cb652201545ba191d07400c4e89cf/LICENSE"
+        },
+        {
+          "commit": "b2f3aff7633057d234ec9186c18a53f4df306d08",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b2f3aff7633057d234ec9186c18a53f4df306d08/LICENSE"
+        },
+        {
+          "commit": "b363d6b82c7082db647bd350560fca5e1d724a16",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b363d6b82c7082db647bd350560fca5e1d724a16/LICENSE"
+        },
+        {
+          "commit": "b5e3886a37209bb880f17d82fbf4ba00ece0e41e",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b5e3886a37209bb880f17d82fbf4ba00ece0e41e/LICENSE"
+        },
+        {
+          "commit": "b656ecc0a64e328549a9858af1c4b609f9922b07",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/b656ecc0a64e328549a9858af1c4b609f9922b07/LICENSE"
+        },
+        {
+          "commit": "bc8be1013ac90fe3c1df8aae646b02605d578818",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/bc8be1013ac90fe3c1df8aae646b02605d578818/LICENSE"
+        },
+        {
+          "commit": "c0ed9d187906d202b9276a0750b3c377584cb75f",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/c0ed9d187906d202b9276a0750b3c377584cb75f/LICENSE"
+        },
+        {
+          "commit": "c2859de7ae7b791b77c33462a58f81f9a4d9d5d6",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/c2859de7ae7b791b77c33462a58f81f9a4d9d5d6/LICENSE"
+        },
+        {
+          "commit": "c834d6e4a0c4280b7b7750cb0de8dd8acb3d4c2c",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/c834d6e4a0c4280b7b7750cb0de8dd8acb3d4c2c/LICENSE"
+        },
+        {
+          "commit": "d63ed69ad4299d594513d38b1adb018059fb776d",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/d63ed69ad4299d594513d38b1adb018059fb776d/LICENSE"
+        },
+        {
+          "commit": "d92f081a089714e0aa92434c797fdd1a06da1290",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/d92f081a089714e0aa92434c797fdd1a06da1290/LICENSE"
+        },
+        {
+          "commit": "da37f9de442b69fbcaa9f54fb042c2a6999473a6",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/da37f9de442b69fbcaa9f54fb042c2a6999473a6/LICENSE"
+        },
+        {
+          "commit": "e733192454b73bbea8645e4dcbee95b13eba714c",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/e733192454b73bbea8645e4dcbee95b13eba714c/LICENSE"
+        },
+        {
+          "commit": "f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/f2bd64cea7c9a92e4c1fae0be9a1271f6a3fbfb9/LICENSE"
+        },
+        {
+          "commit": "fdbd43c569feb4388302ddee0551d18edd39fadc",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/fdbd43c569feb4388302ddee0551d18edd39fadc/LICENSE"
+        },
+        {
+          "commit": "fe24c338d8c3264a82cdc2bed49fb156cfd11a86",
+          "filename": "LICENSE",
+          "url": "https://github.com/more-itertools/more-itertools/blob/fe24c338d8c3264a82cdc2bed49fb156cfd11a86/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "pallets/click",
+      "sha256": "9A8AD106A394E853BFE21F42F4E72D592819A22805D991B5F3275029292B658D",
+      "license_file": "pallets--click-9A8AD106A394.txt",
+      "sources": [
+        {
+          "commit": "01e4dac0b1f855a54eb923380d6af64171c66f22",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/01e4dac0b1f855a54eb923380d6af64171c66f22/LICENSE.rst"
+        },
+        {
+          "commit": "04ef3a6f473deb2499721a8d11f92a7d2c0912f2",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/04ef3a6f473deb2499721a8d11f92a7d2c0912f2/LICENSE.txt"
+        },
+        {
+          "commit": "0ad4e7985a919041ec590a4d672afb44f05dd162",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/0ad4e7985a919041ec590a4d672afb44f05dd162/LICENSE.rst"
+        },
+        {
+          "commit": "1458800409ed12076f18451889b0857db36aa522",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/1458800409ed12076f18451889b0857db36aa522/LICENSE.txt"
+        },
+        {
+          "commit": "19be092b6db4e4300e31906498e354ec0adf870c",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/19be092b6db4e4300e31906498e354ec0adf870c/LICENSE.rst"
+        },
+        {
+          "commit": "1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/1a4d8c1bb1e8f8e214ede7223bd2c05dc2ce006a/LICENSE.txt"
+        },
+        {
+          "commit": "273fb90106726daa16e1033eca0d677de76345eb",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/273fb90106726daa16e1033eca0d677de76345eb/LICENSE.txt"
+        },
+        {
+          "commit": "27aaed3fe5bcd6adedd6e91de234914af9859cf1",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/27aaed3fe5bcd6adedd6e91de234914af9859cf1/LICENSE.txt"
+        },
+        {
+          "commit": "2ed395b0b5ac4d56553ff715335f456f812cdc78",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/2ed395b0b5ac4d56553ff715335f456f812cdc78/LICENSE.txt"
+        },
+        {
+          "commit": "3018f577cc1d5e7682fd091845df999b86007a6c",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/3018f577cc1d5e7682fd091845df999b86007a6c/LICENSE.rst"
+        },
+        {
+          "commit": "3cbcf9b11546f4cf10b36d3e2e531733ba6fe001",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/3cbcf9b11546f4cf10b36d3e2e531733ba6fe001/LICENSE.txt"
+        },
+        {
+          "commit": "4295457ddc7b5ca9a733d59ca40d9651b02b9b1d",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/4295457ddc7b5ca9a733d59ca40d9651b02b9b1d/LICENSE.txt"
+        },
+        {
+          "commit": "4aabded1badf94b1de8bb939f11cbebcdd94a22e",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/4aabded1badf94b1de8bb939f11cbebcdd94a22e/LICENSE.rst"
+        },
+        {
+          "commit": "4ae204e835d2d45875704c6796ec4f4aecb4b909",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/4ae204e835d2d45875704c6796ec4f4aecb4b909/LICENSE.rst"
+        },
+        {
+          "commit": "4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa/LICENSE.txt"
+        },
+        {
+          "commit": "5b1624bf09947d6f10eaffd63d6fb737dfe7656a",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/5b1624bf09947d6f10eaffd63d6fb737dfe7656a/LICENSE.txt"
+        },
+        {
+          "commit": "69a25da0c0a8a78564f0fef700e1d6e5b21c1e8a",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/69a25da0c0a8a78564f0fef700e1d6e5b21c1e8a/LICENSE.rst"
+        },
+        {
+          "commit": "6ae94287ef5aac3b0dc7c37706548f32e5994d3b",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/6ae94287ef5aac3b0dc7c37706548f32e5994d3b/LICENSE.rst"
+        },
+        {
+          "commit": "6bb518f82c5c119b4e4e1ebae3b2f191632060cf",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/6bb518f82c5c119b4e4e1ebae3b2f191632060cf/LICENSE.rst"
+        },
+        {
+          "commit": "70c673d37eb91ba42a129be9037caf3ebed62f3e",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/70c673d37eb91ba42a129be9037caf3ebed62f3e/LICENSE.txt"
+        },
+        {
+          "commit": "7f7bbe4569ea68e8dabee232eade069ef3310aea",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/7f7bbe4569ea68e8dabee232eade069ef3310aea/LICENSE.txt"
+        },
+        {
+          "commit": "850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/850bffe0b9db27f52f6f3f0a66eb6df432ce8bcd/LICENSE.rst"
+        },
+        {
+          "commit": "884af5c20fdc95c9c7352df35c37273391464fb9",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/884af5c20fdc95c9c7352df35c37273391464fb9/LICENSE.txt"
+        },
+        {
+          "commit": "8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/8c1a0a7abbc1c36f70d1f65f3604acc46c5ce6ab/LICENSE.txt"
+        },
+        {
+          "commit": "8c73ff134480f436faa0d041bd19aaf949aac22c",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/8c73ff134480f436faa0d041bd19aaf949aac22c/LICENSE.txt"
+        },
+        {
+          "commit": "8efb348e2bc820aeba60d4cce6939708c6b2b11c",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/8efb348e2bc820aeba60d4cce6939708c6b2b11c/LICENSE.rst"
+        },
+        {
+          "commit": "a4f5450a2541e2f2f8cacf57f50435eb78422f99",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/a4f5450a2541e2f2f8cacf57f50435eb78422f99/LICENSE.rst"
+        },
+        {
+          "commit": "a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/a5f5aa6d4012d256ccca24638f2642fc371e9f77/LICENSE.txt"
+        },
+        {
+          "commit": "a6e0d2936891030f5092c9869c7391104f6721d9",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/a6e0d2936891030f5092c9869c7391104f6721d9/LICENSE.txt"
+        },
+        {
+          "commit": "a8c05427602d12842c53ce48b03b5d6b5c0c6693",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/a8c05427602d12842c53ce48b03b5d6b5c0c6693/LICENSE.txt"
+        },
+        {
+          "commit": "b67832c2167e5b0ff6764a8c04a0a9087e697b5a",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/b67832c2167e5b0ff6764a8c04a0a9087e697b5a/LICENSE.txt"
+        },
+        {
+          "commit": "b7cf06970e40a3144eb963ff34ed7c38934afb40",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/b7cf06970e40a3144eb963ff34ed7c38934afb40/LICENSE.txt"
+        },
+        {
+          "commit": "bb695aaecdef95832d167fc1d508921745aa824e",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/bb695aaecdef95832d167fc1d508921745aa824e/LICENSE.txt"
+        },
+        {
+          "commit": "bc16dbf788861266177661b576291a1b264fb5de",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/bc16dbf788861266177661b576291a1b264fb5de/LICENSE.txt"
+        },
+        {
+          "commit": "bf9da4838986af3bc09a1b16974d154c61dcbe3f",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/bf9da4838986af3bc09a1b16974d154c61dcbe3f/LICENSE.rst"
+        },
+        {
+          "commit": "c021f05c838c1d0401ebc340d1de9b663c7fb578",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/c021f05c838c1d0401ebc340d1de9b663c7fb578/LICENSE.txt"
+        },
+        {
+          "commit": "c326df95e9e3da0425360e030413f6a3ee25fdee",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/c326df95e9e3da0425360e030413f6a3ee25fdee/LICENSE.txt"
+        },
+        {
+          "commit": "d3e3852eba45a6f7ce0ae5e02ca49106e228add6",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/d3e3852eba45a6f7ce0ae5e02ca49106e228add6/LICENSE.txt"
+        },
+        {
+          "commit": "d42f15b71757de791a5781fb179fd972da9169f5",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/d42f15b71757de791a5781fb179fd972da9169f5/LICENSE.txt"
+        },
+        {
+          "commit": "e002dbc40ceb6a7e78dbe5e5868744690ba3120f",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/e002dbc40ceb6a7e78dbe5e5868744690ba3120f/LICENSE.rst"
+        },
+        {
+          "commit": "e4066e1f325088ee42ae7bc0bc6c2e47533ff2c3",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/e4066e1f325088ee42ae7bc0bc6c2e47533ff2c3/LICENSE.rst"
+        },
+        {
+          "commit": "eb1d760fb433d08278816d7ba49477ce86b691a7",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/eb1d760fb433d08278816d7ba49477ce86b691a7/LICENSE.rst"
+        },
+        {
+          "commit": "ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pallets/click/blob/ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa/LICENSE.txt"
+        }
+      ]
+    },
+    {
+      "repo": "pallets/click",
+      "sha256": "E212319FAEFA4F459C8AC937FDC8557040A3CAB8AF29366CA2A48D239025225C",
+      "license_file": "pallets--click-E212319FAEFA.txt",
+      "sources": [
+        {
+          "commit": "2340accccb0c13aca61b2cfba840d04d8c506135",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/2340accccb0c13aca61b2cfba840d04d8c506135/LICENSE.rst"
+        },
+        {
+          "commit": "278a054432dbbe077f8921249d657c992ccf99fb",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/278a054432dbbe077f8921249d657c992ccf99fb/LICENSE.rst"
+        },
+        {
+          "commit": "3307fc051bba33048755f9591061f46cb5af2f26",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/3307fc051bba33048755f9591061f46cb5af2f26/LICENSE.rst"
+        },
+        {
+          "commit": "70c449386b91261f4c5fa43b87f0a84692535525",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/click/blob/70c449386b91261f4c5fa43b87f0a84692535525/LICENSE.rst"
+        }
+      ]
+    },
+    {
+      "repo": "pallets/click",
+      "sha256": "E7745C7382F62557AEE068FB47E511AD100AC528374FC28C02C53343C1D4CCED",
+      "license_file": "pallets--click-E7745C7382F6.txt",
+      "sources": [
+        {
+          "commit": "1ea6a75059979af2aff6223a03552dfa1a6862f5",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/1ea6a75059979af2aff6223a03552dfa1a6862f5/LICENSE"
+        },
+        {
+          "commit": "2ab5f7ebe12ee7276a25605af67227e5ffa59dd5",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/2ab5f7ebe12ee7276a25605af67227e5ffa59dd5/LICENSE"
+        },
+        {
+          "commit": "3cb997329c8a30b41a23022b877583a26f39ce72",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/3cb997329c8a30b41a23022b877583a26f39ce72/LICENSE"
+        },
+        {
+          "commit": "43cb9864680283af37416d3b6ac186fab9bd73ff",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/43cb9864680283af37416d3b6ac186fab9bd73ff/LICENSE"
+        },
+        {
+          "commit": "467fb8dfa466b2bf7daa678f6829fb01ec8fe840",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/467fb8dfa466b2bf7daa678f6829fb01ec8fe840/LICENSE"
+        },
+        {
+          "commit": "9c456ec2679418442b71b2c1a5e4e62f0b41cbda",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/9c456ec2679418442b71b2c1a5e4e62f0b41cbda/LICENSE"
+        },
+        {
+          "commit": "df1a8f57c3e6467ae277ba487c962239745f392e",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/df1a8f57c3e6467ae277ba487c962239745f392e/LICENSE"
+        },
+        {
+          "commit": "ebcbef923d3b9f118d1f21fd3d21645b52099e87",
+          "filename": "LICENSE",
+          "url": "https://github.com/pallets/click/blob/ebcbef923d3b9f118d1f21fd3d21645b52099e87/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "pallets/itsdangerous",
+      "sha256": "63AF09891B6BE8AD1A4252ED43AF0F4EFBA7FC948E228367BED7F3C5AE0B09D7",
+      "license_file": "pallets--itsdangerous-63AF09891B6B.txt",
+      "sources": [
+        {
+          "commit": "1776c8f73c38aebfebcc19cdd56b4854b0ad5997",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/1776c8f73c38aebfebcc19cdd56b4854b0ad5997/LICENSE.rst"
+        },
+        {
+          "commit": "1a9b8d1f9968eb248bda69f39d373a6330b692ba",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/1a9b8d1f9968eb248bda69f39d373a6330b692ba/LICENSE.rst"
+        },
+        {
+          "commit": "25494a8b4d0968b8fe92877435a62abd1aa54c47",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/25494a8b4d0968b8fe92877435a62abd1aa54c47/LICENSE.rst"
+        },
+        {
+          "commit": "3b762645dab2250933311f8612989a4075100659",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/3b762645dab2250933311f8612989a4075100659/LICENSE.rst"
+        },
+        {
+          "commit": "542fad1e9627a402620453610b3e6923f879fd84",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/542fad1e9627a402620453610b3e6923f879fd84/LICENSE.rst"
+        },
+        {
+          "commit": "b11475aa0e1534f1fe7736d56140d81e872b1f5f",
+          "filename": "LICENSE.rst",
+          "url": "https://github.com/pallets/itsdangerous/blob/b11475aa0e1534f1fe7736d56140d81e872b1f5f/LICENSE.rst"
+        }
+      ]
+    },
+    {
+      "repo": "pytest-dev/pluggy",
+      "sha256": "D6B65E6C213A5D0B577911D34D6E5949B9F59D76C238C5071A2F3FC16CFB2606",
+      "license_file": "pytest-dev--pluggy-D6B65E6C213A.txt",
+      "sources": [
+        {
+          "commit": "080b7d31074f773540c9e66f9d4c00a47159a35f",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/080b7d31074f773540c9e66f9d4c00a47159a35f/LICENSE"
+        },
+        {
+          "commit": "20d8143f127a4d7526dbbea441857b4b80ec8bdd",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/20d8143f127a4d7526dbbea441857b4b80ec8bdd/LICENSE"
+        },
+        {
+          "commit": "2b6dfd7cfe3e8ac36a473d465979c78bb3912d6f",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/2b6dfd7cfe3e8ac36a473d465979c78bb3912d6f/LICENSE"
+        },
+        {
+          "commit": "313eace19509f6d5cff75836cad12a58e895c07e",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/313eace19509f6d5cff75836cad12a58e895c07e/LICENSE"
+        },
+        {
+          "commit": "56085d7dd20aa200999c2c711e9dd9d1908cf577",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/56085d7dd20aa200999c2c711e9dd9d1908cf577/LICENSE"
+        },
+        {
+          "commit": "6e1d0f13a259776bbf137f90bd7ab8b4474f68e7",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/6e1d0f13a259776bbf137f90bd7ab8b4474f68e7/LICENSE"
+        },
+        {
+          "commit": "87e45202858dbb725c2ea7d6472a11c1a2624518",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/87e45202858dbb725c2ea7d6472a11c1a2624518/LICENSE"
+        },
+        {
+          "commit": "9d19d4b8e07dc3d66a512124ccbb8dfdd9e4bfb1",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/9d19d4b8e07dc3d66a512124ccbb8dfdd9e4bfb1/LICENSE"
+        },
+        {
+          "commit": "d70fe1840d01c78b7d85f693cfef01ccdf2f80a6",
+          "filename": "LICENSE",
+          "url": "https://github.com/pytest-dev/pluggy/blob/d70fe1840d01c78b7d85f693cfef01ccdf2f80a6/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "pytoolz/toolz",
+      "sha256": "053664057B295B2F0C1332291A77102F01A099D87926E449E08A117EEA9660BF",
+      "license_file": "pytoolz--toolz-053664057B29.txt",
+      "sources": [
+        {
+          "commit": "1fb2b9f1b69ab664a264944f4eafc290acce127d",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pytoolz/toolz/blob/1fb2b9f1b69ab664a264944f4eafc290acce127d/LICENSE.txt"
+        },
+        {
+          "commit": "55ce42dc3b6f786ed9d4e38633cc5cfe3622a526",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pytoolz/toolz/blob/55ce42dc3b6f786ed9d4e38633cc5cfe3622a526/LICENSE.txt"
+        },
+        {
+          "commit": "5a7e078c941c990dcaca53ac6920e5d5c0b1475f",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pytoolz/toolz/blob/5a7e078c941c990dcaca53ac6920e5d5c0b1475f/LICENSE.txt"
+        },
+        {
+          "commit": "d2eba0374a452c2b18fe188b04527e22bda3548c",
+          "filename": "LICENSE.txt",
+          "url": "https://github.com/pytoolz/toolz/blob/d2eba0374a452c2b18fe188b04527e22bda3548c/LICENSE.txt"
+        }
+      ]
+    },
+    {
+      "repo": "scrapy/w3lib",
+      "sha256": "13D9DDDE1B026748CE91B799F32F9741FD5ECC2BFDF267174A10FB49610C61AB",
+      "license_file": "scrapy--w3lib-13D9DDDE1B02.txt",
+      "sources": [
+        {
+          "commit": "21ff68ddcf35e106be60da21af2a64b44ec13baa",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/21ff68ddcf35e106be60da21af2a64b44ec13baa/LICENSE"
+        },
+        {
+          "commit": "3489ad5f6307983d2740e4516450aacb15620508",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/3489ad5f6307983d2740e4516450aacb15620508/LICENSE"
+        },
+        {
+          "commit": "e2b7feb17edefea23d0b1591ddf669697984fe4b",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/e2b7feb17edefea23d0b1591ddf669697984fe4b/LICENSE"
+        },
+        {
+          "commit": "f46b4c4140dfd0081d34327d91f496f7a221bed7",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/f46b4c4140dfd0081d34327d91f496f7a221bed7/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "scrapy/w3lib",
+      "sha256": "D685397B03E1A53D7E3A74ED4A7E516FDAF9A1C18E65B666F9EFB0EB1011C624",
+      "license_file": "scrapy--w3lib-D685397B03E1.txt",
+      "sources": [
+        {
+          "commit": "012208453dfcc26ba0f7adc96f5b4981b9fd3687",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/012208453dfcc26ba0f7adc96f5b4981b9fd3687/LICENSE"
+        },
+        {
+          "commit": "1ed46a8af01a5f445197322ce920b620b7ff2130",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/1ed46a8af01a5f445197322ce920b620b7ff2130/LICENSE"
+        },
+        {
+          "commit": "5fd294ccf210389a89243870e989aaf6d15d3212",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/5fd294ccf210389a89243870e989aaf6d15d3212/LICENSE"
+        },
+        {
+          "commit": "61db33b20f611b8d0a7a3dde3842d65f5f91d8d0",
+          "filename": "LICENSE",
+          "url": "https://github.com/scrapy/w3lib/blob/61db33b20f611b8d0a7a3dde3842d65f5f91d8d0/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "tkem/cachetools",
+      "sha256": "28C000B52B0EE27138A68EF778227E4057046E86B65F62F1CACB99B0CC49E0D2",
+      "license_file": "tkem--cachetools-28C000B52B0E.txt",
+      "sources": [
+        {
+          "commit": "0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/0985ec0d8fefdce90bcbba2dfe88117dad9bb6f6/LICENSE"
+        },
+        {
+          "commit": "39f9dd234aabc0859c703e7d9747fbefe7133f4c",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/39f9dd234aabc0859c703e7d9747fbefe7133f4c/LICENSE"
+        },
+        {
+          "commit": "5877d83c7ab53639f1cfb8664173219e5e5cfbf1",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/5877d83c7ab53639f1cfb8664173219e5e5cfbf1/LICENSE"
+        },
+        {
+          "commit": "8011b71949e8d8d81a71359cca9477d67a2c9c0b",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/8011b71949e8d8d81a71359cca9477d67a2c9c0b/LICENSE"
+        },
+        {
+          "commit": "8259b8be749d6f19c676ebbe91f3c257f0d04f0e",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/8259b8be749d6f19c676ebbe91f3c257f0d04f0e/LICENSE"
+        },
+        {
+          "commit": "95e6addbd82afd75f81cb5650f32f6d74af2f1f9",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/95e6addbd82afd75f81cb5650f32f6d74af2f1f9/LICENSE"
+        },
+        {
+          "commit": "aa73a19299432530eb9b1c0f9acecde6ad96c9e0",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/aa73a19299432530eb9b1c0f9acecde6ad96c9e0/LICENSE"
+        },
+        {
+          "commit": "c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/c59bf8dc9c3ce8b9a246b189a3dc8e325f97f974/LICENSE"
+        },
+        {
+          "commit": "cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/cf093b9ed95cb5b525d656d2faaa5b3a4dd7a993/LICENSE"
+        },
+        {
+          "commit": "eba200635273fe45b67e669b84cb45f995b27c24",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/eba200635273fe45b67e669b84cb45f995b27c24/LICENSE"
+        },
+        {
+          "commit": "ec0b97b8a43dbd61fa83d702dadd2ff21131bd26",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/ec0b97b8a43dbd61fa83d702dadd2ff21131bd26/LICENSE"
+        },
+        {
+          "commit": "f4f288579dc3c8f82f62d0eaca7774303d9d3768",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/f4f288579dc3c8f82f62d0eaca7774303d9d3768/LICENSE"
+        }
+      ]
+    },
+    {
+      "repo": "tkem/cachetools",
+      "sha256": "7DD496262C0BA3787F7EEBF02663C50C305FF575A81F69208E1645738DA3CFFC",
+      "license_file": "tkem--cachetools-7DD496262C0B.txt",
+      "sources": [
+        {
+          "commit": "3e5fe022716b0263488ef8146e18e162b2bcbe96",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/3e5fe022716b0263488ef8146e18e162b2bcbe96/LICENSE"
+        },
+        {
+          "commit": "462e867950883c8ffbcfff715efd767b20c6c749",
+          "filename": "LICENSE",
+          "url": "https://github.com/tkem/cachetools/blob/462e867950883c8ffbcfff715efd767b20c6c749/LICENSE"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+test_boundary_prices (test_contract.Contract.test_boundary_prices) ... ok
+test_input_unchanged (test_contract.Contract.test_input_unchanged) ... ok
+test_partner_bad_discount (test_contract.Contract.test_partner_bad_discount) ... ok
+test_partner_bad_quantity (test_contract.Contract.test_partner_bad_quantity) ... ok
+test_partner_negative_price (test_contract.Contract.test_partner_negative_price) ... ok
+test_partner_price (test_contract.Contract.test_partner_price) ... ok
+test_web_invalid (test_contract.Contract.test_web_invalid) ... ok
+test_web_missing_fields (test_contract.Contract.test_web_missing_fields) ... ok
+test_web_parser_once (test_contract.Contract.test_web_parser_once) ... ok
+test_web_price (test_contract.Contract.test_web_price) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.000s
+
+OK

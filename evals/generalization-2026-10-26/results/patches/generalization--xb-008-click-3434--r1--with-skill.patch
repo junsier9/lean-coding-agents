@@ -1,0 +1,60 @@
+diff --git a/src/click/formatting.py b/src/click/formatting.py
+index d9075ca..bcfeb59 100644
+--- a/src/click/formatting.py
++++ b/src/click/formatting.py
+@@ -161,6 +161,10 @@ class HelpFormatter:
+         if prefix is None:
+             prefix = "{usage} ".format(usage=_("Usage:"))
+ 
++        if not args:
++            self.write(f"{prefix:>{self.current_indent}}{prog}\n")
++            return
++
+         usage_prefix = f"{prefix:>{self.current_indent}}{prog} "
+         text_width = self.width - self.current_indent
+ 
+diff --git a/tests/test_formatting.py b/tests/test_formatting.py
+index 3e85688..98d09e8 100644
+--- a/tests/test_formatting.py
++++ b/tests/test_formatting.py
+@@ -426,6 +426,40 @@ def test_formatting_with_options_metavar_empty(runner):
+     assert "Usage: cli VAR\n" in result.output
+ 
+ 
++@pytest.mark.parametrize("width", [10, 80])
++def test_formatting_without_usage_args(runner, width):
++    cli = click.Command("cli", options_metavar="")
++    result = runner.invoke(cli, ["--help"], terminal_width=width)
++    assert result.exit_code == 0
++    assert result.output.startswith("Usage: cli\n\nOptions:\n")
++
++
++@pytest.mark.parametrize("width", [10, 80])
++def test_write_usage_without_args(width):
++    formatter = click.HelpFormatter(width=width)
++    formatter.write_usage("cli")
++    assert formatter.getvalue() == "Usage: cli\n"
++
++
++@pytest.mark.parametrize("width", [10, 80])
++@pytest.mark.parametrize(
++    ("prefix", "indent", "expected"),
++    [
++        (None, 0, "Usage: cli\n"),
++        ("", 0, "cli\n"),
++        ("Run:  ", 0, "Run:  cli\n"),
++        ("\x1b[31mUsage: \x1b[0m", 0, "\x1b[31mUsage: \x1b[0mcli\n"),
++        (None, 12, "     Usage: cli\n"),
++        ("", 2, "  cli\n"),
++    ],
++)
++def test_write_usage_without_args_prefix(width, prefix, indent, expected):
++    formatter = click.HelpFormatter(width=width)
++    formatter.current_indent = indent
++    click.HelpFormatter.write_usage(self=formatter, prog="cli", args="", prefix=prefix)
++    assert formatter.getvalue() == expected
++
++
+ def test_help_formatter_write_text():
+     text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+     formatter = click.HelpFormatter(width=len("  Lorem ipsum dolor sit amet,"))

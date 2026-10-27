@@ -1,0 +1,9 @@
+{
+  "runs": 72,
+  "treatment_runs": 36,
+  "baseline_accepted": 36,
+  "skill_accepted": 36,
+  "treatment_skill_body_reads": 36,
+  "failed_keys": [],
+  "all_treatment_contracts_passed": true
+}

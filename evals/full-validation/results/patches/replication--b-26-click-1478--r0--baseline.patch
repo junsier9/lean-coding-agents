@@ -1,0 +1,193 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 14534e4..ba47a93 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -38,8 +38,8 @@ Unreleased
+     ``CliRunner.invoke``. :issue:`1435`
+ -   Fix ``TypeError`` raised when using bool flags and specifying
+     ``type=bool``. :issue:`1287`
+--   Newlines in option help text are replaced with spaces before
+-    re-wrapping to avoid uneven line breaks. :issue:`834`
++-   Option help text is rewrapped to avoid uneven line breaks while
++    preserving paragraph breaks. :issue:`834`
+ -   ``MissingParameter`` exceptions are printable in the Python
+     interpreter. :issue:`1139`
+ -   Fix how default values for file-type options are shown during
+diff --git a/click/core.py b/click/core.py
+index a4351e8..95c07b0 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -945,8 +945,7 @@ class Command(BaseCommand):
+         for param in self.get_params(ctx):
+             rv = param.get_help_record(ctx)
+             if rv is not None:
+-                part_a, part_b = rv
+-                opts.append((part_a, part_b.replace('\n', ' ')))
++                opts.append(rv)
+ 
+         if opts:
+             with formatter.section('Options'):
+diff --git a/click/formatting.py b/click/formatting.py
+index a3d6a4d..7de5c8c 100644
+--- a/click/formatting.py
++++ b/click/formatting.py
+@@ -198,12 +198,14 @@ class HelpFormatter(object):
+                 self.write(' ' * (first_col + self.current_indent))
+ 
+             text_width = max(self.width - first_col - 2, 10)
+-            lines = iter(wrap_text(second, text_width).splitlines())
++            lines = iter(wrap_text(second, text_width,
++                                   preserve_paragraphs=True).splitlines())
+             if lines:
+                 self.write(next(lines) + '\n')
+                 for line in lines:
+-                    self.write('%*s%s\n' % (
+-                        first_col + self.current_indent, '', line))
++                    if line:
++                        self.write(' ' * (first_col + self.current_indent))
++                    self.write(line + '\n')
+             else:
+                 self.write('\n')
+ 
+diff --git a/docs/documentation.rst b/docs/documentation.rst
+index 982ad42..fcc3366 100644
+--- a/docs/documentation.rst
++++ b/docs/documentation.rst
+@@ -84,9 +84,13 @@ For more examples, see the examples in :doc:`/arguments`.
+ Preventing Rewrapping
+ ---------------------
+ 
+-The default behavior of Click is to rewrap text based on the width of the
+-terminal.  In some circumstances, this can become a problem. The main issue
+-is when showing code examples, where newlines are significant.
++The default behavior of Click is to rewrap text within each paragraph based
++on the width of the terminal, preserving blank lines between paragraphs.
++In some circumstances, this can become a problem. The main issue is when
++showing code examples, where newlines are significant.
++
++.. versionchanged:: 7.1
++    Paragraph breaks in option help text are preserved.
+ 
+ Rewrapping can be disabled on a per-paragraph basis by adding a line with
+ solely the ``\b`` escape marker in it.  This line will be removed from the
+diff --git a/tests/test_options.py b/tests/test_options.py
+index bad4f42..273ac34 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -422,8 +422,114 @@ def test_multiline_help(runner):
+ 
+     result = runner.invoke(cmd, ['--help'])
+     assert result.exit_code == 0
+-    out = result.output.splitlines()
+-    assert '  --foo TEXT  hello  i am  multiline' in out
++    assert result.output.splitlines() == [
++        'Usage: cmd [OPTIONS]',
++        '',
++        'Options:',
++        '  --foo TEXT  hello',
++        '',
++        '              i am',
++        '',
++        '              multiline',
++        '  --help      Show this message and exit.',
++    ]
++
++
++@pytest.mark.parametrize(('terminal_width', 'paragraphs', 'help_lines'), [
++    (40, [
++        ['First paragraph has lines', 'that should be joined and', 'wrapped.'],
++        ['Second paragraph also', 'spans several source lines',
++         'and should wrap.'],
++    ], ['Show this message and', 'exit.']),
++    (60, [
++        ['First paragraph has lines that should be', 'joined and wrapped.'],
++        ['Second paragraph also spans several source', 'lines and should wrap.'],
++    ], ['Show this message and exit.']),
++])
++def test_multiline_help_rewrapping(runner, terminal_width, paragraphs,
++                                  help_lines):
++    @click.command()
++    @click.option('--foo', help="""
++        First paragraph has lines
++        that should be joined and wrapped.
++
++        Second paragraph also spans
++        several source lines and should wrap.
++    """)
++    def cmd(foo):
++        pass
++
++    result = runner.invoke(cmd, ['--help'], terminal_width=terminal_width)
++    assert result.exit_code == 0
++    first, second = paragraphs
++    assert result.output.splitlines() == [
++        'Usage: cmd [OPTIONS]',
++        '',
++        'Options:',
++        '  --foo TEXT  ' + first[0],
++    ] + ['              ' + line for line in first[1:]] + [
++        '',
++    ] + ['              ' + line for line in second] + [
++        '  --help      ' + help_lines[0],
++    ] + ['              ' + line for line in help_lines[1:]]
++    assert all(len(line) <= terminal_width
++               for line in result.output.splitlines())
++
++
++def test_multiline_help_long_option(runner):
++    @click.command()
++    @click.option('--a-very-long-option-name-for-wrapping', help="""
++        First paragraph.
++
++        Second paragraph.
++    """)
++    def cmd(a_very_long_option_name_for_wrapping):
++        pass
++
++    result = runner.invoke(cmd, ['--help'], terminal_width=60)
++    assert result.exit_code == 0
++    assert result.output.splitlines() == [
++        'Usage: cmd [OPTIONS]',
++        '',
++        'Options:',
++        '  --a-very-long-option-name-for-wrapping TEXT',
++        '                                  First paragraph.',
++        '',
++        '                                  Second paragraph.',
++        '  --help                          Show this message and',
++        '                                  exit.',
++    ]
++
++
++def test_multiline_help_unwrapped_paragraph(runner):
++    @click.command()
++    @click.option('--foo', default='value', show_default=True, help="""
++        First paragraph.
++
++        \b
++        line one
++          line two
++
++        Last paragraph.
++    """)
++    def cmd(foo):
++        pass
++
++    result = runner.invoke(cmd, ['--help'], terminal_width=60)
++    assert result.exit_code == 0
++    assert result.output.splitlines() == [
++        'Usage: cmd [OPTIONS]',
++        '',
++        'Options:',
++        '  --foo TEXT  First paragraph.',
++        '',
++        '              line one',
++        '                line two',
++        '',
++        '              Last paragraph.  [default: value]',
++        '  --help      Show this message and exit.',
++    ]
++
+ 
+ def test_argument_custom_class(runner):
+     class CustomArgument(click.Argument):

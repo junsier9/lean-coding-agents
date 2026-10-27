@@ -1,0 +1,75 @@
+diff --git a/click/core.py b/click/core.py
+index a8962be..1a4f932 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1330,10 +1330,10 @@ class Parameter(object):
+ 
+     def consume_value(self, ctx, opts):
+         value = opts.get(self.name)
+-        if value is None:
+-            value = ctx.lookup_default(self.name)
+         if value is None:
+             value = self.value_from_envvar(ctx)
++        if value is None:
++            value = ctx.lookup_default(self.name)
+         return value
+ 
+     def type_cast_value(self, ctx, value):
+diff --git a/tests/test_commands.py b/tests/test_commands.py
+index e900c43..9988a75 100644
+--- a/tests/test_commands.py
++++ b/tests/test_commands.py
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ import re
+ import click
++import pytest
+ 
+ 
+ def test_other_command_invoke(runner):
+@@ -84,6 +85,45 @@ def test_default_maps(runner):
+     assert result.output == 'changed\n'
+ 
+ 
++@pytest.mark.parametrize('auto_envvar', [False, True])
++@pytest.mark.parametrize('command_defaults', [False, True])
++@pytest.mark.parametrize('args, env_value, map_value, expected', [
++    ([], None, None, 'normal'),
++    ([], None, 'mapped', 'mapped'),
++    ([], 'environment', 'mapped', 'environment'),
++    (['--name', 'command-line'], 'environment', 'mapped', 'command-line'),
++    (['--name', ''], 'environment', 'mapped', ''),
++    ([], '', 'mapped', ''),
++    ([], None, '', ''),
++])
++def test_default_map_precedence(runner, auto_envvar, command_defaults,
++                               args, env_value, map_value, expected):
++    default_map = {'foo': {'name': map_value}}
++
++    @click.group(context_settings=(
++        {'default_map': default_map} if command_defaults else None))
++    def cli():
++        pass
++
++    @cli.command()
++    @click.option('--name', default='normal',
++                  envvar=None if auto_envvar else 'CLICK_TEST_NAME')
++    def foo(name):
++        click.echo(name)
++
++    envvar = 'CLICK_TEST_FOO_NAME' if auto_envvar else 'CLICK_TEST_NAME'
++    kwargs = {}
++    if auto_envvar:
++        kwargs['auto_envvar_prefix'] = 'CLICK_TEST'
++    if not command_defaults:
++        kwargs['default_map'] = default_map
++    result = runner.invoke(cli, ['foo'] + args,
++                           env={envvar: env_value}, **kwargs)
++
++    assert not result.exception
++    assert result.output == expected + '\n'
++
++
+ def test_group_with_args(runner):
+     @click.group()
+     @click.argument('obj')

@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-24T22:51:10.781362+00:00",
+  "configured_model_settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "cli_version": "codex-cli 0.164.0-alpha.11.1",
+  "cli_binary_sha256": "1103E9E09C71FA2CD0AFD6D8F3B9A2D63174FE8EFD7CB5BD09F1CB14EF58A098",
+  "python_version": "3.12.14",
+  "python_executable_sha256": "7A4102B91959BB234507850EA584E1D31D300A6831B171E4AADC59FF592F0234",
+  "numpy_version": "2.3.5",
+  "prepared_dependency_trees": {
+    "real-v3": {
+      "files": 587,
+      "sha256": "3644A9924840CC03BB18A2307A4F2BDB036A6E408326D01AA5880520F4908A77"
+    },
+    "real-v4": {
+      "files": 587,
+      "sha256": "3644A9924840CC03BB18A2307A4F2BDB036A6E408326D01AA5880520F4908A77"
+    }
+  },
+  "dependency_copies_identical": true,
+  "actual_backend_model_revision_not_verified": true,
+  "ordinary_config_changed": false
+}

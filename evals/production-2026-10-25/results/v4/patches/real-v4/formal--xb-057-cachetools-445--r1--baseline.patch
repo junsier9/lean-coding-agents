@@ -1,0 +1,105 @@
+diff --git a/src/cachetools/_descriptor.py b/src/cachetools/_descriptor.py
+index e85d8fc..a1014c3 100644
+--- a/src/cachetools/_descriptor.py
++++ b/src/cachetools/_descriptor.py
+@@ -96,14 +96,13 @@ class _MethodDescriptor:
+         # Created once and shared by all class accesses; objtype is not
+         # used for instance lookups, so it need not be bound here.
+         if self.__unbound is None:
+-            descriptor = self
+-
+-            # As in the previous function wrapper, the receiver is named self.
++            # Binding the dispatcher lets autospec omit the instance parameter.
++            # Keep the explicit receiver named self for keyword class calls.
+             @functools.wraps(self.__wrapped__)  # type: ignore
+-            def unbound(self, *args, **kwargs):
++            def unbound(descriptor, /, self, *args, **kwargs):
+                 return descriptor.__get__(self)(*args, **kwargs)
+ 
+-            self.__unbound = unbound  # type: ignore
++            self.__unbound = unbound.__get__(self)  # type: ignore
+         return self.__unbound
+ 
+ 
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 4bbf2dc..84315cd 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -747,6 +747,18 @@ class NoneMethodTest(unittest.TestCase):
+ 
+ 
+ class UnboundMethodTest(unittest.TestCase):
++    methods = (
++        "get",
++        "get_typed",
++        "get_info",
++        "get_lock",
++        "get_lock_info",
++        "get_cond",
++        "get_cond_info",
++        "get_lock_cond",
++        "get_lock_cond_info",
++    )
++
+     def test_class_call(self):
+         cached = Cached(Cache(2))
+         self.assertEqual(Cached.get(cached, 1), 0)
+@@ -798,3 +810,58 @@ class UnboundMethodTest(unittest.TestCase):
+             warnings.simplefilter("always")
+             unittest.mock.create_autospec(Cached, instance=True)
+         self.assertEqual(len(w), 0)
++
++    def test_autospec_instance_call(self):
++        import unittest.mock
++
++        for instance in (False, True):
++            mock = unittest.mock.create_autospec(Cached, instance=instance)
++            if not instance:
++                mock = mock(Cache(2))
++            for name in self.methods:
++                with self.subTest(instance=instance, method=name):
++                    method = getattr(mock, name)
++                    method.return_value = 42
++                    self.assertEqual(method(1), 42)
++                    method.assert_called_once_with(1)
++                    self.assertEqual(method(value=2), 42)
++                    method.assert_called_with(value=2)
++                    with self.assertRaises(TypeError):
++                        method()
++                    with self.assertRaises(TypeError):
++                        method(1, 2)
++                    with self.assertRaises(TypeError):
++                        method(unknown=1)
++
++    def test_autospec_signature(self):
++        import unittest.mock
++
++        class Cached:
++            @cachedmethod(lambda _: {})
++            def method(self, value, /, scale=1, *, offset):
++                return value * scale + offset
++
++        mock = unittest.mock.create_autospec(Cached, instance=True)
++        mock.method(1, offset=2)
++        mock.method.assert_called_once_with(1, offset=2)
++        mock.method(1, 3, offset=2)
++        mock.method.assert_called_with(1, 3, offset=2)
++        with self.assertRaises(TypeError):
++            mock.method(1)
++        with self.assertRaises(TypeError):
++            mock.method(value=1, offset=2)
++        with self.assertRaises(TypeError):
++            mock.method(1, 3, 2)
++
++    def test_class_call_variants(self):
++        for name in self.methods:
++            with self.subTest(method=name):
++                cached = Cached(Cache(2))
++                method = getattr(Cached, name)
++                self.assertEqual(method(cached, 1), 0)
++                self.assertEqual(getattr(cached, name)(1), 0)
++                self.assertEqual(method(self=cached, value=2), 1)
++                self.assertEqual(cached.count, 2)
++                self.assertEqual(len(cached.cache), 2)
++                self.assertFalse(hasattr(method, "cache_clear"))
++                self.assertFalse(hasattr(method, "cache_info"))

@@ -1,0 +1,71 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 83131cb..9f0e92a 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -2458,15 +2458,8 @@ class numeric_range(Sequence):
+         )
+ 
+     def __reversed__(self):
+-        # Empty iterator
+-        try:
+-            start = self._get_by_index(-1)
+-        except IndexError:
+-            return iter([])
+-
+-        return iter(
+-            numeric_range(start, self._start - self._step, -self._step)
+-        )
++        # Preserve the original arithmetic and avoid an out-of-bounds stop.
++        return (self._get_by_index(i) for i in reversed(range(self._len)))
+ 
+     def count(self, value):
+         return int(value in self)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 3896451..55f19aa 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3185,6 +3185,44 @@ class NumericRangeTests(TestCase):
+         ]:
+             self.assertEqual(expected, list(reversed(mi.numeric_range(*args))))
+ 
++    def test_reversed_matches_iteration_with_inexact_step(self):
++        for args in [
++            (0.0, 1.0, 0.1),
++            (1.0, 0.0, -0.1),
++            (0.1, 1.0, 0.1),
++            (1.1, 0.1, -0.1),
++            (0.0, 3.0, 0.7),
++            (10.0, -10.0, -0.7),
++            (2.1, 5.1, 0.5),
++            (-8.732, -13.532, -2.4),
++            (4.51, 10.375, 0.255),
++            (-69.37276490678778, -29.8339073344664, 4.942357196540172),
++            (32.50227965239458, 9.003418351482358, -1.9582384417426848),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual(list(r)[::-1], list(reversed(r)))
++
++    def test_reversed_datetime_bounds(self):
++        day = timedelta(days=1)
++        for args in [
++            (datetime.min, datetime.min + 3 * day, day),
++            (datetime.min + day, datetime.min + 5 * day, 2 * day),
++            (datetime.min + 3 * day, datetime.min, -day),
++            (datetime.max, datetime.max - 3 * day, -day),
++            (datetime.max - day, datetime.max - 5 * day, -2 * day),
++            (datetime.max - 3 * day, datetime.max, day),
++            (datetime.min, datetime.min + day, 2 * day),
++            (datetime.max, datetime.max - day, -2 * day),
++            (datetime.min, datetime.min, day),
++            (datetime.max, datetime.max, -day),
++            (datetime.min, datetime.min + day, -day),
++            (datetime.max, datetime.max - day, day),
++        ]:
++            with self.subTest(args=args):
++                r = mi.numeric_range(*args)
++                self.assertEqual(list(r)[::-1], list(reversed(r)))
++
+     def test_count(self):
+         for args, v, c in [
+             ((7.0,), 0.0, 1),

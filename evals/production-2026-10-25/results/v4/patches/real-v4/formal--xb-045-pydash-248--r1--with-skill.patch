@@ -1,0 +1,106 @@
+diff --git a/src/pydash/utilities.py b/src/pydash/utilities.py
+index e55e5d2..087ae2a 100644
+--- a/src/pydash/utilities.py
++++ b/src/pydash/utilities.py
+@@ -427,6 +427,9 @@ def iteratee(func):
+     ``True`` for elements that contain the equivalent object properties, otherwise it will return
+     ``False``.
+ 
++    The :func:`ceil`, :func:`floor`, and :func:`round_` functions receive only the value when used as
++    iteratees, preserving their default precision.
++
+     Args:
+         func: Object to create iteratee function from.
+ 
+@@ -478,7 +481,10 @@ def iteratee(func):
+         Return :func:`properties` callback when `func` is a ``tuple``.
+     """
+     if callable(func):
+-        cbk = func
++        if func is pyd.ceil or func is pyd.floor or func is pyd.round_:
++            cbk = wraps(func)(pyd.unary(func))
++        else:
++            cbk = func
+     else:
+         if isinstance(func, int):
+             func = str(func)
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index cbdabcd..5246d4f 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -37,6 +37,44 @@ def test_count_by(case, expected):
+     assert _.count_by(*case) == expected
+ 
+ 
++@parametrize(
++    "collection",
++    [
++        [4.3, 6.1, 6.4, -4.3],
++        (4.3, 6.1, 6.4, -4.3),
++        {0: 4.3, 1: 6.1, 2: 6.4, 3: -4.3},
++        {"a": 4.3, "b": 6.1, "c": 6.4, "d": -4.3},
++    ],
++)
++@parametrize(
++    "iteratee,first,second,last",
++    [(_.floor, 4.0, 6.0, -5.0), (_.ceil, 5.0, 7.0, -4.0), (_.round_, 4.0, 6.0, -4.0)],
++)
++def test_rounding_iteratees_use_default_precision(collection, iteratee, first, second, last):
++    assert _.count_by(collection, iteratee) == {first: 1, second: 2, last: 1}
++    values = collection.values() if isinstance(collection, dict) else collection
++    assert _.group_by(values, iteratee) == {
++        first: [4.3],
++        second: [6.1, 6.4],
++        last: [-4.3],
++    }
++    assert _.map_(collection, iteratee) == [first, second, second, last]
++
++
++@parametrize("partial", [_.partial, _.partial_right])
++@parametrize("func,expected", [(_.floor, 6.04), (_.ceil, 6.05), (_.round_, 6.05)])
++def test_rounding_iteratees_with_explicit_precision(partial, func, expected):
++    iteratee = partial(func, precision=2)
++    assert _.map_([6.049, 6.049], iteratee) == [expected, expected]
++
++
++@parametrize("func", [_.floor, _.ceil, _.round_])
++@parametrize("value,error", [(float("nan"), ValueError), (float("inf"), OverflowError)])
++def test_rounding_iteratees_propagate_numeric_errors(func, value, error):
++    with pytest.raises(error):
++        _.map_([1.2, value], func)
++
++
+ @parametrize(
+     "case,expected",
+     [
+diff --git a/tests/test_utilities.py b/tests/test_utilities.py
+index 4a00aae..94b60c9 100644
+--- a/tests/test_utilities.py
++++ b/tests/test_utilities.py
+@@ -1,3 +1,4 @@
++import inspect
+ import time
+ from unittest import mock
+ 
+@@ -183,6 +184,21 @@ def test_iteratee(case, arg, expected):
+     assert _.map_(arg, getter) == expected
+ 
+ 
++@parametrize("func,expected", [(_.floor, 6.04), (_.ceil, 6.05), (_.round_, 6.05)])
++def test_rounding_iteratee_preserves_call_contract(func, expected):
++    iteratee = _.iteratee(func)
++    assert iteratee.__name__ == func.__name__
++    assert iteratee.__doc__ == func.__doc__
++    assert inspect.signature(iteratee) == inspect.signature(func)
++    assert func(6.049, 2) == expected
++    assert func(x=6.049, precision=2) == expected
++    assert iteratee(x=6.049, precision=2) == expected
++    assert iteratee(6.049, "ignored", [6.049]) == func(6.049)
++
++    with pytest.raises(TypeError):
++        iteratee(x=6.049, precision="invalid")
++
++
+ @parametrize(
+     "case,arg,expected",
+     [

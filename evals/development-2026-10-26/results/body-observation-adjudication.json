@@ -1,0 +1,27 @@
+{
+  "adjudicated_at": "2026-10-25T20:15:19.828054+00:00",
+  "iteration": 2,
+  "original_summary_sha256": "6AEE3F4C69ACC3CD470B5BA38AE04891CAC9363454A9C7D344D52845512C0C0A",
+  "original_automatic_body_reads": 5,
+  "original_automatic_development_gate_pass": false,
+  "original_events_records_counts_and_gate_result_preserved": true,
+  "independent_review_raw_sha256": "AF51E8728C8F09568B683A2E88DC240F2F6E85F31781117D01FCB6FD7E4000DC",
+  "independent_review_public_sha256": "892A530AA3001AE907E057FF99C4B9B52FE08BA926DC20B4542C97EE5681A619",
+  "actual_evidence_added": "d09 r2 completed MCP item_4 returns the entire installed SKILL.md byte-for-byte, decoded from result content. The original shell-only reader did not inspect this output channel.",
+  "additional_complete_body_observations_proven": 1,
+  "adjudicated_complete_body_observations": 6,
+  "contract_accepted": 6,
+  "cli_completed_without_timeout": 6,
+  "adjudicated_development_gate_pass": true,
+  "gate_criterion_unchanged": "All6 contracts, actual complete skill-body observation, normal CLI completion; no tool-channel restriction was declared.",
+  "model_calls_for_adjudication": 0,
+  "scores_tests_model_inputs_or_skill_changed": false,
+  "trace_flags_sha256": "CF9A7863247377F12DACE8A09A1EB692DFB79B2B9BB735405D0DEA6A5A95803B",
+  "trace_flags_reviewed": 16,
+  "emitted_prohibited_agent_directed_access_observed": false,
+  "limits": [
+    "Git attempted denied global-ignore reads; Git binary resolution and transitive host accesses remain unknown.",
+    "Observation proof concerns emitted outputs, not model attention.",
+    "This is known-task development evidence, not causal comparative, fresh holdout, efficiency or production evidence."
+  ]
+}

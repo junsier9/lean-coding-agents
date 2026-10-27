@@ -1,0 +1,432 @@
+{
+  "recorded_at": "2026-10-25T17:19:08.750905+00:00",
+  "scope": "Complete240 real-task native attempts; all failed costs retained",
+  "missing_usage_by_phase": {
+    "formal": 1,
+    "replication": 14
+  },
+  "replication_missing_by_arm": {
+    "baseline": 7,
+    "with-skill": 7
+  },
+  "unknown_usage_records": [
+    {
+      "key": "formal--xb-048-pydash-241--r0--with-skill",
+      "phase": "formal",
+      "case_id": "xb-048-pydash-241",
+      "repeat": 0,
+      "arm": "with-skill",
+      "accepted": true,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.406,
+      "grade_seconds": 1.063,
+      "wall_seconds": 601.469,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "E6505C10FBD16F4D114B4CE75A8280B0A4C44F200075228F593046517C7F02C9",
+        "cli-checkpoint.json": "4111717E491320EBA5010CB3F036D97E0C545EC78517E1C4DCB7F6869CA9460E",
+        "events.jsonl": "944A4D63C213CD0CFBD75F4A2585948E05268589F0A440B78DF366F7DE796CB5",
+        "stderr.txt": "48AE44FFCF85DFAD3F9C02531AB41D336085AAC3C1F07DE519987F9155E2FC0B"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 27,
+        "item.started": 21
+      }
+    },
+    {
+      "key": "replication--extra-a-boltons-247--r0--baseline",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-247",
+      "repeat": 0,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.437,
+      "grade_seconds": 10.969,
+      "wall_seconds": 611.406,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "C4E233EF888F84B5C424398DC9BB714C2BC9ECF3D7CEA33E2D5311BB42A29E91",
+        "cli-checkpoint.json": "99DC04569B3432ECC1B87D9393108C29A2DBF3684A74ADEB7022BB04855E63A9",
+        "events.jsonl": "529746015CFA012B3F8D85F80E9ED3F30CA4F2E67121024F37BB51A007B8F5C1",
+        "stderr.txt": "E58502BEC9B9552003DFD895DB6E89BAC6C25BF39C2BDD49C3CE9DAE48DD635F"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 9,
+        "item.started": 7,
+        "error": 3
+      }
+    },
+    {
+      "key": "replication--xb-042-pydash-252--r2--with-skill",
+      "phase": "replication",
+      "case_id": "xb-042-pydash-252",
+      "repeat": 2,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.406,
+      "grade_seconds": 1.125,
+      "wall_seconds": 601.531,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "E5D7081B64B23B97D057EA8F19DD4928A93AF667F9CEFD78D34F495420C334ED",
+        "cli-checkpoint.json": "95CB6543B6D650A7F8140EAE97F0162A4B7AA64F3E8307E982F7BF4A2CA82F17",
+        "events.jsonl": "17DB1FFCA4D10C9466A9A58290EB41DAA988A405C0ED55E68E99BF077BCD27F5",
+        "stderr.txt": "A515A6BF92AD7653329D14A8E7205668860CF24EB1661782E2F881DB40A3B040"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 5,
+        "item.started": 4,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a-boltons-349--r2--baseline",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-349",
+      "repeat": 2,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.36,
+      "grade_seconds": 0.593,
+      "wall_seconds": 600.953,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "6BB8667626F9C0CF341B71EFB7C591D82929A50655F922FA294FF8BFBCE48F5D",
+        "cli-checkpoint.json": "61E0DBCE19CA27562AE6742349B42CB22826EB4D7606D0312661F91DCB3E1671",
+        "events.jsonl": "75C4485747B2E728D7307EED790EC0AB1B388163DFA8166E504F0EE9B387CDF6",
+        "stderr.txt": "A026D2F08007FA1468D9F16C93F7E90BB92C39725328D6B7D80033F94E5709E9"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a-boltons-247--r0--with-skill",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-247",
+      "repeat": 0,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.391,
+      "grade_seconds": 10.922,
+      "wall_seconds": 611.313,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "5BC7E0C94F63A863467FABEE7779F1C5AF13904BE37BB6D6BE1F9CEF55F50382",
+        "cli-checkpoint.json": "7BE5823BD84D65B8420C93C9AA78951424EBB81AD5707850A6D21416A006915F",
+        "events.jsonl": "D4D726FCE92ADFAEC12FADF958E190774BECEBD5195B076C64EB16590E2F4E31",
+        "stderr.txt": "9D6DA2EF85BB9905FEC80B2E35F7C352A0794DCF0BCA41F9FC1D05F46238BF98"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--xb-042-pydash-252--r2--baseline",
+      "phase": "replication",
+      "case_id": "xb-042-pydash-252",
+      "repeat": 2,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.406,
+      "grade_seconds": 1.14,
+      "wall_seconds": 601.546,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "93C10B27741031659014615A6B3A886A55FEDD7BD93BBFBFB860E08BE64FD150",
+        "cli-checkpoint.json": "58A30CEE8FFB1487FFED67E1C6009C0FFFDCA50B21BE826FE953FF61312BC31A",
+        "events.jsonl": "F1DE2A899BC1E28211284464A92F8DFF5E1DBF96C24FDABB9D322D5769F484CD",
+        "stderr.txt": "1835D073DC494C2FCF657E617C44103B599CCFDBF1A14DF903F789C9F2298BCE"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a-boltons-349--r2--with-skill",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-349",
+      "repeat": 2,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.359,
+      "grade_seconds": 0.609,
+      "wall_seconds": 600.968,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "172B9925462B4CD51CF0D235212A5CD1E8CB3421EB26089BF361765D8A7685A3",
+        "cli-checkpoint.json": "72FCB8612A096EF1384EE0EFAC6F71B6B833DEEC95439FF05A964C913E1AEF90",
+        "events.jsonl": "F4AEC47A7E6C36AB85F5C4B8FDC25AC1D555731A03C21CC0A596BE16EAC9995F",
+        "stderr.txt": "A8EF90A6367A4AF368BA41F44D3B5964612C33F57702CE40712B402F6D330B24"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a2-click-3493--r0--with-skill",
+      "phase": "replication",
+      "case_id": "extra-a2-click-3493",
+      "repeat": 0,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.406,
+      "grade_seconds": 1.094,
+      "wall_seconds": 601.5,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "C3AB8335C94585D4EF9B327C0BDECED843C5BFD9DFDF16264F59449F96D6C88B",
+        "cli-checkpoint.json": "DD2146D451B22AED144948832360E11738681B189B5389FE5510F3003F1CFF2B",
+        "events.jsonl": "CD60025AE181F5736B941CC2713FE91B918F19B8CBA4CC28AEC4040FF06EE5CF",
+        "stderr.txt": "C3708A5EBA1ABFD1803AC684E676467BCE1D44C8700B7F8B17DBF644216E5F6F"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a2-click-3493--r1--baseline",
+      "phase": "replication",
+      "case_id": "extra-a2-click-3493",
+      "repeat": 1,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.438,
+      "grade_seconds": 1.063,
+      "wall_seconds": 601.501,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "A5AEAA27D8116D2CE285209C2E3843C81A47C5ABA0FC2F96C0CEA8436DEDDA97",
+        "cli-checkpoint.json": "E1C071905E3ACEB8ABF29A28CA04CEE3176C20E4E565B65590B2BD562EB4F1B1",
+        "events.jsonl": "1933563DF0AB75D80504B35466B2B93F79D1965E133A586654E8980390FD6543",
+        "stderr.txt": "A07514DB8750D1CC3FB2B8499A9652144DB5019DF98C5B6C2EBAE0DF306943DE"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--xb-076-click-2217--r1--with-skill",
+      "phase": "replication",
+      "case_id": "xb-076-click-2217",
+      "repeat": 1,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.39,
+      "grade_seconds": 0.844,
+      "wall_seconds": 601.234,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "1BC54B8A98575ED2ABDBA5B5256CD652C2551BC45A41D46582A41E66CF7A1169",
+        "cli-checkpoint.json": "475D2D8F30878B6E5039F0893ADC456D237E32C0BB045FD03C6E4977D124E0BC",
+        "events.jsonl": "88B949B76A51370FCD42A88F6852CE67A245B90AE84BF997DBC260B52E763612",
+        "stderr.txt": "0C622169DC180FB23C1A706326C4223A71D2056310D7D944E165269A666DC328"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--extra-a2-click-3493--r0--baseline",
+      "phase": "replication",
+      "case_id": "extra-a2-click-3493",
+      "repeat": 0,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.437,
+      "grade_seconds": 1.062,
+      "wall_seconds": 601.499,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "70A75365321AC8B8A76A0109164BDD9FE55EE41277547895CF201438051C3D3E",
+        "cli-checkpoint.json": "658C0391FB3DE1AA53E5E84B791D94F84677BB49226D4B4D05B5ED28121D153F",
+        "events.jsonl": "746431B4818049444D676862F54EC3F802E30954091B7AC739E6EB7C1023E387",
+        "stderr.txt": "55ECC4D0FE58B24F5BE0FD4549EE39041145A1CC23E77F2C96CE9420F842488C"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 5
+      }
+    },
+    {
+      "key": "replication--extra-a2-click-3493--r1--with-skill",
+      "phase": "replication",
+      "case_id": "extra-a2-click-3493",
+      "repeat": 1,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.453,
+      "grade_seconds": 1.032,
+      "wall_seconds": 601.485,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "56A0FA6B664D1C133DA765FDF6D3FFADAE0F80480071C7F821FC2CAA0C605E39",
+        "cli-checkpoint.json": "F14C1F3AAE530D77ABBA873A650F86DF8C1A9E34178DD9ED8337ADDB31C176B9",
+        "events.jsonl": "FEB9F3D698055F725D9E5C28849CBE21CA9A6C1ABAC5303671AACBB2FCBF655E",
+        "stderr.txt": "163D6894FC93DE4C5573271D301DCD4793D598B26AA407E88B735E4F6A54835E"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 5
+      }
+    },
+    {
+      "key": "replication--xb-076-click-2217--r1--baseline",
+      "phase": "replication",
+      "case_id": "xb-076-click-2217",
+      "repeat": 1,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.359,
+      "grade_seconds": 0.796,
+      "wall_seconds": 601.155,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "06303F461D35B1CD939A25E1D1574427BD72F3640A74F19DB3AB6B93FF18D2E4",
+        "cli-checkpoint.json": "995C809F8618C1FB09A3E3AD4140BF7ADA289289574E481236ACA07EACAD4667",
+        "events.jsonl": "076E84B48164A00C370A46B5E8B783AD280AE2249EA27FB1ED1113EAB1FC8A4A",
+        "stderr.txt": "E95A664201B6868B921C37E56B51A974642A641B7A74563F55151119CFFCA46B"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 5
+      }
+    },
+    {
+      "key": "replication--xb-030-pydash-278--r0--baseline",
+      "phase": "replication",
+      "case_id": "xb-030-pydash-278",
+      "repeat": 0,
+      "arm": "baseline",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.39,
+      "grade_seconds": 1.0,
+      "wall_seconds": 601.39,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "618849B68E3CA58417D359E3E7D60A022F3D551386BDFA5086F27C47E7EF7FCA",
+        "cli-checkpoint.json": "A82CE2817DA527A6558861E49A59FEEFEC25E44F514A7FFB57B9510CB6F101A3",
+        "events.jsonl": "CAC1809E0CCFA8EA4A7F8F7B7D0344C10358F7E259EA2833DAD986B15436C207",
+        "stderr.txt": "9711A193B61CA4F801A3D3FFAE360CC10F37900F0255EDF0D8687072DAB04E35"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    },
+    {
+      "key": "replication--xb-030-pydash-278--r0--with-skill",
+      "phase": "replication",
+      "case_id": "xb-030-pydash-278",
+      "repeat": 0,
+      "arm": "with-skill",
+      "accepted": false,
+      "cli_completed": true,
+      "cli_exit_code": 1,
+      "timeout": true,
+      "client_seconds": 600.406,
+      "grade_seconds": 0.969,
+      "wall_seconds": 601.375,
+      "usage_complete": false,
+      "total_tokens": null,
+      "raw_artifact_sha256": {
+        "record.json": "9003CC6CC07C3A3A481A50BF158A259817D5CE210576AD71A467B93DF3172B55",
+        "cli-checkpoint.json": "56E6303483DC2F635CE2A6EBAFE0B933738C7BAFD611103E22B238BF1DFED3F5",
+        "events.jsonl": "958C468C42BF5E4303472E89008C5D648697D6CBA32899516C89FB0211E1BD8C",
+        "stderr.txt": "D8F3305DBDEAC8A8C81404353D74AC123C70F71EBEA451784C82399A236674F2"
+      },
+      "event_types": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "error": 4
+      }
+    }
+  ],
+  "complete_usage_real_attempts": 225,
+  "total_real_client_timeouts": 15,
+  "missing_is_unknown_not_zero": true,
+  "no_attempt_omitted_or_paid_model_rerun": true,
+  "frozen_case_scores_unchanged": true,
+  "exact_token_comparison_unavailable_in_both_batches": true,
+  "time_cost_includes_all_observed_timeouts_and_failed_grading_attempts": true,
+  "causal_limit": "Timeouts and absent completed usage events are observed. Their underlying causes are not independently established; the symmetric replication pattern is not attributed causally to the skill."
+}

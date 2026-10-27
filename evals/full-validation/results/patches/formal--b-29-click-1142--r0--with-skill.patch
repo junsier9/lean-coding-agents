@@ -1,0 +1,74 @@
+diff --git a/src/click/_termui_impl.py b/src/click/_termui_impl.py
+index d4e3e88..425649d 100644
+--- a/src/click/_termui_impl.py
++++ b/src/click/_termui_impl.py
+@@ -227,6 +227,10 @@ class ProgressBar:
+         import shutil
+ 
+         if self.is_hidden:
++            # Only output the label when the output is not a terminal.
++            if self._last_line != self.label:
++                self._last_line = self.label
++                echo(self.label, file=self.file, color=self.color)
+             return
+ 
+         buf = []
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index 3958161..f815117 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -74,7 +74,8 @@ def test_progressbar_length_hint(runner, monkeypatch):
+     assert result.exception is None
+ 
+ 
+-def test_progressbar_hidden(runner, monkeypatch):
++@pytest.mark.parametrize("seconds", [0, 1])
++def test_progressbar_hidden(runner, monkeypatch, seconds):
+     fake_clock = FakeClock()
+     label = "whatever"
+ 
+@@ -82,11 +83,42 @@ def test_progressbar_hidden(runner, monkeypatch):
+     def cli():
+         with _create_progress(label=label) as progress:
+             for _ in progress:
+-                fake_clock.advance_time()
++                fake_clock.advance_time(seconds)
+ 
+     monkeypatch.setattr(time, "time", fake_clock.time)
+     monkeypatch.setattr(click._termui_impl, "isatty", lambda _: False)
+-    assert runner.invoke(cli, []).output == ""
++    result = runner.invoke(cli, [])
++    assert result.exception is None
++    assert result.output == f"{label}\n"
++
++
++@pytest.mark.parametrize("label", [None, "", "    padded line"])
++def test_progressbar_hidden_empty(runner, label):
++    @click.command()
++    def cli():
++        with click.progressbar([], label=label) as progress:
++            assert list(progress) == []
++
++    result = runner.invoke(cli)
++    assert result.exception is None
++    assert result.output == f"{label or ''}\n"
++
++
++def test_progressbar_hidden_update(tmp_path):
++    path = tmp_path / "progress.txt"
++
++    with path.open("w", encoding="utf-8") as file:
++        with click.progressbar(
++            length=4, label=click.style("Starting", fg="green"), file=file, width=0
++        ) as progress:
++            assert path.read_text(encoding="utf-8") == "Starting\n"
++            progress.update(1)
++            progress.update(1)
++            progress.label = "Finishing"
++            progress.update(1)
++            progress.update(1)
++
++    assert path.read_text(encoding="utf-8") == "Starting\nFinishing\n"
+ 
+ 
+ @pytest.mark.parametrize("avg, expected", [([], 0.0), ([1, 4], 2.5)])

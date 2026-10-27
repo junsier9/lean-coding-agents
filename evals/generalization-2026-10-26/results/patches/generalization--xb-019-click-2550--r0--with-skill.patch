@@ -1,0 +1,143 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index b03a760..efc6b6a 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2571,7 +2571,9 @@ class Option(Parameter):
+             self._flag_needs_value = flag_value is not None
+ 
+         if is_flag and default_is_missing and not self.required:
+-            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = False
++            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = (
++                () if multiple else False
++            )
+ 
+         if flag_value is None:
+             flag_value = not self.default
+@@ -2622,9 +2624,6 @@ class Option(Parameter):
+                 if self.is_flag:
+                     raise TypeError("'count' is not valid with 'is_flag'.")
+ 
+-            if self.multiple and self.is_flag:
+-                raise TypeError("'multiple' is not valid with 'is_flag', use 'count'.")
+-
+     def to_info_dict(self) -> t.Dict[str, t.Any]:
+         info_dict = super().to_info_dict()
+         info_dict.update(
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 0e438eb..c04073c 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -26,6 +28,27 @@ def test_multiple_defaults(runner):
+     assert result.output.splitlines() == ["23.0", "42.0"]
+ 
+ 
++@pytest.mark.parametrize(
++    "kwargs",
++    [
++        {"is_flag": True},
++        {"flag_value": True},
++        {"flag_value": False},
++        {"flag_value": "flag"},
++        {"flag_value": 42},
++    ],
++)
++def test_multiple_flag_defaults(runner, kwargs):
++    @click.command()
++    @click.option("--foo", multiple=True, **kwargs)
++    def cli(foo):
++        return foo
++
++    assert cli.params[0].default == ()
++    result = runner.invoke(cli, [], standalone_mode=False, catch_exceptions=False)
++    assert result.return_value == ()
++
++
+ def test_nargs_plus_multiple(runner):
+     @click.command()
+     @click.option(
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d4090c7..8f883da 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -118,6 +118,64 @@ def test_multiple_required(runner):
+     assert "Error: Missing option '-m' / '--message'." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("kwargs", "value"),
++    [
++        ({"is_flag": True}, True),
++        ({"flag_value": True}, True),
++        ({"flag_value": False}, False),
++        ({"flag_value": "flag"}, "flag"),
++        ({"flag_value": 42}, 42),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "count"),
++    [(["--foo"], 1), (["-f", "--foo"], 2), (["-ff", "--foo"], 3)],
++)
++def test_multiple_flags(runner, kwargs, value, args, count):
++    @click.command()
++    @click.option("-f", "--foo", multiple=True, **kwargs)
++    def cli(foo):
++        return foo
++
++    result = runner.invoke(cli, args, standalone_mode=False, catch_exceptions=False)
++    assert result.return_value == (value,) * count
++
++
++def test_multiple_boolean_flag_pair(runner):
++    @click.command()
++    @click.option("--foo/--no-foo", multiple=True)
++    def cli(foo):
++        return foo
++
++    result = runner.invoke(
++        cli,
++        ["--foo", "--no-foo", "--no-foo", "--foo"],
++        standalone_mode=False,
++        catch_exceptions=False,
++    )
++    assert result.return_value == (True, False, False, True)
++
++
++@pytest.mark.parametrize(
++    ("kwargs", "value"), [({"is_flag": True}, True), ({"flag_value": "flag"}, "flag")]
++)
++def test_multiple_flags_required(runner, kwargs, value):
++    @click.command()
++    @click.option("--foo", multiple=True, required=True, **kwargs)
++    def cli(foo):
++        return foo
++
++    result = runner.invoke(cli, [])
++    assert result.exit_code == 2
++    assert "Error: Missing option '--foo'." in result.output
++
++    result = runner.invoke(
++        cli, ["--foo", "--foo"], standalone_mode=False, catch_exceptions=False
++    )
++    assert result.return_value == (value, value)
++
++
+ @pytest.mark.parametrize(
+     ("multiple", "nargs", "default"),
+     [
+@@ -911,10 +969,6 @@ def test_is_bool_flag_is_correctly_set(option, expected):
+     [
+         ({"count": True, "multiple": True}, "'count' is not valid with 'multiple'."),
+         ({"count": True, "is_flag": True}, "'count' is not valid with 'is_flag'."),
+-        (
+-            {"multiple": True, "is_flag": True},
+-            "'multiple' is not valid with 'is_flag', use 'count'.",
+-        ),
+     ],
+ )
+ def test_invalid_flag_combinations(runner, kwargs, message):

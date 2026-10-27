@@ -1,0 +1,187 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 4fc05cc..e60ff38 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2576,16 +2576,23 @@ def xor_by(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
++    if not lists:
++        return array
++
++    other = list(lists[0])
++
+     return xor_by(
+         uniq(
+             difference_by(
+-                array + lists[0],
+-                intersection_by(array, lists[0], iteratee=iteratee),
++                array + other,
++                intersection_by(array, other, iteratee=iteratee),
+                 iteratee=iteratee,
+             )
+         ),
+@@ -2596,13 +2603,13 @@ def xor_by(array, *lists, **kwargs):
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++    array: t.Iterable[T], *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+ ) -> t.List[T]: ...
+ 
+ 
+ @t.overload
+ def xor_with(
+-    array: t.Sequence[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++    array: t.Iterable[T], *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+ ) -> t.List[T]: ...
+ 
+ 
+@@ -2633,16 +2640,23 @@ def xor_with(array, *lists, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
++    array = list(array)
++
+     if not lists:
+-        return array[:]
++        return array
+ 
+     comp, lists = parse_iteratee("comparator", *lists, **kwargs)
+ 
++    if not lists:
++        return array
++
++    other = list(lists[0])
++
+     return xor_with(
+         uniq(
+             difference_with(
+-                array + lists[0],
+-                intersection_with(array, lists[0], comparator=comp),
++                array + other,
++                intersection_with(array, other, comparator=comp),
+                 comparator=comp,
+             )
+         ),
+diff --git a/src/pydash/chaining/all_funcs.pyi b/src/pydash/chaining/all_funcs.pyi
+index 7c0efa7..02e1b58 100644
+--- a/src/pydash/chaining/all_funcs.pyi
++++ b/src/pydash/chaining/all_funcs.pyi
+@@ -629,11 +629,11 @@ class AllFuncs:
+ 
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
++        self: "Chain[t.Iterable[T]]", *lists: t.Iterable[T2], comparator: t.Callable[[T, T2], t.Any]
+     ) -> "Chain[t.List[T]]": ...
+     @t.overload
+     def xor_with(
+-        self: "Chain[t.Sequence[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
++        self: "Chain[t.Iterable[T]]", *lists: t.Union[t.Iterable[T2], t.Callable[[T, T2], t.Any]]
+     ) -> "Chain[t.List[T]]": ...
+     def xor_with(self, *lists, **kwargs):
+         return self._wrap(pyd.xor_with)(*lists, **kwargs)
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b618b3c..eb7f8a5 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1084,6 +1084,90 @@ def test_xor_with_multiple_arrays(arrays, expected):
+     assert _.xor_with(*arrays, comparator=comparator) == expected
+ 
+ 
++@parametrize("function", [_.xor, _.xor_by, _.xor_with])
++@parametrize(
++    "factory",
++    [list, tuple, iter, lambda values: (value for value in values)],
++    ids=["list", "tuple", "iterator", "generator"],
++)
++@parametrize("values", [[], [1, 2, 1]])
++def test_xor_single_iterable(function, factory, values):
++    array = factory(values)
++    result = function(array)
++    assert isinstance(result, list)
++    assert result == values
++    assert result is not array
++
++
++@parametrize("function", [_.xor, _.xor_by, _.xor_with])
++@parametrize("left_factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("right_factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize(
++    "arrays,expected",
++    [
++        (([1, 2, 3, 1], [5, 2, 1, 4, 5]), [3, 5, 4]),
++        (([], [1, 1, 2]), [1, 2]),
++        (([1, 1, 2], []), [1, 2]),
++        (([], []), []),
++        (([1, 2, 5], [2, 3, 5], [3, 4, 5]), [1, 4, 5]),
++    ],
++)
++def test_xor_mixed_iterables(function, left_factory, right_factory, arrays, expected):
++    inputs = [left_factory(arrays[0]), *(right_factory(array) for array in arrays[1:])]
++    assert function(*inputs) == expected
++
++
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("keyword", [False, True])
++@parametrize("name", ["xor_by", "xor_with"])
++def test_xor_iterables_with_callback(factory, keyword, name):
++    first = {"id": 1}
++    second = {"id": 2}
++    third = {"id": 3}
++    fourth = {"id": 4}
++    arrays = [[first, second, second], [{"id": 2}, third], [{"id": 1}, fourth]]
++    inputs = [factory(array) for array in arrays]
++    snapshots = [array[:] for array in arrays]
++    if name == "xor_by":
++        callback = "id"
++        callback_name = "iteratee"
++    else:
++        callback = lambda left, right: left["id"] == right["id"]
++        callback_name = "comparator"
++
++    function = getattr(_, name)
++    if keyword:
++        result = function(*inputs, **{callback_name: callback})
++    else:
++        result = function(*inputs, callback)
++    assert result == [third, fourth]
++    assert result[0] is third
++    assert result[1] is fourth
++    assert arrays == snapshots
++    for array, snapshot in zip(inputs, snapshots):
++        if isinstance(array, list):
++            assert array == snapshot
++
++
++@parametrize("factory", [list, tuple, iter, lambda values: (value for value in values)])
++@parametrize("keyword", [False, True])
++@parametrize(
++    "function,callback_name,callback",
++    [
++        (_.xor_by, "iteratee", "id"),
++        (_.xor_by, "iteratee", lambda value: value["id"]),
++        (_.xor_with, "comparator", lambda left, right: left["id"] == right["id"]),
++    ],
++)
++def test_xor_single_iterable_with_callback(factory, keyword, function, callback_name, callback):
++    values = [{"id": 1}, {"id": 2}, {"id": 1}]
++    array = factory(values)
++    result = function(array, **{callback_name: callback}) if keyword else function(array, callback)
++    assert isinstance(result, list)
++    assert result == values
++    assert result is not array
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,10 @@
+{
+  "id": "negative-extra-03",
+  "family": "read-only",
+  "expected_load": false,
+  "task": "请对 service.py 做一次只读代码审查，检查调用者与仓库之间的数据所有权。给出两条有具体触发条件的别名风险发现，说明它们会如何改变已保存的记录。只输出审查意见，不修改文件，也不提供补丁。",
+  "files": {
+    "service.py": "class JobStore:\n    def __init__(self):\n        self.rows = {}\n\n    def save(self, job_id, payload):\n        self.rows[job_id] = payload\n\n    def get(self, job_id):\n        return self.rows[job_id]\n\ndef publish(store, job_id, payload):\n    store.save(job_id, payload)\n    payload['status'] = 'sent'\n"
+  },
+  "hidden_tests": {}
+}

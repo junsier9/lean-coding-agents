@@ -1,0 +1,145 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 00f1d37..0db97e7 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2175,9 +2175,6 @@ def union(array, *others):
+ 
+     .. versionadded:: 1.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+     return uniq(flatten([array] + list(others)))
+ 
+ 
+@@ -2217,9 +2214,6 @@ def union_by(array, *others, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+     iteratee, others = parse_iteratee("iteratee", *others, **kwargs)
+ 
+     return uniq_by(flatten([array] + list(others)), iteratee=iteratee)
+@@ -2263,9 +2257,6 @@ def union_with(array, *others, **kwargs):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    if not others:
+-        return array[:]
+-
+     comparator, others = parse_iteratee("comparator", *others, **kwargs)
+ 
+     return uniq_with(flatten([array] + list(others)), comparator=comparator)
+diff --git a/src/pydash/helpers.py b/src/pydash/helpers.py
+index fcf409a..dfbb056 100644
+--- a/src/pydash/helpers.py
++++ b/src/pydash/helpers.py
+@@ -278,6 +278,9 @@ def parse_iteratee(iteratee_keyword, *args, **kwargs):
+     """Try to find iteratee function passed in either as a keyword argument or as the last
+     positional argument in `args`."""
+     iteratee = kwargs.get(iteratee_keyword)
++    if not args:
++        return iteratee, args
++
+     last_arg = args[-1]
+ 
+     if iteratee is None and (
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index fe18641..65ed404 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1085,6 +1085,92 @@ def test_union_with(case, expected):
+     assert _.union_with(*case) == expected
+ 
+ 
++@parametrize(
++    "union,kwargs",
++    [
++        (_.union, {}),
++        (_.union_by, {}),
++        (_.union_by, {"iteratee": None}),
++        (_.union_with, {}),
++        (_.union_with, {"comparator": None}),
++    ],
++)
++@parametrize("others", [(), ([],)])
++@parametrize(
++    "array,expected",
++    [
++        ([], []),
++        ([3, 1, 3, 2, 1], [3, 1, 2]),
++        ((3, 1, 3, 2, 1), [3, 1, 2]),
++        ([[2], [1], [2]], [[2], [1]]),
++    ],
++)
++def test_union_single_array(union, kwargs, others, array, expected):
++    original = array[:]
++    result = union(array, *others, **kwargs)
++
++    assert isinstance(result, list)
++    assert result == expected
++    assert result is not array
++    assert array == original
++
++
++@parametrize("others", [(), ([],)])
++@parametrize("iteratee", [lambda item: item["x"], "x", {"x": 1}])
++def test_union_by_single_array_iteratee(others, iteratee):
++    array = [{"x": 1, "y": 1}, {"x": 2, "y": 1}, {"x": 1, "y": 2}]
++    original = array[:]
++
++    for result in (
++        _.union_by(array, *others, iteratee=iteratee),
++        _.union_by(array, *others, iteratee),
++    ):
++        assert result == array[:2]
++        assert result[0] is array[0]
++        assert result[1] is array[1]
++    assert array == original
++
++
++@parametrize("others", [(), ([],)])
++def test_union_with_single_array_comparator(others):
++    array = [{"x": 1, "y": 1}, {"x": 2, "y": 1}, {"x": 1, "y": 2}]
++    original = array[:]
++
++    def comparator(item, other):
++        return item["x"] == other["x"]
++
++    for result in (
++        _.union_with(array, *others, comparator=comparator),
++        _.union_with(array, *others, comparator),
++    ):
++        assert result == array[:2]
++        assert result[0] is array[0]
++        assert result[1] is array[1]
++    assert array == original
++
++
++@parametrize("union,keyword", [(_.union_by, "iteratee"), (_.union_with, "comparator")])
++@parametrize("others", [(), ([],)])
++def test_union_single_array_callback_error(union, keyword, others):
++    def fail(*args):
++        raise ValueError("union callback failed")
++
++    with pytest.raises(ValueError, match="union callback failed"):
++        union([1, 2], *others, **{keyword: fail})
++
++
++@parametrize(
++    "method,kwargs,expected",
++    [
++        ("union", {}, [1, 2, 3]),
++        ("union_by", {"iteratee": lambda value: value % 2}, [1, 2]),
++        ("union_with", {"comparator": lambda value, other: value % 2 == other % 2}, [1, 2]),
++    ],
++)
++def test_union_single_array_chaining(method, kwargs, expected):
++    assert getattr(_.chain([1, 2, 1, 3]), method)(**kwargs).value() == expected
++
++
+ @parametrize(
+     "case,expected",
+     [

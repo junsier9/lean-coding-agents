@@ -1,0 +1,135 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 00f1d37..85e9774 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2172,11 +2172,13 @@ def union(array, *others):
+ 
+         >>> union([1, 2, 3], [2, 3, 4], [3, 4, 5])
+         [1, 2, 3, 4, 5]
++        >>> union([2, 1, 2, 1])
++        [2, 1]
+ 
+     .. versionadded:: 1.0.0
+     """
+     if not others:
+-        return array[:]
++        return uniq(array)
+ 
+     return uniq(flatten([array] + list(others)))
+ 
+@@ -2214,11 +2216,13 @@ def union_by(array, *others, **kwargs):
+         [1, 2]
+         >>> union_by([1, 2, 3], [2, 3, 4], iteratee=lambda x: x % 9)
+         [1, 2, 3, 4]
++        >>> union_by([1, 2, 3], iteratee=lambda x: x % 2)
++        [1, 2]
+ 
+     .. versionadded:: 4.0.0
+     """
+     if not others:
+-        return array[:]
++        return uniq_by(array, iteratee=kwargs.get("iteratee"))
+ 
+     iteratee, others = parse_iteratee("iteratee", *others, **kwargs)
+ 
+@@ -2260,11 +2264,13 @@ def union_with(array, *others, **kwargs):
+         [1, 2]
+         >>> union_with([1, 2, 3], [2, 3, 4])
+         [1, 2, 3, 4]
++        >>> union_with([1, 2, 3], comparator=comparator)
++        [1, 2]
+ 
+     .. versionadded:: 4.0.0
+     """
+     if not others:
+-        return array[:]
++        return uniq_with(array, comparator=kwargs.get("comparator"))
+ 
+     comparator, others = parse_iteratee("comparator", *others, **kwargs)
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index fe18641..8a0b715 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -1085,6 +1085,81 @@ def test_union_with(case, expected):
+     assert _.union_with(*case) == expected
+ 
+ 
++@parametrize("union", [_.union, _.union_by, _.union_with])
++@parametrize(
++    "array,expected",
++    [
++        ([], []),
++        ([3, 1, 3, 2, 1], [3, 1, 2]),
++        ((3, 1, 3, 2, 1), [3, 1, 2]),
++        ([[1], [1], [2]], [[1], [2]]),
++        ([{"x": 1}, {"x": 1}, {"x": 2}], [{"x": 1}, {"x": 2}]),
++        ([None, "x", None, "x"], [None, "x"]),
++    ],
++)
++def test_union_single_array(union, array, expected):
++    original = array[:]
++    result = union(array)
++
++    assert result == expected
++    assert result is not array
++    assert union(array=array) == expected
++    assert union(array, []) == expected
++    assert union(array, [], []) == expected
++    assert getattr(_.chain(array), union.__name__)().value() == expected
++    assert array == original
++
++
++@parametrize(
++    "union,keyword,rule,array,expected",
++    [
++        (_.union_by, "iteratee", lambda x: x % 2, [3, 1, 4, 2, 3], [3, 4]),
++        (
++            _.union_by,
++            "iteratee",
++            "x",
++            [{"x": 2, "y": 1}, {"x": 1}, {"x": 2, "y": 3}],
++            [{"x": 2, "y": 1}, {"x": 1}],
++        ),
++        (
++            _.union_by,
++            "iteratee",
++            {"x": 1},
++            [{"x": 2}, {"x": 3}, {"x": 1}],
++            [{"x": 2}, {"x": 1}],
++        ),
++        (
++            _.union_with,
++            "comparator",
++            lambda a, b: a % 2 == b % 2,
++            [3, 1, 4, 2, 3],
++            [3, 4],
++        ),
++    ],
++)
++def test_union_single_array_rule(union, keyword, rule, array, expected):
++    kwargs = {keyword: rule}
++    assert union(array, **kwargs) == expected
++    assert union(array=array, **kwargs) == expected
++    assert union(array, [], **kwargs) == expected
++    assert union(array, rule) == expected
++    assert union(array, [], rule) == expected
++    assert getattr(_.chain(array), union.__name__)(**kwargs).value() == expected
++
++
++@parametrize("union,keyword", [(_.union_by, "iteratee"), (_.union_with, "comparator")])
++def test_union_single_array_rule_error(union, keyword):
++    error = RuntimeError("comparison failed")
++
++    def fail(*args):
++        raise error
++
++    with pytest.raises(RuntimeError) as exc_info:
++        union([1, 2], **{keyword: fail})
++
++    assert exc_info.value is error
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,95 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index 31a1951..1443b62 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -185,6 +185,17 @@ class OrderedMultiDict(dict):
+         if kwargs:
+             self.update(kwargs)
+ 
++    def __reduce_ex__(self, protocol):
++        state = self.__dict__.copy()
++        # Rebuild the linked list from all items, rather than pickling its links.
++        del state['_map'], state['root']
++        return self.__class__, (), (self.items(multi=True), state)
++
++    def __setstate__(self, state):
++        items, attributes = state
++        self.update_extend(items)
++        self.__dict__.update(attributes)
++
+     def _clear_ll(self):
+         try:
+             _map = self._map
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index ae046f6..73223b0 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -1,9 +1,11 @@
+ # -*- coding: utf-8 -*-
+ 
++import pickle
+ import sys
+ import pytest
+ 
+-from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
++from boltons.dictutils import (OMD, FastIterOrderedMultiDict, OneToOne,
++                              ManyToMany, FrozenDict, subdict, FrozenHashError)
+ 
+ 
+ _ITEMSETS = [[],
+@@ -74,6 +76,55 @@ def test_copy():
+     return
+ 
+ 
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('protocol', range(pickle.HIGHEST_PROTOCOL + 1))
++@pytest.mark.parametrize('itemset', _ITEMSETS + [
++    [('a', []), ('b', {'nested': [1]}), ('a', None)]])
++def test_pickle(dict_type, protocol, itemset):
++    omd = dict_type(itemset)
++    omd.description = 'pickle round trip'
++    restored = pickle.loads(pickle.dumps(omd, protocol=protocol))
++
++    assert type(restored) is dict_type
++    assert restored.description == omd.description
++    assert restored.items(multi=True) == itemset
++    assert restored.todict(multi=True) == omd.todict(multi=True)
++    assert list(reversed(restored)) == list(reversed(omd))
++    for key in omd:
++        assert restored[key] == omd[key]
++        assert restored.getlist(key) == omd.getlist(key)
++
++    restored.add('a', 'new value')
++    assert restored.poplast('a') == 'new value'
++    assert restored.items(multi=True) == itemset
++    assert omd.items(multi=True) == itemset
++    restored.clear()
++    restored.clear()
++    assert not restored
++    assert restored.items(multi=True) == []
++    restored['a'] = 1
++    restored.add('a', 2)
++    assert restored.getlist('a') == [1, 2]
++    assert restored.popall('a') == [1, 2]
++    assert not restored
++    with pytest.raises(KeyError):
++        restored.poplast()
++
++
++@pytest.mark.parametrize('protocol', range(pickle.HIGHEST_PROTOCOL + 1))
++def test_pickle_shared_and_recursive_values(protocol):
++    shared = []
++    omd = OMD([('a', shared), ('b', shared)])
++    omd.add('a', omd)
++    omd.shared = shared
++
++    restored = pickle.loads(pickle.dumps(omd, protocol=protocol))
++
++    assert restored.getlist('a')[0] is restored['b']
++    assert restored.shared is restored['b']
++    assert restored['a'] is restored
++
++
+ def test_clear():
+     for itemset in _ITEMSETS:
+         omd = OMD(itemset)

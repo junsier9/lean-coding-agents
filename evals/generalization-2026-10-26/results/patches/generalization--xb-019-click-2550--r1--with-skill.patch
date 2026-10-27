@@ -1,0 +1,192 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 2debd78..2cd67e5 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.1.4
+ 
+ Unreleased
+ 
++-   Restore support for repeated boolean and value flags with
++    ``multiple=True``, using an empty tuple as the default.
+ -   Replace all ``typing.Dict`` occurrences to ``typing.MutableMapping`` for
+     parameter hints. :issue:`2255`
+ -   Improve type hinting for decorators and give all generic types parameters.
+diff --git a/src/click/core.py b/src/click/core.py
+index b03a760..a7244cc 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2491,6 +2491,10 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.1.4
++        Repeatable flags are supported again, with an empty tuple as the
++        default.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2571,7 +2575,9 @@ class Option(Parameter):
+             self._flag_needs_value = flag_value is not None
+ 
+         if is_flag and default_is_missing and not self.required:
+-            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = False
++            self.default: t.Union[t.Any, t.Callable[[], t.Any]] = (
++                () if multiple else False
++            )
+ 
+         if flag_value is None:
+             flag_value = not self.default
+@@ -2622,9 +2628,6 @@ class Option(Parameter):
+                 if self.is_flag:
+                     raise TypeError("'count' is not valid with 'is_flag'.")
+ 
+-            if self.multiple and self.is_flag:
+-                raise TypeError("'multiple' is not valid with 'is_flag', use 'count'.")
+-
+     def to_info_dict(self) -> t.Dict[str, t.Any]:
+         info_dict = super().to_info_dict()
+         info_dict.update(
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 0e438eb..aaf58b3 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ import click
+ 
+ 
+@@ -26,6 +28,44 @@ def test_multiple_defaults(runner):
+     assert result.output.splitlines() == ["23.0", "42.0"]
+ 
+ 
++@pytest.mark.parametrize(
++    ("param_decls", "attrs"),
++    [
++        (["--flag"], {"is_flag": True}),
++        (["--flag/--no-flag"], {}),
++        (["--flag"], {"flag_value": True}),
++        (["--flag"], {"flag_value": False}),
++        (["--flag"], {"flag_value": "value"}),
++        (["--flag"], {"flag_value": 42}),
++    ],
++)
++def test_multiple_flag_defaults(runner, param_decls, attrs):
++    @click.command()
++    @click.option(*param_decls, multiple=True, **attrs)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == ()
++
++
++@pytest.mark.parametrize("default", [None, (), (False,), (True, False)])
++def test_multiple_boolean_flag_explicit_default(runner, default):
++    @click.command()
++    @click.option("--flag", flag_value=True, multiple=True, default=default)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (() if default is None else default)
++
++    result = runner.invoke(cli, ["--flag"], standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (True,)
++
++
+ def test_nargs_plus_multiple(runner):
+     @click.command()
+     @click.option(
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d4090c7..d539d04 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -118,6 +118,72 @@ def test_multiple_required(runner):
+     assert "Error: Missing option '-m' / '--message'." in result.output
+ 
+ 
++@pytest.mark.parametrize(
++    ("attrs", "flag_value"),
++    [
++        ({"is_flag": True}, True),
++        ({"flag_value": True}, True),
++        ({"flag_value": False}, False),
++        ({"flag_value": "value"}, "value"),
++        ({"flag_value": 42}, 42),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "count"),
++    [(["--flag"], 1), (["--flag", "--flag"], 2), (["-fff"], 3)],
++)
++def test_multiple_flags(runner, attrs, flag_value, args, count):
++    @click.command()
++    @click.option("-f", "--flag", multiple=True, **attrs)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == (flag_value,) * count
++
++
++@pytest.mark.parametrize(
++    ("args", "expected"),
++    [
++        (["--flag", "--no-flag", "--flag"], (True, False, True)),
++        (["--no-flag", "--flag", "--no-flag"], (False, True, False)),
++    ],
++)
++def test_multiple_boolean_flags(runner, args, expected):
++    @click.command()
++    @click.option("--flag/--no-flag", multiple=True)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == expected
++
++
++@pytest.mark.parametrize(
++    ("attrs", "expected"),
++    [
++        ({"is_flag": True}, (True, True)),
++        ({"flag_value": False}, (False, False)),
++        ({"flag_value": "value"}, ("value", "value")),
++    ],
++)
++def test_multiple_required_flag(runner, attrs, expected):
++    @click.command()
++    @click.option("--flag", multiple=True, required=True, **attrs)
++    def cli(flag):
++        return flag
++
++    result = runner.invoke(cli)
++    assert result.exit_code == 2
++    assert "Error: Missing option '--flag'." in result.output
++
++    result = runner.invoke(cli, ["--flag", "--flag"], standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == expected
++
++
+ @pytest.mark.parametrize(
+     ("multiple", "nargs", "default"),
+     [
+@@ -912,8 +978,8 @@ def test_is_bool_flag_is_correctly_set(option, expected):
+         ({"count": True, "multiple": True}, "'count' is not valid with 'multiple'."),
+         ({"count": True, "is_flag": True}, "'count' is not valid with 'is_flag'."),
+         (
+-            {"multiple": True, "is_flag": True},
+-            "'multiple' is not valid with 'is_flag', use 'count'.",
++            {"count": True, "multiple": True, "is_flag": True},
++            "'count' is not valid with 'multiple'.",
+         ),
+     ],
+ )

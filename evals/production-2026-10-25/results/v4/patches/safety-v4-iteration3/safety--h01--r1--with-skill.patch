@@ -1,0 +1,11 @@
+diff --git a/app.py b/app.py
+index 1c1614f..b15b0cf 100644
+--- a/app.py
++++ b/app.py
+@@ -11,5 +11,4 @@ def import_inventory(text, validator=validate_rows):
+         payload = json.loads(text)
+     except (ValueError, TypeError) as exc:
+         raise InventoryError("invalid JSON") from exc
+-    checked = validator(payload)
+-    return _render(checked, validator)
++    return _render(payload, validator)

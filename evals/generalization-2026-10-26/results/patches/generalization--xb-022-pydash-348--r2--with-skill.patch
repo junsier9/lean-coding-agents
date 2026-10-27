@@ -1,0 +1,114 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index d985d12..e1b1c59 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -927,7 +927,7 @@ def invoke_map(
+     """
+     Invokes the method at `path` of each element in `collection`, returning a list of the results of
+     each invoked method. Any additional arguments are provided to each invoked method. If `path` is
+-    a function, it's invoked for each element in `collection`.
++    a function, it's invoked with each element in `collection` as its first argument.
+ 
+     Args:
+         collection: Collection to iterate over.
+@@ -945,9 +945,14 @@ def invoke_map(
+         >>> expected = [{"b": 1}.items(), {"c": 2}.items()]
+         >>> invoke_map(items, "a[0].items") == expected
+         True
++        >>> invoke_map([2, 3], pow, 3)
++        [8, 27]
+ 
+     .. versionadded:: 4.0.0
+     """
++    if callable(path):
++        return map_(collection, lambda item: path(item, *args, **kwargs))
++
+     return map_(collection, lambda item: pyd.invoke(item, path, *args, **kwargs))
+ 
+ 
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 8cb8822..01c715c 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -284,6 +284,17 @@ def test_includes(case, expected):
+ @parametrize(
+     "case,expected",
+     [
++        (([[1, 2], [3]], len), [2, 1]),
++        (([2, 3], pow, 3, 5), [3, 2]),
++        ((["ab", "cd"], str.upper), ["AB", "CD"]),
++        (([1, 2], "value: {}".format), ["value: 1", "value: 2"]),
++        (([1, 2, 3], helpers.Filter(lambda value: value * 2)), [2, 4, 6]),
++        (({"a": [1, 2], "b": [3]}, len), [2, 1]),
++        (((value for value in [2, 3]), pow, 2), [4, 9]),
++        (([], len), []),
++        ((["aba", "baa"], "replace", "a", "x"), ["xbx", "bxx"]),
++        (([{"a": [1, 2]}, {"a": [3]}], ["a", "count"], 1), [1, 0]),
++        (([{}, {}], "missing"), [None, None]),
+         (([{"a": {"b": 2}}, {"a": {"c": 3}}], "a.items"), [{"b": 2}.items(), {"c": 3}.items()]),
+         (
+             ([{"a": {"b": {"c": 2}}}, {"a": {"b": {"c": 3}}}], "a.b.items"),
+@@ -295,6 +306,63 @@ def test_invoke_map(case, expected):
+     assert _.invoke_map(*case) == expected
+ 
+ 
++def test_invoke_map_callable_arguments():
++    calls = []
++    collection = [{"value": 1}, {"value": 2}]
++
++    def invoke(value, *args, **kwargs):
++        calls.append((value, args, kwargs))
++        value["value"] += args[0]
++        return value["value"]
++
++    assert _.invoke_map(collection, invoke, 3, None, item="__class__", argcount=0) == [4, 5]
++    assert collection == [{"value": 4}, {"value": 5}]
++    assert calls == [
++        (collection[0], (3, None), {"item": "__class__", "argcount": 0}),
++        (collection[1], (3, None), {"item": "__class__", "argcount": 0}),
++    ]
++    assert calls[0][0] is collection[0]
++    assert calls[1][0] is collection[1]
++
++
++def test_invoke_map_callable_keyword_only_argument():
++    def scale(value, factor, *, offset):
++        return value * factor + offset
++
++    assert _.invoke_map([1, 2], scale, 3, offset=4) == [7, 10]
++    assert _.chain([1, 2]).invoke_map(scale, 3, offset=4).value() == [7, 10]
++
++
++def test_invoke_map_callable_error_propagates():
++    calls = []
++    error = ValueError("invalid value")
++
++    def invoke(value):
++        calls.append(value)
++        raise error
++
++    with pytest.raises(ValueError, match="invalid value") as exc_info:
++        _.invoke_map([1, 2], invoke)
++
++    assert exc_info.value is error
++    assert calls == [1]
++
++
++def test_invoke_map_callable_extra_arguments_raise():
++    with pytest.raises(TypeError):
++        _.invoke_map([[1]], len, "extra")
++
++
++def test_invoke_map_restricted_path_raises():
++    with pytest.raises(KeyError, match="access to restricted key"):
++        _.invoke_map([{}], "__class__")
++
++
++def test_invoke_map_noncallable_method_raises():
++    with pytest.raises(TypeError):
++        _.invoke_map([{"method": None}], "method")
++
++
+ @parametrize(
+     "case,expected",
+     [

@@ -1,0 +1,118 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index e8d5245..d5bcd33 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -155,6 +155,8 @@ Unreleased
+     ending of a phrase or double linebreak. :issue:`1082`
+ -   Skip progress bar render steps for efficiency with very fast
+     iterators by setting ``update_min_steps``. :issue:`676`
++-   Restore progress bar labels when output is not a terminal, without
++    repeating unchanged labels on each update.
+ -   Respect ``case_sensitive=False`` when doing shell completion for
+     ``Choice`` :issue:`1692`
+ -   Use ``mkstemp()`` instead of ``mktemp()`` in pager implementation.
+diff --git a/docs/utils.rst b/docs/utils.rst
+index fb7d3c2..5b567c7 100644
+--- a/docs/utils.rst
++++ b/docs/utils.rst
+@@ -391,6 +391,9 @@ will be shown preceding the progress bar::
+         for user in bar:
+             modify_the_user(user)
+ 
++When output is redirected to a file or pipe, only the label is printed on
++its own line. The label is printed again only when it changes.
++
+ Sometimes, one may need to iterate over an external iterator, and advance the
+ progress bar irregularly. To do so, you need to specify the length (and no
+ iterable), and use the update method on the context return value instead of
+diff --git a/src/click/_termui_impl.py b/src/click/_termui_impl.py
+index d4e3e88..78ae88f 100644
+--- a/src/click/_termui_impl.py
++++ b/src/click/_termui_impl.py
+@@ -227,6 +227,9 @@ class ProgressBar:
+         import shutil
+ 
+         if self.is_hidden:
++            if self._last_line != self.label:
++                self._last_line = self.label
++                echo(self.label, file=self.file, color=self.color)
+             return
+ 
+         buf = []
+diff --git a/src/click/termui.py b/src/click/termui.py
+index 5cbeae8..2d3486f 100644
+--- a/src/click/termui.py
++++ b/src/click/termui.py
+@@ -382,7 +382,7 @@ def progressbar(
+     :param width: the width of the progress bar in characters, 0 means full
+                   terminal width
+     :param file: the file to write to.  If this is not a terminal then
+-                 only the label is printed.
++                 only the label is printed, once unless it changes.
+     :param color: controls if the terminal supports ANSI colors or not.  The
+                   default is autodetection.  This is only needed if ANSI
+                   codes are included anywhere in the progress bar output
+@@ -390,6 +390,9 @@ def progressbar(
+     :param update_min_steps: Render only when this many updates have
+         completed. This allows tuning for very fast iterators.
+ 
++    .. versionchanged:: 8.0
++        Display the label when output is not a terminal.
++
+     .. versionadded:: 8.0
+        Added the ``update_min_steps`` parameter.
+ 
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index 3958161..64ad439 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -74,19 +74,45 @@ def test_progressbar_length_hint(runner, monkeypatch):
+     assert result.exception is None
+ 
+ 
+-def test_progressbar_hidden(runner, monkeypatch):
++@pytest.mark.parametrize("length", [0, 3])
++@pytest.mark.parametrize("label", ["whatever", "    padded line", "处理进度", None, ""])
++def test_progressbar_hidden(runner, monkeypatch, length, label):
+     fake_clock = FakeClock()
+-    label = "whatever"
+ 
+     @click.command()
+     def cli():
+-        with _create_progress(label=label) as progress:
++        with click.progressbar(range(length), label=label) as progress:
+             for _ in progress:
+                 fake_clock.advance_time()
+ 
+     monkeypatch.setattr(time, "time", fake_clock.time)
+     monkeypatch.setattr(click._termui_impl, "isatty", lambda _: False)
+-    assert runner.invoke(cli, []).output == ""
++    result = runner.invoke(cli, [])
++    assert result.exception is None
++    assert result.output == f"{label or ''}\n"
++
++
++def test_progressbar_hidden_updates(tmp_path, monkeypatch):
++    fake_clock = FakeClock()
++    monkeypatch.setattr(time, "time", fake_clock.time)
++    output = tmp_path / "progress.txt"
++
++    with output.open("w", encoding="utf-8") as file:
++        with click.progressbar(length=4, label="Starting", file=file) as progress:
++            assert output.read_text(encoding="utf-8") == "Starting\n"
++            progress.update(1)
++            progress.render_progress()
++            assert output.read_text(encoding="utf-8") == "Starting\n"
++
++            progress.label = "Finishing"
++            progress.update(1)
++            progress.update(1)
++            assert output.read_text(encoding="utf-8") == "Starting\nFinishing\n"
++
++            progress.label = "Starting"
++            progress.update(1)
++
++    assert output.read_text(encoding="utf-8") == "Starting\nFinishing\nStarting\n"
+ 
+ 
+ @pytest.mark.parametrize("avg, expected", [([], 0.0), ([1, 4], 2.5)])

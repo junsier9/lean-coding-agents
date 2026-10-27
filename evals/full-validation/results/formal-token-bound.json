@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "analysis_type": "conservative_token_upper_bound",
+  "bound_label": "Baseline-cost LOWER bound implies a ratio UPPER bound; NOT an actual ratio or actual two-sided CI.",
+  "phase": "formal",
+  "status": "bound_available",
+  "applicable": true,
+  "task_count": 20,
+  "actual_ratio": null,
+  "baseline_cost_lower_bound": 26330005.0,
+  "skill_exact_cost": 23232411.0,
+  "ratio_upper_bound": 0.8823549786640755,
+  "upper_one_sided_97_5": 0.961762825665278,
+  "gain_lower_confidence_bound": 0.03823717433472196,
+  "missing_counts": {
+    "baseline": 1,
+    "with-skill": 0
+  },
+  "missing_run_keys": [
+    {
+      "case_id": "mi-1248",
+      "repeat": 1,
+      "arm": "baseline"
+    }
+  ],
+  "skill_inexact_run_count": 0,
+  "integrity": {
+    "bound_input_ok": true,
+    "blocking_issues": [],
+    "original_exact_analysis": {
+      "ok": false,
+      "structure_ok": true,
+      "input_record_count": 298,
+      "selected_record_count": 120,
+      "other_phase_record_counts": {
+        "pilot": 60,
+        "replication": 118
+      },
+      "task_count": 20,
+      "complete_task_count": 20,
+      "expected_runs_per_task": 6,
+      "expected_selected_run_count": 120,
+      "duplicate_run_keys": [],
+      "incomplete_tasks": [],
+      "repo_conflicts": [],
+      "issues": [
+        {
+          "code": "usage_unavailable",
+          "scope": "token",
+          "message": "Exact token usage is unavailable; missing or partial usage is never zero.",
+          "record_index": 133,
+          "case_id": "mi-1248"
+        }
+      ],
+      "no_record_repair_or_silent_deduplication": true,
+      "incomplete_tasks_not_silently_removed": true
+    }
+  },
+  "quality": {
+    "available": true,
+    "baseline_success_rate": 0.95,
+    "skill_success_rate": 0.95,
+    "success_rate_difference_skill_minus_baseline": 0.0,
+    "observed_gate_pass": true,
+    "degraded_tasks": [],
+    "degraded_task_count": 0,
+    "interpretation": "Observed batch gate only; not universal safety or noninferiority."
+  },
+  "bootstrap": {
+    "unit": "paired_complete_task_cluster",
+    "draws": 20000,
+    "seed": 20261024,
+    "task_ids_in_sampling_order": [
+      "b-02-click-2730",
+      "b-04-click-2680",
+      "b-05-click-2421",
+      "b-09-click-2058",
+      "b-29-click-1142",
+      "b-33-click-874",
+      "boltons-403",
+      "boltons-410",
+      "boltons-418",
+      "boltons-428",
+      "boltons-443-table",
+      "boltons-458",
+      "boltons-pearson-zero",
+      "mi-1028",
+      "mi-1088",
+      "mi-1125",
+      "mi-1248",
+      "mi-1251",
+      "mi-1261",
+      "mi-1276"
+    ],
+    "repeats_per_arm": 3,
+    "quantile_method": "inverted_cdf",
+    "one_sided_confidence_level": 0.975,
+    "computed": true,
+    "undefined_draws_dropped": false,
+    "undefined_draws": 0,
+    "positive_infinite_draws": 0,
+    "negative_infinite_draws": 0,
+    "finite_draws": 20000,
+    "upper_bound_available": true
+  },
+  "minimum_confirmatory_task_count_satisfied": true,
+  "finite_positive_comparison_bound": true,
+  "bound_below_0_90": false,
+  "batch_criterion_met": false,
+  "threshold_ratio": 0.9,
+  "one_sided_alpha": 0.025,
+  "requires_other_disjoint_confirmatory_batch": true,
+  "pilot_planned_task_count_match": "Parent controller must check the frozen pilot-derived batch size.",
+  "planning_supported": false,
+  "not_for_pilot_planning": true,
+  "limitations": {
+    "coverage_guarantee": "monotonic_conservatism_relative_to_same_complete_data_method_only",
+    "population_percentile_bootstrap_coverage": "approximate",
+    "mar_assumption_required": false,
+    "cost_assumption": "Unknown baseline costs are finite and nonnegative; exact usage labels must cover all paid attempts/turns.",
+    "power_scope": "Original 0.80 planning power is per confirmatory batch.",
+    "joint_power_if_independent_and_each_at_0_80": 0.64,
+    "planning_warning": "A cost lower bound does not bound jackknife SD and cannot replace pilot sample-size planning.",
+    "actual_estimation": "Actual ratio and actual two-sided CI are generally unidentified."
+  },
+  "accepted_total": {
+    "baseline": 57,
+    "with-skill": 57
+  }
+}

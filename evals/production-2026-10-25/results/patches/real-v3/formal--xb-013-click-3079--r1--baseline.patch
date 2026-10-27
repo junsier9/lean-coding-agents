@@ -1,0 +1,115 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 95395eb..09bf3f5 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.3.x
+ 
+ Unreleased
+ 
++-   Use the declared default for flags sharing a parameter name regardless of
++    declaration order.
+ -   Don't discard pager arguments by correctly using ``subprocess.Popen``. :issue:`3039`
+     :pr:`3055`
+ -   Replace ``Sentinel.UNSET`` default values by ``None`` as they're passed through
+diff --git a/src/click/core.py b/src/click/core.py
+index cd8052f..cec2407 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -1226,6 +1226,12 @@ class Command:
+         for param in iter_params_for_processing(param_order, self.get_params(ctx)):
+             _, args = param.handle_parse_result(ctx, opts, args)
+ 
++        # Shared parameters must be able to replace an unset value with a default.
++        # Normalize only after all parameters have been processed.
++        for name, value in ctx.params.items():
++            if value is UNSET:
++                ctx.params[name] = None
++
+         if args and not ctx.allow_extra_args and not ctx.resilient_parsing:
+             ctx.fail(
+                 ngettext(
+@@ -2536,19 +2542,15 @@ class Parameter:
+         if (
+             self.expose_value
+             # We skip adding the value if it was previously set by another parameter
+-            # targeting the same variable name. This prevents parameters competing for
+-            # the same name to override each other.
+-            and self.name not in ctx.params
++            # targeting the same variable name, unless that value was left unset.
++            and (self.name not in ctx.params or ctx.params[self.name] is UNSET)
+         ):
+             # Click is logically enforcing that the name is None if the parameter is
+             # not to be exposed. We still assert it here to please the type checker.
+             assert self.name is not None, (
+                 f"{self!r} parameter's name should not be None when exposing value."
+             )
+-            # Normalize UNSET values to None, as we're about to pass them to the
+-            # command function and move them to the pure-Python realm of user-written
+-            # code.
+-            ctx.params[self.name] = value if value is not UNSET else None
++            ctx.params[self.name] = value
+ 
+         return value, args
+ 
+diff --git a/tests/test_defaults.py b/tests/test_defaults.py
+index 3f293e8..fd2280c 100644
+--- a/tests/test_defaults.py
++++ b/tests/test_defaults.py
+@@ -1,4 +1,7 @@
++import pytest
++
+ import click
++from click._utils import UNSET
+ 
+ 
+ def test_basic_defaults(runner):
+@@ -61,6 +64,49 @@ def test_multiple_flag_default(runner):
+     assert result.return_value == ((True, False), (True,), (1, -1))
+ 
+ 
++@pytest.mark.parametrize("reverse", [False, True])
++@pytest.mark.parametrize(
++    ("default", "default_expected"),
++    [
++        (True, "upper"),
++        ("fallback", "fallback"),
++        ("", ""),
++        (0, "0"),
++        (False, "False"),
++        (None, None),
++        (lambda: "dynamic", "dynamic"),
++        (UNSET, None),
++    ],
++)
++@pytest.mark.parametrize(
++    ("args", "expected"),
++    [
++        ([], UNSET),
++        (["--upper"], "upper"),
++        (["--lower"], "lower"),
++        (["--auto"], None),
++        (["--upper", "--lower"], "lower"),
++        (["--lower", "--upper"], "upper"),
++        (["--upper", "--auto"], None),
++        (["--auto", "--upper"], "upper"),
++    ],
++)
++def test_shared_flag_default(runner, reverse, default, default_expected, args, expected):
++    @click.command()
++    @click.option("--upper", "case", flag_value="upper", default=default, type=str)
++    @click.option("--lower", "case", flag_value="lower", type=str)
++    @click.option("--auto", "case", flag_value=None, type=str)
++    def cli(case):
++        return case
++
++    if reverse:
++        cli.params.reverse()
++
++    result = runner.invoke(cli, args, standalone_mode=False)
++    assert result.exit_code == 0, result.output
++    assert result.return_value == (default_expected if expected is UNSET else expected)
++
++
+ def test_flag_default_map(runner):
+     """test flag with default map"""
+ 

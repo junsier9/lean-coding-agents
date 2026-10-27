@@ -1,0 +1,65 @@
+{
+  "planned_at": "2026-10-24T20:14:41.649215+00:00",
+  "selection_seed": 20261026,
+  "label_seed": 20261027,
+  "new_real_model_calls_at_selection": 0,
+  "selected": [
+    {
+      "pair": "01",
+      "phase": "formal",
+      "case_id": "extra-a-mi-944",
+      "repeat": 0
+    },
+    {
+      "pair": "02",
+      "phase": "formal",
+      "case_id": "extra-a3-funcy-93",
+      "repeat": 0
+    },
+    {
+      "pair": "03",
+      "phase": "formal",
+      "case_id": "extra-a2-click-3805",
+      "repeat": 0
+    },
+    {
+      "pair": "04",
+      "phase": "formal",
+      "case_id": "xb-053-pluggy-646",
+      "repeat": 0
+    },
+    {
+      "pair": "05",
+      "phase": "replication",
+      "case_id": "xb-038-pydash-258",
+      "repeat": 0
+    },
+    {
+      "pair": "06",
+      "phase": "replication",
+      "case_id": "xb-070-w3lib-40",
+      "repeat": 0
+    },
+    {
+      "pair": "07",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-468",
+      "repeat": 0
+    },
+    {
+      "pair": "08",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-114",
+      "repeat": 0
+    }
+  ],
+  "reviewer": "Independent Codex agent, hidden arm labels and costs",
+  "rubric": [
+    "Preserve documented caller/producer behavior and relevant failure paths",
+    "Copies, guards, retries and wrappers need current observable requirements",
+    "Do not use fewer lines or more tests as automatic evidence of quality",
+    "Distinguish unsafe behavior, justified complexity, unsupported assumptions and unresolved evidence"
+  ],
+  "release_review_gate": "No confirmed unsafe treatment change or unjustified additional machinery in the reviewed pairs; uncertainty needs source/probe corroboration",
+  "not_a_universal_correctness_or_redundancy_proof": true
+}

@@ -1,0 +1,80 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index cc70d3c..fcb536e 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -893,12 +893,12 @@ class OneToOne(dict):
+         if isinstance(dict_or_iterable, dict):
+             for val in dict_or_iterable.values():
+                 hash(val)
+-                keys_vals = list(dict_or_iterable.items())
++            keys_vals = list(dict_or_iterable.items())
+         else:
+-            for key, val in dict_or_iterable:
++            keys_vals = list(dict_or_iterable)
++            for key, val in keys_vals:
+                 hash(key)
+                 hash(val)
+-                keys_vals = list(dict_or_iterable)
+         for val in kw.values():
+             hash(val)
+         keys_vals.extend(kw.items())
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index 20c431f..569c9e8 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -391,6 +391,55 @@ def test_one_to_one():
+     return
+ 
+ 
++@pytest.mark.parametrize('make_input', [dict, list, tuple, iter,
++                                       lambda items: (item for item in items)],
++                         ids=['dict', 'list', 'tuple', 'iterator', 'generator'])
++@pytest.mark.parametrize('initial', [{}, {'a': 1, 'b': 2}])
++@pytest.mark.parametrize('inverse', [False, True])
++def test_one_to_one_update_empty(make_input, initial, inverse):
++    oto = OneToOne(initial)
++    target = oto.inv if inverse else oto
++    expected = dict(target)
++    reverse = target.inv
++
++    assert target.update(make_input([])) is None
++    assert target == expected
++    assert reverse == {v: k for k, v in expected.items()}
++    assert target.inv is reverse
++    assert reverse.inv is target
++
++    assert target.update(make_input([]), added=3) is None
++    expected['added'] = 3
++    assert target == expected
++    assert reverse == {v: k for k, v in expected.items()}
++
++    target.update({'added': 4})
++    expected['added'] = 4
++    assert target == expected
++    assert reverse == {v: k for k, v in expected.items()}
++
++    target.update([('replacement', 4)], extra=5)
++    del expected['added']
++    expected.update(replacement=4, extra=5)
++    assert target == expected
++    assert reverse == {v: k for k, v in expected.items()}
++    assert target.inv is reverse
++    assert reverse.inv is target
++
++
++@pytest.mark.parametrize('make_input', [dict, list, tuple, iter,
++                                       lambda items: (item for item in items)],
++                         ids=['dict', 'list', 'tuple', 'iterator', 'generator'])
++def test_one_to_one_update_nonempty(make_input):
++    oto = OneToOne({'original': 0})
++    items = [('first', 9), ('a', 1), ('b', 2), ('a', 3), ('c', 2)]
++
++    assert oto.update(make_input(items), a=4, d=2) is None
++    assert oto == {'original': 0, 'first': 9, 'a': 4, 'd': 2}
++    assert oto.inv == {0: 'original', 9: 'first', 4: 'a', 2: 'd'}
++    assert oto.inv.inv is oto
++
++
+ def test_many_to_many():
+     m2m = ManyToMany()
+     assert len(m2m) == 0

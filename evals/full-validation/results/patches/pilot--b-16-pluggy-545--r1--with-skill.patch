@@ -1,0 +1,148 @@
+diff --git a/src/pluggy/_callers.py b/src/pluggy/_callers.py
+index f4a2ace..b03fdf2 100644
+--- a/src/pluggy/_callers.py
++++ b/src/pluggy/_callers.py
+@@ -119,7 +119,17 @@ def _multicall(
+             for teardown in reversed(teardowns):
+                 try:
+                     if exception is not None:
+-                        teardown.throw(exception)  # type: ignore[union-attr]
++                        try:
++                            teardown.throw(exception)  # type: ignore[union-attr]
++                        except RuntimeError as e:
++                            # PEP 479 wraps an escaping StopIteration in RuntimeError.
++                            # Preserve the original exception when it passes through.
++                            if (
++                                isinstance(exception, StopIteration)
++                                and e.__cause__ is exception
++                            ):
++                                continue
++                            raise
+                     else:
+                         teardown.send(result)  # type: ignore[union-attr]
+                     # Following is unreachable for a well behaved hook wrapper.
+@@ -164,7 +174,16 @@ def _multicall(
+                 else:
+                     try:
+                         if outcome._exception is not None:
+-                            teardown.throw(outcome._exception)
++                            try:
++                                teardown.throw(outcome._exception)
++                            except RuntimeError as e:
++                                # Preserve StopIteration wrapped by PEP 479.
++                                if (
++                                    isinstance(outcome._exception, StopIteration)
++                                    and e.__cause__ is outcome._exception
++                                ):
++                                    continue
++                                raise
+                         else:
+                             teardown.send(outcome._result)
+                         # Following is unreachable for a well behaved hook wrapper.
+diff --git a/testing/test_multicall.py b/testing/test_multicall.py
+index 7d8d8f2..cde7acb 100644
+--- a/testing/test_multicall.py
++++ b/testing/test_multicall.py
+@@ -319,7 +319,7 @@ def test_hookwrapper_force_exception() -> None:
+     assert str(excinfo.value.__cause__) == "m4"
+ 
+ 
+-@pytest.mark.parametrize("exc", [ValueError, SystemExit])
++@pytest.mark.parametrize("exc", [ValueError, SystemExit, StopIteration])
+ def test_wrapper_exception(exc: "Type[BaseException]") -> None:
+     out = []
+ 
+@@ -345,6 +345,93 @@ def test_wrapper_exception(exc: "Type[BaseException]") -> None:
+     assert out == ["m1 init", "m2 init", "m1 finish"]
+ 
+ 
++@pytest.mark.parametrize("firstresult", [False, True])
++@pytest.mark.parametrize("old_style", ["none", "inner", "outer"])
++def test_wrapper_stopiteration(firstresult: bool, old_style: str) -> None:
++    out = []
++    exception = StopIteration("hook failed")
++
++    @hookimpl
++    def implementation():
++        raise exception
++
++    @hookimpl(wrapper=True)
++    def wrapper():
++        try:
++            yield
++        finally:
++            out.append("wrapper cleanup")
++
++    @hookimpl(wrapper=True)
++    def outer_wrapper():
++        try:
++            yield
++        except StopIteration as exc:
++            assert exc is exception
++            out.append("outer caught")
++            raise
++        finally:
++            out.append("outer cleanup")
++
++    @hookimpl(hookwrapper=True)
++    def old_wrapper():
++        outcome = yield
++        assert outcome.exception is exception
++        out.append("old cleanup")
++
++    methods = [implementation, wrapper, outer_wrapper]
++    expected = ["wrapper cleanup", "outer caught", "outer cleanup"]
++    if old_style == "inner":
++        methods.insert(2, old_wrapper)
++        expected.insert(1, "old cleanup")
++    elif old_style == "outer":
++        methods.append(old_wrapper)
++        expected.append("old cleanup")
++
++    with pytest.raises(StopIteration) as excinfo:
++        try:
++            MC(methods, {}, firstresult=firstresult)
++        finally:
++            out.append("caller cleanup")
++    assert excinfo.value is exception
++    assert out == expected + ["caller cleanup"]
++
++
++@pytest.mark.parametrize("old_style", [False, True])
++@pytest.mark.parametrize("replacement_type", [RuntimeError, StopIteration])
++def test_wrapper_stopiteration_replaced(
++    old_style: bool, replacement_type: "Type[Exception]"
++) -> None:
++    exception = StopIteration("hook failed")
++    replacement = replacement_type("wrapper failed")
++
++    @hookimpl
++    def implementation():
++        raise exception
++
++    @hookimpl(wrapper=True)
++    def wrapper():
++        try:
++            yield
++        except StopIteration:
++            raise replacement
++
++    @hookimpl(hookwrapper=True)
++    def old_wrapper():
++        yield
++
++    methods = [implementation, wrapper]
++    if old_style:
++        methods.append(old_wrapper)
++
++    with pytest.raises(RuntimeError) as excinfo:
++        MC(methods, {})
++    if replacement_type is StopIteration:
++        assert excinfo.value.__cause__ is replacement
++    else:
++        assert excinfo.value is replacement
++
++
+ def test_wrapper_exception_chaining() -> None:
+     @hookimpl
+     def m1():

@@ -1,0 +1,76 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 3cd42e8..5c6ec20 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -283,7 +283,8 @@ def last(iterable, default=_marker):
+         if isinstance(iterable, Sequence):
+             return iterable[-1]
+         # Work around https://bugs.python.org/issue38525
+-        if hasattr(iterable, '__reversed__'):
++        # A None __reversed__ explicitly disables reverse iteration.
++        if getattr(iterable, '__reversed__', None) is not None:
+             return next(reversed(iterable))
+         return deque(iterable, maxlen=1)[-1]
+     except (IndexError, TypeError, StopIteration):
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b964312..53114fd 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -180,6 +180,57 @@ class LastTests(TestCase):
+                 with self.assertRaises(ValueError):
+                     mi.last(iterable)
+ 
++    def test_reversed_none(self):
++        class NonReversibleRange(IterOnlyRange):
++            __reversed__ = None
++
++        class Mapping(abc.Mapping):
++            def __init__(self, data):
++                self.data = data
++
++            def __iter__(self):
++                return iter(self.data)
++
++            def __getitem__(self, key):
++                return self.data[key]
++
++            def __len__(self):
++                return len(self.data)
++
++        default = object()
++        cases = [
++            (NonReversibleRange(0), default),
++            (NonReversibleRange(1), 0),
++            (NonReversibleRange(5), 4),
++            (Mapping({}), default),
++            (Mapping({'only': 10}), 'only'),
++            (Mapping({0: 'zero', -1: 'minus one', 2: 'two'}), 2),
++        ]
++        for iterable, expected in cases:
++            with self.subTest(iterable=iterable):
++                if expected is default:
++                    with self.assertRaises(ValueError):
++                        mi.last(iterable)
++                else:
++                    self.assertEqual(mi.last(iterable), expected)
++                self.assertEqual(mi.last(iterable, default), expected)
++                self.assertEqual(mi.last(iterable, default=default), expected)
++
++    def test_reversed(self):
++        class ReversibleRange(IterOnlyRange):
++            def __iter__(self):
++                raise AssertionError('Forward iteration should not be used')
++
++            def __reversed__(self):
++                return reversed(range(self.n))
++
++        self.assertEqual(mi.last(ReversibleRange(5)), 4)
++        self.assertEqual(mi.last(ReversibleRange(5), None), 4)
++        with self.assertRaises(ValueError):
++            mi.last(ReversibleRange(0))
++        default = object()
++        self.assertIs(mi.last(ReversibleRange(0), default), default)
++
+ 
+ class NthOrLastTests(TestCase):
+     """Tests for ``nth_or_last()``"""

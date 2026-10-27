@@ -1,0 +1,168 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 097a79f..0abd46e 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,7 @@ Version 8.2.0
+ 
+ Unreleased
+ 
++-   Hide option defaults in prompts when ``show_default=False``.
+ -   Drop support for Python 3.7. :pr:`2588`
+ -   Use modern packaging metadata with ``pyproject.toml`` instead of ``setup.cfg``.
+     :pr:`326`
+diff --git a/docs/options.rst b/docs/options.rst
+index 39f66c4..dfa8fc5 100644
+--- a/docs/options.rst
++++ b/docs/options.rst
+@@ -460,6 +460,10 @@ By default, the user will be prompted for an input if one was not passed
+ through the command line. To turn this behavior off, see
+ :ref:`optional-value`.
+ 
++When an option has a default value, the prompt displays it by default.
++Set ``show_default=False`` to hide it while still allowing an empty
++response to use the default.
++
+ 
+ Password Prompts
+ ----------------
+diff --git a/src/click/core.py b/src/click/core.py
+index cc0d460..a3182a1 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2370,7 +2370,8 @@ class Option(Parameter):
+         string, it shows that string in parentheses instead of the
+         actual value. This is particularly useful for dynamic options.
+         For single option boolean flags, the default remains hidden if
+-        its value is ``False``.
++        its value is ``False``. Set to ``False`` to hide the default in
++        prompts.
+     :param show_envvar: Controls if an environment variable should be
+         shown on the help page. Normally, environment variables are not
+         shown.
+@@ -2403,6 +2404,9 @@ class Option(Parameter):
+     :param hidden: hide this option from help outputs.
+     :param attrs: Other command arguments described in :class:`Parameter`.
+ 
++    .. versionchanged:: 8.2.0
++        ``show_default=False`` hides the default value in prompts.
++
+     .. versionchanged:: 8.1.0
+         Help text indentation is cleaned here instead of only in the
+         ``@option`` decorator.
+@@ -2793,7 +2797,9 @@ class Option(Parameter):
+         # If this is a prompt for a flag we need to handle this
+         # differently.
+         if self.is_bool_flag:
+-            return confirm(self.prompt, default)
++            return confirm(
++                self.prompt, default, show_default=self.show_default is not False
++            )
+ 
+         return prompt(
+             self.prompt,
+@@ -2801,6 +2807,7 @@ class Option(Parameter):
+             type=self.type,
+             hide_input=self.hide_input,
+             show_choices=self.show_choices,
++            show_default=self.show_default is not False,
+             confirmation_prompt=self.confirmation_prompt,
+             value_proc=lambda x: self.process_value(ctx, x),
+         )
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index 7cfa939..1fc01ac 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -234,6 +234,93 @@ def test_file_prompt_default_format(runner, file_kwargs):
+     assert result.output == f"file [{__file__}]: \n{__file__}\n"
+ 
+ 
++@pytest.mark.parametrize(
++    ("show_default", "display"),
++    [
++        (None, " [default]"),
++        (True, " [default]"),
++        (False, ""),
++        ("label", " [default]"),
++        ("", " [default]"),
++    ],
++)
++@pytest.mark.parametrize("prompt_required", [True, False])
++@pytest.mark.parametrize(("input", "expect"), [("\n", "default"), ("other\n", "other")])
++def test_prompt_show_default(
++    runner, show_default, display, prompt_required, input, expect
++):
++    @click.command()
++    @click.option(
++        "--value",
++        default="default",
++        prompt=True,
++        prompt_required=prompt_required,
++        show_default=show_default,
++    )
++    def cli(value):
++        return value
++
++    args = [] if prompt_required else ["--value"]
++    result = runner.invoke(cli, args, input=input, standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == expect
++    assert result.output == f"Value{display}: {input}"
++
++
++@pytest.mark.parametrize("show_default", [None, True, False])
++@pytest.mark.parametrize(("default", "display"), [(True, "Y/n"), (False, "y/N")])
++def test_bool_prompt_show_default(runner, show_default, default, display):
++    @click.command()
++    @click.option(
++        "--value/--no-value", default=default, prompt=True, show_default=show_default
++    )
++    def cli(value):
++        return value
++
++    result = runner.invoke(cli, input="\n", standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value is default
++    suffix = f" [{display}]" if show_default is not False else ""
++    assert result.output == f"Value{suffix}: \n"
++
++
++@pytest.mark.parametrize("confirmation_prompt", [False, True])
++def test_prompt_hidden_dynamic_default(runner, confirmation_prompt):
++    @click.command()
++    @click.option(
++        "--password",
++        default=lambda: "secret",
++        prompt=True,
++        hide_input=True,
++        show_default=False,
++        confirmation_prompt=confirmation_prompt,
++    )
++    def cli(password):
++        return password
++
++    result = runner.invoke(cli, input="\nsecret\n", standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == "secret"
++    expected = "Password: \n"
++    if confirmation_prompt:
++        expected += "Repeat for confirmation: \n"
++    assert result.output == expected
++
++
++def test_prompt_hidden_default_retry(runner):
++    @click.command()
++    @click.option("--value", default=42, prompt=True, show_default=False)
++    def cli(value):
++        return value
++
++    result = runner.invoke(cli, input="invalid\n\n", standalone_mode=False)
++    assert result.exit_code == 0
++    assert result.return_value == 42
++    assert result.output == (
++        "Value: invalid\nError: 'invalid' is not a valid integer.\nValue: \n"
++    )
++
++
+ def test_secho(runner):
+     with runner.isolation() as outstreams:
+         click.secho(None, nl=False)

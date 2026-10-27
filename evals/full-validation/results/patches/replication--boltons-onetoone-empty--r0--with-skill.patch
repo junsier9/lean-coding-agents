@@ -1,0 +1,80 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index cc70d3c..e97f5c7 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -891,14 +891,14 @@ class OneToOne(dict):
+ 
+     def update(self, dict_or_iterable, **kw):
+         if isinstance(dict_or_iterable, dict):
++            keys_vals = list(dict_or_iterable.items())
+             for val in dict_or_iterable.values():
+                 hash(val)
+-                keys_vals = list(dict_or_iterable.items())
+         else:
+-            for key, val in dict_or_iterable:
++            keys_vals = list(dict_or_iterable)
++            for key, val in keys_vals:
+                 hash(key)
+                 hash(val)
+-                keys_vals = list(dict_or_iterable)
+         for val in kw.values():
+             hash(val)
+         keys_vals.extend(kw.items())
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index 20c431f..1459789 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -391,6 +391,53 @@ def test_one_to_one():
+     return
+ 
+ 
++@pytest.mark.parametrize('empty_factory', [dict, list, tuple, lambda: iter(())],
++                         ids=['dict', 'list', 'tuple', 'iterator'])
++@pytest.mark.parametrize('initial', [{}, {'a': 1, 'b': 2}])
++def test_one_to_one_update_empty(empty_factory, initial):
++    oto = OneToOne(initial)
++    inverse = oto.inv
++
++    assert oto.update(empty_factory()) is None
++    assert oto == initial
++    assert inverse == {v: k for k, v in initial.items()}
++    assert oto.inv is inverse
++    assert inverse.inv is oto
++
++    oto.update({'a': 3, 'c': 2})
++    assert oto == {'a': 3, 'c': 2}
++    assert inverse == {3: 'a', 2: 'c'}
++
++    oto.update(empty_factory(), a=2, d=4)
++    assert oto == {'a': 2, 'd': 4}
++    assert inverse == {2: 'a', 4: 'd'}
++
++
++@pytest.mark.parametrize('iterable_factory', [list, tuple, iter])
++def test_one_to_one_update_iterable(iterable_factory):
++    oto = OneToOne({'a': 1, 'b': 2})
++    oto.update(iterable_factory([('a', 3), ('c', 2), ('d', 3)]), d=4)
++
++    assert oto == {'c': 2, 'd': 4}
++    assert oto.inv == {2: 'c', 4: 'd'}
++    assert oto.inv.inv is oto
++
++
++@pytest.mark.parametrize('source_factory', [dict, list, iter])
++def test_one_to_one_update_unhashable_value(source_factory):
++    oto = OneToOne({'a': 1})
++
++    with pytest.raises(TypeError):
++        oto.update(source_factory([('b', 2), ('c', [])]))
++    assert oto == {'a': 1}
++    assert oto.inv == {1: 'a'}
++
++    with pytest.raises(TypeError):
++        oto.update(source_factory([]), b=[])
++    assert oto == {'a': 1}
++    assert oto.inv == {1: 'a'}
++
++
+ def test_many_to_many():
+     m2m = ManyToMany()
+     assert len(m2m) == 0

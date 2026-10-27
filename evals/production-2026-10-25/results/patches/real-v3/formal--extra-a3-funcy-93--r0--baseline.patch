@@ -1,0 +1,95 @@
+diff --git a/docs/calc.rst b/docs/calc.rst
+index 3bc1a69..83592fb 100644
+--- a/docs/calc.rst
++++ b/docs/calc.rst
+@@ -75,6 +75,8 @@ Calculation
+         api_call.invalidate(query)  # Forget cache for query
+         api_call.invalidate_all()   # Forget everything
+ 
++    Invalidating a key that is not cached or has already been invalidated is safe.
++
+     Custom ``key_func`` could be used same way as in :func:`@memoize<memoize>`::
+ 
+         # Do not use token in cache key
+diff --git a/funcy/calc.py b/funcy/calc.py
+index 2c98382..54af297 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -123,7 +123,7 @@ def cache(timeout, key_func=None):
+             return result
+ 
+         def invalidate(*args, **kwargs):
+-            cache.pop(key_func(*args, **kwargs))
++            cache.pop(key_func(*args, **kwargs), None)
+         wrapper.invalidate = invalidate
+ 
+         def invalidate_all():
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index fa1b1fe..b9369f9 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -135,6 +135,64 @@ def test_cache_mixed_args():
+     assert add(1, y=2) == 3
+ 
+ 
++def test_cache_invalidate_idempotent():
++    calls = []
++
++    @cache(timeout=60)
++    def inc(x):
++        calls.append(x)
++        return x + 1
++
++    assert inc.invalidate(0) is None
++    assert inc.invalidate(0) is None
++    assert calls == []
++
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert inc.invalidate(0) is None
++    assert inc.invalidate(0) is None
++    assert calls == [0, 1]
++    assert inc(1) == 2
++    assert inc(0) == 1
++    assert inc(0) == 1
++    assert calls == [0, 1, 0]
++
++
++def test_cache_invalidate_key_func():
++    calls = []
++
++    @cache(timeout=60, key_func=lambda x, by=1: x)
++    def mul(x, by=1):
++        calls.append((x, by))
++        return x * by
++
++    assert mul(2, by=3) == 6
++    assert mul(2, by=4) == 6
++    assert mul.invalidate(x=2, by=4) is None
++    assert mul.invalidate(x=2, by=4) is None
++    assert mul(2, by=4) == 8
++    assert mul(2, by=4) == 8
++    assert calls == [(2, 3), (2, 4)]
++
++
++def test_cache_invalidate_all():
++    calls = []
++
++    @cache(timeout=60)
++    def inc(x):
++        calls.append(x)
++        return x + 1
++
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert inc.invalidate_all() is None
++    assert inc.invalidate_all() is None
++    assert inc.invalidate(0) is None
++    assert inc(0) == 1
++    assert inc(1) == 2
++    assert calls == [0, 1, 0, 1]
++
++
+ def test_cache_timedout():
+     calls = []
+ 

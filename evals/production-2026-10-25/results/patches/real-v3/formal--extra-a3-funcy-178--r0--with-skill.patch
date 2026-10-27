@@ -1,0 +1,94 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index d6dbb2a..3ce95c8 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,4 +1,3 @@
+-from collections.abc import Hashable
+ from datetime import datetime, timedelta
+ import time
+ import threading
+@@ -220,10 +219,12 @@ def once_per(*argnames):
+         def wrapper(*args, **kwargs):
+             with lock:
+                 values = tuple(get_arg(name, args, kwargs) for name in argnames)
+-                if isinstance(values, Hashable):
+-                    done, add = done_set, done_set.add
+-                else:
++                try:
++                    hash(values)
++                except TypeError:
+                     done, add = done_list, done_list.append
++                else:
++                    done, add = done_set, done_set.add
+ 
+                 if values not in done:
+                     add(values)
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 2dfeb7b..435786a 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -241,6 +241,64 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++@pytest.mark.parametrize('make_value', [list, dict, set, lambda x: (list(x),)])
++def test_once_per_unhashable(deco, make_value):
++    calls = []
++
++    @deco
++    def call(n, x=None):
++        calls.append(n)
++        return n
++
++    first = make_value([(1, 2)])
++    equal = make_value([(1, 2)])
++    other = make_value([(3, 4)])
++    assert first is not equal
++    assert call(first) is first
++    assert call(n=equal, x=None) is None
++    assert call(other) is other
++    assert call(make_value([(1, 2)])) is None
++    assert calls == [first, other]
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++@pytest.mark.parametrize('value', [1, [1]])
++def test_once_per_function_error(deco, value):
++    calls = []
++
++    @deco
++    def call(n):
++        calls.append(n)
++        raise TypeError('target failed')
++
++    with pytest.raises(TypeError, match='target failed'):
++        call(value)
++    assert call(value) is None
++    assert calls == [value]
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args])
++def test_once_per_equality_error(deco):
++    class Value:
++        __hash__ = None
++
++        def __eq__(self, other):
++            raise TypeError('comparison failed')
++
++    calls = []
++
++    @deco
++    def call(n):
++        calls.append(n)
++
++    first = Value()
++    call(first)
++    with pytest.raises(TypeError, match='comparison failed'):
++        call(Value())
++    assert calls == [first]
++
++
+ def test_wrap_with():
+     calls = []
+ 

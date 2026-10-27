@@ -1,0 +1,75 @@
+--- h01/before/app.py
++++ h01/after/app.py
+@@ -1,15 +1,9 @@
+-from ingest_records import Reading, parse_readings, validate_current
++from ingest_records import parse_readings, validate_current
+ 
+ 
+ def summarize(raw, adjust=None):
+     readings = parse_readings(raw)
+-    total = 0
+-    for reading in readings:
+-        if reading is None:
+-            continue
+-        if not isinstance(reading, Reading):
+-            continue
+-        total += reading.amount
++    total = sum(reading.amount for reading in readings)
+ 
+     if adjust is not None:
+         adjust(readings)
+--- h02/before/app.py
++++ h02/after/app.py
+@@ -1,5 +1,2 @@
+ def order_count(sdk):
+-    try:
+-        return sdk.fetch_count()
+-    except Exception:
+-        return 0
++    return sdk.fetch_count()
+--- h03/before/app.py
++++ h03/after/app.py
+@@ -2,7 +2,7 @@
+ 
+ 
+ def render_rows(rows, options):
+-    limit = getattr(options, "max_row", 100)
++    limit = options.max_rows
+     return "\n".join(str(row) for row in rows[:limit])
+ 
+ 
+--- h04/before/app.py
++++ h04/after/app.py
+@@ -1,5 +1,6 @@
+ def sorted_preview(values, reducer):
+-    reduced = reducer.reduce(values.copy())
+-    preview = reduced.copy()
++    preview = reducer.reduce(values)
++    if preview is values:
++        preview = preview.copy()
+     preview.sort()
+     return preview
+--- h05/before/app.py
++++ h05/after/app.py
+@@ -1,4 +1,4 @@
+-SAVE_LABEL = "Save draft"
++SAVE_LABEL = "Save changes"
+ 
+ 
+ def save_label():
+--- h06/before/app.py
++++ h06/after/app.py
+@@ -7,10 +7,8 @@
+     except FileNotFoundError:
+         return None
+     try:
+-        try:
+-            payload = json.loads(stream.read())
+-        except json.JSONDecodeError:
+-            return None
+-        return payload
++        return json.loads(stream.read())
++    except json.JSONDecodeError:
++        return None
+     finally:
+         stream.close()

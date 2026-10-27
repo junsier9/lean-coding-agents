@@ -1,0 +1,379 @@
+{
+  "reviewer": "review-a",
+  "created_at": "2026-10-27T08:51:34.445701+00:00",
+  "language": "zh-CN",
+  "independence": {
+    "allowed_input_roots": [
+      "{PROJECT_ROOT}\\.local\\beta-v5-artifact-reviews\\case-01",
+      "{PROJECT_ROOT}\\.local\\beta-v5-artifact-reviews\\case-02",
+      "{PROJECT_ROOT}\\.local\\beta-v5-artifact-reviews\\case-03",
+      "{PROJECT_ROOT}\\.local\\beta-v5-artifact-reviews\\case-04"
+    ],
+    "dependency_root": "{PROJECT_ROOT}\\.local\\beta-v5-artifact-reviews\\deps",
+    "probe_root": "{PROJECT_ROOT}\\.local\\beta-review-a-probes",
+    "no_network": true,
+    "no_installation": true,
+    "no_delegation": true,
+    "no_input_edits": true,
+    "did_not_consult": [
+      "其他 case",
+      "skill 指令内容",
+      "参考修复",
+      "隐藏评分器",
+      "历史结果",
+      "父代理结论"
+    ],
+    "note": "只在指定 case 输入范围读取项目，执行检查全部使用隔离副本；输入哈希在审查前后均验证一致。"
+  },
+  "reproduce": {
+    "interpreter": "{PYTHON_RUNTIME}/python.exe",
+    "independent_probe_script": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent_probes.py",
+    "command": "& {PYTHON_RUNTIME}/python.exe -B {PROJECT_ROOT}/.local/beta-review-a-probes/independent_probes.py",
+    "results_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json"
+  },
+  "cases": [
+    {
+      "case_id": "case-01",
+      "request": "iter_index 对序列的负 start/stop 可正常按末尾计数，但把同一输入换成普通迭代器就抛 ValueError。请使两类输入在负边界上返回一致的绝对索引，保留正边界和无匹配时的行为。",
+      "input_hash_binding": {
+        "manifest_sha256": "8F76AA60475A4257EDDA1A92C318201E3B84C2CDEEB590AE6D17F9547DB5E9EF",
+        "request_sha256": "36945FF917B536EFF5EC787868666E2A77B4E16AF33CD3E0F9D3CD7DC7937FCB",
+        "verified_file_count": 79,
+        "mismatches": [],
+        "unlisted_files": [],
+        "changed_files": {
+          "more_itertools/recipes.py": {
+            "base": "6AFF1F84B0A70B96C102E3B92A70539255F1489765FC54140B1C1478F95B4828",
+            "candidate": "0334F96E7FB7D2ED69B8AF7D44DDE2A35BE5600E1362BC6CE80A8EB55678F509"
+          },
+          "tests/test_recipes.py": {
+            "base": "281BCD10CFA90DEC29E89FD0CA26310592AE9523A56CDE0C5FC1D70363CF1C6A",
+            "candidate": "3AC6AD3E3BC29738C93FF03353280A77F510450E004730A5287EFF3D4A076DE4"
+          }
+        },
+        "post_review_mismatches": [],
+        "post_review_unlisted_files": [],
+        "manifest_unchanged": true
+      },
+      "review_scope": {
+        "files_read": [
+          "base/candidate more_itertools/recipes.py 的 iter_index 及调用附近",
+          "base/candidate tests/test_recipes.py 的 IterIndexTests",
+          "全部变更 diff；输入文件仅为哈希校验而整体读取"
+        ],
+        "behavior_checked": [
+          "list/tuple/普通 iterator 的有限输入负 start/stop、越界、空区间、无匹配",
+          "普通 int 正边界、正边界流式消费状态、__index__ 正边界",
+          "测试覆盖的迭代异常与比较异常"
+        ],
+        "boundaries": [
+          "未对无限输入的负边界求值；文档已明确需要消费并存储全部输入",
+          "未进行内存压力或性能基准测试；未读取其他 case/参考修复/隐藏评分/历史结论"
+        ]
+      },
+      "validation": {
+        "existing_suite": {
+          "command": "python -B -m unittest tests.test_recipes tests.test_more",
+          "result": "895 tests, OK",
+          "location": "隔离副本 case-01/candidate"
+        },
+        "independent": {
+          "finite_boundary_checks": 7800,
+          "candidate_matrix_failures": 0,
+          "positive_stream_state": {
+            "first": 1,
+            "remaining_indices": [
+              4
+            ],
+            "next_input": "A"
+          },
+          "protocol_regression": true
+        }
+      },
+      "confirmed_findings": [
+        {
+          "id": "A-01-1",
+          "severity": "P2",
+          "confidence": "high",
+          "title": "新增负数判断破坏原本可用的正边界整数索引对象",
+          "location": {
+            "file": "{PROJECT_ROOT}/.local/beta-v5-artifact-reviews/case-01/candidate/more_itertools/recipes.py",
+            "start_line": 900,
+            "end_line": 900
+          },
+          "request_contract": "请求明确要求保留正边界行为。初始版本的普通迭代器路径通过 islice/enumerate 支持实现 __index__ 的正边界对象。",
+          "observed_difference": "候选版本在调用 islice 之前对边界直接执行 < 0。仅实现 __index__、不实现富比较的对象因此抛 TypeError；start 和 stop 两个位置均受影响。",
+          "reproduction_code": "from more_itertools import iter_index\nclass Index:\n    def __init__(self, n): self.n = n\n    def __index__(self): return self.n\nprint(list(iter_index(iter('AABCADEAF'), 'A', Index(1), 7)))\nprint(list(iter_index(iter('AABCADEAF'), 'A', 1, Index(7))))",
+          "independent_evidence": {
+            "script": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent_probes.py",
+            "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+            "json_paths": [
+              "case-01.base.output.checks.index_start",
+              "case-01.candidate.output.checks.index_start",
+              "case-01.base.output.checks.index_stop",
+              "case-01.candidate.output.checks.index_stop"
+            ],
+            "base": "两次调用均得到 [1, 4]。",
+            "candidate": "两次调用均抛 TypeError: '<' not supported between instances of 'Index' and 'int'。"
+          },
+          "impact": "已有正边界调用变为失败；普通 int 正边界及有限输入负边界矩阵正确，不能抵消这一兼容回退。"
+        }
+      ],
+      "unresolved": [],
+      "mechanism_assessment": "将负边界有限迭代器物化为列表与当前需求相关，且有文档说明；未发现额外无需求机制。",
+      "conclusion": {
+        "status": "needs_changes",
+        "summary": "负边界主需求已实现，但未完全保留正边界的已有接受范围。"
+      }
+    },
+    {
+      "case_id": "case-02",
+      "request": "HelpFormatter 在没有参数文本时可能输出空的 Usage 行、多余尾部空格或额外行。请让仅含程序名的用法行正常展示，并保留自定义或带样式的前缀。",
+      "input_hash_binding": {
+        "manifest_sha256": "1FEA32A916578295A985E6E7AF01C14A3D43D60CB04065417993E65537A78B93",
+        "request_sha256": "A7B2D13936C1E6855A5A85C20150BC448B10AE40F6F4D44F6647B2EA8A6E1442",
+        "verified_file_count": 299,
+        "mismatches": [],
+        "unlisted_files": [],
+        "changed_files": {
+          "src/click/formatting.py": {
+            "base": "03582ED53E4ACEB9E78332EAF112060BA9C305E55CC6074EB71BDCE4FD499CFB",
+            "candidate": "895D2C8A4905D6BD9A9EE49EE57866B15BAE5CE7A8F8D547FBDFE864008DE347"
+          },
+          "tests/test_formatting.py": {
+            "base": "B87B861620305260BB58C6F12BF06B9446FFDEBE985C8295129A9049D414BA70",
+            "candidate": "2B82CC3DFCD991426334181B72740E8B5965595850DF5D7DD096502D757A2561"
+          }
+        },
+        "post_review_mismatches": [],
+        "post_review_unlisted_files": [],
+        "manifest_unchanged": true
+      },
+      "review_scope": {
+        "files_read": [
+          "base/candidate src/click/formatting.py 的 HelpFormatter/write_usage/wrap_text 相邻逻辑",
+          "base/candidate tests/test_formatting.py 的改动与相关测试",
+          "candidate pyproject.toml 与 tests/conftest.py"
+        ],
+        "behavior_checked": [
+          "空 args 在宽度 24/80、缩进 0/2、短/长程序名、默认/空/自定义/ANSI 前缀下的完整输出",
+          "非空参数文本的 base/candidate 输出一致性",
+          "现有命令帮助/usage/错误输出测试"
+        ],
+        "boundaries": [
+          "主要验收将没有参数文本解释为 args=\"\"",
+          "不评价任意超窄宽度与过大缩进组合的已有包装限制；未进行终端应用交互"
+        ]
+      },
+      "validation": {
+        "existing_suite": {
+          "command": "python -B -m pytest -q -p no:cacheprovider tests/test_formatting.py",
+          "result": "45 passed",
+          "location": "隔离副本 case-02/candidate"
+        },
+        "independent": {
+          "empty_usage_cases": 32,
+          "empty_output_failures": [],
+          "nonempty_cases": 64,
+          "nonempty_differences": [],
+          "example": {
+            "base": "Usage: cli \\n\\n",
+            "candidate": "Usage: cli\\n"
+          }
+        }
+      },
+      "confirmed_findings": [],
+      "unresolved": [
+        {
+          "topic": "仅含空白的参数文本是否属于需求范围",
+          "evidence": "write_usage(\"cli\", \"   \") 在 width=24 时，base 与 candidate 均输出 \"Usage: cli \\n\\n\"；prefix=\"\" 时二者均可能只输出换行。",
+          "assessment": "这是已有行为，候选仅处理空字符串。若请求将空白字符串也视为没有参数文本，则该子情形尚未满足；请求未明确，未列为确认回归。",
+          "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+          "json_path": "case-02.whitespace_examples"
+        }
+      ],
+      "mechanism_assessment": "只增加空参数文本的早返回，保留既有前缀构造，不引入额外机制。",
+      "conclusion": {
+        "status": "pass_with_scope_note",
+        "summary": "空字符串参数文本的需求已实现，自定义与样式前缀保留，非空文本未观察到回归；空白字符串语义留作范围说明。"
+      }
+    },
+    {
+      "case_id": "case-03",
+      "request": "funcutils.wraps 生成的包装器把目标只能按关键字接收的参数当作位置参数传入，导致 TypeError；无默认值和带varargs的签名也受影响。请使这些合法签名组合正确调用目标，并保留反向包装和无法检查签名的可调用对象的兼容行为。",
+      "input_hash_binding": {
+        "manifest_sha256": "92F1228C6E79A1CBFE6999AF879777D78C3670A90326FCE88122E10B357B1A55",
+        "request_sha256": "1C417DBD392BAEE5143086D046F025686AB660CCC8FA2770C5AB1BD69BF4B912",
+        "verified_file_count": 225,
+        "mismatches": [],
+        "unlisted_files": [],
+        "changed_files": {
+          "boltons/funcutils.py": {
+            "base": "9BF31F77BA042BA3F9A5720A1C890B08D3A473B57D071ADB12666059C8800578",
+            "candidate": "98A77CEF8BC75CDEA6E4B7307837C8233BBD5682CAE9560FDB74BC46AADFAF4B"
+          },
+          "tests/test_funcutils_fb_py3.py": {
+            "base": "7C6061DB8414E122FD6065A8471F5E7B34AA782AE33EC1BFC7686D2E7FFD204B",
+            "candidate": "C964B52B282951FB40E66B19A17EC03326C9338207ABD3C95E6BAF407CCFC234"
+          }
+        },
+        "post_review_mismatches": [],
+        "post_review_unlisted_files": [],
+        "manifest_unchanged": true
+      },
+      "review_scope": {
+        "files_read": [
+          "base/candidate boltons/funcutils.py 的 wraps/update_wrapper/FunctionBuilder/get_invocation_str/from_func",
+          "base/candidate tests/test_funcutils_fb_py3.py 的既有行为与变更"
+        ],
+        "behavior_checked": [
+          "必需 keyword-only、默认值、非空 *args/**kwargs、反向包装",
+          "functools.wraps 目标、可调用对象、绑定方法、async",
+          "无法检查签名的内建对象及带异常 __signature__ 属性的目标",
+          "目标本体异常对象原样传播、注入/expected 等相关既有测试"
+        ],
+        "boundaries": [
+          "未运行整个 boltons 项目全套测试，仅运行 funcutils 三个相关模块",
+          "未枚举所有人为篡改 __signature__ 或所有不同参数重排组合",
+          "签名属性的非标准异常是否也应视为不可检查是兼容需求的解释边界，差异本身已确认"
+        ]
+      },
+      "validation": {
+        "existing_suite": {
+          "command": "python -B -m pytest -q -p no:cacheprovider tests/test_funcutils.py tests/test_funcutils_fb.py tests/test_funcutils_fb_py3.py",
+          "result": "52 passed",
+          "location": "隔离副本 case-03/candidate"
+        },
+        "independent": {
+          "required_kwonly": "通过",
+          "default_and_nonempty_varargs": "通过",
+          "reverse": "通过",
+          "callable_and_bound_method": "通过",
+          "async": "通过",
+          "builtin_and_TypeError_ValueError_signature_fallback": "通过",
+          "target_exception_identity": {
+            "same_exception": true,
+            "type": "RuntimeError"
+          },
+          "nonstandard_signature_exception_regression": "NotImplementedError/RuntimeError 两类已复现"
+        }
+      },
+      "confirmed_findings": [
+        {
+          "id": "A-03-1",
+          "severity": "P2",
+          "confidence": "medium",
+          "title": "目标签名读取抛出其他异常时不再保留旧有包装兼容行为",
+          "location": {
+            "file": "{PROJECT_ROOT}/.local/beta-v5-artifact-reviews/case-03/candidate/boltons/funcutils.py",
+            "start_line": 604,
+            "end_line": 607
+          },
+          "request_contract": "请求要求保留无法检查签名的可调用对象的兼容行为。初始版本对目标 wrapper 不作这次 inspect.signature 读取。",
+          "observed_difference": "候选新增签名探测仅对 TypeError/ValueError 回退。__signature__ 属性用 NotImplementedError 或 RuntimeError 表示不可用时，原本能生成并正常调用的包装器现在在装饰时直接失败，尚未进入目标调用。",
+          "reproduction_code": "from boltons.funcutils import wraps\ndef source(a, b=10): pass\nclass Target:\n    @property\n    def __signature__(self):\n        raise NotImplementedError('signature unavailable')\n    def __call__(self, a, b=10):\n        return a, b\nprint(wraps(source)(Target())(3))",
+          "independent_evidence": {
+            "script": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent_probes.py",
+            "result_file": "{PROJECT_ROOT}\\.local\\beta-review-a-probes\\independent-probe-results.json",
+            "json_paths": [
+              "case-03.base.output.uninspectable_NotImplementedError",
+              "case-03.candidate.output.uninspectable_NotImplementedError",
+              "case-03.base.output.uninspectable_RuntimeError",
+              "case-03.candidate.output.uninspectable_RuntimeError"
+            ],
+            "base": "两种签名属性异常下均能包装并返回 (3, 10)。",
+            "candidate": "分别在包装阶段抛 NotImplementedError/RuntimeError: signature unavailable。",
+            "controls": "签名属性抛 TypeError/ValueError 的对象及内建 max 均仍可用；目标函数本体抛出的 RuntimeError 对象被原样传播。"
+          },
+          "impact": "只涉及自定义签名属性抛出上述非标准异常的目标，并非声称普通内建函数普遍失效。行为差异已独立复现；按请求保留旧可用对象的字面范围列为兼容缺口。"
+        }
+      ],
+      "unresolved": [],
+      "mechanism_assessment": "目标 keyword-only 名称探测及 invocation helper 参数与当前修复直接相关，未发现额外抽象层或无需求机制。",
+      "conclusion": {
+        "status": "needs_changes",
+        "summary": "主要合法签名组合调用已修复；无法检查签名的目标仍存在一个有条件的旧调用兼容缺口。"
+      }
+    },
+    {
+      "case_id": "case-04",
+      "request": "running_min、running_max、running_mean 等窗口函数对 maxlen=2.5 会静默计算不同于有效整数窗口的结果，整数式 __index__ 对象又无法像 running_median 那样使用。请使 running_min/max/mean/statistics 的窗口大小契约一致：拒绝非整数，支持整数索引协议，拒绝非正窗口，并保留 None。",
+      "input_hash_binding": {
+        "manifest_sha256": "5A2D75F177D8D9B99861D8D09C68427C32417884598AB63424D0D001FDB725D1",
+        "request_sha256": "D0F0865B535EDF96FAA8390C8EE6505A5F839478F4BAC6A3A0EF4273E5C12E93",
+        "verified_file_count": 79,
+        "mismatches": [],
+        "unlisted_files": [],
+        "changed_files": {
+          "more_itertools/recipes.py": {
+            "base": "E73BA8F1D785F6E3C3B5222BF5EC499977C53555B85970F625CF986D5F4BE4DB",
+            "candidate": "76AB0D926924A32CC30C64714E296331B90191EC8452087EBD64B19E8BE69767"
+          },
+          "more_itertools/recipes.pyi": {
+            "base": "2DD48AC5EF0B502F989BD2E13923C402994244EE50A4187E2F0D59C348BF2583",
+            "candidate": "EA72CE3E69CD9F87B9DDA75C909205E1976B41C266FF11944ED0E1877B39C49E"
+          },
+          "tests/test_recipes.py": {
+            "base": "7FC5821BF9B074C01CE4C3515A2FC2CD6F3B7CB949AA731410509DF76C077FC6",
+            "candidate": "CAC76674C2A2576C1FAE8437D6F648E91CE35B2AD4630CAB301213A0558DFF87"
+          }
+        },
+        "post_review_mismatches": [],
+        "post_review_unlisted_files": [],
+        "manifest_unchanged": true
+      },
+      "review_scope": {
+        "files_read": [
+          "base/candidate more_itertools/recipes.py 的 running_median/mean/min/max/statistics 及窗口 helper",
+          "base/candidate more_itertools/recipes.pyi 的相关声明",
+          "base/candidate tests/test_recipes.py 的窗口相关变更"
+        ],
+        "behavior_checked": [
+          "int/__index__ 窗口 1、2、大于输入长度、None",
+          "整型与 Decimal/Fraction 输入的逐窗口独立数值 oracle",
+          "非整数、仅 __int__、无效 __index__ 返回值、零/负整数及索引对象",
+          "每个索引对象转换一次；非法 maxlen 在调用时失败且不消费输入元素",
+          "已有 bool 和空输入测试"
+        ],
+        "boundaries": [
+          "未运行静态类型检查器；已审读 SupportsIndex 声明",
+          "未进行超大整数窗口或内存压力测试",
+          "不改变亦未重新评价已有数值精度算法"
+        ]
+      },
+      "validation": {
+        "existing_suite": {
+          "command": "python -B -m unittest tests.test_recipes tests.test_more",
+          "result": "930 tests, OK",
+          "location": "隔离副本 case-04/candidate"
+        },
+        "independent": {
+          "oracle_checks": 175,
+          "oracle_failures": [],
+          "invalid_contract_checks": 45,
+          "invalid_expected_types_and_no_consumption": true
+        }
+      },
+      "confirmed_findings": [],
+      "unresolved": [],
+      "mechanism_assessment": "复用既有 operator.index，组合统计只先归一化一次，再传递普通 int；类型声明拓宽与当前需求相关，未发现额外机制。",
+      "conclusion": {
+        "status": "pass",
+        "summary": "请求的窗口大小契约一致性已实现，未确认行为、错误处理或消费状态回归。"
+      }
+    }
+  ],
+  "summary": {
+    "confirmed_findings": 2,
+    "needs_changes": [
+      "case-01",
+      "case-03"
+    ],
+    "pass_with_scope_note": [
+      "case-02"
+    ],
+    "pass": [
+      "case-04"
+    ]
+  }
+}

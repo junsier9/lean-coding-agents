@@ -1,0 +1,133 @@
+diff --git a/src/click/_utils.py b/src/click/_utils.py
+index 05ee2e9..c106d4b 100644
+--- a/src/click/_utils.py
++++ b/src/click/_utils.py
+@@ -18,6 +18,18 @@ class Sentinel(enum.Enum):
+     def __repr__(self) -> str:
+         return f"{self.__class__.__name__}.{self.name}"
+ 
++    def __copy__(self) -> Sentinel:
++        return self
++
++    def __deepcopy__(self, memo: dict[int, t.Any]) -> Sentinel:
++        return self
++
++    def __reduce_ex__(
++        self, protocol: int
++    ) -> tuple[t.Callable[..., Sentinel], tuple[type[Sentinel], str]]:
++        # Reconstruct by name, since the object() values lose identity when pickled.
++        return getattr, (self.__class__, self.name)
++
+ 
+ UNSET: t.Literal[Sentinel.UNSET] = Sentinel.UNSET
+ """Sentinel used to indicate that a value is not set."""
+diff --git a/tests/test_utils/test_sentinel.py b/tests/test_utils/test_sentinel.py
+index 1dd5b15..7959c7e 100644
+--- a/tests/test_utils/test_sentinel.py
++++ b/tests/test_utils/test_sentinel.py
+@@ -1,6 +1,13 @@
++import copy
++import pickle
+ from decimal import Decimal
+ from fractions import Fraction
+ 
++import pytest
++
++import click
++from click._utils import FLAG_NEEDS_VALUE
++from click._utils import Sentinel
+ from click._utils import UNSET
+ 
+ 
+@@ -50,3 +57,91 @@ def test_unset_sentinel():
+         assert value is not real_value
+ 
+     assert value not in real_values
++
++
++@pytest.fixture(params=["copy", "deepcopy", *range(pickle.HIGHEST_PROTOCOL + 1)])
++def roundtrip(request):
++    if request.param == "copy":
++        return copy.copy
++
++    if request.param == "deepcopy":
++        return copy.deepcopy
++
++    def pickle_roundtrip(value):
++        return pickle.loads(pickle.dumps(value, protocol=request.param))
++
++    return pickle_roundtrip
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++def test_sentinel_roundtrip(roundtrip, sentinel):
++    restored = roundtrip(sentinel)
++
++    assert restored is sentinel
++    assert restored.name == sentinel.name
++    assert repr(restored) == str(restored) == f"Sentinel.{sentinel.name}"
++
++
++def test_sentinel_aliases():
++    assert UNSET is Sentinel.UNSET
++    assert FLAG_NEEDS_VALUE is Sentinel.FLAG_NEEDS_VALUE
++
++
++@pytest.mark.parametrize(
++    ("parameter", "default", "args", "value"),
++    [
++        (click.Option(["--my-value"]), None, ["--my-value", "hello"], "hello"),
++        (click.Argument(["my-value"], required=False), None, ["hello"], "hello"),
++        (click.Option(["--my-flag/--no-my-flag"]), False, ["--my-flag"], True),
++        (
++            click.Option(["--my-flag"], is_flag=True, multiple=True),
++            (),
++            ["--my-flag"],
++            (True,),
++        ),
++        (
++            click.Option(["--my-value"], multiple=True),
++            (),
++            ["--my-value", "hello"],
++            ("hello",),
++        ),
++        (click.Option(["--my-value"], default=None), None, ["--my-value", "hi"], "hi"),
++        (click.Option(["--my-value"], default=42), 42, ["--my-value", "7"], 7),
++        (
++            click.Option(["--my-flag"], flag_value="selected", default=True),
++            "selected",
++            ["--my-flag"],
++            "selected",
++        ),
++    ],
++)
++def test_parameter_roundtrip(roundtrip, parameter, default, args, value):
++    restored = roundtrip(parameter)
++
++    assert restored is not parameter
++    assert type(restored) is type(parameter)
++    assert restored.name == parameter.name
++    assert restored.opts == parameter.opts
++    assert restored.secondary_opts == parameter.secondary_opts
++    assert restored.default == parameter.default
++    assert restored._default_explicit is parameter._default_explicit
++
++    if parameter.default is UNSET:
++        assert restored.default is UNSET
++
++    if isinstance(parameter, click.Option):
++        assert restored.flag_value == parameter.flag_value
++
++        if parameter.flag_value is UNSET:
++            assert restored.flag_value is UNSET
++
++    assert restored.to_info_dict() == parameter.to_info_dict()
++
++    command = click.Command("cli", params=[restored])
++
++    with command.make_context("cli", []) as ctx:
++        assert restored.get_default(ctx) == parameter.get_default(ctx)
++        assert ctx.params == {parameter.name: default}
++
++    with command.make_context("cli", args.copy()) as ctx:
++        assert ctx.params == {parameter.name: value}

@@ -1,0 +1,121 @@
+diff --git a/boltons/ioutils.py b/boltons/ioutils.py
+index 47f2b6a..3719fc8 100644
+--- a/boltons/ioutils.py
++++ b/boltons/ioutils.py
+@@ -116,7 +116,12 @@ class SpooledIOBase(object):
+         return self.buffer.isatty()
+ 
+     def next(self):
+-        return self.readline()
++        line = self.readline()
++        if not line:
++            raise StopIteration
++        return line
++
++    __next__ = next
+ 
+     @property
+     def closed(self):
+@@ -165,7 +170,7 @@ class SpooledIOBase(object):
+         return self.len
+ 
+     def __iter__(self):
+-        yield self.readline()
++        return self
+ 
+     def __enter__(self):
+         return self
+diff --git a/tests/test_ioutils.py b/tests/test_ioutils.py
+index a798dcb..1d17bdf 100644
+--- a/tests/test_ioutils.py
++++ b/tests/test_ioutils.py
+@@ -5,6 +5,8 @@ import codecs
+ import random
+ import string
+ 
++import pytest
++
+ try:
+     from StringIO import StringIO
+ except:
+@@ -146,8 +148,8 @@ class BaseTestMixin(object):
+         """Make sure iter works as expected"""
+         self.spooled_flo.write(self.test_str)
+         self.spooled_flo.seek(0)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.test_str)
+-        self.assertEqual([x for x in self.spooled_flo][0], self.data_type())
++        self.assertEqual([x for x in self.spooled_flo], [self.test_str])
++        self.assertEqual([x for x in self.spooled_flo], [])
+ 
+     def test_buf_property(self):
+         """'buf' property returns the same value as getvalue()"""
+@@ -200,6 +202,69 @@ class BaseTestMixin(object):
+             raise AssertionError("Instance is not truthy")
+ 
+ 
++@pytest.mark.parametrize('stream_type', [ioutils.SpooledBytesIO,
++                                       ioutils.SpooledStringIO])
++@pytest.mark.parametrize('rolled', [False, True])
++@pytest.mark.parametrize('text', [u'', u'\n', u'first\n\nlast',
++                                 u'first\n\nlast\n',
++                                 u'\u2014\r\n\r\n\u4e2d\u6587\n'])
++def test_spooled_iteration(stream_type, rolled, text):
++    data = text.encode('utf-8') if stream_type is ioutils.SpooledBytesIO else text
++    expected = data.splitlines(True)
++    with stream_type() as stream:
++        stream.write(data)
++        stream.seek(0)
++        if rolled:
++            stream.rollover()
++
++        assert iter(stream) is stream
++        assert [line for line in stream] == expected
++        assert stream.tell() == len(data)
++        assert stream.read() == data[:0]
++        assert stream.readline() == data[:0]
++        assert [line for line in stream] == []
++        for advance in (next, lambda stream: stream.next()):
++            for _ in range(2):
++                with pytest.raises(StopIteration):
++                    advance(stream)
++
++        stream.seek(0)
++        assert list(stream) == expected
++    assert stream.closed
++    with pytest.raises(ValueError):
++        next(stream)
++
++
++@pytest.mark.parametrize('stream_type', [ioutils.SpooledBytesIO,
++                                       ioutils.SpooledStringIO])
++@pytest.mark.parametrize('rolled', [False, True])
++def test_spooled_iteration_read_seek(stream_type, rolled):
++    text = u'\u2014first\n\n\u4e2d\u6587last\n'
++    data = text.encode('utf-8') if stream_type is ioutils.SpooledBytesIO else text
++    first, blank, last = data.splitlines(True)
++    with stream_type() as stream:
++        stream.write(data)
++        stream.seek(0)
++        if rolled:
++            stream.rollover()
++
++        iterator = iter(stream)
++        assert stream.read(1) == first[:1]
++        assert next(iterator) == first[1:]
++        assert stream.tell() == len(first)
++        assert stream.next() == blank
++        assert next(stream) == last
++        with pytest.raises(StopIteration):
++            next(iterator)
++
++        stream.seek(len(first))
++        assert next(iterator) == blank
++        stream.seek(0)
++        assert stream.readline() == first
++        assert stream.read() == blank + last
++    assert stream.closed
++
++
+ class TestSpooledBytesIO(TestCase, BaseTestMixin, AssertionsMixin):
+     linesep = os.linesep.encode('ascii')
+ 

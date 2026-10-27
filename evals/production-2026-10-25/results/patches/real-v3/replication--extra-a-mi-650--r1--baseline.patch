@@ -1,0 +1,96 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index 76c6815..85144b5 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -733,22 +733,19 @@ def before_and_after(predicate, it):
+     Note that the first iterator must be fully consumed before the second
+     iterator can generate valid results.
+     """
+-    it = iter(it)
+-    transition = []
++    # tee shares its buffer when splitting a remainder from an earlier call,
++    # avoiding a growing chain of remainder generators.
++    it, remainder = tee(it)
+ 
+     def true_iterator():
+         for elem in it:
+             if predicate(elem):
++                next(remainder)
+                 yield elem
+             else:
+-                transition.append(elem)
+                 return
+ 
+-    def remainder_iterator():
+-        yield from transition
+-        yield from it
+-
+-    return true_iterator(), remainder_iterator()
++    return true_iterator(), remainder
+ 
+ 
+ def triplewise(iterable):
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 6c3d977..e382ef9 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -783,6 +783,59 @@ class BeforeAndAfterTests(TestCase):
+         self.assertEqual(list(before), [1, True])
+         self.assertEqual(list(after), [0, False])
+ 
++    def test_repeated_splits(self):
++        remainder = iter(range(10002))
++        for stop in range(1, 10001):
++            before, remainder = mi.before_and_after(
++                lambda x, stop=stop: x < stop, remainder
++            )
++            self.assertEqual(list(before), [stop - 1])
++
++        self.assertEqual(list(remainder), [10000, 10001])
++
++    def test_repeated_empty_splits(self):
++        for items in ([], [0, False, None, '']):
++            with self.subTest(items=items):
++                remainder = iter(items)
++                for _ in range(10000):
++                    before, remainder = mi.before_and_after(bool, remainder)
++                    self.assertEqual(list(before), [])
++
++                self.assertEqual(list(remainder), items)
++
++    def test_lazy_consumption(self):
++        consumed = []
++        tested = []
++
++        def source():
++            for item in range(5):
++                consumed.append(item)
++                yield item
++
++        def predicate(item):
++            tested.append(item)
++            return item < 2
++
++        before, after = mi.before_and_after(predicate, source())
++        self.assertEqual(consumed, [])
++        self.assertEqual(tested, [])
++
++        self.assertEqual(next(before), 0)
++        self.assertEqual(consumed, [0])
++        self.assertEqual(tested, [0])
++
++        self.assertEqual(list(before), [1])
++        self.assertEqual(consumed, [0, 1, 2])
++        self.assertEqual(tested, [0, 1, 2])
++
++        self.assertEqual(next(after), 2)
++        self.assertEqual(consumed, [0, 1, 2])
++        self.assertEqual(list(after), [3, 4])
++        self.assertEqual(consumed, [0, 1, 2, 3, 4])
++        self.assertEqual(tested, [0, 1, 2])
++        self.assertEqual(list(before), [])
++        self.assertEqual(list(after), [])
++
+ 
+ class TriplewiseTests(TestCase):
+     def test_basic(self):

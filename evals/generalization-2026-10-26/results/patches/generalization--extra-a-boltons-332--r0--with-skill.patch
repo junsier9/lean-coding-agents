@@ -1,0 +1,108 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index b295f1c..e71dee5 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -682,6 +682,7 @@ def fix_print_exception():
+ _frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)'
+                        r', in (?P<funcname>.+)$')
+ _se_frame_re = re.compile(r'^File "(?P<filepath>.+)", line (?P<lineno>\d+)')
++_column_marker_re = re.compile(r'^[ \t]+[~^][~^ \t]*$')
+ 
+ 
+ # TODO: ParsedException generator over large bodies of text
+@@ -728,7 +729,7 @@ class ParsedException(object):
+         as returned by the traceback module.
+ 
+         ``ParsedException.from_string(text).to_string()`` should yield
+-        ``text``.
++        ``text``, except that column markers are omitted.
+         """
+         lines = [u'Traceback (most recent call last):']
+ 
+@@ -810,6 +811,9 @@ class ParsedException(object):
+                 else:
+                     frame_dict['source_line'] = next_line_stripped
+                     line_no += 1
++                    if (line_no + 1 < len(tb_lines)
++                            and _column_marker_re.match(tb_lines[line_no + 1])):
++                        line_no += 1
+             else:
+                 break
+             line_no += 1
+diff --git a/tests/test_tbutils_parsed_exc.py b/tests/test_tbutils_parsed_exc.py
+index b28727e..ad9641a 100644
+--- a/tests/test_tbutils_parsed_exc.py
++++ b/tests/test_tbutils_parsed_exc.py
+@@ -1,3 +1,4 @@
++import pytest
+ 
+ from boltons.tbutils import ParsedException
+ 
+@@ -21,6 +22,67 @@ NameError: name 'plarp' is not defined"""
+     assert parsed_tb.to_string() == _tb_str
+ 
+ 
++@pytest.mark.parametrize('marker', [
++    '    ^^^',
++    '    ~~~',
++    '       ~~~^^~~~',
++    '    ~~^  ^~~\t',
++])
++def test_parsed_exc_column_markers(marker):
++    tb_str = u"""\
++Traceback (most recent call last):
++  File "example.py", line 2, in <module>
++    run()
++  File "<generated>", line 3, in run
++  File "example.py", line 5, in wrapper
++    return divide("~^")
++  File "example.py", line 8, in divide
++    return ~value ^ (1 / 0)
++ZeroDivisionError: division by zero"""
++    marked_tb_str = tb_str.replace('    run()\n', '    run()\n' + marker + '\n')
++    marked_tb_str = marked_tb_str.replace('    return ~value ^ (1 / 0)\n',
++                                        '    return ~value ^ (1 / 0)\n' + marker + '\n')
++
++    parsed_tb = ParsedException.from_string(marked_tb_str)
++
++    assert parsed_tb.exc_type == 'ZeroDivisionError'
++    assert parsed_tb.exc_msg == 'division by zero'
++    assert parsed_tb.frames == [
++        {'filepath': 'example.py', 'lineno': '2', 'funcname': '<module>',
++         'source_line': 'run()'},
++        {'filepath': '<generated>', 'lineno': '3', 'funcname': 'run',
++         'source_line': ''},
++        {'filepath': 'example.py', 'lineno': '5', 'funcname': 'wrapper',
++         'source_line': 'return divide("~^")'},
++        {'filepath': 'example.py', 'lineno': '8', 'funcname': 'divide',
++         'source_line': 'return ~value ^ (1 / 0)'},
++    ]
++    assert parsed_tb.source_file == 'example.py'
++    assert parsed_tb.to_string() == tb_str
++
++
++@pytest.mark.parametrize('exc_line, exc_type, exc_msg', [
++    ('RuntimeError', 'RuntimeError', ''),
++    ('ValueError: first: detail\nsecond line\n    ^~~',
++     'ValueError', 'first: detail\nsecond line\n    ^~~'),
++])
++def test_parsed_exc_column_markers_bytes(exc_line, exc_type, exc_msg):
++    tb_str = ('Traceback (most recent call last):\n'
++              '  File "example.py", line 2, in <module>\n'
++              '    fail()\n' + exc_line)
++    marked_tb_str = tb_str.replace('    fail()\n', '    fail()\n    ~~^^~~\n')
++
++    parsed_tb = ParsedException.from_string(marked_tb_str.encode('utf-8'))
++
++    assert parsed_tb.exc_type == exc_type
++    assert parsed_tb.exc_msg == exc_msg
++    assert parsed_tb.frames == [
++        {'filepath': 'example.py', 'lineno': '2', 'funcname': '<module>',
++         'source_line': 'fail()'},
++    ]
++    assert parsed_tb.to_string() == tb_str
++
++
+ def test_parsed_exc_nosrcline():
+     """just making sure that everything can be parsed even if there is
+     a line without source and also if the exception has no message"""

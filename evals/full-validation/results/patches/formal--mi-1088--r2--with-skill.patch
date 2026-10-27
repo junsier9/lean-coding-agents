@@ -1,0 +1,57 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c66c4cb..bd8d31e 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3076,7 +3076,11 @@ def exactly_n(iterable, n, predicate=bool):
+     The iterable will be advanced until ``n + 1`` truthy items are encountered,
+     so avoid calling it on infinite iterables.
+ 
++    If *n* is negative, return ``False`` without advancing the iterable.
++
+     """
++    if n < 0:
++        return False
+     return ilen(islice(filter(predicate, iterable), n + 1)) == n
+ 
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 12033b8..adb3ce8 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3688,6 +3688,36 @@ class ExactlyNTests(TestCase):
+         self.assertTrue(mi.exactly_n([], 0))
+         self.assertFalse(mi.exactly_n([], 1))
+ 
++    def test_negative(self):
++        for n in (-1, -2, -10, -(10**100)):
++            with self.subTest(n=n):
++                self.assertFalse(mi.exactly_n([], n))
++                self.assertFalse(mi.exactly_n([True, False], n))
++                self.assertFalse(mi.exactly_n(repeat(False), n))
++
++                iterable = count()
++                predicate = mock.Mock(return_value=True)
++                self.assertFalse(mi.exactly_n(iterable, n, predicate))
++                predicate.assert_not_called()
++                self.assertEqual(next(iterable), 0)
++
++    def test_zero_short_circuit(self):
++        iterable = iter([False, False, True, False])
++        self.assertFalse(mi.exactly_n(iterable, 0))
++        self.assertEqual(list(iterable), [False])
++
++    def test_predicate_short_circuit(self):
++        for n in (0, 1, 3):
++            with self.subTest(n=n):
++                iterable = count()
++                predicate = mock.Mock(side_effect=lambda x: x % 2 == 1)
++                self.assertFalse(mi.exactly_n(iterable, n, predicate))
++                self.assertEqual(
++                    predicate.call_args_list,
++                    [mock.call(x) for x in range(2 * (n + 1))],
++                )
++                self.assertEqual(next(iterable), 2 * (n + 1))
++
+ 
+ class AlwaysReversibleTests(TestCase):
+     """Tests for ``always_reversible()``"""

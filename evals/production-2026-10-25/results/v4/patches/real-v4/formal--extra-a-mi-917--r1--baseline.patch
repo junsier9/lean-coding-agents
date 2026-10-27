@@ -1,0 +1,117 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index a6573f2..366f459 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -25,7 +25,7 @@ from itertools import (
+ from math import comb, e, exp, factorial, floor, fsum, log, log1p, perm, tau
+ from queue import Empty, Queue
+ from random import random, randrange, shuffle, uniform
+-from operator import itemgetter, mul, sub, gt, lt, le
++from operator import itemgetter, mul, sub, gt, lt
+ from sys import hexversion, maxsize
+ from time import monotonic
+ 
+@@ -3809,8 +3809,11 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     >>> is_sorted([5, 4, 3, 1, 2], reverse=True)
+     False
+ 
++    Ordering is checked using ``<``, as with :func:`sorted`.
++
+     If *strict*, tests for strict sorting, that is, returns ``False`` if equal
+-    elements are found:
++    elements (or equal keys, if *key* is given) are found. Equality is checked
++    using ``==``:
+ 
+     >>> is_sorted([1, 2, 2])
+     True
+@@ -3822,7 +3825,7 @@ def is_sorted(iterable, key=None, reverse=False, strict=False):
+     :func:`sorted` function for objects with unusual comparison dynamics.
+     If there are no out-of-order items, the iterable is exhausted.
+     """
+-    compare = le if strict else lt
++    compare = (lambda x, y: x < y or x == y) if strict else lt
+     it = iterable if (key is None) else map(key, iterable)
+     it_1, it_2 = tee(it)
+     next(it_2 if reverse else it_1, None)
+diff --git a/tests/test_more.py b/tests/test_more.py
+index b25343f..e12fa94 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4323,6 +4323,77 @@ class SampleTests(TestCase):
+ 
+ 
+ class IsSortedTests(TestCase):
++    def test_lt_only(self):
++        class LtOnly:
++            def __init__(self, value):
++                self.value = value
++
++            def __lt__(self, other):
++                return self.value < other.value
++
++        values = list(map(LtOnly, range(3)))
++        cases = [
++            ([], True, False),
++            ([0], True, False),
++            ([0, 1, 2], True, False),
++            ([0, 2, 1], False, False),
++            ([1, 0, 2], False, False),
++            ([0, 0], True, True),
++            ([0, 1, 1, 2], True, True),
++        ]
++        for indices, ordered, duplicates in cases:
++            for reverse, strict, use_key in product([False, True], repeat=3):
++                items = [values[i] for i in indices]
++                if reverse:
++                    items.reverse()
++                key = None
++                if use_key:
++                    items = list(enumerate(items))
++                    key = itemgetter(1)
++
++                with self.subTest(
++                    indices=indices,
++                    reverse=reverse,
++                    strict=strict,
++                    use_key=use_key,
++                ):
++                    self.assertEqual(
++                        items == sorted(items, key=key, reverse=reverse),
++                        ordered,
++                    )
++                    self.assertEqual(
++                        mi.is_sorted(
++                            iter(items), key=key, reverse=reverse, strict=strict
++                        ),
++                        ordered and not (strict and duplicates),
++                    )
++
++    def test_equal_keys(self):
++        class Value:
++            def __init__(self, value):
++                self.value = value
++
++            def __lt__(self, other):
++                return self.value < other.value
++
++            def __eq__(self, other):
++                return self.value == other.value
++
++        for reverse, strict in product([False, True], repeat=2):
++            items = [1, -1, 2, -2]
++            if reverse:
++                items.reverse()
++            with self.subTest(reverse=reverse, strict=strict):
++                self.assertEqual(
++                    mi.is_sorted(
++                        iter(items),
++                        key=lambda value: Value(abs(value)),
++                        reverse=reverse,
++                        strict=strict,
++                    ),
++                    not strict,
++                )
++
+     def test_basic(self):
+         for iterable, kwargs, expected in [
+             ([], {}, True),

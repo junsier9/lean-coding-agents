@@ -1,0 +1,60 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index be77433..eedee8c 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -136,7 +136,7 @@ class ErrorRateExceeded(Exception):
+ def limit_error_rate(fails, timeout, exception=ErrorRateExceeded):
+     """If function fails to complete fails times in a row,
+        calls to it will be intercepted for timeout with exception raised instead."""
+-    if isinstance(timeout, int):
++    if isinstance(timeout, (int, float)):
+         timeout = timedelta(seconds=timeout)
+ 
+     def decorator(func):
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index ec52571..7d8285d 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -1,4 +1,4 @@
+-from datetime import timedelta
++from datetime import datetime, timedelta
+ from threading import Thread
+ import pytest
+ from funcy.flow import *
+@@ -154,6 +154,36 @@ def test_limit_error_rate():
+     assert calls == [1, 2]
+ 
+ 
++@pytest.mark.parametrize('timeout, seconds', [
++    (0.5, 0.5),
++    (timedelta(seconds=0.5), 0.5),
++    (1, 1),
++    (timedelta(seconds=1), 1),
++])
++def test_limit_error_rate_timeout(monkeypatch, timeout, seconds):
++    now = datetime(2026, 1, 1)
++
++    class Clock:
++        @staticmethod
++        def now():
++            return now
++
++    monkeypatch.setattr('funcy.flow.datetime', Clock)
++    limited = limit_error_rate(1, timeout)(_make_failing())
++
++    with pytest.raises(MyError): limited()
++    with pytest.raises(ErrorRateExceeded): limited()
++
++    now += timedelta(seconds=seconds) - timedelta(microseconds=1)
++    with pytest.raises(ErrorRateExceeded): limited()
++
++    now += timedelta(microseconds=1)
++    assert limited() == 1
++    assert limited.fails == 0
++    assert limited.blocked is None
++    assert limited() == 1
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_throttle(monkeypatch, typ):

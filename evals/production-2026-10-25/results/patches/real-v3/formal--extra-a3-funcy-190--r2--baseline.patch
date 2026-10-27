@@ -1,0 +1,137 @@
+diff --git a/docs/calc.rst b/docs/calc.rst
+index 753f206..5b4e6ae 100644
+--- a/docs/calc.rst
++++ b/docs/calc.rst
+@@ -38,6 +38,10 @@ Calculation
+         def city_location():
+             return {row['city']: row['location'] for row in fetch_city_locations()}
+ 
++    The lookup table is built on the first lookup and cached after a successful build,
++    even if it is empty. If building fails, the exception is propagated and partial
++    results are discarded. The next lookup retries the build.
++
+     If decorated function has arguments then separate lookuper with its own lookup table is created for each combination of arguments. This can be used to make lookup tables on demand::
+ 
+         @make_lookuper
+diff --git a/funcy/calc.py b/funcy/calc.py
+index d55b6b0..16785b0 100644
+--- a/funcy/calc.py
++++ b/funcy/calc.py
+@@ -111,8 +111,9 @@ def _make_lookuper(silent):
+         """
+         Creates a single argument function looking up result in a memory.
+ 
+-        Decorated function is called once on first lookup and should return all available
+-        arg-value pairs.
++        Decorated function is called on first lookup and should return all available
++        arg-value pairs. Successful builds are cached even if empty; failed builds are
++        retried on the next lookup without retaining partial results.
+ 
+         Resulting function will raise LookupError when using @make_lookuper
+         or simply return None when using @silent_lookuper.
+@@ -128,12 +129,12 @@ def _make_lookuper(silent):
+                 f.__name__ = '%s(%s)' % (func.__name__, ', '.join(map(str, args)))
+                 return make_lookuper(f)
+         else:
+-            memory = {}
++            memory = None
+ 
+             def wrapper(arg):
+-                if not memory:
+-                    memory[object()] = None # prevent continuos memory refilling
+-                    memory.update(func())
++                nonlocal memory
++                if memory is None:
++                    memory = dict(func())
+ 
+                 if silent:
+                     return memory.get(arg)
+diff --git a/tests/test_calc.py b/tests/test_calc.py
+index a9c4614..ca3da79 100644
+--- a/tests/test_calc.py
++++ b/tests/test_calc.py
+@@ -179,6 +179,84 @@ def test_silnent_lookuper_nested():
+     assert function_table(cos)(-1) is None
+ 
+ 
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('nested', [False, True], ids=['direct', 'nested'])
++def test_lookuper_retries_failed_build(deco, nested):
++    calls = []
++    error = RuntimeError('lookup table unavailable')
++
++    def build():
++        calls.append(None)
++        if len(calls) < 3:
++            raise error
++        return {'ready': 42, 'none': None}
++
++    lookup = deco(lambda group: build())('group') if nested else deco(build)
++    assert calls == []
++
++    for attempt in range(1, 3):
++        with pytest.raises(RuntimeError) as raised:
++            lookup('ready')
++        assert raised.value is error
++        assert len(calls) == attempt
++
++    assert lookup('ready') == 42
++    assert lookup('ready') == 42
++    assert lookup('none') is None
++    assert len(calls) == 3
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('nested', [False, True], ids=['direct', 'nested'])
++def test_lookuper_discards_failed_build(deco, nested):
++    calls = []
++    error = RuntimeError('lookup table interrupted')
++
++    def build():
++        calls.append(None)
++        if len(calls) == 1:
++            yield 'stale', 1
++            raise error
++        yield 'fresh', 2
++
++    lookup = deco(lambda group: build())('group') if nested else deco(build)
++    with pytest.raises(RuntimeError) as raised:
++        lookup('stale')
++    assert raised.value is error
++    assert len(calls) == 1
++
++    # Looking up a partially yielded key must retry, then use only the new table.
++    if deco is silent_lookuper:
++        assert lookup('stale') is None
++    else:
++        with pytest.raises(LookupError):
++            lookup('stale')
++    assert lookup('fresh') == 2
++    assert lookup('fresh') == 2
++    assert len(calls) == 2
++
++
++@pytest.mark.parametrize('deco', [make_lookuper, silent_lookuper])
++@pytest.mark.parametrize('nested', [False, True], ids=['direct', 'nested'])
++@pytest.mark.parametrize('empty_table', [dict, lambda: iter(())], ids=['dict', 'iterator'])
++def test_lookuper_empty_table_initialized_once(deco, nested, empty_table):
++    calls = []
++
++    def build():
++        calls.append(None)
++        return empty_table()
++
++    lookup = deco(lambda group: build())('group') if nested else deco(build)
++    assert calls == []
++    for key in ['missing', 'other', 'missing']:
++        if deco is silent_lookuper:
++            assert lookup(key) is None
++        else:
++            with pytest.raises(LookupError):
++                lookup(key)
++    assert len(calls) == 1
++
++
+ @pytest.mark.parametrize('typ',
+     [pytest.param(int, id='int'), pytest.param(lambda s: timedelta(seconds=s), id='timedelta')])
+ def test_cache(typ):

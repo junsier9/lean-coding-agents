@@ -1,0 +1,37 @@
+{
+  "phase": "formal",
+  "finished_at": "2026-10-24T16:07:39.430138+00:00",
+  "status": "incomplete",
+  "failed_pairs": [
+    {
+      "case_id": "b-29-click-1142",
+      "repeat": 0,
+      "error_type": "Error",
+      "error": "[('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-29-click-1142\\\\r0\\\\with-skill\\\\.pytest-tmp', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-29-click-1142--r0--with-skill\\\\.pytest-tmp', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-29-click-1142\\\\\\\\r0\\\\\\\\with-skill\\\\\\\\.pytest-tmp'\")]"
+    },
+    {
+      "case_id": "b-29-click-1142",
+      "repeat": 1,
+      "error_type": "Error",
+      "error": "[('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-29-click-1142\\\\r1\\\\with-skill\\\\.test-tmp\\\\all', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-29-click-1142--r1--with-skill\\\\.test-tmp\\\\all', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-29-click-1142\\\\\\\\r1\\\\\\\\with-skill\\\\\\\\.test-tmp\\\\\\\\all'\"), ('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-29-click-1142\\\\r1\\\\with-skill\\\\.test-tmp\\\\termui', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-29-click-1142--r1--with-skill\\\\.test-tmp\\\\termui', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-29-click-1142\\\\\\\\r1\\\\\\\\with-skill\\\\\\\\.test-tmp\\\\\\\\termui'\")]"
+    },
+    {
+      "case_id": "b-02-click-2730",
+      "repeat": 2,
+      "error_type": "Error",
+      "error": "[('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-02-click-2730\\\\r2\\\\baseline\\\\.pytest-local-09de7220084649a5b8429620d513a25c', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-02-click-2730--r2--baseline\\\\.pytest-local-09de7220084649a5b8429620d513a25c', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-02-click-2730\\\\\\\\r2\\\\\\\\baseline\\\\\\\\.pytest-local-09de7220084649a5b8429620d513a25c'\")]"
+    },
+    {
+      "case_id": "b-09-click-2058",
+      "repeat": 2,
+      "error_type": "Error",
+      "error": "[('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-09-click-2058\\\\r2\\\\with-skill\\\\.test-tmp-style-6c9306\\\\pytest', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-09-click-2058--r2--with-skill\\\\.test-tmp-style-6c9306\\\\pytest', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-09-click-2058\\\\\\\\r2\\\\\\\\with-skill\\\\\\\\.test-tmp-style-6c9306\\\\\\\\pytest'\")]"
+    },
+    {
+      "case_id": "b-04-click-2680",
+      "repeat": 1,
+      "error_type": "Error",
+      "error": "[('C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\work\\\\formal\\\\b-04-click-2680\\\\r1\\\\baseline\\\\.test-tmp\\\\pytest', 'C:\\\\Users\\\\ASUS\\\\AppData\\\\Local\\\\Temp\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\grades\\\\formal\\\\formal--b-04-click-2680--r1--baseline\\\\.test-tmp\\\\pytest', \"[WinError 5] 拒绝访问。: 'C:\\\\\\\\Users\\\\\\\\ASUS\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\\\\\\\work\\\\\\\\formal\\\\\\\\b-04-click-2680\\\\\\\\r1\\\\\\\\baseline\\\\\\\\.test-tmp\\\\\\\\pytest'\")]"
+    }
+  ]
+}

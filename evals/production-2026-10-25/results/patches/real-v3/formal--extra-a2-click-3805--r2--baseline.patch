@@ -1,0 +1,109 @@
+diff --git a/src/click/_utils.py b/src/click/_utils.py
+index 05ee2e9..c0ad95a 100644
+--- a/src/click/_utils.py
++++ b/src/click/_utils.py
+@@ -18,6 +18,12 @@ class Sentinel(enum.Enum):
+     def __repr__(self) -> str:
+         return f"{self.__class__.__name__}.{self.name}"
+ 
++    def __reduce_ex__(
++        self, protocol: int
++    ) -> tuple[t.Callable[..., Sentinel], tuple[type[Sentinel], str]]:
++        # Look up the member by name, since object() values do not round-trip.
++        return getattr, (type(self), self.name)
++
+ 
+ UNSET: t.Literal[Sentinel.UNSET] = Sentinel.UNSET
+ """Sentinel used to indicate that a value is not set."""
+diff --git a/tests/test_utils/test_sentinel.py b/tests/test_utils/test_sentinel.py
+index 1dd5b15..bb8d907 100644
+--- a/tests/test_utils/test_sentinel.py
++++ b/tests/test_utils/test_sentinel.py
+@@ -1,6 +1,13 @@
++import copy
++import enum
++import pickle
+ from decimal import Decimal
+ from fractions import Fraction
+ 
++import pytest
++
++import click
++from click._utils import Sentinel
+ from click._utils import UNSET
+ 
+ 
+@@ -50,3 +57,73 @@ def test_unset_sentinel():
+         assert value is not real_value
+ 
+     assert value not in real_values
++
++
++@pytest.fixture(params=[copy.copy, copy.deepcopy, *range(pickle.HIGHEST_PROTOCOL + 1)])
++def roundtrip(request):
++    if callable(request.param):
++        return request.param
++
++    protocol = request.param
++    return lambda value: pickle.loads(pickle.dumps(value, protocol=protocol))
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++def test_sentinel_roundtrip(roundtrip, sentinel):
++    restored = roundtrip(sentinel)
++
++    assert restored is sentinel
++    assert restored.name == sentinel.name
++    assert repr(restored) == repr(sentinel)
++    assert str(restored) == str(sentinel)
++
++
++@pytest.mark.parametrize("sentinel", Sentinel)
++@pytest.mark.parametrize("copy_method", [copy.copy, copy.deepcopy])
++def test_sentinel_copy_without_enum_hooks(monkeypatch, sentinel, copy_method):
++    # Older Python versions copy Enum members through the pickle protocol.
++    monkeypatch.delattr(enum.Enum, "__copy__", raising=False)
++    monkeypatch.delattr(enum.Enum, "__deepcopy__", raising=False)
++
++    assert copy_method(sentinel) is sentinel
++
++
++@pytest.mark.parametrize(
++    ("parameter", "effective_default", "runtime_default"),
++    [
++        (click.Option(["--value"]), UNSET, None),
++        (click.Option(["--value/--no-value"]), False, False),
++        (click.Option(["--value"], is_flag=True, multiple=True), (), ()),
++        (click.Argument(["value"], required=False), UNSET, None),
++        (click.Option(["--value"], default=None), None, None),
++        (click.Option(["--value"], default=""), "", ""),
++        (click.Option(["--value"], default=0), 0, 0),
++        (click.Option(["--value"], is_flag=True, default=True), True, True),
++    ],
++)
++def test_parameter_roundtrip(
++    runner, roundtrip, parameter, effective_default, runtime_default
++):
++    restored = roundtrip(parameter)
++
++    assert restored is not parameter
++    assert type(restored) is type(parameter)
++    assert restored.name == parameter.name == "value"
++    assert restored.opts == parameter.opts
++    assert restored.secondary_opts == parameter.secondary_opts
++    assert restored.default == parameter.default
++    if parameter.default is UNSET:
++        assert restored.default is UNSET
++    if isinstance(parameter, click.Option):
++        assert restored.flag_value is parameter.flag_value
++    assert restored.to_info_dict() == parameter.to_info_dict()
++
++    command = click.Command(
++        "test", params=[restored], callback=lambda value: click.echo(repr(value))
++    )
++    with click.Context(command) as ctx:
++        assert restored.get_default(ctx) == effective_default
++
++    result = runner.invoke(command, [])
++    assert result.exit_code == 0
++    assert result.output == f"{runtime_default!r}\n"

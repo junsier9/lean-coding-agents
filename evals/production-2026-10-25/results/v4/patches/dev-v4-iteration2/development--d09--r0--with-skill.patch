@@ -1,0 +1,45 @@
+diff --git a/memo.py b/memo.py
+index 0743916..812fefa 100644
+--- a/memo.py
++++ b/memo.py
+@@ -1,10 +1,12 @@
+ from collections import namedtuple
+ from functools import wraps
++from inspect import signature
+ from weakref import WeakKeyDictionary
+ 
+ CacheInfo = namedtuple("CacheInfo", "hits misses size")
+ 
+ def memoized_method(method):
++    method_signature = signature(method)
+     states = WeakKeyDictionary()
+ 
+     def state(owner):
+@@ -13,14 +15,23 @@ def memoized_method(method):
+         return states[owner]
+ 
+     @wraps(method)
+-    def wrapper(owner, *args, **kwargs):
+-        current = state(owner)
+-        key = (args, tuple(sorted(kwargs.items())))
++    def wrapper(*args, **kwargs):
++        bound = method_signature.bind(*args, **kwargs)
++        bound.apply_defaults()
++        arguments = iter(bound.arguments.values())
++        current = state(next(arguments))
++        key = tuple((type(value), value) for value in arguments)
++        try:
++            hash(key)
++        except TypeError:
++            # Let the business method validate unhashable arguments.
++            current["misses"] += 1
++            return method(*args, **kwargs)
+         if key in current["values"]:
+             current["hits"] += 1
+             return current["values"][key]
+         current["misses"] += 1
+-        result = method(owner, *args, **kwargs)
++        result = method(*args, **kwargs)
+         current["values"][key] = result
+         return result
+ 

@@ -1,0 +1,248 @@
+diff --git a/src/pluggy/_manager.py b/src/pluggy/_manager.py
+index 080ef33..32d64b5 100644
+--- a/src/pluggy/_manager.py
++++ b/src/pluggy/_manager.py
+@@ -591,7 +591,11 @@ class PluginManager:
+             hook_name: str, methods: Sequence[HookImpl], kwargs: Mapping[str, object]
+         ) -> None:
+             hooktrace.root.indent += 1
+-            hooktrace(hook_name, kwargs)
++            try:
++                hooktrace(hook_name, kwargs)
++            except BaseException:
++                hooktrace.root.indent -= 1
++                raise
+ 
+         def after(
+             outcome: Result[object],
+@@ -599,9 +603,11 @@ class PluginManager:
+             methods: Sequence[HookImpl],
+             kwargs: Mapping[str, object],
+         ) -> None:
+-            if outcome.exception is None:
+-                hooktrace("finish", hook_name, "-->", outcome.get_result())
+-            hooktrace.root.indent -= 1
++            try:
++                if outcome.exception is None:
++                    hooktrace("finish", hook_name, "-->", outcome.get_result())
++            finally:
++                hooktrace.root.indent -= 1
+ 
+         return self.add_hookcall_monitoring(before, after)
+ 
+diff --git a/src/pluggy/_tracing.py b/src/pluggy/_tracing.py
+index e90418f..2df1016 100644
+--- a/src/pluggy/_tracing.py
++++ b/src/pluggy/_tracing.py
+@@ -13,6 +13,14 @@ _Writer = Callable[[str], object]
+ _Processor = Callable[[tuple[str, ...], tuple[Any, ...]], object]
+ 
+ 
++def _safe_str(value: object) -> str:
++    """Format diagnostic values without swallowing interrupts."""
++    try:
++        return str(value)
++    except Exception:
++        return "<unprintable>"
++
++
+ class TagTracer:
+     def __init__(self) -> None:
+         self._tags2proc: dict[tuple[str, ...], _Processor] = {}
+@@ -29,15 +37,16 @@ class TagTracer:
+         else:
+             extra = {}
+ 
+-        content = " ".join(map(str, args))
++        content = " ".join(map(_safe_str, args))
+         indent = "  " * self.indent
+ 
+         lines = [f"{indent}{content} [{':'.join(tags)}]\n"]
+ 
+         for name, value in extra.items():
+-            lines.append(f"{indent}    {name}: {value}\n")
++            lines.append(f"{indent}    {_safe_str(name)}: {_safe_str(value)}\n")
+ 
+-        return "".join(lines)
++        # Escape surrogates for strict UTF-8 writers, preserving valid Unicode.
++        return "".join(lines).encode("utf-8", "backslashreplace").decode("utf-8")
+ 
+     def _processmessage(self, tags: tuple[str, ...], args: tuple[object, ...]) -> None:
+         if self._writer is not None and args:
+diff --git a/testing/test_tracer.py b/testing/test_tracer.py
+index 13b2972..297d044 100644
+--- a/testing/test_tracer.py
++++ b/testing/test_tracer.py
+@@ -10,6 +10,14 @@ hookspec = HookspecMarker("example")
+ hookimpl = HookimplMarker("example")
+ 
+ 
++class Unprintable:
++    def __str__(self) -> str:
++        raise ValueError("cannot convert to str")
++
++    def __repr__(self) -> str:
++        raise RuntimeError("cannot convert to repr")
++
++
+ @pytest.fixture
+ def rootlogger() -> TagTracer:
+     return TagTracer()
+@@ -64,6 +72,157 @@ def test_readable_output_dictargs(rootlogger: TagTracer) -> None:
+     assert out2 == "test [test]\n    a: 1\n"
+ 
+ 
++@pytest.mark.parametrize(
++    ("value", "expected"),
++    [
++        ("caf\u00e9 \u4e2d\u6587 \U0001f600", "caf\u00e9 \u4e2d\u6587 \U0001f600"),
++        ("\ud800", r"\ud800"),
++        ("\udfff", r"\udfff"),
++        ("\ud83d\ude00", r"\ud83d\ude00"),
++        (
++            "\u4e2d\u6587\ud800 caf\u00e9\udfff\U0001f600",
++            "\u4e2d\u6587\\ud800 caf\u00e9\\udfff\U0001f600",
++        ),
++    ],
++)
++def test_unicode_output(rootlogger: TagTracer, value: str, expected: str) -> None:
++    out: list[bytes] = []
++    processed = []
++    extra = {value: value}
++    rootlogger.setwriter(lambda message: out.append(message.encode("utf-8")))
++    rootlogger.setprocessor((value,), lambda *args: processed.append(args))
++
++    rootlogger.get(value)(value, extra)
++
++    assert out == [
++        f"{expected} [{expected}]\n    {expected}: {expected}\n".encode("utf-8")
++    ]
++    assert processed == [((value,), (value, extra))]
++    assert processed[0][1][1] is extra
++
++
++@pytest.mark.parametrize("location", ["content", "key", "value", "nested"])
++def test_unprintable_output(rootlogger: TagTracer, location: str) -> None:
++    value = Unprintable()
++    out: list[str] = []
++    rootlogger.setwriter(out.append)
++
++    if location == "content":
++        rootlogger.get("test")(value)
++        expected = "<unprintable> [test]\n"
++    elif location == "key":
++        rootlogger.get("test")("message", {value: 1})
++        expected = "message [test]\n    <unprintable>: 1\n"
++    elif location == "value":
++        rootlogger.get("test")("message", {"key": value})
++        expected = "message [test]\n    key: <unprintable>\n"
++    else:
++        rootlogger.get("test")([value])
++        expected = "<unprintable> [test]\n"
++
++    assert out == [expected]
++
++
++@pytest.mark.parametrize("firstresult", [False, True])
++@pytest.mark.parametrize("location", ["argument", "result"])
++@pytest.mark.parametrize(
++    ("value", "expected"),
++    [
++        (
++            "\u4e2d\u6587\ud800 caf\u00e9\udfff\U0001f600",
++            "\u4e2d\u6587\\ud800 caf\u00e9\\udfff\U0001f600",
++        ),
++        pytest.param(Unprintable(), "<unprintable>", id="unprintable"),
++    ],
++)
++def test_plugin_tracing_unsafe_values(
++    pm: PluginManager,
++    firstresult: bool,
++    location: str,
++    value: object,
++    expected: str,
++) -> None:
++    class Api:
++        @hookspec(firstresult=firstresult)
++        def hello(self, arg: object) -> object: ...
++
++    argument = value if location == "argument" else "argument"
++    result_value = value if location == "result" else "result"
++    calls = []
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg: object) -> object:
++            calls.append(arg)
++            return result_value
++
++    pm.add_hookspecs(Api)
++    pm.register(Plugin())
++    trace_out: list[str] = []
++
++    def writer(message: str) -> None:
++        message.encode("utf-8")
++        trace_out.append(message)
++
++    pm.trace.root.setwriter(writer)
++    undo = pm.enable_tracing()
++    try:
++        result = pm.hook.hello(arg=argument)
++        if firstresult:
++            assert result is result_value
++        else:
++            assert len(result) == 1
++            assert result[0] is result_value
++        assert len(calls) == 1
++        assert calls[0] is argument
++        assert len(trace_out) == 2
++        message = trace_out[0 if location == "argument" else 1]
++        assert expected in message
++        assert pm.trace.root.indent == 0
++    finally:
++        undo()
++
++
++@pytest.mark.parametrize(
++    "exception_type", [KeyboardInterrupt, SystemExit, GeneratorExit]
++)
++@pytest.mark.parametrize("location", ["argument", "result", "hook"])
++def test_plugin_tracing_interrupts(
++    pm: PluginManager, exception_type: type[BaseException], location: str
++) -> None:
++    exception = exception_type()
++
++    class Interrupting:
++        def __str__(self) -> str:
++            raise exception
++
++        __repr__ = __str__
++
++    value = Interrupting()
++    calls = []
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg: object) -> object:
++            calls.append(arg)
++            if location == "hook":
++                raise exception
++            return value if location == "result" else arg
++
++    pm.register(Plugin())
++    pm.trace.root.setwriter(lambda message: message.encode("utf-8"))
++    pm.trace.root.indent = 2
++    undo = pm.enable_tracing()
++    try:
++        with pytest.raises(exception_type) as excinfo:
++            pm.hook.hello(arg=value if location == "argument" else "argument")
++        assert excinfo.value is exception
++        assert len(calls) == (0 if location == "argument" else 1)
++        assert pm.trace.root.indent == 2
++    finally:
++        undo()
++
++
+ def test_setprocessor(rootlogger: TagTracer) -> None:
+     log = rootlogger.get("1")
+     log2 = log.get("2")

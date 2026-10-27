@@ -1,0 +1,145 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index b984d86..fe9521e 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -875,6 +875,10 @@ def iter_index(iterable, value, start=0, stop=None):
+     >>> list(iter_index('AABCADEAF', 'A', 1, 7))  # stop index is not inclusive
+     [1, 4]
+ 
++    Negative *start* and *stop* values count from the end of *iterable*.
++    Iterables without an ``index`` method are fully consumed before yielding
++    results when either boundary is negative.
++
+     The behavior for non-scalar *values* matches the built-in Python types.
+ 
+     >>> list(iter_index('ABCDABCD', 'AB'))
+@@ -891,7 +895,19 @@ def iter_index(iterable, value, start=0, stop=None):
+     seq_index = getattr(iterable, 'index', None)
+     if seq_index is None:
+         # Slow path for general iterables
+-        iterator = islice(iterable, start, stop)
++        try:
++            iterator = islice(iterable, start, stop)
++        except ValueError as error:
++            try:
++                start = _index(start)
++                stop = None if stop is None else _index(stop)
++            except TypeError:
++                raise error from None
++            if start >= 0 and (stop is None or stop >= 0):
++                raise
++            iterable = tuple(iterable)
++            start, stop, _ = slice(start, stop).indices(len(iterable))
++            iterator = islice(iterable, start, stop)
+         for i, element in enumerate(iterator, start):
+             if element is value or element == value:
+                 yield i
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index 90a16d8..b24db80 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -1026,6 +1026,104 @@ class IterIndexTests(TestCase):
+         expected = [0, 1, 4]
+         self.assertEqual(actual, expected)
+ 
++    def test_negative_bounds(self):
++        for wrapper in (list, tuple, iter):
++            for start, stop, expected in [
++                (-5, None, [4, 7]),
++                (0, -2, [0, 1, 4]),
++                (-8, -2, [1, 4]),
++                (-8, 7, [1, 4]),
++                (1, -2, [1, 4]),
++                (-20, None, [0, 1, 4, 7]),
++                (0, -20, []),
++                (-2, 20, [7]),
++                (20, -1, []),
++                (-2, -7, []),
++            ]:
++                with self.subTest(wrapper=wrapper, start=start, stop=stop):
++                    actual = list(
++                        mi.iter_index(wrapper('AABCADEAF'), 'A', start, stop)
++                    )
++                    self.assertEqual(actual, expected)
++
++    def test_no_matches(self):
++        for wrapper in (list, tuple, iter):
++            for iterable in ('', 'BCDEF'):
++                for start, stop in [(0, None), (-2, None), (0, -1), (-5, -1)]:
++                    with self.subTest(
++                        wrapper=wrapper,
++                        iterable=iterable,
++                        start=start,
++                        stop=stop,
++                    ):
++                        self.assertEqual(
++                            list(
++                                mi.iter_index(
++                                    wrapper(iterable), 'A', start, stop
++                                )
++                            ),
++                            [],
++                        )
++
++    def test_positive_bounds_consumption(self):
++        source = count()
++        self.assertEqual(list(mi.iter_index(source, 3, 2, 5)), [3])
++        self.assertEqual(next(source), 5)
++
++    def test_positive_start_is_lazy(self):
++        source = count()
++        indexes = mi.iter_index(source, 3, start=2)
++        self.assertEqual(next(indexes), 3)
++        self.assertEqual(next(source), 4)
++
++    def test_index_protocol(self):
++        class Bound:
++            def __init__(self, value):
++                self.value = value
++
++            def __index__(self):
++                return self.value
++
++        for start, stop, expected in [
++            (1, 7, [1, 4]),
++            (-8, 7, [1, 4]),
++            (1, -2, [1, 4]),
++            (-8, -2, [1, 4]),
++        ]:
++            with self.subTest(start=start, stop=stop):
++                self.assertEqual(
++                    list(
++                        mi.iter_index(
++                            iter('AABCADEAF'), 'A', Bound(start), Bound(stop)
++                        )
++                    ),
++                    expected,
++                )
++
++    def test_invalid_bounds_do_not_consume(self):
++        for start, stop in [
++            (1.5, None),
++            (0, 2.5),
++            (-1, 2.5),
++            ('1', None),
++            (0, '2'),
++            (10**100, None),
++            (0, 10**100),
++        ]:
++            with self.subTest(start=start, stop=stop):
++                source = iter('ABA')
++                with self.assertRaises(ValueError):
++                    list(mi.iter_index(source, 'A', start, stop))
++                self.assertEqual(next(source), 'A')
++
++    def test_negative_bounds_propagate_iterator_error(self):
++        def source():
++            yield 'A'
++            raise RuntimeError('iteration failed')
++
++        with self.assertRaisesRegex(RuntimeError, 'iteration failed'):
++            list(mi.iter_index(source(), 'A', start=-1))
++
+ 
+ class SieveTests(TestCase):
+     def test_basic(self):

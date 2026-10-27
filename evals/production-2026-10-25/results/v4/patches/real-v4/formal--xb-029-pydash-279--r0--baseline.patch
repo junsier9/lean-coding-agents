@@ -1,0 +1,93 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index 3ebcb1b..cdae0d9 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -479,7 +479,7 @@ def duplicates(
+ 
+     Args:
+         array: List to process.
+-        iteratee: Iteratee applied per iteration.
++        iteratee: Iteratee applied per iteration. Only ``None`` skips transformation.
+ 
+     Returns:
+         List of duplicates.
+@@ -491,7 +491,7 @@ def duplicates(
+ 
+     .. versionadded:: 3.0.0
+     """
+-    if iteratee:
++    if iteratee is not None:
+         cbk = pyd.iteratee(iteratee)
+         computed = [cbk(item) for item in array]
+     else:
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index b42dad5..a4dc5e8 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -149,6 +149,66 @@ def test_duplicates(case, expected):
+     assert _.duplicates(*case) == expected
+ 
+ 
++@parametrize(
++    "iteratee,expected_indices",
++    [
++        ("", [2, 3, 5]),
++        (0, [2, 3, 5]),
++        ({}, [1, 2, 3, 5]),
++        ((), [1, 2, 3, 5]),
++        ([], [4]),
++        (None, [4]),
++    ],
++)
++def test_duplicates_iteratee_preserves_original_values(iteratee, expected_indices):
++    array = [
++        {"": "a", "0": "a", "id": 0},
++        {"": "b", "0": "b", "id": 1},
++        {"": "b", "0": "b", "id": 2},
++        {"": "a", "0": "a", "id": 3},
++        {"": "a", "0": "a", "id": 3},
++        {"": "a", "0": "a", "id": 5},
++    ]
++
++    result = _.duplicates(array, iteratee)
++    expected = [array[index] for index in expected_indices]
++
++    assert result == expected
++    assert all(item is original for item, original in zip(result, expected))
++
++
++def test_duplicates_zero_index_iteratee():
++    array = [["a", 0], ["b", 1], ["b", 2], ["a", 3]]
++
++    result = _.duplicates(array, 0)
++
++    assert result == [array[2], array[3]]
++    assert result[0] is array[2]
++    assert result[1] is array[3]
++
++
++@parametrize("truthiness", [False, True, None])
++@parametrize("array,expected", [([], []), ([1, 2, 3, 4, 5], [3, 4, 5])])
++def test_duplicates_does_not_check_callable_truthiness(truthiness, array, expected):
++    calls = []
++    truth_checks = []
++
++    class Iteratee:
++        def __bool__(self):
++            truth_checks.append(True)
++            if truthiness is None:
++                raise AssertionError("Callable truthiness must not be evaluated")
++            return truthiness
++
++        def __call__(self, item):
++            calls.append(item)
++            return item % 2
++
++    assert _.duplicates(array, Iteratee()) == expected
++    assert calls == array
++    assert truth_checks == []
++
++
+ @parametrize(
+     "case,expected",
+     [

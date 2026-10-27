@@ -1,0 +1,74 @@
+diff --git a/click/core.py b/click/core.py
+index 7456451..9f09405 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -1548,8 +1548,8 @@ class Option(Parameter):
+                     opts.append(decl)
+ 
+         if name is None and possible_names:
+-            possible_names.sort(key=lambda x: len(x[0]))
+-            name = possible_names[-1][1].replace('-', '_').lower()
++            possible_names.sort(key=lambda x: -len(x[0]))
++            name = possible_names[0][1].replace('-', '_').lower()
+             if not isidentifier(name):
+                 name = None
+ 
+diff --git a/docs/parameters.rst b/docs/parameters.rst
+index 920b9be..c7eedbe 100644
+--- a/docs/parameters.rst
++++ b/docs/parameters.rst
+@@ -81,8 +81,10 @@ dash as long one.  If a string is added without any dashes, it becomes the
+ internal parameter name which is also used as variable name.
+ 
+ If a parameter is not given a name without dashes, a name is generated
+-automatically by taking the longest argument and converting all dashes to
+-underscores.  For an option with ``('-f', '--foo-bar')``, the parameter
++automatically by taking the first long option defined, or the first short
++option if there are no long options.  The name is converted to lowercase
++and all dashes are converted to underscores.  For an option with
++``('-f', '--foo-bar')``, the parameter
+ name is `foo_bar`.  For an option with ``('-x',)``, the parameter is `x`.
+ For an option with ``('-f', '--filename', 'dest')``, the parameter is
+ called `dest`.
+diff --git a/tests/test_options.py b/tests/test_options.py
+index d196fe2..3abd90b 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -7,6 +7,37 @@ import pytest
+ from click._compat import text_type
+ 
+ 
++@pytest.mark.parametrize('param_decls, expected_name', [
++    (['--foo', '--foobar'], 'foo'),
++    (['--foobar', '--foo'], 'foobar'),
++    (['-f', '--foo', '--foobar'], 'foo'),
++    (['-f', '--foobar', '--foo'], 'foobar'),
++    (['--foo', '-f', '--foobar'], 'foo'),
++    (['--foobar', '-f', '--foo'], 'foobar'),
++    (['--foo', '--foobar', '-f'], 'foo'),
++    (['--foobar', '--foo', '-f'], 'foobar'),
++    (['-f', '-b'], 'f'),
++    (['-b', '-f'], 'b'),
++    (['-f', '--Foo-Bar', '--foobar'], 'foo_bar'),
++    (['--foo', '--foobar', 'dest'], 'dest'),
++    (['dest', '-f', '--foo', '--foobar'], 'dest'),
++])
++def test_option_name(runner, param_decls, expected_name):
++    @click.command()
++    @click.option(*param_decls)
++    def cli(**params):
++        assert params == {expected_name: 'value'}
++        click.echo(params[expected_name])
++
++    option = cli.params[0]
++    assert option.name == expected_name
++
++    for alias in option.opts:
++        result = runner.invoke(cli, [alias, 'value'])
++        assert not result.exception
++        assert result.output == 'value\n'
++
++
+ def test_prefixes(runner):
+     @click.command()
+     @click.option('++foo', is_flag=True, help='das foo')

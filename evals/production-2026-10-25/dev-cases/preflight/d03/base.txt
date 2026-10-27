@@ -1,0 +1,61 @@
+test_config_and_get (test_contract.Contract.test_config_and_get) ... ok
+test_dispatcher_sort_does_not_reorder_cache (test_contract.Contract.test_dispatcher_sort_does_not_reorder_cache) ... FAIL
+test_empty_targets_and_config (test_contract.Contract.test_empty_targets_and_config) ... ok
+test_input_dictionary_is_owned (test_contract.Contract.test_input_dictionary_is_owned) ... ok
+test_input_nested_list_is_owned (test_contract.Contract.test_input_nested_list_is_owned) ... FAIL
+test_invalid_config_shapes (test_contract.Contract.test_invalid_config_shapes) ... ok
+test_invalid_reconfiguration_is_atomic (test_contract.Contract.test_invalid_reconfiguration_is_atomic) ... ok
+test_invalid_targets (test_contract.Contract.test_invalid_targets) ... ok
+test_iteration_failure_propagates_and_keeps_old (test_contract.Contract.test_iteration_failure_propagates_and_keeps_old) ... ok
+test_missing_route (test_contract.Contract.test_missing_route) ... ok
+test_output_list_is_owned (test_contract.Contract.test_output_list_is_owned) ... FAIL
+
+======================================================================
+FAIL: test_dispatcher_sort_does_not_reorder_cache (test_contract.Contract.test_dispatcher_sort_does_not_reorder_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-etjzrmam\test_contract.py", line 31, in test_dispatcher_sort_does_not_reorder_cache
+    self.assertEqual(cache.targets_for("r"), ["b", "a"])
+AssertionError: Lists differ: ['a', 'b'] != ['b', 'a']
+
+First differing element 0:
+'a'
+'b'
+
+- ['a', 'b']
++ ['b', 'a']
+
+======================================================================
+FAIL: test_input_nested_list_is_owned (test_contract.Contract.test_input_nested_list_is_owned)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-etjzrmam\test_contract.py", line 14, in test_input_nested_list_is_owned
+    self.assertEqual(cache.targets_for("r"), ["a"])
+AssertionError: Lists differ: ['a', 'b'] != ['a']
+
+First list contains 1 additional elements.
+First extra element 1:
+'b'
+
+- ['a', 'b']
++ ['a']
+
+======================================================================
+FAIL: test_output_list_is_owned (test_contract.Contract.test_output_list_is_owned)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Desktop\Skills\lean-coding-agents\evals\production-2026-10-25\dev-cases\fixture-etjzrmam\test_contract.py", line 26, in test_output_list_is_owned
+    self.assertEqual(cache.targets_for("r"), ["a"])
+AssertionError: Lists differ: ['a', 'b'] != ['a']
+
+First list contains 1 additional elements.
+First extra element 1:
+'b'
+
+- ['a', 'b']
++ ['a']
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.002s
+
+FAILED (failures=3)

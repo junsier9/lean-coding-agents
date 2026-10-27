@@ -1,0 +1,95 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 6451a4a..3c49273 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -824,7 +824,7 @@ class _ComplementSet:
+             if exc is None:  # - +
+                 return False
+             else:  # - -
+-                return self._excluded.issupserset(exc)
++                return self._excluded.issuperset(exc)
+         else:
+             if inc is None:  # + -
+                 return self._included.isdisjoint(exc)
+@@ -868,7 +868,7 @@ class _ComplementSet:
+             if inc is None:  # + -
+                 return False
+             else:  # + +
+-                return self._included.issupserset(inc)
++                return self._included.issuperset(inc)
+ 
+     def __gt__(self, other):
+         inc, exc = _norm_args_notimplemented(other)
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b98ee23..b65b508 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -159,6 +159,62 @@ def test_complement_set():
+     assert opsmash(cab, ops) == ops
+ 
+ 
++@mark.parametrize('set_type', [set, frozenset])
++@mark.parametrize('left_items, right_items, subset, superset', [
++    ('', '', True, True),
++    ('ab', 'ab', True, True),
++    ('ab', 'a', True, False),
++    ('a', 'ab', False, True),
++    ('ab', '', True, False),
++    ('', 'ab', False, True),
++    ('a', 'b', False, False),
++    ('ab', 'bc', False, False),
++])
++def test_complement_set_inclusion(set_type, left_items, right_items, subset, superset):
++    left = complement(set_type(left_items))
++    right = complement(set_type(right_items))
++
++    assert left <= left
++    assert left >= left
++    assert (left <= right) is subset
++    assert (right >= left) is subset
++    assert (left >= right) is superset
++    assert (right <= left) is superset
++    assert left.issubset(right) is subset
++    assert right.issuperset(left) is subset
++    assert left.issuperset(right) is superset
++    assert right.issubset(left) is superset
++
++
++@mark.parametrize('set_type', [set, frozenset])
++@mark.parametrize('wrap_other', [False, True])
++@mark.parametrize('left_items, right_items, subset, superset', [
++    ('', '', True, True),
++    ('ab', 'ab', True, True),
++    ('ab', 'a', False, True),
++    ('a', 'ab', True, False),
++    ('ab', '', False, True),
++    ('', 'ab', True, False),
++    ('a', 'b', False, False),
++    ('ab', 'bc', False, False),
++])
++def test_double_complement_set_inclusion(set_type, wrap_other, left_items,
++                                       right_items, subset, superset):
++    left = complement(complement(set_type(left_items)))
++    right = set_type(right_items)
++    if wrap_other:
++        right = complement(complement(right))
++
++    assert left <= left
++    assert left >= left
++    assert (left <= right) is subset
++    assert (right >= left) is subset
++    assert (left >= right) is superset
++    assert (right <= left) is superset
++    assert left.issubset(right) is subset
++    assert left.issuperset(right) is superset
++
++
+ def test_iset_index_method():
+     original_list = list(range(8, 20)) + list(range(8))
+ 

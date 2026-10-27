@@ -1,0 +1,91 @@
+{
+  "native_model_calls": 0,
+  "all_expected_outcomes_observed": true,
+  "executions": [
+    {
+      "case": "d10",
+      "variant": "reference",
+      "modes": {
+        "normal": {
+          "exit_code": 0,
+          "test_methods": 16,
+          "pass": true
+        },
+        "optimized": {
+          "exit_code": 0,
+          "test_methods": 16,
+          "pass": true
+        }
+      },
+      "native_model_calls": 0
+    },
+    {
+      "case": "d10",
+      "variant": "initial",
+      "modes": {
+        "normal": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        },
+        "optimized": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        }
+      },
+      "native_model_calls": 0
+    },
+    {
+      "case": "d10",
+      "variant": "original_constructor",
+      "modes": {
+        "normal": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        },
+        "optimized": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        }
+      },
+      "native_model_calls": 0
+    },
+    {
+      "case": "d10",
+      "variant": "consume_all_prefix_tokens",
+      "modes": {
+        "normal": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        },
+        "optimized": {
+          "exit_code": 1,
+          "test_methods": 16,
+          "pass": false
+        }
+      },
+      "native_model_calls": 0
+    },
+    {
+      "case": "d09",
+      "variant": "reference",
+      "modes": {
+        "normal": {
+          "exit_code": 0,
+          "test_methods": 15,
+          "pass": true
+        },
+        "optimized": {
+          "exit_code": 0,
+          "test_methods": 15,
+          "pass": true
+        }
+      },
+      "native_model_calls": 0
+    }
+  ]
+}

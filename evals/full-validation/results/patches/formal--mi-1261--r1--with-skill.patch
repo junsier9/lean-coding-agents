@@ -1,0 +1,77 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index fb0b678..ab8aaf6 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4533,7 +4533,7 @@ def combination_with_replacement_index(element, iterable):
+                 break
+             else:
+                 k = tmp
+-        if y is None:
++        if len(indexes) == l:
+             break
+     else:
+         raise ValueError(
+diff --git a/tests/test_more.py b/tests/test_more.py
+index fa4d584..47e7eb7 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5231,6 +5231,59 @@ class CombinationIndexTests(TestCase):
+ 
+ 
+ class CombinationWithReplacementIndexTests(TestCase):
++    def test_none(self):
++        for element, iterable, expected in [
++            ((None,), [1, None, 2], 1),
++            ((None, None), [1, None, 2], 3),
++            ((1, None, 2), [1, None, 2], 4),
++            ((None, 2), [None, 1, 2], 2),
++            ((None, None), [None], 0),
++        ]:
++            with self.subTest(element=element, iterable=iterable):
++                actual = mi.combination_with_replacement_index(
++                    element, iterable
++                )
++                self.assertEqual(actual, expected)
++
++    def test_none_multiplicity_and_iterators(self):
++        iterable = [1, None, 2, None, 1]
++        for r in range(5):
++            first_index = {}
++            for index, element in enumerate(
++                combinations_with_replacement(iterable, r)
++            ):
++                expected = first_index.setdefault(element, index)
++                with self.subTest(element=element):
++                    actual = mi.combination_with_replacement_index(
++                        iter(element), iter(iterable)
++                    )
++                    self.assertEqual(actual, expected)
++
++    def test_empty_combination(self):
++        for iterable in ([], [1, None, 2]):
++            with self.subTest(iterable=iterable):
++                actual = mi.combination_with_replacement_index(
++                    iter(()), iter(iterable)
++                )
++                self.assertEqual(actual, 0)
++
++    def test_invalid_none(self):
++        for element, iterable in [
++            ((None,), []),
++            ((None,), [1, 2]),
++            ((1, None), [1, 2]),
++            ((1, None, 2), [1, 2]),
++            ((None, 1), [1, None, 2]),
++            ((2, None), [1, None, 2]),
++            ((None, 3), [1, None, 2]),
++            ((None, None, 1), [1, None]),
++        ]:
++            with self.subTest(element=element, iterable=iterable):
++                with self.assertRaises(ValueError):
++                    mi.combination_with_replacement_index(
++                        iter(element), iter(iterable)
++                    )
++
+     def test_r_less_than_n(self):
+         iterable = 'abcdefg'
+         r = 4

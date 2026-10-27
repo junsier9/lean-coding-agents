@@ -1,0 +1,67 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index cdf63d4..244e3b4 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -76,6 +76,8 @@ class _DescriptorBase:
+             )
+ 
+     def __get__(self, obj, objtype=None):
++        if obj is None:
++            return self
+         wrapper = self.Wrapper(obj)
+         if self.__attrname is not None:
+             # replace descriptor instance with wrapper in instance dict
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index e600485..d9ce916 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -1,5 +1,6 @@
+ import unittest
+ import warnings
++from unittest.mock import create_autospec
+ 
+ 
+ from cachetools import Cache, cachedmethod, keys
+@@ -514,6 +515,42 @@ class MethodDecoratorTestMixin:
+             cached.bar()
+ 
+ 
++class MethodDescriptorTest(unittest.TestCase):
++
++    def test_class_access(self):
++        for owner in (Cached, Unhashable):
++            for name in (
++                "get",
++                "get_typed",
++                "get_info",
++                "get_lock",
++                "get_lock_info",
++                "get_cond",
++                "get_cond_error",
++                "get_cond_info",
++                "get_lock_cond",
++                "get_lock_cond_info",
++            ):
++                with self.subTest(owner=owner, method=name):
++                    with warnings.catch_warnings():
++                        warnings.simplefilter("error")
++                        descriptor = Cached.__dict__[name]
++                        self.assertIs(getattr(owner, name), descriptor)
++                        self.assertIs(descriptor.__get__(None), descriptor)
++
++    def test_autospec(self):
++        for owner in (Cached, Unhashable):
++            for instance in (False, True):
++                with self.subTest(owner=owner, instance=instance):
++                    with warnings.catch_warnings():
++                        warnings.simplefilter("error")
++                        mocked = create_autospec(owner, instance=instance)
++                        if not instance:
++                            mocked = mocked({})
++                        mocked.get(42)
++                        mocked.get.assert_called_once_with(42)
++
++
+ class CacheMethodTest(unittest.TestCase, MethodDecoratorTestMixin):
+ 
+     def cache(self, minsize, **kwargs):

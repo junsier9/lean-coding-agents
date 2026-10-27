@@ -1,0 +1,83 @@
+diff --git a/click/decorators.py b/click/decorators.py
+index 8e5a462..ea8b19a 100644
+--- a/click/decorators.py
++++ b/click/decorators.py
+@@ -164,10 +164,11 @@ def option(*param_decls, **attrs):
+                 :class:`Option`.
+     """
+     def decorator(f):
+-        if 'help' in attrs:
+-            attrs['help'] = inspect.cleandoc(attrs['help'])
+-        OptionClass = attrs.pop('cls', Option)
+-        _param_memo(f, OptionClass(param_decls, **attrs))
++        option_attrs = attrs.copy()
++        if 'help' in option_attrs:
++            option_attrs['help'] = inspect.cleandoc(option_attrs['help'])
++        OptionClass = option_attrs.pop('cls', Option)
++        _param_memo(f, OptionClass(param_decls, **option_attrs))
+         return f
+     return decorator
+ 
+diff --git a/tests/test_options.py b/tests/test_options.py
+index fcd755a..9c56423 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -311,6 +311,58 @@ def test_option_custom_class(runner):
+     assert 'you wont see me' not in result.output
+ 
+ 
++@pytest.mark.parametrize('decorate_command', [False, True])
++def test_option_custom_class_reuse(runner, decorate_command):
++    class CustomOption(click.Option):
++        def get_default(self, ctx):
++            return 'custom default'
++
++    shared_option = click.option(
++        '-t', '--testoption', cls=CustomOption, default='ordinary default',
++        help='''
++            Shared option.
++
++            More details.
++        ''')
++
++    commands = []
++    for _ in range(3):
++        def cmd(testoption):
++            click.echo(testoption)
++
++        if decorate_command:
++            cmd = shared_option(click.command()(cmd))
++        else:
++            cmd = click.command()(shared_option(cmd))
++        commands.append(cmd)
++
++        assert len(cmd.params) == 1
++        option = cmd.params[0]
++        assert isinstance(option, CustomOption)
++        assert option.opts == ['-t', '--testoption']
++        assert option.default == 'ordinary default'
++        assert option.help == 'Shared option.\n\nMore details.'
++
++        result = runner.invoke(cmd)
++        assert result.exit_code == 0
++        assert result.output == 'custom default\n'
++
++        for flag in ['-t', '--testoption']:
++            result = runner.invoke(cmd, [flag, 'explicit value'])
++            assert result.exit_code == 0
++            assert result.output == 'explicit value\n'
++
++        result = runner.invoke(cmd, ['--help'])
++        assert result.exit_code == 0
++        assert 'Shared option.' in result.output
++        assert 'More details.' in result.output
++
++    assert len(set(id(cmd.params[0]) for cmd in commands)) == 3
++    commands[0].params[0].help = 'Changed help.'
++    assert commands[1].params[0].help == 'Shared option.\n\nMore details.'
++    assert commands[2].params[0].help == 'Shared option.\n\nMore details.'
++
++
+ def test_aliases_for_flags(runner):
+     @click.command()
+     @click.option('--warnings/--no-warnings', ' /-W', default=True)

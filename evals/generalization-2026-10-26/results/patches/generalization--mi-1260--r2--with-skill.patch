@@ -1,0 +1,139 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index cad5f7e..375f90d 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -1470,6 +1470,7 @@ def running_mean(iterable, *, maxlen=None):
+     if maxlen is None:
+         return map(truediv, accumulate(iterator), count(1))
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1515,6 +1516,7 @@ def running_min(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=min)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1560,6 +1562,7 @@ def running_max(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=max)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1591,6 +1594,8 @@ def running_statistics(iterable, *, maxlen=None):
+ 
+     # fmt: off
+     t0, t1, t2, t3 = tee(iterable, 4)
++    if maxlen is not None:
++        maxlen = _index(maxlen)
+     return map(
+         Stats,
+         count(1) if maxlen is None else chain(range(1, maxlen), repeat(maxlen)),
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index e6a0a57..4da48a6 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -1588,6 +1588,97 @@ def grow_to_window(data, maxlen):
+         yield data[i:j]
+ 
+ 
++class RunningWindowTests(TestCase):
++    functions = (
++        mi.running_min,
++        mi.running_max,
++        mi.running_mean,
++        mi.running_median,
++        mi.running_statistics,
++    )
++
++    def test_maxlen_index(self):
++        class WindowSize:
++            def __init__(self, value):
++                self.value = value
++
++            def __index__(self):
++                return self.value
++
++        for function in self.functions:
++            for data in ([], [4, 3, 7, 0, 8, 1, 6]):
++                for maxlen in (1, 2, 3, 10):
++                    with self.subTest(function=function, data=data, n=maxlen):
++                        self.assertEqual(
++                            list(
++                                function(iter(data), maxlen=WindowSize(maxlen))
++                            ),
++                            list(function(iter(data), maxlen=maxlen)),
++                        )
++
++            for maxlen in (0, -1):
++                with self.subTest(function=function, n=maxlen):
++                    with self.assertRaisesRegex(
++                        ValueError, 'Window size should be positive'
++                    ):
++                        function([], maxlen=WindowSize(maxlen))
++
++    def test_maxlen_non_integer(self):
++        class IntOnly:
++            def __int__(self):
++                return 2
++
++        class InvalidIndex:
++            def __index__(self):
++                return 2.5
++
++        for function in self.functions:
++            for maxlen in (
++                2.5,
++                2.0,
++                -2.5,
++                '2',
++                Decimal(2),
++                Fraction(2),
++                IntOnly(),
++                InvalidIndex(),
++            ):
++                for data in ([], [1, 2, 3]):
++                    with self.subTest(function=function, n=maxlen, data=data):
++                        iterator = iter(data)
++                        with self.assertRaises(TypeError):
++                            function(iterator, maxlen=maxlen)
++                        self.assertEqual(list(iterator), data)
++
++    def test_maxlen_non_positive(self):
++        for function in self.functions:
++            for maxlen in (0, -1, False):
++                with self.subTest(function=function, n=maxlen):
++                    with self.assertRaisesRegex(
++                        ValueError, 'Window size should be positive'
++                    ):
++                        function([], maxlen=maxlen)
++
++    def test_maxlen_none(self):
++        for function in self.functions:
++            for data in ([], [4, 3, 7, 0, 8, 1, 6]):
++                with self.subTest(function=function, data=data):
++                    self.assertEqual(
++                        list(function(iter(data), maxlen=None)),
++                        list(function(iter(data))),
++                    )
++
++    def test_maxlen_index_error(self):
++        class WindowSize:
++            def __index__(self):
++                raise RuntimeError('invalid window')
++
++        for function in self.functions:
++            with self.subTest(function=function):
++                with self.assertRaisesRegex(RuntimeError, 'invalid window'):
++                    function([], maxlen=WindowSize())
++
++
+ class RunningMeanTests(TestCase):
+     def test_basic(self):
+         for i, (iterable, expected) in enumerate(

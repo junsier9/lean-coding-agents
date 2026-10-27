@@ -1,0 +1,229 @@
+diff --git a/src/pluggy/_manager.py b/src/pluggy/_manager.py
+index 080ef33..32d64b5 100644
+--- a/src/pluggy/_manager.py
++++ b/src/pluggy/_manager.py
+@@ -591,7 +591,11 @@ class PluginManager:
+             hook_name: str, methods: Sequence[HookImpl], kwargs: Mapping[str, object]
+         ) -> None:
+             hooktrace.root.indent += 1
+-            hooktrace(hook_name, kwargs)
++            try:
++                hooktrace(hook_name, kwargs)
++            except BaseException:
++                hooktrace.root.indent -= 1
++                raise
+ 
+         def after(
+             outcome: Result[object],
+@@ -599,9 +603,11 @@ class PluginManager:
+             methods: Sequence[HookImpl],
+             kwargs: Mapping[str, object],
+         ) -> None:
+-            if outcome.exception is None:
+-                hooktrace("finish", hook_name, "-->", outcome.get_result())
+-            hooktrace.root.indent -= 1
++            try:
++                if outcome.exception is None:
++                    hooktrace("finish", hook_name, "-->", outcome.get_result())
++            finally:
++                hooktrace.root.indent -= 1
+ 
+         return self.add_hookcall_monitoring(before, after)
+ 
+diff --git a/src/pluggy/_tracing.py b/src/pluggy/_tracing.py
+index e90418f..259bbed 100644
+--- a/src/pluggy/_tracing.py
++++ b/src/pluggy/_tracing.py
+@@ -13,6 +13,13 @@ _Writer = Callable[[str], object]
+ _Processor = Callable[[tuple[str, ...], tuple[Any, ...]], object]
+ 
+ 
++def _safe_str(value: object) -> str:
++    try:
++        return str(value)
++    except Exception:
++        return f"<unprintable {type(value).__name__} object>"
++
++
+ class TagTracer:
+     def __init__(self) -> None:
+         self._tags2proc: dict[tuple[str, ...], _Processor] = {}
+@@ -29,15 +36,16 @@ class TagTracer:
+         else:
+             extra = {}
+ 
+-        content = " ".join(map(str, args))
++        content = " ".join(map(_safe_str, args))
+         indent = "  " * self.indent
+ 
+         lines = [f"{indent}{content} [{':'.join(tags)}]\n"]
+ 
+         for name, value in extra.items():
+-            lines.append(f"{indent}    {name}: {value}\n")
++            lines.append(f"{indent}    {_safe_str(name)}: {_safe_str(value)}\n")
+ 
+-        return "".join(lines)
++        # Escape lone surrogates while preserving valid Unicode text.
++        return "".join(lines).encode("utf-8", "backslashreplace").decode("utf-8")
+ 
+     def _processmessage(self, tags: tuple[str, ...], args: tuple[object, ...]) -> None:
+         if self._writer is not None and args:
+diff --git a/testing/test_pluginmanager.py b/testing/test_pluginmanager.py
+index 65b322d..f8a6432 100644
+--- a/testing/test_pluginmanager.py
++++ b/testing/test_pluginmanager.py
+@@ -958,6 +958,99 @@ def test_hook_tracing(he_pm: PluginManager) -> None:
+         undo()
+ 
+ 
++@pytest.mark.parametrize("firstresult", [False, True])
++@pytest.mark.parametrize("unprintable", [False, True])
++def test_hook_tracing_unusual_values(
++    pm: PluginManager, firstresult: bool, unprintable: bool
++) -> None:
++    class Api:
++        @hookspec(firstresult=firstresult)
++        def hello(self, arg): ...
++
++    class Unprintable:
++        def __str__(self):
++            raise ValueError("cannot stringify")
++
++        def __repr__(self):
++            raise ValueError("cannot represent")
++
++    calls = []
++    error = ValueError("hook failed")
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg):
++            calls.append(arg)
++            if len(calls) == 2:
++                raise error
++            return arg
++
++    pm.add_hookspecs(Api)
++    pm.register(Plugin())
++    messages = []
++    pm.trace.root.setwriter(lambda message: messages.append(message.encode("utf-8")))
++    undo = pm.enable_tracing()
++    value = Unprintable() if unprintable else "café 中文 😀\ud800\udfff"
++    try:
++        result = pm.hook.hello(arg=value)
++        assert (result if firstresult else result[0]) is value
++        assert len(messages) == 2
++        assert b"finish hello -->" in messages[1]
++        if unprintable:
++            assert all(b"<unprintable " in m for m in messages)
++        else:
++            assert "café 中文 😀\\ud800\\udfff" in messages[0].decode("utf-8")
++        with pytest.raises(ValueError) as excinfo:
++            pm.hook.hello(arg=value)
++        assert excinfo.value is error
++        assert pm.trace.root.indent == 0
++    finally:
++        undo()
++
++    assert calls[0] is value
++    assert calls[1] is value
++    result = pm.hook.hello(arg=value)
++    assert (result if firstresult else result[0]) is value
++    assert len(messages) == 3
++
++
++@pytest.mark.parametrize("error_type", [KeyboardInterrupt, SystemExit, GeneratorExit])
++@pytest.mark.parametrize("stage", ["argument", "result", "hook"])
++def test_hook_tracing_interruptions(
++    pm: PluginManager, error_type: type[BaseException], stage: str
++) -> None:
++    error = error_type("interrupted")
++
++    class Interrupting:
++        def __str__(self):
++            raise error
++
++        def __repr__(self):
++            raise error
++
++    calls = []
++
++    class Plugin:
++        @hookimpl
++        def hello(self, arg):
++            calls.append(arg)
++            if stage == "hook":
++                raise error
++            return Interrupting()
++
++    pm.register(Plugin())
++    pm.trace.root.setwriter(lambda message: None)
++    undo = pm.enable_tracing()
++    try:
++        with pytest.raises(error_type) as excinfo:
++            pm.hook.hello(arg=Interrupting() if stage == "argument" else 1)
++        assert excinfo.value is error
++        assert len(calls) == (0 if stage == "argument" else 1)
++        assert pm.trace.root.indent == 0
++    finally:
++        undo()
++
++
+ @pytest.mark.parametrize("historic", [False, True])
+ def test_register_while_calling(
+     pm: PluginManager,
+diff --git a/testing/test_tracer.py b/testing/test_tracer.py
+index 13b2972..836bc84 100644
+--- a/testing/test_tracer.py
++++ b/testing/test_tracer.py
+@@ -64,6 +64,50 @@ def test_readable_output_dictargs(rootlogger: TagTracer) -> None:
+     assert out2 == "test [test]\n    a: 1\n"
+ 
+ 
++@pytest.mark.parametrize(
++    ("text", "escaped"),
++    [
++        ("caf\u00e9 \u4e2d\u6587 \U0001f600", "caf\u00e9 \u4e2d\u6587 \U0001f600"),
++        ("\u4e2d\ud800\u6587", "\u4e2d\\ud800\u6587"),
++        ("\u4e2d\udfff\u6587", "\u4e2d\\udfff\u6587"),
++    ],
++)
++def test_unicode_output(rootlogger: TagTracer, text: str, escaped: str) -> None:
++    messages = []
++    rootlogger.setwriter(lambda message: messages.append(message.encode("utf-8")))
++    rootlogger.get(text)(text, {text: text})
++
++    assert messages == [f"{escaped} [{escaped}]\n    {escaped}: {escaped}\n".encode()]
++
++
++@pytest.mark.parametrize("location", ["argument", "nested", "key", "value"])
++def test_unprintable_output(rootlogger: TagTracer, location: str) -> None:
++    class Unprintable:
++        def __str__(self):
++            raise ValueError("cannot stringify")
++
++        def __repr__(self):
++            raise ValueError("cannot represent")
++
++    value = Unprintable()
++    args = {
++        "argument": (value,),
++        "nested": ([value],),
++        "key": ({value: "ok"},),
++        "value": ({"arg": value},),
++    }[location]
++    messages = []
++    processed = []
++    rootlogger.setwriter(messages.append)
++    rootlogger.setprocessor("test", lambda *args: processed.append(args))
++    rootlogger.get("test")(*args)
++
++    assert len(messages) == 1
++    type_name = "list" if location == "nested" else "Unprintable"
++    assert f"<unprintable {type_name} object>" in messages[0]
++    assert processed == [(("test",), args)]
++
++
+ def test_setprocessor(rootlogger: TagTracer) -> None:
+     log = rootlogger.get("1")
+     log2 = log.get("2")

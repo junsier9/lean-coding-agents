@@ -1,0 +1,86 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 95f8e12..bc46127 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -662,7 +662,7 @@ def gzip_bytes(bytestring, level=6):
+ 
+ 
+ 
+-_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\x2028|\x2029)',
++_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\u2028|\u2029)',
+                              re.UNICODE)
+ 
+ 
+@@ -671,8 +671,9 @@ def iter_splitlines(text):
+     instead of a list. Also similar to :meth:`file.next`, as that also
+     lazily reads and yields lines from a file.
+ 
+-    This function works with a variety of line endings, but as always,
+-    be careful when mixing line endings within a file.
++    This function works with a variety of line endings, including Unicode
++    line and paragraph separators. A CRLF pair is treated as one line ending.
++    Unlike :meth:`str.splitlines`, a final line ending produces an empty line.
+ 
+     >>> list(iter_splitlines('\nhi\nbye\n'))
+     ['', 'hi', 'bye', '']
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1da050a..95fe236 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -52,6 +52,56 @@ def test_indent():
+     assert strutils.indent(to_indent, '  ') == ref
+ 
+ 
++@pytest.mark.parametrize('text', [
++    '', 'Jan 28, 2024', 'Feb 29, 2024', ' 28 29 2028 2029 ',
++    '\t \u00a0', r'\u2028\u2029',
++])
++def test_line_operations_preserve_plain_text(text):
++    lines = strutils.iter_splitlines(text)
++    assert iter(lines) is lines
++    assert list(lines) == ([text] if text else [])
++    assert strutils.indent(text, '> ') == ('> ' + text if text else '')
++
++
++@pytest.mark.parametrize('separator', [
++    '\r\n', '\n', '\r', '\v', '\f', '\x85', '\u2028', '\u2029',
++])
++@pytest.mark.parametrize(('template', 'expected'), [
++    ('{sep}', ['', '']),
++    ('{sep}{sep}', ['', '', '']),
++    ('a{sep}b', ['a', 'b']),
++    ('{sep}a{sep}{sep}b{sep}', ['', 'a', '', 'b', '']),
++])
++def test_iter_splitlines_separators(separator, template, expected):
++    assert list(strutils.iter_splitlines(template.format(sep=separator))) == expected
++
++
++def test_line_operations_mixed_newlines():
++    text = ('\r\nJan 28, 2024\u2028\u2029Feb 29, 2024\r'
++            'third\nfourth\v\f\x85last\r\n')
++    assert list(strutils.iter_splitlines(text)) == [
++        '', 'Jan 28, 2024', '', 'Feb 29, 2024', 'third', 'fourth',
++        '', '', 'last', '',
++    ]
++    assert strutils.indent(text, '> ') == (
++        '\n> Jan 28, 2024\n\n> Feb 29, 2024\n> third\n> fourth\n\n\n> last\n'
++    )
++
++
++def test_indent_custom_newline_and_key():
++    seen = []
++
++    def should_indent(line):
++        seen.append(line)
++        return line != 'skip'
++
++    text = '\u2028Jan 28, 2024\r\nskip\u2029'
++    assert strutils.indent(text, '> ', newline='|', key=should_indent) == (
++        '> |> Jan 28, 2024|skip|> '
++    )
++    assert seen == ['', 'Jan 28, 2024', 'skip', '']
++
++
+ def test_is_uuid():
+     assert strutils.is_uuid(uuid.uuid4()) == True
+     assert strutils.is_uuid(uuid.uuid4(), version=1) == False

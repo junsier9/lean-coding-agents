@@ -1,0 +1,614 @@
+{
+  "review_id": "production-v4-resume-metadata-only-review-2026-10-25",
+  "tested_script_sha256": "3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2",
+  "unresolved_reproduced_implementation_defects": 0,
+  "resume_metadata_change_only": true,
+  "recomputed_gate_semantics_preserved": true,
+  "native_inputs_grading_statistics_or_thresholds_changed_by_wrapper": false,
+  "scope": "只读源码审查与隔离合成测试，不判定skill资格，不读取任何真实v4报告、成绩、skill、标签、固定解或原始行。",
+  "conclusion": "在本次未优化Python解释器及被冻结controller/route调用路径下，包装器仅对已绑定的safety-iteration3/routing-iteration3汇总跳过等价重写，保留原完成时间戳与原字节。新计算对象除completed_at外必须与冻结对象相等，现存字节需仍匹配freeze；其他写入仍委托原实现。未发现阻断续跑的复现问题。",
+  "source_evidence": [
+    {
+      "file": ".local/production-resume-v4.py",
+      "lines": [
+        13,
+        25
+      ],
+      "note": "保留原锁检查；读冻结绑定并核对controller及两个汇总hash。",
+      "absolute_path": "{PROJECT_ROOT}\\.local\\production-resume-v4.py",
+      "source_sha256": "3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2"
+    },
+    {
+      "file": ".local/production-resume-v4.py",
+      "lines": [
+        28,
+        42
+      ],
+      "note": "仅两个精确resolve路径受保护；其他路径原样委托。只删除两对象顶层completed_at再比较，其余内容改变拒绝，并在保留前再次查字节hash。",
+      "absolute_path": "{PROJECT_ROOT}\\.local\\production-resume-v4.py",
+      "source_sha256": "3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2"
+    },
+    {
+      "file": ".local/production-resume-v4.py",
+      "lines": [
+        43,
+        49
+      ],
+      "note": "实际调用原controller.main(3, 原候选路径)，finally恢复写入函数并重核冻结字节。",
+      "absolute_path": "{PROJECT_ROOT}\\.local\\production-resume-v4.py",
+      "source_sha256": "3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2"
+    },
+    {
+      "file": "evals/production-2026-10-25/controller_v4.py",
+      "lines": [
+        79,
+        95
+      ],
+      "note": "run_suite结果重新构造safety_summary并检查新计算的critical_gate_pass；routing也调用原route_v4.run并检查其新返回对象，未以旧汇总绕过gate。",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\controller_v4.py",
+      "source_sha256": "8836432fb9166a370c1cf250923e01dab8d6fe29dd3c0f285dc300a6c7468a22"
+    },
+    {
+      "file": "evals/production-2026-10-25/controller_v4.py",
+      "lines": [
+        97,
+        129
+      ],
+      "note": "原freeze除frozen_at外逐项比较和后续真实调用参数保持，包装器没有改变这些源码。",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\controller_v4.py",
+      "source_sha256": "8836432fb9166a370c1cf250923e01dab8d6fe29dd3c0f285dc300a6c7468a22"
+    },
+    {
+      "file": "evals/production-2026-10-25/route_v4.py",
+      "lines": [
+        14,
+        49
+      ],
+      "note": "原路由manifest、记录收集、候选hash、9请求gate和汇总字段仍在原函数中计算；wrapper只拦截最后的汇总写入。",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\route_v4.py",
+      "source_sha256": "cb97eae12289a66a01c3a3d0979080a35c3948898d2b015e59b86840f78261c9"
+    }
+  ],
+  "probe_summary": {
+    "scenarios": 11,
+    "expected_normal_returns": 2,
+    "expected_rejections_or_propagated_errors": 9,
+    "all_expected_outcomes": true,
+    "write_hook_restored_in_all_scenarios": true,
+    "unrelated_write_delegated": true,
+    "real_cli_model_calls": 0,
+    "network_calls": 0,
+    "actual_native_evidence_reads": 0
+  },
+  "method": {
+    "fixture": "每场景在 .local 下新建隔离TemporaryDirectory，替换wrapper的PROJECT/HERE和controller模块；冻结报告、hash、汇总和controller文件全为合成。真实v4目录从未被打开。",
+    "write_primitives": "从runner.py提取并原样编译read/write/digest/utc四个实际函数，未导入CLI transport；观察写入代理只记录参数并调用真实write。",
+    "controller_substitute": "只用可观察的最小controller替身调用被包装runner.write，返回新计算对象；不执行真实controller、route原生逻辑或任何run_suite。",
+    "static_audit": "原controller与route的最小相关函数仅作只读审查，用于核对真实gate来自当前返回对象、检查及调用参数没有被wrapper替代。",
+    "byte_checks": "每个夹具记录原始两份汇总bytes；时间戳等价场景不调用原write，原bytes/hash保持；篡改反例只在隔离夹具内改字节。",
+    "source_version_guard": "探针先断言wrapper源码SHA为3803547d...，避免把后续代码变更混用于本结论。"
+  },
+  "actual_probe_results": [
+    {
+      "probe": "identical_content_new_timestamps",
+      "returned": {
+        "safety_gate": true,
+        "routing_gate": true,
+        "fresh_completed_at": "2026-10-25T10:00:00+00:00"
+      },
+      "rejected": false,
+      "preservation_messages": 2,
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "safety_gate_content_changed",
+      "rejected": true,
+      "exception": "ValueError",
+      "message": "Recomputed gate differs beyond summary timestamp: {PROJECT_ROOT}\\.local\\resume-metadata-review-x0byyg7c\\evals\\production-2026-10-25\\results\\v4\\safety-iteration3.json",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 35,
+          "body_reads": 36,
+          "critical_gate_pass": false,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "routing_nested_content_changed",
+      "rejected": true,
+      "exception": "ValueError",
+      "message": "Recomputed gate differs beyond summary timestamp: {PROJECT_ROOT}\\.local\\resume-metadata-review-f3d87ec2\\evals\\production-2026-10-25\\results\\v4\\routing-iteration3.json",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 6
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "new_summary_missing_non_timestamp_field",
+      "rejected": true,
+      "exception": "ValueError",
+      "message": "Recomputed gate differs beyond summary timestamp: {PROJECT_ROOT}\\.local\\resume-metadata-review-w3wej76v\\evals\\production-2026-10-25\\results\\v4\\safety-iteration3.json",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "new_summary_missing_completed_at",
+      "rejected": true,
+      "exception": "AssertionError",
+      "message": "",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "frozen_summary_missing_completed_at",
+      "rejected": true,
+      "exception": "AssertionError",
+      "message": "",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression",
+          "completed_at": "2026-10-25T10:00:00+00:00"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "frozen_bytes_changed_before_start",
+      "rejected": true,
+      "exception": "AssertionError",
+      "message": "",
+      "controller_calls": [],
+      "computed_new_values": [],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": false,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "frozen_bytes_changed_after_snapshot",
+      "rejected": true,
+      "exception": "AssertionError",
+      "message": "",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": false,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "controller_source_hash_changed",
+      "rejected": true,
+      "exception": "AssertionError",
+      "message": "",
+      "controller_calls": [],
+      "computed_new_values": [],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "unrelated_write_and_timestamp",
+      "returned": {
+        "safety_gate": true,
+        "routing_gate": true,
+        "fresh_completed_at": "2026-10-25T10:00:00+00:00"
+      },
+      "rejected": false,
+      "preservation_messages": 2,
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [
+        {
+          "relative_path": "evals/production-2026-10-25/results/v4/other-status.json",
+          "value": {
+            "completed_at": "2026-10-25T10:00:00+00:00",
+            "status": "fresh synthetic computation"
+          }
+        }
+      ],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    },
+    {
+      "probe": "controller_raises_after_identical_summaries",
+      "rejected": true,
+      "exception": "RuntimeError",
+      "message": "synthetic controller failure",
+      "controller_calls": [
+        {
+          "iteration": 3,
+          "skill_path": "evals/production-2026-10-25/candidates/v4-python/SKILL.md"
+        }
+      ],
+      "computed_new_values": [
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "native_runs": 36,
+          "skill_sha256": "SYNTHETIC",
+          "accepted": 36,
+          "body_reads": 36,
+          "critical_gate_pass": true,
+          "evidence_class": "synthetic known regression"
+        },
+        {
+          "completed_at": "2026-10-25T10:00:00+00:00",
+          "skill_sha256": "SYNTHETIC",
+          "model_runs": 9,
+          "included_in_efficiency_statistics": false,
+          "routing_qualified": true,
+          "cases": {
+            "synthetic": {
+              "grade": {
+                "accepted": true,
+                "tests_ran": 5
+              }
+            }
+          },
+          "limitations": [
+            "synthetic"
+          ]
+        }
+      ],
+      "original_write_calls": [],
+      "protected_bytes_unchanged": {
+        "safety-iteration3.json": true,
+        "routing-iteration3.json": true
+      },
+      "write_hook_restored": true
+    }
+  ],
+  "reproducible_probe_script": "import ast,copy,datetime,hashlib,importlib.util,json,pathlib,sys,tempfile,types,contextlib,io\nroot=pathlib.Path.cwd();source=root/'.local/production-resume-v4.py'\nassert hashlib.sha256(source.read_bytes()).hexdigest()=='3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2'\nrunner_source=root/'evals/production-2026-10-25/runner.py';tree=ast.parse(runner_source.read_text(encoding='utf-8'))\nrunner=types.ModuleType('runner');runner.__dict__.update(Path=pathlib.Path,dt=datetime,json=json,hashlib=hashlib)\nnodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in {'read','write','digest','utc'}]\nexec(compile(ast.fix_missing_locations(ast.Module(body=nodes,type_ignores=[])),str(runner_source),'exec'),runner.__dict__)\nreal_write=runner.write\ncontroller=types.ModuleType('controller_v4')\nsys.modules['runner']=runner;sys.modules['controller_v4']=controller\nspec=importlib.util.spec_from_file_location('isolated_resume_target',source);wrapper=importlib.util.module_from_spec(spec);spec.loader.exec_module(wrapper)\nresults=[]\ndef probe(name):\n with tempfile.TemporaryDirectory(prefix='resume-metadata-review-',dir=root/'.local') as td:\n  project=pathlib.Path(td).resolve();assert project.parent==(root/'.local').resolve()\n  here=project/'evals/production-2026-10-25';out=here/'results/v4';out.mkdir(parents=True)\n  wrapper.PROJECT=project;wrapper.HERE=here\n  controller_file=project/'synthetic-controller.py';controller_file.write_text('synthetic frozen controller marker\\n',encoding='utf-8');controller.__file__=str(controller_file)\n  safety_path=out/'safety-iteration3.json';routing_path=out/'routing-iteration3.json'\n  old_time='2026-10-24T10:00:00+00:00';new_time='2026-10-25T10:00:00+00:00'\n  safety={'completed_at':old_time,'native_runs':36,'skill_sha256':'SYNTHETIC','accepted':36,'body_reads':36,'critical_gate_pass':True,'evidence_class':'synthetic known regression'}\n  routing={'completed_at':old_time,'skill_sha256':'SYNTHETIC','model_runs':9,'included_in_efficiency_statistics':False,'routing_qualified':True,'cases':{'synthetic':{'grade':{'accepted':True,'tests_ran':5}}},'limitations':['synthetic']}\n  if name=='frozen_summary_missing_completed_at':safety.pop('completed_at')\n  real_write(safety_path,safety);real_write(routing_path,routing)\n  original_bytes={safety_path:safety_path.read_bytes(),routing_path:routing_path.read_bytes()}\n  freeze={'controller_sha256':runner.digest(controller_file),'safety_summary_sha256':runner.digest(safety_path),'routing_summary_sha256':runner.digest(routing_path)}\n  real_write(out/'candidate-freeze.json',freeze)\n  writes=[];calls=[];computed=[]\n  def observed_write(path,value):\n   path=pathlib.Path(path).resolve();assert project in path.parents\n   writes.append({'relative_path':path.relative_to(project).as_posix(),'value':copy.deepcopy(value)})\n   return real_write(path,value)\n  runner.write=observed_write\n  def synthetic_main(iteration,skill):\n   calls.append({'iteration':iteration,'skill_path':pathlib.Path(skill).relative_to(project).as_posix()})\n   fresh_s=copy.deepcopy(safety);fresh_r=copy.deepcopy(routing)\n   fresh_s['completed_at']=new_time;fresh_r['completed_at']=new_time\n   # These represent a freshly recomputed result, never a saved summary returned as the gate result.\n   if name=='safety_gate_content_changed':\n    fresh_s['accepted']=35;fresh_s['critical_gate_pass']=False\n   if name=='routing_nested_content_changed':fresh_r['cases']['synthetic']['grade']['tests_ran']=6\n   if name=='new_summary_missing_non_timestamp_field':fresh_s.pop('body_reads')\n   if name=='new_summary_missing_completed_at':fresh_s.pop('completed_at')\n   if name=='frozen_bytes_changed_after_snapshot':\n    safety_path.write_bytes(original_bytes[safety_path]+b' ')\n   computed.extend([copy.deepcopy(fresh_s),copy.deepcopy(fresh_r)])\n   runner.write(safety_path,fresh_s);runner.write(routing_path,fresh_r)\n   if name=='unrelated_write_and_timestamp':\n    runner.write(out/'other-status.json',{'completed_at':new_time,'status':'fresh synthetic computation'})\n   if name=='controller_raises_after_identical_summaries':raise RuntimeError('synthetic controller failure')\n   return {'safety_gate':fresh_s['critical_gate_pass'],'routing_gate':fresh_r['routing_qualified'],'fresh_completed_at':new_time}\n  controller.main=synthetic_main\n  if name=='frozen_bytes_changed_before_start':safety_path.write_bytes(original_bytes[safety_path]+b' ')\n  if name=='controller_source_hash_changed':controller_file.write_text('synthetic altered controller\\n',encoding='utf-8')\n  try:\n   with contextlib.redirect_stdout(io.StringIO()) as stdout:returned=wrapper.main()\n   outcome={'returned':returned,'rejected':False,'preservation_messages':len(stdout.getvalue().splitlines())}\n  except Exception as exc:outcome={'rejected':True,'exception':type(exc).__name__,'message':str(exc)}\n  protected_unchanged={p.name:p.read_bytes()==raw for p,raw in original_bytes.items()}\n  hook_restored=runner.write is observed_write\n  results.append({'probe':name,**outcome,'controller_calls':calls,'computed_new_values':computed,'original_write_calls':writes,'protected_bytes_unchanged':protected_unchanged,'write_hook_restored':hook_restored})\n  runner.write=real_write\nfor name in ['identical_content_new_timestamps','safety_gate_content_changed','routing_nested_content_changed','new_summary_missing_non_timestamp_field','new_summary_missing_completed_at','frozen_summary_missing_completed_at','frozen_bytes_changed_before_start','frozen_bytes_changed_after_snapshot','controller_source_hash_changed','unrelated_write_and_timestamp','controller_raises_after_identical_summaries']:\n probe(name)\nexpected_pass={'identical_content_new_timestamps','unrelated_write_and_timestamp'}\nassert all((not r['rejected'])==(r['probe'] in expected_pass) for r in results)\nassert all(r['write_hook_restored'] for r in results)\nassert all(all(r['protected_bytes_unchanged'].values()) for r in results if 'bytes_changed' not in r['probe'])\nassert len(next(r for r in results if r['probe']=='unrelated_write_and_timestamp')['original_write_calls'])==1\nassert all(not r['original_write_calls'] for r in results if r['probe']!='unrelated_write_and_timestamp')\nprint(json.dumps({'tested_script_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'results':results,'all_expected_outcomes':True},ensure_ascii=True))\n",
+  "limitations": [
+    "现场新旧汇总移除completed_at后相同、六项frozen hash匹配是父任务已核对事实；本agent按要求没有读取实际值，未重复现场数据核验。",
+    "探针不执行真实controller/route/缓存恢复，因此不独立证明实际缓存中每条记录状态或本次续跑一定零新增模型调用；它证明wrapper本身不改变原生调用路径、输入、评分、统计或门槛。",
+    "wrapper与被冻结controller使用assert作完整性校验；本次解释器优化级别为0，-O运行不在本结论支持范围。",
+    "比较遵循既有writer产生的JSON类型和普通Python对象相等语义；本次不扩大成任意不可信对象或与冻结producer类型不符的输入验证。",
+    "外部改动原字节的夹具被拒绝；wrapper不会自动还原外部篡改，本报告没有作这种保证。",
+    "仅支持当前硬编码iteration3两个汇总路径。没有把它泛化为新版本、新任务或新的发布资格门槛。"
+  ],
+  "input_source_snapshots": [
+    {
+      "file": ".local/production-resume-v4.py",
+      "absolute_path": "{PROJECT_ROOT}\\.local\\production-resume-v4.py",
+      "sha256": "3803547df919956fd4b0075007f3a8ce934917a454882bf6adb278d8942487b2",
+      "content_utf8": "\"\"\"Resume frozen v4 without rewriting identical completed gate summaries.\"\"\"\nfrom pathlib import Path\nimport json\nimport sys\n\nPROJECT = Path(__file__).resolve().parent.parent\nHERE = PROJECT / \"evals/production-2026-10-25\"\nsys.path.insert(0, str(HERE))\nimport runner\nimport controller_v4\n\n\ndef main():\n    assert not (PROJECT / \".local/production-v4-controller.lock\").exists()\n    assert not list((PROJECT / \".local/production-runtime\").glob(\"*/active-suite.lock\"))\n    freeze = runner.read(HERE / \"results/v4/candidate-freeze.json\")\n    assert runner.digest(Path(controller_v4.__file__)) == freeze[\"controller_sha256\"]\n    bindings = {\n        (HERE / \"results/v4/safety-iteration3.json\").resolve(): \"safety_summary_sha256\",\n        (HERE / \"results/v4/routing-iteration3.json\").resolve(): \"routing_summary_sha256\",\n    }\n    saved = {}\n    for path, field in bindings.items():\n        assert runner.digest(path) == freeze[field]\n        saved[path] = runner.read(path)\n    original_write = runner.write\n\n    def preserve_completed_summary(path, value):\n        path = Path(path).resolve()\n        if path not in saved:\n            return original_write(path, value)\n        expected = dict(saved[path])\n        observed = dict(value)\n        assert \"completed_at\" in expected and \"completed_at\" in observed\n        expected.pop(\"completed_at\")\n        observed.pop(\"completed_at\")\n        if observed != expected:\n            raise ValueError(\"Recomputed gate differs beyond summary timestamp: \" + str(path))\n        assert runner.digest(path) == freeze[bindings[path]]\n        print(json.dumps({\"resume_preserved_frozen_summary\": path.name,\n                          \"all_non_timestamp_fields_identical\": True}), flush=True)\n\n    runner.write = preserve_completed_summary\n    try:\n        return controller_v4.main(3, HERE / \"candidates/v4-python/SKILL.md\")\n    finally:\n        runner.write = original_write\n        for path, field in bindings.items():\n            assert runner.digest(path) == freeze[field]\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n"
+    },
+    {
+      "file": "evals/production-2026-10-25/controller_v4.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\controller_v4.py",
+      "sha256": "8836432fb9166a370c1cf250923e01dab8d6fe29dd3c0f285dc300a6c7468a22",
+      "reviewed_functions": {
+        "pipeline_lock": {
+          "lines": [
+            23,
+            29
+          ],
+          "source": "def pipeline_lock():\n    with PIPELINE_LOCK.open(\"x\", encoding=\"utf-8\") as stream:\n        json.dump({\"pid\": os.getpid(), \"started_at\": runner.utc()}, stream)\n    try:\n        yield\n    finally:\n        PIPELINE_LOCK.unlink()"
+        },
+        "main": {
+          "lines": [
+            43,
+            146
+          ],
+          "source": "def main(iteration, skill):\n    resource_gate.install()\n    prior = HERE / \"results/v3-python-v2-confirmation-conclusion.json\"\n    assert prior.exists() and runner.read(prior)[\"real_valid_runs\"] == 240, \"Complete the first240 real runs before second confirmation\"\n    assert not list(BASE.glob(\"*/active-suite.lock\")), \"Another native suite is active\"\n    assert runner.digest(HERE / \"protocol-v4.json\") == PROTOCOL_SHA\n    assert runner.digest(HERE / \"results/release-requirements.json\") == \"76BA888F7E756FEF188BE5EAD488CC8E065B5D5B0F04962E5E58A2AA53365797\"\n    runtime = runner.read(HERE / \"results/runtime-snapshot.json\")\n    assert runner.digest(runner.CODEX) == runtime[\"cli_binary_sha256\"]\n    assert sys.version.split()[0] == runtime[\"python_version\"]\n    assert runner.digest(Path(sys.executable)) == runtime[\"python_executable_sha256\"]\n    assert np.__version__ == runtime[\"numpy_version\"]\n    assert runner.digest(HERE / \"runner.py\") == \"849C8631100DC83F6F11956F19C1404DD4222F2EF9B70BCF3DA13D206B728C46\"\n    assert runner.digest(HERE / \"assess.py\") == \"123DAB93DF04CABE231FE1DB87E3EE856CFBA87FF42AC10A265B9D8A2B835B6A\"\n    development = runner.read(HERE / f\"results/v4/development-iteration{iteration}.json\")\n    skill_sha = runner.digest(skill)\n    assert development[\"development_gate_pass\"] and development[\"skill_sha256\"] == skill_sha\n    assert development[\"native_runs\"] == development[\"accepted\"] == development[\"body_reads\"] == 6\n    sealed = HERE / \"holdout-sealed-v2\"\n    assert runner.digest(sealed / \"manifest.json\") == \"7FEEF291F22A0ABFA65E8B098157687BB6F4CFFF8247C951AD11120220EAC65A\"\n    origin_freeze = HERE / \"results/candidate-v3-python-v2-freeze.json\"\n    critical_hashes = runner.read(origin_freeze)[\"holdout_case_sha256\"]\n    assert len(critical_hashes) == 12\n    for name, expected in critical_hashes.items():\n        assert runner.digest(sealed / name) == expected\n    critical_cases = [runner.read(sealed / name) for name in sorted(critical_hashes)]\n    selection = runner.read(HERE / \"results/second-corpus-selection.json\")\n    real = BASE / \"real-v4\"\n    allocation = runner.read(real / \"real-selection.json\")\n    assert allocation[\"protocol_sha256\"] == PROTOCOL_SHA\n    assert allocation[\"selection_sha256\"] == runner.digest(HERE / \"results/second-corpus-selection.json\")\n    for phase in (\"formal\", \"replication\"):\n        assert set(allocation[phase]) == set(selection[phase]) and len(allocation[phase]) == 20\n        for case_id in allocation[phase]:\n            assert runner.digest(real / (phase + \"-cases\") / (case_id + \".json\")) == allocation[\"case_file_sha256\"][case_id]\n    with pipeline_lock():\n        safety_root = BASE / f\"safety-v4-iteration{iteration}\"\n        status(\"critical-regressions-running\", skill_sha256=skill_sha, iteration=iteration)\n        safety = runner.run_suite(safety_root, critical_cases, \"safety\", skill, 3, (\"with-skill\",), 3)\n        safety_summary = {\"completed_at\": runner.utc(), \"native_runs\": len(safety),\n                          \"skill_sha256\": skill_sha, \"accepted\": sum(row[\"accepted\"] for row in safety),\n                          \"body_reads\": sum(row[\"skill_body_read_observed\"] for row in safety),\n                          \"critical_gate_pass\": len(safety) == 36 and all(row[\"accepted\"] and row[\"skill_body_read_observed\"] for row in safety),\n                          \"evidence_class\": \"Known critical regression contracts, not a fresh independent holdout\"}\n        runner.write(HERE / f\"results/v4/safety-iteration{iteration}.json\", safety_summary)\n        if not safety_summary[\"critical_gate_pass\"]:\n            status(\"critical-regression-revision-needed\", **safety_summary)\n            return 2\n        status(\"native-routing-running\", skill_sha256=skill_sha, iteration=iteration)\n        routing = route_v4.run(skill, iteration)\n        if not routing[\"routing_qualified\"]:\n            status(\"routing-revision-needed\", skill_sha256=skill_sha, iteration=iteration)\n            return 3\n        assert runner.digest(skill) == skill_sha\n        freeze = {\"frozen_at\": runner.utc(), \"skill_sha256\": skill_sha,\n                  \"ui_sha256\": runner.digest(skill.parent / \"agents/openai.yaml\"),\n                  \"protocol_sha256\": PROTOCOL_SHA, \"confirmation_slot\": 2,\n                  \"development_summary_sha256\": runner.digest(HERE / f\"results/v4/development-iteration{iteration}.json\"),\n                  \"safety_summary_sha256\": runner.digest(HERE / f\"results/v4/safety-iteration{iteration}.json\"),\n                  \"critical_case_origin_freeze_sha256\": runner.digest(origin_freeze),\n                  \"routing_summary_sha256\": runner.digest(HERE / f\"results/v4/routing-iteration{iteration}.json\"),\n                  \"real_selection_sha256\": runner.digest(real / \"real-selection.json\"),\n                  \"blind_review_plan_sha256\": runner.digest(HERE / \"results/v4-blind-review-plan.json\"),\n                  \"runner_sha256\": runner.digest(HERE / \"runner.py\"),\n                  \"assessment_sha256\": runner.digest(HERE / \"assess.py\"),\n                  \"assessment_replay_sha256\": runner.digest(HERE / \"replay_analysis.py\"),\n                  \"statistics_dependency_sha256\": runner.digest(Path(core.__file__)),\n                  \"numpy_version\": np.__version__,\n                  \"benefit_gate_sha256\": runner.digest(HERE / \"benefit_gate.py\"),\n                  \"controller_sha256\": runner.digest(Path(__file__)),\n                  \"resource_gate_sha256\": runner.digest(Path(resource_gate.__file__)),\n                  \"routing_code_sha256\": runner.digest(HERE / \"route_v4.py\"),\n                  \"runtime_snapshot_sha256\": runner.digest(HERE / \"results/runtime-snapshot.json\"),\n                  \"upstream_grader_sha256\": runner.digest(Path(runner.upstream_grader.__file__)),\n                  \"transport_sha256\": runner.digest(Path(runner.transport.__file__))}\n        assert freeze[\"ui_sha256\"] == \"E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A\"\n        freeze_path = HERE / \"results/v4/candidate-freeze.json\"\n        if freeze_path.exists():\n            saved = runner.read(freeze_path)\n            assert all(saved[key] == value for key, value in freeze.items() if key != \"frozen_at\")\n        else:\n            runner.write(freeze_path, freeze)\n        analyses = {}\n        for phase in (\"formal\", \"replication\"):\n            assert runner.digest(skill) == skill_sha\n            status(\"real-\" + phase + \"-running\", skill_sha256=skill_sha, expected_runs=120)\n            runner.run_suite(real, cases(real / (phase + \"-cases\")), phase, skill, 3, (\"baseline\", \"with-skill\"), 3)\n            rows = [json.loads(line) for line in (real / \"records.jsonl\").read_text(encoding=\"utf-8\").splitlines()]\n            analyses[phase] = replay(rows, phase)\n            runner.write(HERE / f\"results/v4/{phase}-analysis.json\", analyses[phase])\n        quality = all(value[\"quality\"][\"gate_pass\"] and value[\"quality\"][\"skill_accepted\"] / value[\"quality\"][\"runs_per_arm\"] >= .95\n                      for value in analyses.values())\n        positive = {metric: all(credible_benefit(value, metric) for value in analyses.values())\n                    for metric in (\"token\", \"time\")}\n        material = {metric: all(value[\"metrics\"][metric][\"batch_criterion_met\"] for value in analyses.values())\n                    for metric in (\"token\", \"time\")}\n        conclusion = {\"completed_at\": runner.utc(), \"candidate\": \"v4\", \"skill_sha256\": skill_sha,\n                      \"real_valid_runs\": 240, \"real_tasks\": 40, \"real_quality_qualified\": quality,\n                      \"same_endpoint_credible_positive\": positive, \"stable_at_least10percent_benefit\": material,\n                      \"production_release_qualified\": False,\n                      \"remaining\": [\"Prespecified independent blinded review\", \"Two-file package verification\", \"Data/raw evidence integrity and statistical reproduction\"]}\n        runner.write(HERE / \"results/v4/confirmation-conclusion.json\", conclusion)\n        status(\"confirmation-complete-final-review-needed\", **conclusion)\n        return 0"
+        }
+      }
+    },
+    {
+      "file": "evals/production-2026-10-25/route_v4.py",
+      "absolute_path": "{PROJECT_ROOT}\\evals\\production-2026-10-25\\route_v4.py",
+      "sha256": "cb97eae12289a66a01c3a3d0979080a35c3948898d2b015e59b86840f78261c9",
+      "reviewed_functions": {
+        "run": {
+          "lines": [
+            14,
+            49
+          ],
+          "source": "def run(skill, iteration=1):\n    conclusion = HERE / \"results/v3-python-v2-confirmation-conclusion.json\"\n    assert conclusion.exists() and runner.read(conclusion)[\"real_valid_runs\"] == 240, \"First confirmation must complete before v4 model work\"\n    assert not list(BASE.glob(\"*/active-suite.lock\")), \"Another native suite is active\"\n    root = BASE / f\"routing-v4-iteration{iteration}\"\n    requests = original.route_cases()\n    manifest = {\"skill_sha256\": runner.digest(skill), \"settings\": runner.transport.settings(),\n                \"cases\": {case[\"id\"]: runner.case_digest(case) for case in requests}}\n    assert manifest[\"settings\"] == runner.SETTINGS\n    root.mkdir(parents=True, exist_ok=True)\n    path = root / \"routing-manifest.json\"\n    if path.exists():\n        assert runner.read(path) == manifest, \"Use a new iteration for a changed candidate\"\n    else:\n        runner.write(path, manifest)\n    original.ROOT, original.SKILL = root, skill\n    records = {}\n    with runner.controller_lock(root, \"routing\"):\n        with ThreadPoolExecutor(max_workers=3) as pool:\n            futures = {pool.submit(original.run, case): case[\"id\"] for case in requests}\n            for future in as_completed(futures):\n                record = future.result()\n                assert record[\"skill_sha256\"] == manifest[\"skill_sha256\"]\n                records[futures[future]] = record\n    assert runner.digest(skill) == manifest[\"skill_sha256\"]\n    report = {\"completed_at\": runner.utc(), \"skill_sha256\": manifest[\"skill_sha256\"],\n              \"model_runs\": len(records), \"included_in_efficiency_statistics\": False,\n              \"routing_qualified\": len(records) == 9 and all(row[\"routing_check_pass\"] for row in records.values()),\n              \"cases\": {key: {name: row.get(name) for name in (\"expected_load\", \"operation_pass\", \"routing_check_pass\",\n                                                              \"skill_body_read_observed\", \"grade\", \"skill_unchanged\")}\n                        for key, row in records.items()},\n              \"limitations\": [\"Known nine-request regression, not a new independent routing sample\",\n                              \"No estimate of global selection reliability or invisible host activation\"]}\n    runner.write(HERE / f\"results/v4/routing-iteration{iteration}.json\", public_value(report))\n    print(json.dumps({\"routing_qualified\": report[\"routing_qualified\"], \"model_runs\": len(records)}))\n    return report"
+        }
+      }
+    }
+  ],
+  "python_version": "3.12.14",
+  "python_optimization_level": 0,
+  "saved_at_utc": "2026-10-25T05:00:31.135122+00:00",
+  "probe_script_sha256": "94bd0b75bad49997fb89290d9ae52a982ade59e2baa05f5b4192db8707ac8367"
+}

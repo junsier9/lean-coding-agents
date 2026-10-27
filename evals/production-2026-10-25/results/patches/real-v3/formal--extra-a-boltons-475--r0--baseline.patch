@@ -1,0 +1,93 @@
+diff --git a/boltons/strutils.py b/boltons/strutils.py
+index 95f8e12..e43d5da 100644
+--- a/boltons/strutils.py
++++ b/boltons/strutils.py
+@@ -662,7 +662,7 @@ def gzip_bytes(bytestring, level=6):
+ 
+ 
+ 
+-_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\x2028|\x2029)',
++_line_ending_re = re.compile(r'(\r\n|\n|\x0b|\f|\r|\x85|\u2028|\u2029)',
+                              re.UNICODE)
+ 
+ 
+@@ -674,6 +674,9 @@ def iter_splitlines(text):
+     This function works with a variety of line endings, but as always,
+     be careful when mixing line endings within a file.
+ 
++    Leading, consecutive, and trailing line endings produce empty lines.
++    Empty text yields no lines.
++
+     >>> list(iter_splitlines('\nhi\nbye\n'))
+     ['', 'hi', 'bye', '']
+     >>> list(iter_splitlines('\r\nhi\rbye\r\n'))
+diff --git a/tests/test_strutils.py b/tests/test_strutils.py
+index 1da050a..57c8919 100644
+--- a/tests/test_strutils.py
++++ b/tests/test_strutils.py
+@@ -46,6 +46,65 @@ def test_asciify():
+     assert b[-1:].decode('ascii') == 'e'
+ 
+ 
++@pytest.mark.parametrize('text', [
++    'February 28, 2024',
++    'February 29, 2024',
++    ' 28 29 ',
++    'values 280 and 290',
++    r'literal \u2028 and \u2029',
++])
++def test_iter_splitlines_preserves_text(text):
++    assert list(strutils.iter_splitlines(text)) == [text]
++    assert strutils.indent(text, '  ') == '  ' + text
++
++
++@pytest.mark.parametrize('separator', [
++    '\r\n', '\n', '\x0b', '\f', '\r', '\x85', '\u2028', '\u2029',
++])
++def test_iter_splitlines_line_endings(separator):
++    assert list(strutils.iter_splitlines('first' + separator + 'last')) == [
++        'first', 'last']
++    text = separator + 'first' + separator * 2 + 'last' + separator
++    assert list(strutils.iter_splitlines(text)) == ['', 'first', '', 'last', '']
++    assert list(strutils.iter_splitlines(separator)) == ['', '']
++    assert list(strutils.iter_splitlines(separator * 2)) == ['', '', '']
++    assert strutils.indent(text, '  ') == '\n  first\n\n  last\n'
++
++
++def test_iter_splitlines_empty():
++    lines = strutils.iter_splitlines('')
++    assert iter(lines) is lines
++    assert list(lines) == []
++    assert strutils.indent('', '  ') == ''
++
++
++def test_iter_splitlines_mixed_line_endings():
++    text = ('\u2028February 28\r\nFebruary 29\r\n\nMarch 28\r'
++            'March 29\x0bApril 28\fApril 29\x85May 28\u2029')
++    assert list(strutils.iter_splitlines(text)) == [
++        '', 'February 28', 'February 29', '', 'March 28', 'March 29',
++        'April 28', 'April 29', 'May 28', '',
++    ]
++    assert strutils.indent(text, '> ', newline='\r\n') == (
++        '\r\n> February 28\r\n> February 29\r\n\r\n> March 28\r\n'
++        '> March 29\r\n> April 28\r\n> April 29\r\n> May 28\r\n')
++
++
++def test_indent_key():
++    text = '\u2028February 28\u2029February 29\r\n'
++    seen = []
++
++    def key(line):
++        seen.append(line)
++        return line.endswith('29')
++
++    assert strutils.indent(text, '> ', newline='|', key=key) == (
++        '|February 28|> February 29|')
++    assert seen == ['', 'February 28', 'February 29', '']
++    assert strutils.indent(text, '> ', key=lambda line: True) == (
++        '> \n> February 28\n> February 29\n> ')
++
++
+ def test_indent():
+     to_indent = '\nabc\ndef\n\nxyz\n'
+     ref = '\n  abc\n  def\n\n  xyz\n'

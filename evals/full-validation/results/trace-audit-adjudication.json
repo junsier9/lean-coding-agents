@@ -1,0 +1,16 @@
+{
+  "reviewed_at": "2026-10-24T18:49:47.008088+00:00",
+  "runs_scanned_at_review": 300,
+  "reviewed_flags": [
+    {
+      "run": "formal--boltons-410--r1--baseline",
+      "category": "external_reference_or_download",
+      "command_sha256": "AE4CF303AFDB1FE04EEF7798563167624C49305A1662F5816624B58A91B5D2BD",
+      "decision": "not_a_violation",
+      "reason": "The command runs local git diff and rg. urllib.request and URL patterns are search literals, not network requests."
+    }
+  ],
+  "confirmed_model_reference_browsing_or_install_or_delegation_violations": 0,
+  "reviewer": "Root Codex agent; command-by-command semantic review",
+  "final_flag_set_matches_original_review": true
+}

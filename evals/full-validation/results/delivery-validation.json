@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-24T18:58:33.741339+00:00",
+  "public_rows": 300,
+  "public_patch_hashes_verified": 300,
+  "patches_unchanged_when_exporting_against_initial_HEAD": true,
+  "public_jsonl_reproduces_all_saved_metrics_and_quality": true,
+  "public_jsonl_reproduces_both_bound_results": true,
+  "private_raw_backup_file_hashes_verified": 1745,
+  "private_archive_sha256_verified": true,
+  "documentation_links_checked": 3,
+  "missing_local_links": [],
+  "document_sha256": {
+    "README.md": "1626398594B09D55E7AC480942A02CFFA7FCE1BDFE1A3CCD76C4188343C99668",
+    "evals\\full-validation\\README.zh-CN.md": "2E673B704113446BD8D4CB88B409E1C2E4DDB4C1D6E12B72DA0F93042988A452",
+    "evals\\full-validation\\results\\summary.zh-CN.md": "A7B2C31D43733740AA519C0E36427DC5FF272878F2F8428EF4BB29689067FCA3"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-25T01:22:00.587407+00:00",
+  "fresh_confirmation_model_calls": 0,
+  "previous_skill_sha256": "086AD88F21493E879D3C64F7A5AED6D7FF049F1BA74F88F02492C59DAE55A67F",
+  "revision_skill_sha256": "0C767A71E5493C753C6908B47D106E2010B6398258E07B7412C40C9097DF0C4F",
+  "previous_words": 319,
+  "revision_words": 346,
+  "previous_native_development_runs": 6,
+  "previous_native_development_accepted": 3,
+  "observed_failure": "All3 cachedmethod attempts fail the original legal class call: proxy self captures wrapped keyword self in2 implementations; renamed receiver obj is missing in the third. Metadata does not implement actual keyword binding.",
+  "narrow_change": "Explain forwarding-proxy receiver keyword collision; exercise bound/unbound calls and legal receiver keywords for method wrappers. No implementation or case-specific parameter name prescribed.",
+  "original_case_names_messages_or_solutions_added_to_skill": false,
+  "oracle_protocol_or_statistical_threshold_changed": false,
+  "prior_failed_outcomes_and_costs_preserved": true,
+  "next_development_iteration": 2
+}

@@ -1,0 +1,662 @@
+{
+  "pair": "04",
+  "review_type": "independent arm-label-blinded code and behavior review",
+  "task": "插件通过 specname 为同一 hook 注册多个实现后，get_hookcallers 返回重复调用器，注销相关实现的行为也依赖这些重复项。请修复公开查询与注销的一致性。",
+  "comparison": "same",
+  "preferred_arm": null,
+  "summary": "A/B 均同步修复查询去重和删除该插件全部实现，避免只对 get_hookcallers 去重后留下残余实现。两种局部列表过滤写法在当前内部 list 契约下行为相同；独立探针未确认不安全修改或无当前依据的机制。",
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "A-J01",
+          "file": "A/src/pluggy/_manager.py",
+          "line": 450,
+          "title": "每个 hookcaller 匹配插件后停止内层扫描",
+          "evidence": "break 只结束当前 caller 的实现扫描，外层继续发现其他 caller，保留原顺序和按插件身份匹配。注册但无实现的插件仍返回 []，未注册插件仍返回 None。",
+          "additional_locations": [
+            "A/src/pluggy/_manager.py:443",
+            "A/src/pluggy/_manager.py:446",
+            "A/src/pluggy/_manager.py:448"
+          ],
+          "probe_ids": [
+            "query_once_per_caller",
+            "empty_and_absent_plugins"
+          ]
+        },
+        {
+          "id": "A-J02",
+          "file": "A/src/pluggy/_hooks.py",
+          "line": 444,
+          "title": "一次删除全部实现是查询去重后的必要配套修复",
+          "evidence": "旧 unregister 对每个查询结果调用一次 _remove_plugin，而旧 helper 每次只删一个实现；查询去重后必须同步删除该插件全部普通及 wrapper 实现。过滤保留其他插件的对象与相对顺序，切片赋值保留内部列表身份；局部过滤列表有明确当前需求。",
+          "additional_locations": [
+            "base/src/pluggy/_manager.py:221",
+            "base/src/pluggy/_manager.py:224",
+            "A/src/pluggy/_hooks.py:445",
+            "A/src/pluggy/_hooks.py:449"
+          ],
+          "probe_ids": [
+            "unregister_object",
+            "unregister_name",
+            "block_and_reregister"
+          ]
+        },
+        {
+          "id": "A-J03",
+          "file": "A/src/pluggy/_hooks.py",
+          "line": 447,
+          "title": "保留不存在插件的错误与现有调用快照",
+          "evidence": "未找到实现时仍抛 ValueError，没有将错误变成成功。原 get_hookimpls 的副本及分发前复制未删；探针验证失败删除不改变状态、剩余 hook 的原错误传播与 wrapper 退出、分发中自行注销后当前快照仍执行完成。",
+          "additional_locations": [
+            "A/src/pluggy/_hooks.py:448",
+            "A/src/pluggy/_hooks.py:453",
+            "A/src/pluggy/_hooks.py:516"
+          ],
+          "probe_ids": [
+            "absent_private_remove_preserves_state",
+            "remaining_hook_failure_propagates",
+            "unregister_during_dispatch_keeps_inflight_snapshot"
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "B-J01",
+          "file": "B/src/pluggy/_manager.py",
+          "line": 448,
+          "title": "查询去重同时保留其他 caller 与正常可选结果",
+          "evidence": "内层 break 与 A 的执行逻辑相同；不会因首个 caller 匹配而漏掉其他 hook。空注册插件 [] 和未注册插件 None 的区别保持。",
+          "additional_locations": [
+            "B/src/pluggy/_manager.py:441",
+            "B/src/pluggy/_manager.py:444",
+            "B/src/pluggy/_manager.py:446"
+          ],
+          "probe_ids": [
+            "query_once_per_caller",
+            "empty_and_absent_plugins"
+          ]
+        },
+        {
+          "id": "B-J02",
+          "file": "B/src/pluggy/_hooks.py",
+          "line": 443,
+          "title": "过滤该插件的全部实现，保留其他实现及容器身份",
+          "evidence": "记录原长度后以相同身份谓词过滤全部实现，切片写回原列表。这与 A 先构建再检查长度的形式在实际内部 list 上具有相同效果。原长度不是无需求状态层，而是保留 not-found 错误的局部判断。",
+          "additional_locations": [
+            "B/src/pluggy/_hooks.py:444",
+            "B/src/pluggy/_hooks.py:445",
+            "B/src/pluggy/_hooks.py:447"
+          ],
+          "probe_ids": [
+            "unregister_object",
+            "unregister_name",
+            "block_and_reregister",
+            "absent_private_remove_preserves_state"
+          ]
+        },
+        {
+          "id": "B-J03",
+          "file": "B/src/pluggy/_hooks.py",
+          "line": 448,
+          "title": "错误、wrapper 行为和必要副本保持",
+          "evidence": "不存在插件仍抛 ValueError；虽然先将相同元素序列切片写回再判断，但当前 builtin list 的身份和内容未变化，未观察到不安全副作用。剩余插件分发、错误传播、wrapper 退出与在途调用快照均与 A 一致。",
+          "additional_locations": [
+            "B/src/pluggy/_hooks.py:452",
+            "B/src/pluggy/_hooks.py:515"
+          ],
+          "probe_ids": [
+            "absent_private_remove_preserves_state",
+            "remaining_hook_failure_propagates",
+            "unregister_during_dispatch_keeps_inflight_snapshot"
+          ]
+        }
+      ],
+      "unresolved": []
+    }
+  },
+  "probe_method": {
+    "environment": "Bundled Python 3.12.14; standard library only; -B and PYTHONDONTWRITEBYTECODE=1",
+    "isolation": "Only permitted src/pluggy source packages were copied into an independently created temporary tree and imported in separate subprocesses. No candidate or hidden test suite was invoked.",
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_tests_executed": false,
+    "checks": [
+      "A plugin with multiple specname implementations returns each distinct caller once",
+      "Unregister by object and name removes all ordinary/legacy-wrapper/modern-wrapper implementations while preserving other plugins and dispatch order",
+      "set_blocked, unblock and re-registration retain coherent public queries",
+      "Registered empty plugin returns [] and absent plugin returns None",
+      "Absent private removal preserves contents and list identity; public hookimpl snapshot remains independently mutable",
+      "A remaining hook's original failure and wrapper exits are preserved",
+      "Unregistering during dispatch keeps the existing in-flight snapshot and removes the plugin for the next call"
+    ],
+    "source_sha256": "69C28A84E1A8F2056BFEFC485B6CADC413FCBE05E66B34A4697DCB48AA183C63",
+    "source": "import json\nfrom pathlib import Path\nimport sys\n\nsys.dont_write_bytecode = True\nsys.path.insert(0, str(Path(sys.argv[1]).resolve()))\nimport pluggy\n\nhookspec = pluggy.HookspecMarker('review')\nhookimpl = pluggy.HookimplMarker('review')\n\n\ndef require(condition, message):\n    if not condition:\n        raise AssertionError(message)\n\n\nclass Spec:\n    @hookspec\n    def process(self, value):\n        pass\n    @hookspec\n    def secondary(self, value):\n        pass\n\n\nclass Plugin:\n    def __init__(self, label, events):\n        self.label, self.events, self.failure = label, events, None\n    @hookimpl\n    def process(self, value):\n        self.events.append(self.label + ':main')\n        if self.failure is not None:\n            raise self.failure\n        return self.label + ':main'\n    @hookimpl(specname='process')\n    def alias(self, value):\n        self.events.append(self.label + ':alias')\n        return self.label + ':alias'\n    @hookimpl(specname='process', wrapper=True)\n    def modern(self, value):\n        self.events.append(self.label + ':modern-enter')\n        try:\n            result = yield\n            return result\n        finally:\n            self.events.append(self.label + ':modern-exit')\n    @hookimpl(specname='process', hookwrapper=True)\n    def legacy(self, value):\n        self.events.append(self.label + ':legacy-enter')\n        try:\n            yield\n        finally:\n            self.events.append(self.label + ':legacy-exit')\n    @hookimpl\n    def secondary(self, value):\n        return self.label + ':secondary'\n\n\ndef setup():\n    manager = pluggy.PluginManager('review')\n    manager.add_hookspecs(Spec)\n    events = []\n    target, other = Plugin('target', events), Plugin('other', events)\n    manager.register(target, 'target')\n    manager.register(other, 'other')\n    return manager, target, other, events\n\n\ndef query_once_per_caller():\n    manager, target, other, events = setup()\n    callers = manager.get_hookcallers(target)\n    require(len(callers) == len({id(caller) for caller in callers}) == 2, 'duplicate hook callers')\n    require({caller.name for caller in callers} == {'process', 'secondary'}, 'missing caller')\n    return {'names': [caller.name for caller in callers], 'unique_callers': True}\n\n\ndef unregister_variant(mode):\n    manager, target, other, events = setup()\n    hook = manager.hook.process\n    live_list = hook._hookimpls\n    before = hook(value=1)\n    other_impls = [impl for impl in hook.get_hookimpls() if impl.plugin is other]\n    expected = [value for value in before if value.startswith('other:')]\n    events.clear()\n    if mode == 'object':\n        require(manager.unregister(target) is target, 'object unregister return')\n    elif mode == 'name':\n        require(manager.unregister(name='target') is target, 'name unregister return')\n    else:\n        manager.set_blocked('target')\n        require(manager.is_blocked('target'), 'name not blocked')\n        require(manager.register(target, 'target') is None, 'blocked registration accepted')\n    require(not manager.is_registered(target), 'target still registered')\n    require(manager.get_hookcallers(target) is None and manager.get_plugin('target') is None, 'public query stale')\n    remaining = hook.get_hookimpls()\n    require(len(remaining) == len(other_impls) and all(a is b for a, b in zip(remaining, other_impls)), 'unrelated implementation/order changed')\n    require(hook._hookimpls is live_list, 'internal list identity changed')\n    after = hook(value=1)\n    require(after == expected, 'remaining dispatch changed')\n    require(manager.hook.secondary(value=1) == ['other:secondary'], 'second caller not cleaned')\n    require(not any(event.startswith('target:') for event in events), 'target wrapper or implementation remains')\n    for suffix in ['modern-enter', 'modern-exit', 'legacy-enter', 'legacy-exit']:\n        require(events.count('other:' + suffix) == 1, 'other wrapper behavior changed')\n    if mode == 'blocked':\n        require(manager.unblock('target') is True, 'unblock failed')\n        require(manager.register(target, 'target') == 'target', 'reregister failed')\n        callers = manager.get_hookcallers(target)\n        require(len(callers) == len({id(caller) for caller in callers}) == 2, 'reregister query duplicates')\n    return {'mode': mode, 'before': before, 'remaining': after, 'unrelated_order_and_wrappers_preserved': True}\n\n\ndef unregister_object():\n    return unregister_variant('object')\n\n\ndef unregister_name():\n    return unregister_variant('name')\n\n\ndef block_and_reregister():\n    return unregister_variant('blocked')\n\n\ndef empty_and_absent_plugins():\n    manager, target, other, events = setup()\n    empty = object()\n    manager.register(empty, 'empty')\n    require(manager.get_hookcallers(empty) == [], 'registered empty plugin contract')\n    require(manager.get_hookcallers(object()) is None, 'unregistered plugin contract')\n    require(manager.get_plugin('empty') is empty, 'query mutated registration')\n    return {'registered_empty': [], 'unregistered': None}\n\n\ndef absent_private_remove_preserves_state():\n    manager, target, other, events = setup()\n    hook = manager.hook.process\n    live = hook._hookimpls\n    before = hook.get_hookimpls()\n    caught = None\n    try:\n        hook._remove_plugin(object())\n    except BaseException as error:\n        caught = error\n    require(isinstance(caught, ValueError), 'not-found error missing')\n    require(hook._hookimpls is live and hook.get_hookimpls() == before, 'failed removal changed state')\n    output = hook.get_hookimpls()\n    output.clear()\n    require(hook.get_hookimpls() == before, 'get_hookimpls no longer returns a copy')\n    return {'not_found_value_error': True, 'list_identity_and_contents_preserved': True, 'public_snapshot_copy_preserved': True}\n\n\ndef remaining_hook_failure_propagates():\n    manager, target, other, events = setup()\n    manager.unregister(target)\n    failure = RuntimeError('other hook failed')\n    other.failure = failure\n    caught = None\n    try:\n        manager.hook.process(value=1)\n    except BaseException as error:\n        caught = error\n    require(caught is failure, 'hook failure swallowed or replaced')\n    for suffix in ['modern-exit', 'legacy-exit']:\n        require(events.count('other:' + suffix) == 1, 'remaining wrapper cleanup did not execute')\n    require(not any(event.startswith('target:') for event in events), 'removed target still executed')\n    return {'original_failure_propagated': True, 'wrapper_cleanup': True}\n\n\ndef unregister_during_dispatch_keeps_inflight_snapshot():\n    manager = pluggy.PluginManager('review')\n    manager.add_hookspecs(Spec)\n    events = []\n    class SelfRemoving:\n        @hookimpl(specname='process')\n        def alias(self, value):\n            events.append('alias')\n            return 'alias'\n        @hookimpl(specname='process')\n        def z_remove(self, value):\n            events.append('remove')\n            manager.unregister(self)\n            return 'remove'\n    plugin = SelfRemoving()\n    manager.register(plugin, 'self-removing')\n    result = manager.hook.process(value=1)\n    require(result == ['remove', 'alias'] and events == ['remove', 'alias'], 'in-flight callback snapshot changed')\n    require(manager.get_hookcallers(plugin) is None, 'self-removal incomplete')\n    require(manager.hook.process(value=1) == [], 'removed hooks executed next time')\n    return {'first_dispatch': result, 'events': events, 'next_dispatch': []}\n\n\nresults = {}\nfor function in [query_once_per_caller, unregister_object, unregister_name, block_and_reregister,\n                 empty_and_absent_plugins, absent_private_remove_preserves_state,\n                 remaining_hook_failure_propagates, unregister_during_dispatch_keeps_inflight_snapshot]:\n    try:\n        results[function.__name__] = {'passed': True, 'observed': function()}\n    except BaseException as error:\n        results[function.__name__] = {'passed': False, 'exception': type(error).__name__, 'message': str(error)}\nprint(json.dumps({'module_file': str(Path(pluggy.__file__).resolve()),\n                  'passed': sum(result['passed'] for result in results.values()),\n                  'total': len(results), 'results': results}))\n",
+    "temporary_work_directory_removed": true
+  },
+  "probe_results": {
+    "base": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\04\\base\\pluggy\\__init__.py",
+      "passed": 6,
+      "total": 8,
+      "results": {
+        "query_once_per_caller": {
+          "passed": false,
+          "exception": "AssertionError",
+          "message": "duplicate hook callers"
+        },
+        "unregister_object": {
+          "passed": true,
+          "observed": {
+            "mode": "object",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "unregister_name": {
+          "passed": true,
+          "observed": {
+            "mode": "name",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "block_and_reregister": {
+          "passed": false,
+          "exception": "AssertionError",
+          "message": "reregister query duplicates"
+        },
+        "empty_and_absent_plugins": {
+          "passed": true,
+          "observed": {
+            "registered_empty": [],
+            "unregistered": null
+          }
+        },
+        "absent_private_remove_preserves_state": {
+          "passed": true,
+          "observed": {
+            "not_found_value_error": true,
+            "list_identity_and_contents_preserved": true,
+            "public_snapshot_copy_preserved": true
+          }
+        },
+        "remaining_hook_failure_propagates": {
+          "passed": true,
+          "observed": {
+            "original_failure_propagated": true,
+            "wrapper_cleanup": true
+          }
+        },
+        "unregister_during_dispatch_keeps_inflight_snapshot": {
+          "passed": true,
+          "observed": {
+            "first_dispatch": [
+              "remove",
+              "alias"
+            ],
+            "events": [
+              "remove",
+              "alias"
+            ],
+            "next_dispatch": []
+          }
+        }
+      }
+    },
+    "A": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\04\\A\\pluggy\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "query_once_per_caller": {
+          "passed": true,
+          "observed": {
+            "names": [
+              "process",
+              "secondary"
+            ],
+            "unique_callers": true
+          }
+        },
+        "unregister_object": {
+          "passed": true,
+          "observed": {
+            "mode": "object",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "unregister_name": {
+          "passed": true,
+          "observed": {
+            "mode": "name",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "block_and_reregister": {
+          "passed": true,
+          "observed": {
+            "mode": "blocked",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "empty_and_absent_plugins": {
+          "passed": true,
+          "observed": {
+            "registered_empty": [],
+            "unregistered": null
+          }
+        },
+        "absent_private_remove_preserves_state": {
+          "passed": true,
+          "observed": {
+            "not_found_value_error": true,
+            "list_identity_and_contents_preserved": true,
+            "public_snapshot_copy_preserved": true
+          }
+        },
+        "remaining_hook_failure_propagates": {
+          "passed": true,
+          "observed": {
+            "original_failure_propagated": true,
+            "wrapper_cleanup": true
+          }
+        },
+        "unregister_during_dispatch_keeps_inflight_snapshot": {
+          "passed": true,
+          "observed": {
+            "first_dispatch": [
+              "remove",
+              "alias"
+            ],
+            "events": [
+              "remove",
+              "alias"
+            ],
+            "next_dispatch": []
+          }
+        }
+      }
+    },
+    "B": {
+      "module_file": "{USER_HOME}\\AppData\\Local\\Temp\\pair01-04-review-chgtf7d5\\04\\B\\pluggy\\__init__.py",
+      "passed": 8,
+      "total": 8,
+      "results": {
+        "query_once_per_caller": {
+          "passed": true,
+          "observed": {
+            "names": [
+              "process",
+              "secondary"
+            ],
+            "unique_callers": true
+          }
+        },
+        "unregister_object": {
+          "passed": true,
+          "observed": {
+            "mode": "object",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "unregister_name": {
+          "passed": true,
+          "observed": {
+            "mode": "name",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "block_and_reregister": {
+          "passed": true,
+          "observed": {
+            "mode": "blocked",
+            "before": [
+              "other:main",
+              "other:alias",
+              "target:main",
+              "target:alias"
+            ],
+            "remaining": [
+              "other:main",
+              "other:alias"
+            ],
+            "unrelated_order_and_wrappers_preserved": true
+          }
+        },
+        "empty_and_absent_plugins": {
+          "passed": true,
+          "observed": {
+            "registered_empty": [],
+            "unregistered": null
+          }
+        },
+        "absent_private_remove_preserves_state": {
+          "passed": true,
+          "observed": {
+            "not_found_value_error": true,
+            "list_identity_and_contents_preserved": true,
+            "public_snapshot_copy_preserved": true
+          }
+        },
+        "remaining_hook_failure_propagates": {
+          "passed": true,
+          "observed": {
+            "original_failure_propagated": true,
+            "wrapper_cleanup": true
+          }
+        },
+        "unregister_during_dispatch_keeps_inflight_snapshot": {
+          "passed": true,
+          "observed": {
+            "first_dispatch": [
+              "remove",
+              "alias"
+            ],
+            "events": [
+              "remove",
+              "alias"
+            ],
+            "next_dispatch": []
+          }
+        }
+      }
+    }
+  },
+  "source_immutability": {
+    "files_verified": 207,
+    "all_audited_bytes_unchanged": true,
+    "source_hashes": {
+      "base/.coveragerc": "930A4BF9E2E3B93147D6AC3D863EDB6508A48725A2439E0E74C000498E765722",
+      "base/.gitignore": "DBD6F43028DB1D99B379EA0570E1A2F596EEABE79B76215132F849236716DBBF",
+      "base/.pre-commit-config.yaml": "077535A7ADBF453EC3AEDDDBD0738721F73559B90BA3F06A022EBE58B9B269A1",
+      "base/.readthedocs.yml": "178C2B9BE9AB2830F5F6633A52A5C2D74F2DF02A1DDD6CC347010AC046E345A1",
+      "base/AGENTS.md": "91F4223329A00FFEFD0E5446C7141AE431BA952EF48D7387FA09940F68282368",
+      "base/CHANGELOG.rst": "DFC99C17C2B5DDD1D7DA34D8AEC53AFA95B08CB0194ED71FE032FAF8FF354B98",
+      "base/CLAUDE.md": "57A03FC74F3EB4474682F0432E071D4C90FADBBAA820F40F2B473DFF4E545F5A",
+      "base/codecov.yml": "66762FC004D3C46BCF98E56B53BF8998FA1E40C69D4501BFF532EB017EF6A890",
+      "base/LICENSE": "D6B65E6C213A5D0B577911D34D6E5949B9F59D76C238C5071A2F3FC16CFB2606",
+      "base/MANIFEST.in": "FB0F6D003E82CC21CA0D7BDE81C38517C25EBEAB93250AA8B6358D3C18993598",
+      "base/pyproject.toml": "AE9CF8BDBDD0CD59E93ED1BDFD2297AA526AF66873A4CE0243677C5AA769162B",
+      "base/README.rst": "33DC643C9207C0A14AC137C550E2B4D4CA2BFA23ED09026806289919D2FBFD39",
+      "base/RELEASING.rst": "2839555E1402570E29044E861971EC2E1905B06D1619E8A42F178404A6E433AD",
+      "base/SECURITY.md": "3E0F28817CC636331AD7A072338CA4A73AF43CD852917032053AF7386FED75A5",
+      "base/TIDELIFT.rst": "0D702E99FEE0647E89362A286C24FB998EC8CBBC443BCFE89961AE3AC62C21F7",
+      "base/tox.ini": "44809B903400EF4281D986806E0D3E797C261C805328F89A87D594F0BFADE732",
+      "base/uv.lock": "DCF1E2B06C934A524D3180DB612B8DD7FA3A7FB0EF0706BFA5844A334CE7234F",
+      "base/.claude/settings.json": "64A6BB2B82392249F1A57DEE73F087BF06313FB3BDF73E52327F2C1113E36102",
+      "base/.github/dependabot.yml": "883B95E3BE554FBADD92B315E4A8C6EA6CA688B64924E22DD61222B07F683507",
+      "base/.github/FUNDING.yml": "D58AD83302859332D8D7CC3875802B9D65140E92CDC69E2EDF6A8D29AE2770D2",
+      "base/changelog/590.trivial.rst": "72650548ED8E0AE661E96DE74DF51371FC1FDD052046CBE5854E49FE6A0AB6A8",
+      "base/changelog/README.rst": "89EE4C105393557B087169AB078213806BBEEDD75D71552A8E8D3E4F27399C20",
+      "base/changelog/_template.rst": "FC5FCFF50E3FA4D7343F22A8994B6BE919275F64521F9D9C4C6D0AD1AB0358CB",
+      "base/docs/api_reference.rst": "A519ECF8DBDAA03E81DD61B0F448778EF17AF713B824A134D44D64F4F9475DE2",
+      "base/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "base/docs/conf.py": "24234A530E5E8D7595A1B89267C952AF4C93A7A2DEC7E3D9AA8576714DEF067E",
+      "base/docs/index.rst": "A70757267532D6CC88279F027FB285C97A8063C13AA4D42D4E77F3B71170A3B0",
+      "base/docs/requirements.txt": "39777183C1F64D6BD0BB353EBB7134F434F4115CA7B19B3575F53B791E86B627",
+      "base/downstream/.gitignore": "A60F20780883D20BD0BA4C6AD8A20BD5C774189E38E143F5D6D452F6FD980C62",
+      "base/downstream/conda.sh": "857D29BB1EC3932E0F87A4C7F4270D9E19193B0938FADCB14D493264943C9117",
+      "base/downstream/datasette.sh": "432A73DFA7FC80E16EF232114A8D413E3E4C2159BE715C3B0D0867DF9327E7B1",
+      "base/downstream/devpi.sh": "43CEB058AD92789FA822D4CC18FB69F5FE60F117AE852F76B645037CBA8A5EE7",
+      "base/downstream/hatch.sh": "8B68F8F76E8FE2314C530D189DD4F655B90A84DB0F5B08A00932374CBC541D9B",
+      "base/downstream/pytest.sh": "7431ABC91AAC6BDC05E07B86D48A80119D309E33414E458247013B0B4276E654",
+      "base/downstream/python-lsp-server.sh": "42E7189BA6E819821DF9C15982BDD66207BB0B538AD9E4DF93C2D603A36EEC0B",
+      "base/downstream/README.md": "72F66DD0D59B8EEBDDB3D5ACA6BB223220BCAB061A57E94184B524838FA272E5",
+      "base/downstream/tox.sh": "5253287FC9FEA76651DE6C4AE869A2CF064AE955C7555CABEC79129090E3FA71",
+      "base/scripts/release.py": "5B351C5A80A67C99E003E2EC6562FA5C93567EC968E773A0859F90FDA34248A4",
+      "base/scripts/towncrier-draft-to-file.py": "A6F6821CFAA039CCDF4CF0B440B3D628E6DBF83581C1D12E1172F68181F6A56B",
+      "base/testing/benchmark.py": "AD8195D77022623FB8ED7B9B9A578FE6D92BFC9C2C4866D279EF21C37C10EDE6",
+      "base/testing/conftest.py": "5EF97949398E572EC5DCC0F22E14FD485C23E3A8D7DB1EFA8A83BCF9C869A859",
+      "base/testing/test_details.py": "5E403B941CB9AE005F4300B0CCAADE1B9DEEFC10003435606F4C8E838DBF7121",
+      "base/testing/test_helpers.py": "F0B93DA6FE9D3CF8F574DC06C4769FE1DCF9684E96C1B96C14665E2C36283A28",
+      "base/testing/test_hookcaller.py": "68BCF83EA93D7B0610E689A04E4BDA182440FFBAE0751D7BC3EECEDBB73B9C6D",
+      "base/testing/test_invocations.py": "9EDC373FE32534B2ED0A49114594B2CD18315DFAA887166B3CE7E7A66FA93082",
+      "base/testing/test_multicall.py": "425C8CDF7FA7629A50ABCDBD681E32CFC2AE3CB9E8CC796E91FEC9A36C1E6F03",
+      "base/testing/test_pluginmanager.py": "E718575F63DC26CB20DC0BD762C569174FCC9637A40D4B47B19A71116EFAF4F8",
+      "base/testing/test_result.py": "6699113439E9477954ECB107929DB305361EAD8CEC63A16D5B12B909BDF79C21",
+      "base/testing/test_tracer.py": "04BA67D89FD5C2B66F4D6CA4F796FFDD275C9033D77AB0135D0E6A0870B87C91",
+      "base/testing/test_warnings.py": "371D3166BD355FE44AD25B73C1E5066B6711A1A796F31AEA518495204CD3881E",
+      "base/.github/workflows/main.yml": "2F430D6E4CDCE17CC5DF10666B3FAB505605F7E29D314A7E0F0982F1C94C95B9",
+      "base/docs/examples/toy-example.py": "D2732359729271A50C6CE6504AF1F73195D8439120265538D38B40B2761024D3",
+      "base/docs/examples/eggsample/setup.py": "A87FB9C73C4159916B16647CAA71ABDD6DDE0ADD76F0C4052C25A7CF925C6FC0",
+      "base/docs/examples/eggsample-spam/eggsample_spam.py": "2D8F7477E2874A785A6BBC9F1884C4995F95EE6BC08368D969701BAE4AC09E5A",
+      "base/docs/examples/eggsample-spam/setup.py": "A4965AD61D2E71A707394A922094A4929022F6B344C67BB5FEC5D9EBBBC3CB2E",
+      "base/docs/examples/eggsample/eggsample/hookspecs.py": "0704B9EFF67565A202216848899D77A7D59AED4386C29E6B81585C8A9BB23F71",
+      "base/docs/examples/eggsample/eggsample/host.py": "DB8BFC75AD5F68242DC8D97C98F9E2FCE9DA1F53A16E332ED538003F7AFDC45D",
+      "base/docs/examples/eggsample/eggsample/lib.py": "5CC64D19E4730C9D20B7396380A832B54444BC34E6453BB9D930EF7D286555D0",
+      "base/docs/examples/eggsample/eggsample/__init__.py": "0EBC89E9ED78BE9E1A2F0085F3FE6E4E232B2B55908EC5BF907A8662C7CB0EED",
+      "base/docs/_static/img/plug.png": "E02D06389738C0D81FB0259F15147086CF7B7EBA4634EF90411A7EA7ACF1C4C7",
+      "base/src/pluggy/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "base/src/pluggy/_callers.py": "A6E804545A34E41F975EA1B3DA31A43194164F9F6BCC1B3350EBE766EF5C3D8C",
+      "base/src/pluggy/_hooks.py": "357F3FD76811AF1D9D983913F0A2C96B8262F262486B0321671AF79356B15174",
+      "base/src/pluggy/_manager.py": "A9EF4101DEB9FC3B9FA574613621A5BC5BE2F374C92137142704A22180AE7104",
+      "base/src/pluggy/_result.py": "D9FD8241618325D804FC1507AB459BA2C4BC548A6AB8F1E7003D51F86757708F",
+      "base/src/pluggy/_tracing.py": "499081BFD619D3C5A3ACD0A650379E3D727F4CDF1E6CD266CF398707F7B61683",
+      "base/src/pluggy/_warnings.py": "B5DD00BD90697DA9AB8820B73AAB0BC31321F92CC03237E399CE7C4F9BCFDE5C",
+      "base/src/pluggy/__init__.py": "CA04DA3741C015734B63DF6ACA542FEED3EEC04FA23EF9623A60D113F851E472",
+      "A/.coveragerc": "930A4BF9E2E3B93147D6AC3D863EDB6508A48725A2439E0E74C000498E765722",
+      "A/.gitignore": "DBD6F43028DB1D99B379EA0570E1A2F596EEABE79B76215132F849236716DBBF",
+      "A/.pre-commit-config.yaml": "077535A7ADBF453EC3AEDDDBD0738721F73559B90BA3F06A022EBE58B9B269A1",
+      "A/.readthedocs.yml": "178C2B9BE9AB2830F5F6633A52A5C2D74F2DF02A1DDD6CC347010AC046E345A1",
+      "A/AGENTS.md": "91F4223329A00FFEFD0E5446C7141AE431BA952EF48D7387FA09940F68282368",
+      "A/CHANGELOG.rst": "DFC99C17C2B5DDD1D7DA34D8AEC53AFA95B08CB0194ED71FE032FAF8FF354B98",
+      "A/CLAUDE.md": "57A03FC74F3EB4474682F0432E071D4C90FADBBAA820F40F2B473DFF4E545F5A",
+      "A/codecov.yml": "66762FC004D3C46BCF98E56B53BF8998FA1E40C69D4501BFF532EB017EF6A890",
+      "A/LICENSE": "D6B65E6C213A5D0B577911D34D6E5949B9F59D76C238C5071A2F3FC16CFB2606",
+      "A/MANIFEST.in": "FB0F6D003E82CC21CA0D7BDE81C38517C25EBEAB93250AA8B6358D3C18993598",
+      "A/pyproject.toml": "AE9CF8BDBDD0CD59E93ED1BDFD2297AA526AF66873A4CE0243677C5AA769162B",
+      "A/README.rst": "33DC643C9207C0A14AC137C550E2B4D4CA2BFA23ED09026806289919D2FBFD39",
+      "A/RELEASING.rst": "2839555E1402570E29044E861971EC2E1905B06D1619E8A42F178404A6E433AD",
+      "A/SECURITY.md": "3E0F28817CC636331AD7A072338CA4A73AF43CD852917032053AF7386FED75A5",
+      "A/TIDELIFT.rst": "0D702E99FEE0647E89362A286C24FB998EC8CBBC443BCFE89961AE3AC62C21F7",
+      "A/tox.ini": "44809B903400EF4281D986806E0D3E797C261C805328F89A87D594F0BFADE732",
+      "A/uv.lock": "DCF1E2B06C934A524D3180DB612B8DD7FA3A7FB0EF0706BFA5844A334CE7234F",
+      "A/.claude/settings.json": "64A6BB2B82392249F1A57DEE73F087BF06313FB3BDF73E52327F2C1113E36102",
+      "A/.github/dependabot.yml": "883B95E3BE554FBADD92B315E4A8C6EA6CA688B64924E22DD61222B07F683507",
+      "A/.github/FUNDING.yml": "D58AD83302859332D8D7CC3875802B9D65140E92CDC69E2EDF6A8D29AE2770D2",
+      "A/changelog/590.trivial.rst": "72650548ED8E0AE661E96DE74DF51371FC1FDD052046CBE5854E49FE6A0AB6A8",
+      "A/changelog/README.rst": "89EE4C105393557B087169AB078213806BBEEDD75D71552A8E8D3E4F27399C20",
+      "A/changelog/_template.rst": "FC5FCFF50E3FA4D7343F22A8994B6BE919275F64521F9D9C4C6D0AD1AB0358CB",
+      "A/docs/api_reference.rst": "A519ECF8DBDAA03E81DD61B0F448778EF17AF713B824A134D44D64F4F9475DE2",
+      "A/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "A/docs/conf.py": "24234A530E5E8D7595A1B89267C952AF4C93A7A2DEC7E3D9AA8576714DEF067E",
+      "A/docs/index.rst": "A70757267532D6CC88279F027FB285C97A8063C13AA4D42D4E77F3B71170A3B0",
+      "A/docs/requirements.txt": "39777183C1F64D6BD0BB353EBB7134F434F4115CA7B19B3575F53B791E86B627",
+      "A/downstream/.gitignore": "A60F20780883D20BD0BA4C6AD8A20BD5C774189E38E143F5D6D452F6FD980C62",
+      "A/downstream/conda.sh": "857D29BB1EC3932E0F87A4C7F4270D9E19193B0938FADCB14D493264943C9117",
+      "A/downstream/datasette.sh": "432A73DFA7FC80E16EF232114A8D413E3E4C2159BE715C3B0D0867DF9327E7B1",
+      "A/downstream/devpi.sh": "43CEB058AD92789FA822D4CC18FB69F5FE60F117AE852F76B645037CBA8A5EE7",
+      "A/downstream/hatch.sh": "8B68F8F76E8FE2314C530D189DD4F655B90A84DB0F5B08A00932374CBC541D9B",
+      "A/downstream/pytest.sh": "7431ABC91AAC6BDC05E07B86D48A80119D309E33414E458247013B0B4276E654",
+      "A/downstream/python-lsp-server.sh": "42E7189BA6E819821DF9C15982BDD66207BB0B538AD9E4DF93C2D603A36EEC0B",
+      "A/downstream/README.md": "72F66DD0D59B8EEBDDB3D5ACA6BB223220BCAB061A57E94184B524838FA272E5",
+      "A/downstream/tox.sh": "5253287FC9FEA76651DE6C4AE869A2CF064AE955C7555CABEC79129090E3FA71",
+      "A/scripts/release.py": "5B351C5A80A67C99E003E2EC6562FA5C93567EC968E773A0859F90FDA34248A4",
+      "A/scripts/towncrier-draft-to-file.py": "A6F6821CFAA039CCDF4CF0B440B3D628E6DBF83581C1D12E1172F68181F6A56B",
+      "A/testing/benchmark.py": "AD8195D77022623FB8ED7B9B9A578FE6D92BFC9C2C4866D279EF21C37C10EDE6",
+      "A/testing/conftest.py": "5EF97949398E572EC5DCC0F22E14FD485C23E3A8D7DB1EFA8A83BCF9C869A859",
+      "A/testing/test_details.py": "5E403B941CB9AE005F4300B0CCAADE1B9DEEFC10003435606F4C8E838DBF7121",
+      "A/testing/test_helpers.py": "F0B93DA6FE9D3CF8F574DC06C4769FE1DCF9684E96C1B96C14665E2C36283A28",
+      "A/testing/test_hookcaller.py": "68BCF83EA93D7B0610E689A04E4BDA182440FFBAE0751D7BC3EECEDBB73B9C6D",
+      "A/testing/test_invocations.py": "9EDC373FE32534B2ED0A49114594B2CD18315DFAA887166B3CE7E7A66FA93082",
+      "A/testing/test_multicall.py": "425C8CDF7FA7629A50ABCDBD681E32CFC2AE3CB9E8CC796E91FEC9A36C1E6F03",
+      "A/testing/test_pluginmanager.py": "077CDE08434CB9A87BF56BF348B1AAF6E413B59A899C32D3448EEBE2359C5A5E",
+      "A/testing/test_result.py": "6699113439E9477954ECB107929DB305361EAD8CEC63A16D5B12B909BDF79C21",
+      "A/testing/test_tracer.py": "04BA67D89FD5C2B66F4D6CA4F796FFDD275C9033D77AB0135D0E6A0870B87C91",
+      "A/testing/test_warnings.py": "371D3166BD355FE44AD25B73C1E5066B6711A1A796F31AEA518495204CD3881E",
+      "A/.github/workflows/main.yml": "2F430D6E4CDCE17CC5DF10666B3FAB505605F7E29D314A7E0F0982F1C94C95B9",
+      "A/docs/examples/toy-example.py": "D2732359729271A50C6CE6504AF1F73195D8439120265538D38B40B2761024D3",
+      "A/docs/examples/eggsample/setup.py": "A87FB9C73C4159916B16647CAA71ABDD6DDE0ADD76F0C4052C25A7CF925C6FC0",
+      "A/docs/examples/eggsample-spam/eggsample_spam.py": "2D8F7477E2874A785A6BBC9F1884C4995F95EE6BC08368D969701BAE4AC09E5A",
+      "A/docs/examples/eggsample-spam/setup.py": "A4965AD61D2E71A707394A922094A4929022F6B344C67BB5FEC5D9EBBBC3CB2E",
+      "A/docs/examples/eggsample/eggsample/hookspecs.py": "0704B9EFF67565A202216848899D77A7D59AED4386C29E6B81585C8A9BB23F71",
+      "A/docs/examples/eggsample/eggsample/host.py": "DB8BFC75AD5F68242DC8D97C98F9E2FCE9DA1F53A16E332ED538003F7AFDC45D",
+      "A/docs/examples/eggsample/eggsample/lib.py": "5CC64D19E4730C9D20B7396380A832B54444BC34E6453BB9D930EF7D286555D0",
+      "A/docs/examples/eggsample/eggsample/__init__.py": "0EBC89E9ED78BE9E1A2F0085F3FE6E4E232B2B55908EC5BF907A8662C7CB0EED",
+      "A/docs/_static/img/plug.png": "E02D06389738C0D81FB0259F15147086CF7B7EBA4634EF90411A7EA7ACF1C4C7",
+      "A/src/pluggy/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "A/src/pluggy/_callers.py": "A6E804545A34E41F975EA1B3DA31A43194164F9F6BCC1B3350EBE766EF5C3D8C",
+      "A/src/pluggy/_hooks.py": "212FD173C44FE9A2527EE7ABCB6AB2475607E7E6FD26DC983506DBED19772A34",
+      "A/src/pluggy/_manager.py": "8670510E4952FB241CAADEF8301BF58808BE5BA6572E176B19A8329DE5B73A46",
+      "A/src/pluggy/_result.py": "D9FD8241618325D804FC1507AB459BA2C4BC548A6AB8F1E7003D51F86757708F",
+      "A/src/pluggy/_tracing.py": "499081BFD619D3C5A3ACD0A650379E3D727F4CDF1E6CD266CF398707F7B61683",
+      "A/src/pluggy/_warnings.py": "B5DD00BD90697DA9AB8820B73AAB0BC31321F92CC03237E399CE7C4F9BCFDE5C",
+      "A/src/pluggy/__init__.py": "CA04DA3741C015734B63DF6ACA542FEED3EEC04FA23EF9623A60D113F851E472",
+      "B/.coveragerc": "930A4BF9E2E3B93147D6AC3D863EDB6508A48725A2439E0E74C000498E765722",
+      "B/.gitignore": "DBD6F43028DB1D99B379EA0570E1A2F596EEABE79B76215132F849236716DBBF",
+      "B/.pre-commit-config.yaml": "077535A7ADBF453EC3AEDDDBD0738721F73559B90BA3F06A022EBE58B9B269A1",
+      "B/.readthedocs.yml": "178C2B9BE9AB2830F5F6633A52A5C2D74F2DF02A1DDD6CC347010AC046E345A1",
+      "B/AGENTS.md": "91F4223329A00FFEFD0E5446C7141AE431BA952EF48D7387FA09940F68282368",
+      "B/CHANGELOG.rst": "DFC99C17C2B5DDD1D7DA34D8AEC53AFA95B08CB0194ED71FE032FAF8FF354B98",
+      "B/CLAUDE.md": "57A03FC74F3EB4474682F0432E071D4C90FADBBAA820F40F2B473DFF4E545F5A",
+      "B/codecov.yml": "66762FC004D3C46BCF98E56B53BF8998FA1E40C69D4501BFF532EB017EF6A890",
+      "B/LICENSE": "D6B65E6C213A5D0B577911D34D6E5949B9F59D76C238C5071A2F3FC16CFB2606",
+      "B/MANIFEST.in": "FB0F6D003E82CC21CA0D7BDE81C38517C25EBEAB93250AA8B6358D3C18993598",
+      "B/pyproject.toml": "AE9CF8BDBDD0CD59E93ED1BDFD2297AA526AF66873A4CE0243677C5AA769162B",
+      "B/README.rst": "33DC643C9207C0A14AC137C550E2B4D4CA2BFA23ED09026806289919D2FBFD39",
+      "B/RELEASING.rst": "2839555E1402570E29044E861971EC2E1905B06D1619E8A42F178404A6E433AD",
+      "B/SECURITY.md": "3E0F28817CC636331AD7A072338CA4A73AF43CD852917032053AF7386FED75A5",
+      "B/TIDELIFT.rst": "0D702E99FEE0647E89362A286C24FB998EC8CBBC443BCFE89961AE3AC62C21F7",
+      "B/tox.ini": "44809B903400EF4281D986806E0D3E797C261C805328F89A87D594F0BFADE732",
+      "B/uv.lock": "DCF1E2B06C934A524D3180DB612B8DD7FA3A7FB0EF0706BFA5844A334CE7234F",
+      "B/.claude/settings.json": "64A6BB2B82392249F1A57DEE73F087BF06313FB3BDF73E52327F2C1113E36102",
+      "B/.github/dependabot.yml": "883B95E3BE554FBADD92B315E4A8C6EA6CA688B64924E22DD61222B07F683507",
+      "B/.github/FUNDING.yml": "D58AD83302859332D8D7CC3875802B9D65140E92CDC69E2EDF6A8D29AE2770D2",
+      "B/changelog/590.trivial.rst": "72650548ED8E0AE661E96DE74DF51371FC1FDD052046CBE5854E49FE6A0AB6A8",
+      "B/changelog/README.rst": "89EE4C105393557B087169AB078213806BBEEDD75D71552A8E8D3E4F27399C20",
+      "B/changelog/_template.rst": "FC5FCFF50E3FA4D7343F22A8994B6BE919275F64521F9D9C4C6D0AD1AB0358CB",
+      "B/docs/api_reference.rst": "A519ECF8DBDAA03E81DD61B0F448778EF17AF713B824A134D44D64F4F9475DE2",
+      "B/docs/changelog.rst": "BD8B3E8B5551105B987EB3F26CC72889CF471457ED78D12D93870AB39E1EC311",
+      "B/docs/conf.py": "24234A530E5E8D7595A1B89267C952AF4C93A7A2DEC7E3D9AA8576714DEF067E",
+      "B/docs/index.rst": "A70757267532D6CC88279F027FB285C97A8063C13AA4D42D4E77F3B71170A3B0",
+      "B/docs/requirements.txt": "39777183C1F64D6BD0BB353EBB7134F434F4115CA7B19B3575F53B791E86B627",
+      "B/downstream/.gitignore": "A60F20780883D20BD0BA4C6AD8A20BD5C774189E38E143F5D6D452F6FD980C62",
+      "B/downstream/conda.sh": "857D29BB1EC3932E0F87A4C7F4270D9E19193B0938FADCB14D493264943C9117",
+      "B/downstream/datasette.sh": "432A73DFA7FC80E16EF232114A8D413E3E4C2159BE715C3B0D0867DF9327E7B1",
+      "B/downstream/devpi.sh": "43CEB058AD92789FA822D4CC18FB69F5FE60F117AE852F76B645037CBA8A5EE7",
+      "B/downstream/hatch.sh": "8B68F8F76E8FE2314C530D189DD4F655B90A84DB0F5B08A00932374CBC541D9B",
+      "B/downstream/pytest.sh": "7431ABC91AAC6BDC05E07B86D48A80119D309E33414E458247013B0B4276E654",
+      "B/downstream/python-lsp-server.sh": "42E7189BA6E819821DF9C15982BDD66207BB0B538AD9E4DF93C2D603A36EEC0B",
+      "B/downstream/README.md": "72F66DD0D59B8EEBDDB3D5ACA6BB223220BCAB061A57E94184B524838FA272E5",
+      "B/downstream/tox.sh": "5253287FC9FEA76651DE6C4AE869A2CF064AE955C7555CABEC79129090E3FA71",
+      "B/scripts/release.py": "5B351C5A80A67C99E003E2EC6562FA5C93567EC968E773A0859F90FDA34248A4",
+      "B/scripts/towncrier-draft-to-file.py": "A6F6821CFAA039CCDF4CF0B440B3D628E6DBF83581C1D12E1172F68181F6A56B",
+      "B/testing/benchmark.py": "AD8195D77022623FB8ED7B9B9A578FE6D92BFC9C2C4866D279EF21C37C10EDE6",
+      "B/testing/conftest.py": "5EF97949398E572EC5DCC0F22E14FD485C23E3A8D7DB1EFA8A83BCF9C869A859",
+      "B/testing/test_details.py": "5E403B941CB9AE005F4300B0CCAADE1B9DEEFC10003435606F4C8E838DBF7121",
+      "B/testing/test_helpers.py": "F0B93DA6FE9D3CF8F574DC06C4769FE1DCF9684E96C1B96C14665E2C36283A28",
+      "B/testing/test_hookcaller.py": "68BCF83EA93D7B0610E689A04E4BDA182440FFBAE0751D7BC3EECEDBB73B9C6D",
+      "B/testing/test_invocations.py": "9EDC373FE32534B2ED0A49114594B2CD18315DFAA887166B3CE7E7A66FA93082",
+      "B/testing/test_multicall.py": "425C8CDF7FA7629A50ABCDBD681E32CFC2AE3CB9E8CC796E91FEC9A36C1E6F03",
+      "B/testing/test_pluginmanager.py": "5B464EA6D2AEEBE78555871E82DA53DBDB88E20B31A883C4279C3F4C297018BD",
+      "B/testing/test_result.py": "6699113439E9477954ECB107929DB305361EAD8CEC63A16D5B12B909BDF79C21",
+      "B/testing/test_tracer.py": "04BA67D89FD5C2B66F4D6CA4F796FFDD275C9033D77AB0135D0E6A0870B87C91",
+      "B/testing/test_warnings.py": "371D3166BD355FE44AD25B73C1E5066B6711A1A796F31AEA518495204CD3881E",
+      "B/.github/workflows/main.yml": "2F430D6E4CDCE17CC5DF10666B3FAB505605F7E29D314A7E0F0982F1C94C95B9",
+      "B/docs/examples/toy-example.py": "D2732359729271A50C6CE6504AF1F73195D8439120265538D38B40B2761024D3",
+      "B/docs/examples/eggsample/setup.py": "A87FB9C73C4159916B16647CAA71ABDD6DDE0ADD76F0C4052C25A7CF925C6FC0",
+      "B/docs/examples/eggsample-spam/eggsample_spam.py": "2D8F7477E2874A785A6BBC9F1884C4995F95EE6BC08368D969701BAE4AC09E5A",
+      "B/docs/examples/eggsample-spam/setup.py": "A4965AD61D2E71A707394A922094A4929022F6B344C67BB5FEC5D9EBBBC3CB2E",
+      "B/docs/examples/eggsample/eggsample/hookspecs.py": "0704B9EFF67565A202216848899D77A7D59AED4386C29E6B81585C8A9BB23F71",
+      "B/docs/examples/eggsample/eggsample/host.py": "DB8BFC75AD5F68242DC8D97C98F9E2FCE9DA1F53A16E332ED538003F7AFDC45D",
+      "B/docs/examples/eggsample/eggsample/lib.py": "5CC64D19E4730C9D20B7396380A832B54444BC34E6453BB9D930EF7D286555D0",
+      "B/docs/examples/eggsample/eggsample/__init__.py": "0EBC89E9ED78BE9E1A2F0085F3FE6E4E232B2B55908EC5BF907A8662C7CB0EED",
+      "B/docs/_static/img/plug.png": "E02D06389738C0D81FB0259F15147086CF7B7EBA4634EF90411A7EA7ACF1C4C7",
+      "B/src/pluggy/py.typed": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "B/src/pluggy/_callers.py": "A6E804545A34E41F975EA1B3DA31A43194164F9F6BCC1B3350EBE766EF5C3D8C",
+      "B/src/pluggy/_hooks.py": "B5C9852B9D41FC3F9ED971FFD2F750CC7FC7B7FEC59DF25A96D4AF66A324BCF5",
+      "B/src/pluggy/_manager.py": "E758FD606980CBA350E55AFB88A63BE71E9EF7FB7B970C210B681A4F45159DB2",
+      "B/src/pluggy/_result.py": "D9FD8241618325D804FC1507AB459BA2C4BC548A6AB8F1E7003D51F86757708F",
+      "B/src/pluggy/_tracing.py": "499081BFD619D3C5A3ACD0A650379E3D727F4CDF1E6CD266CF398707F7B61683",
+      "B/src/pluggy/_warnings.py": "B5DD00BD90697DA9AB8820B73AAB0BC31321F92CC03237E399CE7C4F9BCFDE5C",
+      "B/src/pluggy/__init__.py": "CA04DA3741C015734B63DF6ACA542FEED3EEC04FA23EF9623A60D113F851E472",
+      "task.json": "886F53D66F583336F8239095D676B3DF2EDC84690D037E9B2572C0DA727B04D8",
+      "A.patch": "45C4CF948F82013A038313B2FAE4B1F62E180F6869B278985B0C3E7EDF7B4506",
+      "B.patch": "24D15CBBB04CAA7403DDB74942B9CD0180EF3361B306F47910627476E00243A6"
+    }
+  },
+  "limitations": [
+    "Local descriptive review, not a complete plugin manager or concurrency/stress validation.",
+    "Only permitted task/base/A/B/source/patch artifacts were used; no current skill, cost, mapping, reference fix, hidden grader or other pair result was opened.",
+    "This agent previously authored unrelated synthetic development fixtures; it is not a fresh reviewer with zero background. This plugin-manager task was not one of those authored fixtures.",
+    "No assumption is made that A or B labels correspond to the same experimental arm in another pair.",
+    "Only existing caller/list contracts support the allocation and guard judgments; fewer lines or additional candidate tests were not used to assign a preference."
+  ],
+  "reviewed_at": "2026-10-24T22:13:06.187057+00:00"
+}

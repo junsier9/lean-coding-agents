@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "phase": "replication",
+  "task_count": 20,
+  "bootstrap": {
+    "unit": "paired_complete_task_cluster",
+    "draws": 20000,
+    "seed": 20261024,
+    "repeats_per_arm": 3,
+    "task_ids_in_sampling_order": [
+      "b-01-click-2811",
+      "b-03-click-2724",
+      "b-24-click-1566",
+      "b-25-click-1551",
+      "b-26-click-1478",
+      "b-31-click-999",
+      "b-34-click-794",
+      "boltons-302",
+      "boltons-401",
+      "boltons-406",
+      "boltons-416",
+      "boltons-424",
+      "boltons-438",
+      "boltons-onetoone-empty",
+      "mi-1082",
+      "mi-1128",
+      "mi-1211",
+      "mi-1253",
+      "mi-1269",
+      "mi-1308"
+    ],
+    "both_arms_and_all_repeats_kept_together": true,
+    "undefined_draws_dropped": false,
+    "method": "percentile; inverted empirical CDF; undefined draws invalidate CI"
+  },
+  "integrity": {
+    "ok": true,
+    "structure_ok": true,
+    "input_record_count": 300,
+    "selected_record_count": 120,
+    "other_phase_record_counts": {
+      "formal": 120,
+      "pilot": 60
+    },
+    "task_count": 20,
+    "complete_task_count": 20,
+    "expected_runs_per_task": 6,
+    "expected_selected_run_count": 120,
+    "duplicate_run_keys": [],
+    "incomplete_tasks": [],
+    "repo_conflicts": [],
+    "issues": [],
+    "no_record_repair_or_silent_deduplication": true,
+    "incomplete_tasks_not_silently_removed": true
+  },
+  "observed_totals": {
+    "baseline": {
+      "record_count": 60,
+      "accepted": 58,
+      "completed": 60,
+      "unfinished": 0,
+      "rejected": 2,
+      "reported_token_total": 25869944.0,
+      "reported_token_count": 60,
+      "reported_token_total_is_partial": false,
+      "exact_usage_count": 60,
+      "reported_wall_seconds": 12294.606,
+      "reported_wall_count": 60,
+      "reported_wall_total_is_partial": false
+    },
+    "with-skill": {
+      "record_count": 60,
+      "accepted": 59,
+      "completed": 60,
+      "unfinished": 0,
+      "rejected": 1,
+      "reported_token_total": 22702447.0,
+      "reported_token_count": 60,
+      "reported_token_total_is_partial": false,
+      "exact_usage_count": 60,
+      "reported_wall_seconds": 11547.691,
+      "reported_wall_count": 60,
+      "reported_wall_total_is_partial": false
+    }
+  },
+  "quality": {
+    "available": true,
+    "baseline_success_rate": 0.9666666666666667,
+    "skill_success_rate": 0.9833333333333333,
+    "success_rate_difference_skill_minus_baseline": 0.016666666666666607,
+    "observed_gate_pass": true,
+    "success_rate_difference_ci95": {
+      "level": 0.95,
+      "quantile_method": "inverted_cdf",
+      "undefined_draws": 0,
+      "positive_infinite_draws": 0,
+      "negative_infinite_draws": 0,
+      "finite_draws": 20000,
+      "draws": 20000,
+      "interval": [
+        0.0,
+        0.05
+      ],
+      "available": true
+    },
+    "degraded_tasks": [],
+    "worsened_repeat_pairs": [],
+    "interpretation": "Observed batch gate only; not a universal safety or noninferiority guarantee.",
+    "degraded_task_count": 0,
+    "worsened_repeat_pair_count": 0
+  },
+  "metrics": {
+    "token": {
+      "available": true,
+      "ratio": 0.8626868215374515,
+      "ratio_status": "finite",
+      "gain": 0.13731317846254854,
+      "ratio_ci95": {
+        "level": 0.95,
+        "quantile_method": "inverted_cdf",
+        "undefined_draws": 0,
+        "positive_infinite_draws": 0,
+        "negative_infinite_draws": 0,
+        "finite_draws": 20000,
+        "draws": 20000,
+        "interval": [
+          0.7630453939050973,
+          0.9600136649870312
+        ],
+        "available": true
+      },
+      "gain_ci95": [
+        0.03998633501296878,
+        0.2369546060949027
+      ],
+      "upper_one_sided_97_5": 0.9600136649870312,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": true,
+      "batch_criterion_met": false,
+      "cost_total": {
+        "baseline": 25869944.0,
+        "with-skill": 22702447.0
+      },
+      "accepted_total": {
+        "baseline": 58,
+        "with-skill": 59
+      },
+      "cost_per_accepted": {
+        "baseline": 446033.5172413793,
+        "with-skill": 384787.23728813557
+      }
+    },
+    "time": {
+      "available": true,
+      "ratio": 0.9233290943791784,
+      "ratio_status": "finite",
+      "gain": 0.07667090562082157,
+      "ratio_ci95": {
+        "level": 0.95,
+        "quantile_method": "inverted_cdf",
+        "undefined_draws": 0,
+        "positive_infinite_draws": 0,
+        "negative_infinite_draws": 0,
+        "finite_draws": 20000,
+        "draws": 20000,
+        "interval": [
+          0.8485585384013965,
+          0.992969139607967
+        ],
+        "available": true
+      },
+      "gain_ci95": [
+        0.007030860392033045,
+        0.1514414615986035
+      ],
+      "upper_one_sided_97_5": 0.992969139607967,
+      "material_gain_threshold_ratio": 0.9,
+      "bound_below_0_90": false,
+      "finite_estimand_observed": true,
+      "batch_criterion_met": false,
+      "cost_total": {
+        "baseline": 12294.606,
+        "with-skill": 11547.690999999999
+      },
+      "accepted_total": {
+        "baseline": 58,
+        "with-skill": 59
+      },
+      "cost_per_accepted": {
+        "baseline": 211.97596551724138,
+        "with-skill": 195.72357627118643
+      }
+    }
+  },
+  "minimum_confirmatory_task_count_satisfied": true,
+  "pilot_planned_task_count_match": "Parent controller must check the frozen pilot-derived batch size.",
+  "final_stability_claim": "Not decided here; require same metric and quality gate in both formal and replication.",
+  "interpretation": [
+    "All failed and unfinished attempts contribute recorded costs; no task is removed for poor outcomes.",
+    "Only the selected phase is analyzed. Duplicate/incomplete clusters block batch evidence.",
+    "Missing usage blocks token evidence independently; valid wall-time evidence remains reportable.",
+    "Quality intervals are descriptive; the observed gate is not a statistical no-regression guarantee.",
+    "Percentile coverage and pilot-based power are approximations on this curated task corpus."
+  ]
+}

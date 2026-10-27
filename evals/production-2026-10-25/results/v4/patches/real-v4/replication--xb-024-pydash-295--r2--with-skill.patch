@@ -1,0 +1,67 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index dd9ed0f..99c22e4 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -1456,7 +1456,7 @@ def reduce_(collection, iteratee=None, accumulator=None):
+     .. versionchanged:: 4.0.0
+         Removed aliases ``foldl`` and ``inject``.
+     """
+-    iterable = iterator(collection)
++    iterable = iter(iterator(collection))
+ 
+     if accumulator is None:
+         try:
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 3dd7b87..27ad0e4 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -1,6 +1,7 @@
+ from collections import namedtuple
+ import math
+ from operator import attrgetter, itemgetter, methodcaller
++from types import MappingProxyType
+ 
+ import pytest
+ 
+@@ -823,6 +824,41 @@ def test_reduce_(case, expected):
+     assert _.reduce_(*case) == expected
+ 
+ 
++@parametrize("mapping_type", [dict, MappingProxyType])
++@parametrize(
++    "case,expected",
++    [
++        (({"a": 1, "b": 2, "c": 3}, helpers.reduce_iteratee0), 6),
++        (({"a": 1, "b": 2, "c": 3},), 1),
++        (({"only": 7}, helpers.reduce_iteratee0), 7),
++        (({"a": 1, "b": 2, "c": 3}, helpers.reduce_iteratee1, {}), {"a": 3, "b": 6, "c": 9}),
++        (({}, helpers.reduce_iteratee0, 0), 0),
++    ],
++)
++def test_reduce_mapping(mapping_type, case, expected):
++    collection, *args = case
++    assert _.reduce_(mapping_type(collection), *args) == expected
++
++
++@parametrize("mapping_type", [dict, MappingProxyType])
++def test_reduce_mapping_keys(mapping_type):
++    calls = []
++
++    def subtract(total, value, key):
++        calls.append((total, value, key))
++        return total - value
++
++    collection = mapping_type({"a": 10, "b": 2, "c": 3})
++    assert _.reduce_(collection=collection, iteratee=subtract) == 5
++    assert calls == [(10, 2, "b"), (8, 3, "c")]
++
++
++@parametrize("mapping_type", [dict, MappingProxyType])
++def test_reduce_empty_mapping(mapping_type):
++    with pytest.raises(TypeError, match=r"^reduce_\(\) of empty sequence with no initial value$"):
++        _.reduce_(mapping_type({}))
++
++
+ @parametrize("case,exception", [(([],), TypeError)])
+ def test_reduce_raise(case, exception):
+     raised = False

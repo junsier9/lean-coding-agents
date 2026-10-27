@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-27T09:13:46.143410+00:00",
+  "audit_class": "post_qualification_supplement_not_backdated",
+  "F1_known_normal_and_optimized_modes_verified": 12,
+  "F2_actual_review_outputs_bound": 8,
+  "actual_confirmed_review_defects": 2,
+  "F3_raw_evidence_files_bound": 574,
+  "F4_nonempty_review_input_files_bound": 1632,
+  "F5_frozen_rule_and_UI_with_license_and_failure_notice_verified": true,
+  "original_qualification_sha256": "CE03714E6872757F6047BDFD99B7864605C400746E3508B058C912A651A00796",
+  "original_failed_qualification_unchanged": true,
+  "qualifier_original_coverage_not_rewritten": true,
+  "native_model_calls": 0
+}

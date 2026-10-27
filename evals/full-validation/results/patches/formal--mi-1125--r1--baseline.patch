@@ -1,0 +1,96 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index af04d53..9d34b67 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4897,7 +4897,7 @@ def gray_product(*iterables, repeat=1):
+     `this section <https://www-cs-faculty.stanford.edu/~knuth/fasc2a.ps.gz>`__
+     of Donald Knuth's *The Art of Computer Programming*.
+     """
+-    all_iterables = tuple(map(tuple, iterables * repeat))
++    all_iterables = tuple(map(tuple, iterables)) * repeat
+     iterable_count = len(all_iterables)
+     for iterable in all_iterables:
+         if len(iterable) < 2:
+@@ -4939,7 +4939,12 @@ def partial_product(*iterables, repeat=1):
+     equivalent to ``partial_product('AB', 'AB', 'AB')``.
+     """
+ 
+-    iterators = tuple(map(iter, iterables * repeat))
++    if repeat > 1:
++        iterators = tuple(
++            chain.from_iterable(zip(*(tee(it, repeat) for it in iterables)))
++        )
++    else:
++        iterators = tuple(map(iter, iterables * repeat))
+ 
+     try:
+         prod = [next(it) for it in iterators]
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 0041ff1..0e643b7 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -6025,6 +6025,19 @@ class GrayProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for repeat in (1, 2, 3):
++            for iterables in (('abc',), ('abc', 'def'), ('ab', 'cde')):
++                with self.subTest(repeat=repeat, iterables=iterables):
++                    self.assertEqual(
++                        list(
++                            mi.gray_product(
++                                *map(iter, iterables), repeat=repeat
++                            )
++                        ),
++                        list(mi.gray_product(*iterables, repeat=repeat)),
++                    )
++
+ 
+ class PartialProductTests(TestCase):
+     def test_no_iterables(self):
+@@ -6116,6 +6129,44 @@ class PartialProductTests(TestCase):
+             ),
+         )
+ 
++    def test_repeat_iterators(self):
++        for repeat in (1, 2, 3):
++            for iterables in (
++                ('abc',),
++                ('abc', 'def'),
++                ('ab', 'cde'),
++                ('a', 'bc'),
++                ('', 'abc'),
++                ('abc', ''),
++            ):
++                with self.subTest(repeat=repeat, iterables=iterables):
++                    self.assertEqual(
++                        list(
++                            mi.partial_product(
++                                *map(iter, iterables), repeat=repeat
++                            )
++                        ),
++                        list(mi.partial_product(*iterables, repeat=repeat)),
++                    )
++
++    def test_repeat_iterator_is_lazy(self):
++        seen = []
++
++        def source():
++            for item in 'abc':
++                seen.append(item)
++                yield item
++
++        result = mi.partial_product(source(), repeat=2)
++        self.assertEqual(seen, [])
++        self.assertEqual(next(result), ('a', 'a'))
++        self.assertEqual(seen, ['a'])
++        self.assertEqual(
++            list(result),
++            [('b', 'a'), ('c', 'a'), ('c', 'b'), ('c', 'c')],
++        )
++        self.assertEqual(seen, ['a', 'b', 'c'])
++
+ 
+ class IterateTests(TestCase):
+     def test_basic(self) -> None:

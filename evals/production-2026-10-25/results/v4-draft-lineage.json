@@ -1,0 +1,16 @@
+{
+  "drafted_at": "2026-10-24T22:03:38.052214+00:00",
+  "status": "draft_not_frozen_not_model_tested",
+  "candidate_sha256": "086AD88F21493E879D3C64F7A5AED6D7FF049F1BA74F88F02492C59DAE55A67F",
+  "parent_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "words_whitespace_split": 319,
+  "routing_description_and_ui_unchanged": true,
+  "change": "Explicit preservation of documented public calling forms, signatures, object protocols and metadata; check affected call forms",
+  "reason": "A genuine class-call compatibility failure in the already revealed cachetools436 case; independent task contract review found that requirement supported",
+  "efficiency_metrics_used_to_choose_change": false,
+  "no_magic_case_names_or_error_messages_in_rules": true,
+  "current_frozen_experiment_unchanged": true,
+  "next_native_model_calls": 0,
+  "development_regression": "development-next/d09.json",
+  "any_second_confirmation_consumes_remaining_original_slot": true
+}

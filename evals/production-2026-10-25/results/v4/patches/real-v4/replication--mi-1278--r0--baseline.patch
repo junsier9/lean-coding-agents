@@ -1,0 +1,94 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index d435c2e..a7521a9 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -4671,16 +4671,6 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     different lengths.
+     """
+ 
+-    def is_scalar(obj):
+-        if scalar_types and isinstance(obj, scalar_types):
+-            return True
+-        try:
+-            iter(obj)
+-        except TypeError:
+-            return True
+-        else:
+-            return False
+-
+     size = len(objects)
+     if not size:
+         return
+@@ -4688,10 +4678,15 @@ def zip_broadcast(*objects, scalar_types=(str, bytes), strict=False):
+     new_item = [None] * size
+     iterables, iterable_positions = [], []
+     for i, obj in enumerate(objects):
+-        if is_scalar(obj):
++        if scalar_types and isinstance(obj, scalar_types):
++            new_item[i] = obj
++            continue
++        try:
++            iterator = iter(obj)
++        except TypeError:
+             new_item[i] = obj
+         else:
+-            iterables.append(iter(obj))
++            iterables.append(iterator)
+             iterable_positions.append(i)
+ 
+     if not iterables:
+diff --git a/tests/test_more.py b/tests/test_more.py
+index cc412ff..4f21766 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -5520,6 +5520,50 @@ class ZipBroadcastTests(TestCase):
+                     with self.assertRaises(ValueError):
+                         list(mi.zip_broadcast(*objects, strict=True))
+ 
++    def test_one_shot_iterables(self):
++        class OneShotIterable:
++            def __init__(self, values):
++                self.values = values
++                self.iterated = False
++
++            def __iter__(self):
++                if self.iterated:
++                    raise RuntimeError('iterator already requested')
++                self.iterated = True
++                return iter(self.values)
++
++        for strict in (False, True):
++            for objects, expected, equal_lengths in [
++                ([[]], [], True),
++                ([[1]], [(1,)], True),
++                ([[1, 2]], [(1,), (2,)], True),
++                ([[], None, 'ab'], [], True),
++                ([None, [], b'ab'], [], True),
++                ([None, b'ab', []], [], True),
++                (
++                    [None, [1, 2], 'ab'],
++                    [(None, 1, 'ab'), (None, 2, 'ab')],
++                    True,
++                ),
++                ([[1, 2], 3, [4, 5]], [(1, 3, 4), (2, 3, 5)], True),
++                ([[], []], [], True),
++                ([[], [1]], [], False),
++                ([[1], []], [], False),
++                ([[1], [2, 3]], [(1, 2)], False),
++                ([[1, 2], [3]], [(1, 3)], False),
++            ]:
++                with self.subTest(objects=objects, strict=strict):
++                    inputs = [
++                        OneShotIterable(obj) if isinstance(obj, list) else obj
++                        for obj in objects
++                    ]
++                    result = mi.zip_broadcast(*inputs, strict=strict)
++                    if strict and not equal_lengths:
++                        with self.assertRaises(ValueError):
++                            list(result)
++                    else:
++                        self.assertEqual(list(result), expected)
++
+     def test_scalar_types(self):
+         # Default: str and bytes are treated as scalar
+         self.assertEqual(

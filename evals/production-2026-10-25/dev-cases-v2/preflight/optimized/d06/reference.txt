@@ -1,0 +1,17 @@
+test_commit_failure_rolls_back (test_contract.Contract.test_commit_failure_rolls_back) ... ok
+test_credit_sql_failure_is_atomic (test_contract.Contract.test_credit_sql_failure_is_atomic) ... ok
+test_factory_failure_propagates (test_contract.Contract.test_factory_failure_propagates) ... ok
+test_full_balance_transfer (test_contract.Contract.test_full_balance_transfer) ... ok
+test_insufficient_funds (test_contract.Contract.test_insufficient_funds) ... ok
+test_interrupt_rolls_back_and_propagates (test_contract.Contract.test_interrupt_rolls_back_and_propagates) ... ok
+test_invalid_account_before_open (test_contract.Contract.test_invalid_account_before_open) ... ok
+test_invalid_amount_before_open (test_contract.Contract.test_invalid_amount_before_open) ... ok
+test_missing_destination_rolls_back (test_contract.Contract.test_missing_destination_rolls_back) ... ok
+test_missing_source_closes (test_contract.Contract.test_missing_source_closes) ... ok
+test_sql_looking_id_is_data (test_contract.Contract.test_sql_looking_id_is_data) ... ok
+test_success (test_contract.Contract.test_success) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.142s
+
+OK

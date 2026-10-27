@@ -1,0 +1,25 @@
+diff --git a/app.py b/app.py
+index f89354d..a97a400 100644
+--- a/app.py
++++ b/app.py
+@@ -1,9 +1,7 @@
+ from parser import check_values, own_list, parse
+ 
+ 
+-def _preview(values, audit):
+-    # Raw import preview reaches this helper without parser.parse.
+-    values = check_values(values, audit)
++def _preview(values):
+     return {"count": len(values), "total": sum(values)}
+ 
+ 
+@@ -16,7 +14,7 @@ def quote(mode, payload, audit=None):
+     if mode == "parsed":
+         values = parse(payload, audit)
+     elif mode == "raw":
+-        values = own_list(payload)
++        values = check_values(own_list(payload), audit)
+     else:
+         raise ValueError("unknown mode")
+-    return _preview(values, audit)
++    return _preview(values)

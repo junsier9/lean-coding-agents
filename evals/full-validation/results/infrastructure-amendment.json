@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-10-24T12:12:22.589497+00:00",
+  "protocol_sha256": "EEDE558723B8E998169624A387057A2386AD45FBE4FC58E4F64976C6A8E95DEE",
+  "stage": "before_valid_pilot",
+  "reason": "Windows workspace sandbox denied sibling temporary dependency target. All first-pair artifacts retained, excluded together solely by predeclared operational health gate. Both arms could not invoke pytest.",
+  "excluded_runs": 2,
+  "excluded_total_reported_tokens": 839007,
+  "excluded_client_plus_grade_seconds": 582.313,
+  "storage": "runtime/runs,work,grades/infrastructure-canary; runtime/infrastructure-canary-records.jsonl",
+  "fix": "Identical frozen Python dependencies copied under each own workspace .benchmark-deps, git ignored. Independent grader keeps separate testdeps and excludes candidate dependency copies.",
+  "verification": "Fresh native Codex workspace-write command imported pytest, pytest_timeout, freezegun and printed 8.4.2, exit0. Evidence runtime/sandbox-dependency-smoke.jsonl.",
+  "unchanged": [
+    "skill",
+    "tasks",
+    "partition",
+    "model",
+    "reasoning",
+    "thresholds",
+    "metrics",
+    "replicates",
+    "solver concurrency3",
+    "timeout600"
+  ],
+  "files": {
+    "run_experiment.py": "4F05A766A996F402BF03253F31E2DD3E8378E327FDD987D2AEAC47EC57A4F934",
+    "preflight.py": "644543FF0A28A3E9C3A15747BECE9E0111C4473BF467441DC06A83BD7B8E57EB",
+    "analyze.py": "308FC2E8076BA93C74353BDF8156AE86C7E3767C2616BF301F43EE086CD337C3",
+    "skill-frozen.md": "8C757603BBADE8FF688FD0A08CC5F8A095893A2593363B51EC983F4F70FA74BF"
+  }
+}

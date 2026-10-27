@@ -1,0 +1,20 @@
+test_charge_exception_propagates (test_contract.Contract.test_charge_exception_propagates) ... ok
+test_hook_can_change_currency (test_contract.Contract.test_hook_can_change_currency) ... ok
+test_hook_return_value_is_ignored (test_contract.Contract.test_hook_return_value_is_ignored) ... ok
+test_invalid_currency_types_before_hook (test_contract.Contract.test_invalid_currency_types_before_hook) ... ok
+test_invalid_external_does_not_reach_hook_or_charge (test_contract.Contract.test_invalid_external_does_not_reach_hook_or_charge) ... ok
+test_invalid_external_types (test_contract.Contract.test_invalid_external_types) ... ok
+test_invalid_plugin_amount_does_not_charge (test_contract.Contract.test_invalid_plugin_amount_does_not_charge) ... ok
+test_invalid_plugin_preserves_original (test_contract.Contract.test_invalid_plugin_preserves_original) ... ok
+test_normal_no_hook (test_contract.Contract.test_normal_no_hook) ... ok
+test_plugin_cancellation_propagates_without_charge (test_contract.Contract.test_plugin_cancellation_propagates_without_charge) ... ok
+test_plugin_exception_is_not_success (test_contract.Contract.test_plugin_exception_is_not_success) ... ok
+test_plugin_invalid_currency_rejected (test_contract.Contract.test_plugin_invalid_currency_rejected) ... ok
+test_plugin_shape_change_rejected (test_contract.Contract.test_plugin_shape_change_rejected) ... ok
+test_valid_hook_and_input_ownership (test_contract.Contract.test_valid_hook_and_input_ownership) ... ok
+test_zero_is_valid (test_contract.Contract.test_zero_is_valid) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.001s
+
+OK

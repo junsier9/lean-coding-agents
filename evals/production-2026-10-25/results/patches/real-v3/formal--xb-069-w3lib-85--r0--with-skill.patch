@@ -1,0 +1,76 @@
+diff --git a/tests/test_http.py b/tests/test_http.py
+index 6ce53ca..d2a8028 100644
+--- a/tests/test_http.py
++++ b/tests/test_http.py
+@@ -23,6 +23,36 @@ class HttpTests(unittest.TestCase):
+         dct = {b'Content-type': [b'text/html'], b'Accept': [b'gzip']}
+         self.assertEqual(headers_raw_to_dict(raw), dct)
+ 
++    def test_headers_raw_to_dict_repeated_headers(self):
++        raw = (
++            b'Set-Cookie: first=1\r\n'
++            b'Accept: text/html\r\n'
++            b'Set-Cookie: second=2\r\n'
++            b'Accept: application/json\r\n'
++            b'Set-Cookie: first=1\r\n'
++        )
++        dct = {
++            b'Set-Cookie': [b'first=1', b'second=2', b'first=1'],
++            b'Accept': [b'text/html', b'application/json'],
++        }
++        self.assertEqual(headers_raw_to_dict(raw), dct)
++
++    def test_headers_raw_to_dict_mixed_lines(self):
++        raw = (
++            b'\r\nmalformed\r\n'
++            b' X-Test : \xff:first \t\r\n'
++            b'No-Separator\r\n'
++            b'X-Test:\t \r\n'
++            b'X-Test: last:part\r\n'
++            b'\r\n'
++        )
++        dct = {b'X-Test': [b'\xff:first', b'', b'last:part']}
++        self.assertEqual(headers_raw_to_dict(raw), dct)
++
++    def test_headers_raw_to_dict_empty_or_malformed(self):
++        self.assertEqual(headers_raw_to_dict(b''), {})
++        self.assertEqual(headers_raw_to_dict(b'\r\nmalformed\r\n'), {})
++
+     def test_headers_dict_to_raw(self):
+         dct = OrderedDict([
+             (b'Content-type', b'text/html'),
+diff --git a/w3lib/http.py b/w3lib/http.py
+index 8c5dfed..0ff529e 100644
+--- a/w3lib/http.py
++++ b/w3lib/http.py
+@@ -4,7 +4,8 @@ from base64 import urlsafe_b64encode
+ def headers_raw_to_dict(headers_raw):
+     r"""
+     Convert raw headers (single multi-line bytestring)
+-    to a dictionary.
++    to a dictionary of lists of bytestrings, preserving the order of values
++    for repeated headers.
+ 
+     For example:
+ 
+@@ -27,13 +28,13 @@ def headers_raw_to_dict(headers_raw):
+ 
+     if headers_raw is None:
+         return None
+-    headers = headers_raw.splitlines()
+-    headers_tuples = [header.split(b':', 1) for header in headers]
+-    return dict([
+-        (header_item[0].strip(), [header_item[1].strip()])
+-        for header_item in headers_tuples
+-        if len(header_item) == 2
+-    ])
++    headers_dict = {}
++    for header in headers_raw.splitlines():
++        header_item = header.split(b':', 1)
++        if len(header_item) == 2:
++            name, value = header_item
++            headers_dict.setdefault(name.strip(), []).append(value.strip())
++    return headers_dict
+ 
+ 
+ def headers_dict_to_raw(headers_dict):

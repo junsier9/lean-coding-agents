@@ -1,0 +1,62 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index ae3ecd9..65a5de9 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -170,8 +170,10 @@ class Bits:
+         if type(k) is slice:
+             return Bits(self.as_bin()[k])
+         if type(k) is int:
+-            if k >= self.len:
++            if k < -self.len or k >= self.len:
+                 raise IndexError(k)
++            if k < 0:
++                k += self.len
+             return bool((1 << (self.len - k - 1)) & self.val)
+         raise TypeError(type(k))
+ 
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 3cf7dbf..d1d4985 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -112,6 +112,35 @@ def test_bits():
+         Bits('101'))
+ 
+ 
++@mark.parametrize('value', ['0', '1', '10', '01', '0000100', '1111111'])
++def test_bits_integer_indexing(value):
++    bits = Bits(value)
++    for index, digit in enumerate(value):
++        expected = digit == '1'
++        assert bits[index] is expected
++        assert bits[index - len(value)] is expected
++
++
++@mark.parametrize('value', ['', '0', '1', '10', '01', '0000100'])
++def test_bits_index_out_of_range(value):
++    bits = Bits(value)
++    for index in (len(value), len(value) + 1, 10 ** 20,
++                  -len(value) - 1, -len(value) - 2, -(10 ** 20)):
++        with raises(IndexError) as exc_info:
++            bits[index]
++        assert exc_info.value.args == (index,)
++
++
++@mark.parametrize('key', [slice(None), slice(-5, -1), slice(None, None, -1),
++                         slice(None, None, 2), slice(-100, 100),
++                         slice(4, 2), slice(100, None)])
++def test_bits_slicing(key):
++    value = '0010110'
++    result = Bits(value)[key]
++    assert type(result) is Bits
++    assert result == Bits(value[key])
++
++
+ def test_bits_len_bound():
+     # The largest value representable in n bits is 2 ** n - 1, so 2 ** n must
+     # be rejected rather than silently producing an over-long Bits.

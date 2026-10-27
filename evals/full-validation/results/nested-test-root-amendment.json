@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-24T12:45:22.381810+00:00",
+  "reason": "New holdout source has test directories nested inside production package. Freezing first path component would copy production; identify nearest tests prefix instead.",
+  "changed_function": "overlay_manifest only",
+  "preflight_sha256": "3CD03D43A286753A7413393C265B6E68F2B7DBFDEDCA10FCC4CE899D1B309226",
+  "old_cases_overlay_exact_matches": 103,
+  "old_cases_overlay_mismatches": 0,
+  "fixture_base_failed_fix_passed_layouts": [
+    "tests",
+    "toolz/tests",
+    "toolz/sandbox/tests"
+  ],
+  "metrics_skill_and_model_unchanged": true,
+  "prior_grading_roots_unchanged": true
+}

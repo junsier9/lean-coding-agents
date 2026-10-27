@@ -1,0 +1,113 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index e8d5245..352184b 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -5,6 +5,8 @@ Version 8.0
+ 
+ Unreleased
+ 
++-   Show progress bar labels when writing to a non-terminal output,
++    without repeating unchanged labels.
+ -   Drop support for Python 2 and 3.5.
+ -   Colorama is always installed on Windows in order to provide style
+     and color support. :pr:`1784`
+diff --git a/src/click/_termui_impl.py b/src/click/_termui_impl.py
+index d4e3e88..78ae88f 100644
+--- a/src/click/_termui_impl.py
++++ b/src/click/_termui_impl.py
+@@ -227,6 +227,9 @@ class ProgressBar:
+         import shutil
+ 
+         if self.is_hidden:
++            if self._last_line != self.label:
++                self._last_line = self.label
++                echo(self.label, file=self.file, color=self.color)
+             return
+ 
+         buf = []
+diff --git a/src/click/termui.py b/src/click/termui.py
+index 5cbeae8..f2dd746 100644
+--- a/src/click/termui.py
++++ b/src/click/termui.py
+@@ -302,7 +302,8 @@ def progressbar(
+     up).  While iteration happens, this function will print a rendered
+     progress bar to the given `file` (defaults to stdout) and will attempt
+     to calculate remaining time and more.  By default, this progress bar
+-    will not be rendered if the file is not a terminal.
++    will not be rendered if the file is not a terminal. The label will
++    still be printed.
+ 
+     The context manager creates the progress bar.  When the context
+     manager is entered the progress bar is already created.  With every
+@@ -382,7 +383,7 @@ def progressbar(
+     :param width: the width of the progress bar in characters, 0 means full
+                   terminal width
+     :param file: the file to write to.  If this is not a terminal then
+-                 only the label is printed.
++                 only the label is printed, once per change.
+     :param color: controls if the terminal supports ANSI colors or not.  The
+                   default is autodetection.  This is only needed if ANSI
+                   codes are included anywhere in the progress bar output
+@@ -390,6 +391,9 @@ def progressbar(
+     :param update_min_steps: Render only when this many updates have
+         completed. This allows tuning for very fast iterators.
+ 
++    .. versionchanged:: 8.0
++        The label is shown if the output is not a terminal.
++
+     .. versionadded:: 8.0
+        Added the ``update_min_steps`` parameter.
+ 
+diff --git a/tests/test_termui.py b/tests/test_termui.py
+index 3958161..2d02443 100644
+--- a/tests/test_termui.py
++++ b/tests/test_termui.py
+@@ -74,19 +74,43 @@ def test_progressbar_length_hint(runner, monkeypatch):
+     assert result.exception is None
+ 
+ 
+-def test_progressbar_hidden(runner, monkeypatch):
++@pytest.mark.parametrize("label", ["whatever", "    padded line", ""])
++@pytest.mark.parametrize("manual", [False, True])
++def test_progressbar_hidden(runner, monkeypatch, label, manual):
+     fake_clock = FakeClock()
+-    label = "whatever"
+ 
+     @click.command()
+     def cli():
+         with _create_progress(label=label) as progress:
+-            for _ in progress:
+-                fake_clock.advance_time()
++            if manual:
++                for _ in range(progress.length):
++                    fake_clock.advance_time()
++                    progress.update(1)
++            else:
++                for _ in progress:
++                    fake_clock.advance_time()
+ 
+     monkeypatch.setattr(time, "time", fake_clock.time)
+     monkeypatch.setattr(click._termui_impl, "isatty", lambda _: False)
+-    assert runner.invoke(cli, []).output == ""
++    result = runner.invoke(cli, [])
++    assert result.exception is None
++    assert result.output == f"{label}\n"
++
++
++def test_progressbar_hidden_file_label_change(tmp_path):
++    path = tmp_path / "progress.txt"
++
++    with path.open("w", encoding="utf-8") as file:
++        with click.progressbar(length=4, label="Starting", file=file) as progress:
++            assert path.read_text(encoding="utf-8") == "Starting\n"
++            progress.update(1)
++            progress.label = "Processing"
++            progress.update(1)
++            progress.update(1)
++            progress.label = "Starting"
++            progress.update(1)
++
++    assert path.read_text(encoding="utf-8") == "Starting\nProcessing\nStarting\n"
+ 
+ 
+ @pytest.mark.parametrize("avg, expected", [([], 0.0), ([1, 4], 2.5)])

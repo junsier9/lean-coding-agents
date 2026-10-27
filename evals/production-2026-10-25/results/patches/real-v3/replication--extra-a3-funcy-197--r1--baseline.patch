@@ -1,0 +1,117 @@
+diff --git a/funcy/objects.py b/funcy/objects.py
+index d0ddefd..385bd75 100644
+--- a/funcy/objects.py
++++ b/funcy/objects.py
+@@ -56,10 +56,10 @@ def wrap_prop(ctx):
+                     with ctx:
+                         return prop.__set__(name, value)
+ 
+-            if hasattr(prop, '__del__'):
+-                def __del__(self, name):
++            if hasattr(prop, '__delete__'):
++                def __delete__(self, instance):
+                     with ctx:
+-                        return prop.__del__(name)
++                        return prop.__delete__(instance)
+ 
+         return WrapperProp()
+     return decorator
+diff --git a/tests/test_objects.py b/tests/test_objects.py
+index 606690c..97071bd 100644
+--- a/tests/test_objects.py
++++ b/tests/test_objects.py
+@@ -1,4 +1,6 @@
+ import sys
++from contextlib import contextmanager
++
+ import pytest
+ from funcy.objects import *
+ from funcy import suppress
+@@ -102,8 +104,86 @@ def test_wrap_prop():
+     assert calls == ['p']
+ 
+     # Do not wrap __set__ for non-data props
+-    a.cached_property = 2
++    a.cached_prop = 2
++    assert a.cached_prop == 2
++    assert calls == ['p']
++
++    del a.cached_prop
+     assert calls == ['p']
++    assert a.cached_prop == 1
++    assert calls == ['p', 'cp']
++
++    del a.cached_prop
++    assert calls == ['p', 'cp']
++    assert a.cached_prop == 1
++    assert calls == ['p', 'cp', 'cp']
++
++
++@pytest.mark.parametrize('error', [None, ValueError('delete failed'), AttributeError('delete failed')])
++@pytest.mark.parametrize('suppress_error', [False, True])
++def test_wrap_prop_delete(error, suppress_error):
++    calls = []
++
++    @contextmanager
++    def manager():
++        calls.append('enter')
++        try:
++            yield
++        except Exception as exc:
++            calls.append(exc)
++            if not suppress_error:
++                raise
++        finally:
++            calls.append('exit')
++
++    class A(object):
++        @property
++        def prop(self):
++            return self.value
++
++        @prop.deleter
++        def prop(self):
++            calls.append(self)
++            if error is not None:
++                raise error
++            del self.value
++
++        prop = wrap_prop(manager())(prop)
++
++    a = A()
++    a.value = 1
++    if error is None or suppress_error:
++        del a.prop
++    else:
++        with pytest.raises(type(error)) as exc_info:
++            del a.prop
++        assert exc_info.value is error
++
++    assert calls == ['enter', a] + ([] if error is None else [error]) + ['exit']
++    assert ('value' in a.__dict__) == (error is not None)
++
++
++def test_wrap_prop_delete_without_deleter():
++    calls = []
++
++    @contextmanager
++    def manager():
++        calls.append('enter')
++        try:
++            yield
++        finally:
++            calls.append('exit')
++
++    class A(object):
++        @wrap_prop(manager())
++        @property
++        def prop(self):
++            return 1
++
++    a = A()
++    with pytest.raises(AttributeError):
++        del a.prop
++    assert calls == ['enter', 'exit']
+ 
+ 
+ ### Monkey tests

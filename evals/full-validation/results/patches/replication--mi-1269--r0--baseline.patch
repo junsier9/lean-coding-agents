@@ -1,0 +1,100 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index 6d43f7b..f4d327e 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -3099,11 +3099,15 @@ class seekable:
+         else:
+             self._cache = deque([], maxlen)
+         self._index = None
++        self._peeked = []
+ 
+     def __iter__(self):
+         return self
+ 
+     def __next__(self):
++        if self._peeked:
++            return self._peeked.pop()
++
+         if self._index is not None:
+             try:
+                 item = self._cache[self._index]
+@@ -3131,6 +3135,10 @@ class seekable:
+             if default is _marker:
+                 raise
+             return default
++        if not self._cache:
++            # A zero-length cache cannot retain the lookahead for next().
++            self._peeked.append(peeked)
++            return peeked
+         if self._index is None:
+             self._index = len(self._cache)
+         self._index -= 1
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 9757022..f8e34da 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -3781,6 +3781,64 @@ class SeekableTest(PeekableMixinTests, TestCase):
+         self.assertEqual(list(s), iterable)
+         self.assertEqual(list(s.elements()), [])
+ 
++    def test_maxlen_zero_peek(self):
++        s = mi.seekable([10, 20, 30], maxlen=0)
++        elements = s.elements()
++        self.assertEqual(s.peek(), 10)
++        self.assertEqual(s.peek(), 10)
++        self.assertEqual(list(elements), [])
++        self.assertEqual(list(s), [10, 20, 30])
++        self.assertEqual(list(elements), [])
++
++    def test_maxlen_zero_truthiness(self):
++        s = mi.seekable([10, 20, 30], maxlen=0)
++        elements = s.elements()
++        self.assertTrue(s)
++        self.assertTrue(s)
++        self.assertEqual(list(elements), [])
++        self.assertEqual(list(s), [10, 20, 30])
++        self.assertFalse(s)
++        self.assertEqual(list(elements), [])
++
++    def test_maxlen_zero_peek_next(self):
++        values = [None, False, 0, [], 10]
++        s = mi.seekable(iter(values), maxlen=0)
++        elements = s.elements()
++        for value in values:
++            self.assertTrue(s)
++            self.assertIs(s.peek(), value)
++            self.assertIs(s.peek(), value)
++            self.assertEqual(list(elements), [])
++            self.assertIs(next(s), value)
++            self.assertEqual(list(elements), [])
++        self.assertFalse(s)
++        self.assertEqual(list(s), [])
++
++    def test_maxlen_zero_empty(self):
++        s = mi.seekable([], maxlen=0)
++        default = object()
++        for _ in range(2):
++            self.assertFalse(s)
++            self.assertIs(s.peek(default), default)
++            with self.assertRaises(StopIteration):
++                s.peek()
++            with self.assertRaises(StopIteration):
++                next(s)
++        self.assertEqual(list(s), [])
++        self.assertEqual(list(s.elements()), [])
++
++    def test_maxlen_zero_seek_after_peek(self):
++        for method in ('seek', 'relative_seek'):
++            for offset in (-1, 0, 1, 2, 4):
++                with self.subTest(method=method, offset=offset):
++                    s = mi.seekable([10, 20, 30], maxlen=0)
++                    self.assertEqual(s.peek(), 10)
++                    getattr(s, method)(offset)
++                    self.assertEqual(
++                        list(s), [10, 20, 30][max(offset, 0) :]
++                    )
++                    self.assertEqual(list(s.elements()), [])
++
+     def test_relative_seek(self):
+         iterable = [str(x) for x in range(5)]
+         s = mi.seekable(iterable)

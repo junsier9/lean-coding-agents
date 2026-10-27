@@ -1,0 +1,855 @@
+{
+  "pair": "03",
+  "review_round": "production-blind-v4",
+  "review_type": "preselected independent blinded source and behavior review",
+  "task": "tail(-1, seq) 对有长度输入静默返回空结果，而 tail(-1, iter(seq)) 却报 ValueError。请统一非法负长度的行为，并保留零长度、超长请求及普通序列和迭代器输入的结果。",
+  "review_scope": {
+    "inputs": [
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\tasks-pair03.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\task.json",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B.patch",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\base",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A",
+      "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B"
+    ],
+    "rubric": [
+      "保留题面与现有源码正常、公开调用及必要失败路径",
+      "新增 guard/copy/wrapper/retry 须有当前需求",
+      "不按代码行数或测试数量评分",
+      "根据源码与隔离探针区分确认行为差异、缺陷与未知边界"
+    ],
+    "not_accessed_for_this_review": [
+      "分组或私有标签",
+      "成本或计时",
+      "skill 正文",
+      "隐藏 grader",
+      "参考修复或固定生产解",
+      "其他生产结果",
+      "旧轮揭盲",
+      "原生模型记录"
+    ],
+    "cross_pair_or_cross_round_labels_inferred": false
+  },
+  "comparison": "A/B 对题面普通整数长度、受支持整数子类、零/超长请求、序列/迭代器结果和相关有效输入错误路径行为一致，均修复负整数长度。A 在有长度分支补检查，B 在入口先检查。两者在负长度与故障 __len__ 同时出现时异常优先级不同，但没有公开约定要求该双重非法情况的优先级；未据此判确认缺陷或一侧优劣。",
+  "preferred_arm": null,
+  "production_code_equivalence": {
+    "method": "完整目标文件与公开 patch 检查，并以局部探针区分行为；没有声称字节或 AST 相同",
+    "equal": false,
+    "difference": "A 的 n<0 位于 len 成功后的 else 分支；B 位于 len 查询前。错误消息文字不同，题面没有要求固定消息，探针只约束异常类别。"
+  },
+  "findings": {
+    "A": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "03-A-negative-validation",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 162,
+          "title": "负整数长度的新增检查由实际有长度输入漏检直接支持",
+          "evidence": "只在 len 成功的分支补 n<0 检查，给原先会静默返回的有长度输入 ValueError；无长度分支继续委托原 deque 的 maxlen 检查。 普通负整数、负 int 子类与负 IntEnum 的实际行为都统一；没有吞错、默认结果、重试或包装。",
+          "probe_ids": [
+            "negative_plain_integer_sized_unsized_is_valueerror",
+            "supported_int_subclass_intenum_counts"
+          ]
+        },
+        {
+          "id": "03-A-ordinary-results",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 164,
+          "title": "零长度、普通和超长请求以及公开调用形式保留",
+          "evidence": "非负整数时继续按原分支处理：有长度输入使用 islice，无长度输入使用 deque。零长度均为空，超过长度返回全部，普通请求返回最后 n 个；位置、关键字和混合调用、bool、int 子类与 IntEnum 均按原整数行为工作，没有新增通用强制转换。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+              "line": 160
+            }
+          ],
+          "probe_ids": [
+            "zero_length_sized_unsized",
+            "ordinary_and_oversize_sized_unsized_outputs",
+            "supported_int_subclass_intenum_counts",
+            "public_keyword_and_bool_length_forms"
+          ]
+        },
+        {
+          "id": "03-A-ownership-timing",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 160,
+          "title": "既有返回迭代器、元素引用及两分支的消费时机不变",
+          "evidence": "返回对象仍是一次性迭代器；有长度输入保持惰性消费，无长度输入仍在 tail 调用中为 deque 消费输入。输出元素保持原对象身份，输入 list 的内容与顺序未改，没有新增快照、拷贝或重复遍历。",
+          "probe_ids": [
+            "iterator_protocol_original_references_lazy_eager_timing"
+          ]
+        },
+        {
+          "id": "03-A-necessary-error-scope",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 158,
+          "title": "正常请求中的源异常与长度分支错误保持原传播边界",
+          "evidence": "对非负有效长度，__len__ 的 TypeError 仍是无长度分支 fallback 信号，__len__ 的 RuntimeError 仍原样传播。迭代源 RuntimeError 保留同一异常对象及原有惰性/即时抛出时机；KeyboardInterrupt 同样传播，没有被新增 guard 吞没或换成空结果。",
+          "probe_ids": [
+            "unexpected_source_errors_identity_and_timing",
+            "typeerror_len_fallback_other_len_error_propagation"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "03-A-dual-invalid-precedence",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 162,
+          "title": "负长度与长度来源故障同时出现时的异常优先级不同",
+          "evidence": "自制 Source.__len__ 抛特定 RuntimeError，同时传 n=-1：base 与 A 查询 __len__ 并传播同一 RuntimeError，B 先拒绝负 n 而抛 ValueError，不查询 __len__。题面要求普通负长度一致，但没有明示两个非法条件同时出现时哪一个优先；这一差异不被计为确认缺陷，也不作为偏好依据。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "negative_source_error_precedence_observation"
+          ]
+        },
+        {
+          "id": "03-A-index-only-noncontract",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\A\\more_itertools\\recipes.py",
+          "line": 160,
+          "title": "本机既有 deque 不支持仅实现 __index__ 的 maxlen 对象",
+          "evidence": "对 -1、0、2、8 的 IndexCount.__index__ 对象，原生 deque 和 base/A/B 的无长度路径均报 TypeError，未观察到此协议的新增支持或丢失。单凭 Python 常见 index 协议不能假定此处原生调用接受它；只记录环境边界，不要求新增归一化。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "index_only_count_native_baseline_observation"
+          ]
+        }
+      ]
+    },
+    "B": {
+      "confirmed_unsafe": [],
+      "unjustified_machinery": [],
+      "justified_behavior": [
+        {
+          "id": "03-B-negative-validation",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 157,
+          "title": "负整数长度的新增检查由实际有长度输入漏检直接支持",
+          "evidence": "入口先以 n<0 拒绝负长度，使普通有长度和无长度输入都即时抛 ValueError；无需进入后续选取过程。 普通负整数、负 int 子类与负 IntEnum 的实际行为都统一；没有吞错、默认结果、重试或包装。",
+          "probe_ids": [
+            "negative_plain_integer_sized_unsized_is_valueerror",
+            "supported_int_subclass_intenum_counts"
+          ]
+        },
+        {
+          "id": "03-B-ordinary-results",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 164,
+          "title": "零长度、普通和超长请求以及公开调用形式保留",
+          "evidence": "非负整数时继续按原分支处理：有长度输入使用 islice，无长度输入使用 deque。零长度均为空，超过长度返回全部，普通请求返回最后 n 个；位置、关键字和混合调用、bool、int 子类与 IntEnum 均按原整数行为工作，没有新增通用强制转换。",
+          "additional_locations": [
+            {
+              "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+              "line": 162
+            }
+          ],
+          "probe_ids": [
+            "zero_length_sized_unsized",
+            "ordinary_and_oversize_sized_unsized_outputs",
+            "supported_int_subclass_intenum_counts",
+            "public_keyword_and_bool_length_forms"
+          ]
+        },
+        {
+          "id": "03-B-ownership-timing",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 162,
+          "title": "既有返回迭代器、元素引用及两分支的消费时机不变",
+          "evidence": "返回对象仍是一次性迭代器；有长度输入保持惰性消费，无长度输入仍在 tail 调用中为 deque 消费输入。输出元素保持原对象身份，输入 list 的内容与顺序未改，没有新增快照、拷贝或重复遍历。",
+          "probe_ids": [
+            "iterator_protocol_original_references_lazy_eager_timing"
+          ]
+        },
+        {
+          "id": "03-B-necessary-error-scope",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 160,
+          "title": "正常请求中的源异常与长度分支错误保持原传播边界",
+          "evidence": "对非负有效长度，__len__ 的 TypeError 仍是无长度分支 fallback 信号，__len__ 的 RuntimeError 仍原样传播。迭代源 RuntimeError 保留同一异常对象及原有惰性/即时抛出时机；KeyboardInterrupt 同样传播，没有被新增 guard 吞没或换成空结果。",
+          "probe_ids": [
+            "unexpected_source_errors_identity_and_timing",
+            "typeerror_len_fallback_other_len_error_propagation"
+          ]
+        }
+      ],
+      "unresolved": [
+        {
+          "id": "03-B-dual-invalid-precedence",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 157,
+          "title": "负长度与长度来源故障同时出现时的异常优先级不同",
+          "evidence": "自制 Source.__len__ 抛特定 RuntimeError，同时传 n=-1：base 与 A 查询 __len__ 并传播同一 RuntimeError，B 先拒绝负 n 而抛 ValueError，不查询 __len__。题面要求普通负长度一致，但没有明示两个非法条件同时出现时哪一个优先；这一差异不被计为确认缺陷，也不作为偏好依据。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "negative_source_error_precedence_observation"
+          ]
+        },
+        {
+          "id": "03-B-index-only-noncontract",
+          "file": "{PROJECT_ROOT}\\.local\\production-blind-v4\\03\\B\\more_itertools\\recipes.py",
+          "line": 162,
+          "title": "本机既有 deque 不支持仅实现 __index__ 的 maxlen 对象",
+          "evidence": "对 -1、0、2、8 的 IndexCount.__index__ 对象，原生 deque 和 base/A/B 的无长度路径均报 TypeError，未观察到此协议的新增支持或丢失。单凭 Python 常见 index 协议不能假定此处原生调用接受它；只记录环境边界，不要求新增归一化。",
+          "defect_claimed": false,
+          "probe_ids": [
+            "index_only_count_native_baseline_observation"
+          ]
+        }
+      ]
+    }
+  },
+  "probe_method": {
+    "environment": {
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "executable": "{PYTHON_RUNTIME}\\python.exe",
+      "platform": "Windows-11-10.0.26200-SP0"
+    },
+    "isolation": "分别把 base/A/B 的 more_itertools 包复制到本审查员临时目录，以独立 python -B 子进程通过 PYTHONPATH、PROBE_COPY、PYTHONDONTWRITEBYTECODE=1 导入，并断言实际模块路径来自对应副本。输入、一次性迭代器、原异常与追踪对象均由本地探针构造，没有改动待审副本。",
+    "model_calls": 0,
+    "network_calls": 0,
+    "delegations": 0,
+    "candidate_tests_executed": false,
+    "checks_are_behavioral_not_loc_or_test_count": true,
+    "source": "from collections import deque\nfrom enum import IntEnum\nimport json\nimport os\nfrom pathlib import Path\nimport more_itertools\nfrom more_itertools import recipes\n\nassert Path(recipes.__file__).resolve().is_relative_to(Path(os.environ['PROBE_COPY']).resolve())\ntail=more_itertools.tail\nresults=[]\n\n\ndef eq(actual,expected):\n    assert actual==expected,(repr(actual),repr(expected))\n\n\ndef raises(expected,function,same=None):\n    try:\n        function()\n    except expected as exc:\n        if same is not None:\n            assert exc is same\n        return exc\n    else:\n        raise AssertionError(f'{expected.__name__} not raised')\n\n\ndef check(name,function):\n    try:\n        detail=function()\n        results.append({'id':name,'status':'pass','detail':detail})\n    except Exception as exc:\n        results.append({'id':name,'status':'fail','error':type(exc).__name__,'message':str(exc)})\n\n\nclass IndexCount:\n    def __init__(self,value):\n        self.value=value\n    def __index__(self):\n        return self.value\n\n\ndef negative_plain_integers():\n    for factory in (lambda:[],lambda:[1,2,3],lambda:'abc',lambda:range(3),lambda:iter(()),lambda:iter([1,2,3])):\n        for n in (-1,-3):\n            raises(ValueError,lambda:tail(n,factory()))\n\n\ndef zero_counts():\n    for source in ([],[1,2,3],(),(1,2,3),'','abc',b'abc',range(3)):\n        eq(list(tail(0,source)),[])\n        eq(list(tail(0,iter(source))),[])\n\n\ndef ordinary_counts_and_oversize():\n    checked=0\n    for source in ([],[1,2,3],(),(1,2,3),'','abcdef',b'abcdef',range(6),deque([1,2,3])):\n        values=list(source)\n        for n in (1,2,len(values),len(values)+4):\n            expected=values[-n:] if n else []\n            for candidate in (source,iter(source)):\n                eq(list(tail(n,candidate)),expected)\n                checked+=1\n    return {'sized_unsized_results_checked':checked}\n\n\ndef integer_subclass_counts():\n    class Count(int):\n        pass\n    class NamedCount(IntEnum):\n        NEGATIVE=-1\n        ZERO=0\n        TWO=2\n        LARGE=8\n    for count in (Count(0),Count(2),Count(8),NamedCount.ZERO,NamedCount.TWO,NamedCount.LARGE):\n        expected=list(deque(iter('abcdef'),maxlen=count))\n        eq(list(tail(count,iter('abcdef'))),expected)\n        eq(list(tail(count,'abcdef')),expected)\n    for count in (Count(-1),NamedCount.NEGATIVE):\n        raises(ValueError,lambda:tail(count,iter('abcdef')))\n        raises(ValueError,lambda:tail(count,'abcdef'))\n\n\ndef index_only_protocol_observation():\n    observations={}\n    for n in (-1,0,2,8):\n        entry={}\n        for name,function in [('native_deque',lambda:list(deque(iter('abc'),maxlen=IndexCount(n)))),\n                              ('tail_unsized',lambda:list(tail(IndexCount(n),iter('abc'))))]:\n            try:\n                entry[name]={'result':function()}\n            except Exception as exc:\n                entry[name]={'error':type(exc).__name__}\n        observations[str(n)]=entry\n    return observations\n\n\ndef iterator_protocol_ownership_and_timing():\n    class Traced:\n        def __init__(self,values):\n            self.values=values\n            self.pulls=[]\n        def __iter__(self):\n            for value in self.values:\n                self.pulls.append(value)\n                yield value\n    class Sized(Traced):\n        def __len__(self):\n            return len(self.values)\n    first,second,third=object(),object(),object()\n    values=[first,second,third]\n    for cls,eager in ((Sized,False),(Traced,True)):\n        source=cls(values)\n        exported=tail(2,source)\n        assert iter(exported) is exported\n        eq(len(source.pulls),3 if eager else 0)\n        actual=list(exported)\n        assert actual[0] is second and actual[1] is third\n        eq(len(source.pulls),3)\n        eq(list(exported),[])\n        eq([id(value) for value in values],[id(first),id(second),id(third)])\n\n\ndef unexpected_input_errors():\n    for clsname in ('sized','unsized'):\n        failure=RuntimeError('source failed')\n        pulls=[]\n        class Broken:\n            def __iter__(self):\n                pulls.append('value')\n                yield 'a'\n                pulls.append('failure')\n                raise failure\n        class Sized(Broken):\n            def __len__(self):\n                return 2\n        source=Sized() if clsname=='sized' else Broken()\n        if clsname=='sized':\n            exported=tail(2,source)\n            eq(pulls,[])\n            raises(RuntimeError,lambda:list(exported),failure)\n        else:\n            raises(RuntimeError,lambda:tail(2,source),failure)\n        eq(pulls,['value','failure'])\n    failure=KeyboardInterrupt('source interrupted')\n    class Interrupted:\n        def __iter__(self):\n            raise failure\n    raises(KeyboardInterrupt,lambda:tail(1,Interrupted()),failure)\n\n\ndef len_fallback_and_errors():\n    class UnsizedLike:\n        def __len__(self):\n            raise TypeError('no length available')\n        def __iter__(self):\n            return iter('abcd')\n    eq(list(tail(2,UnsizedLike())),['c','d'])\n    failure=RuntimeError('length source failed')\n    class BadLength:\n        def __len__(self):\n            raise failure\n        def __iter__(self):\n            raise AssertionError('unexpected fallback after RuntimeError')\n    raises(RuntimeError,lambda:tail(2,BadLength()),failure)\n\n\ndef public_keyword_and_bool_counts():\n    eq(list(tail(n=2,iterable='abc')),['b','c'])\n    eq(list(tail(2,iterable=iter('abc'))),['b','c'])\n    for n,expected in ((False,[]),(True,['c'])):\n        eq(list(tail(n,'abc')),expected)\n        eq(list(tail(n,iter('abc'))),expected)\n\n\ndef negative_error_precedence_observation():\n    events=[]\n    failure=RuntimeError('length query failed')\n    class Source:\n        def __len__(self):\n            events.append('len')\n            raise failure\n        def __iter__(self):\n            events.append('iter')\n            return iter('abc')\n    try:\n        tail(-1,Source())\n    except Exception as exc:\n        return {'error':type(exc).__name__,'original_source_error':exc is failure,'events':events}\n    return {'returned_without_error':True,'events':events}\n\n\ncheck('negative_plain_integer_sized_unsized_is_valueerror',negative_plain_integers)\ncheck('zero_length_sized_unsized',zero_counts)\ncheck('ordinary_and_oversize_sized_unsized_outputs',ordinary_counts_and_oversize)\ncheck('supported_int_subclass_intenum_counts',integer_subclass_counts)\ncheck('index_only_count_native_baseline_observation',index_only_protocol_observation)\ncheck('iterator_protocol_original_references_lazy_eager_timing',iterator_protocol_ownership_and_timing)\ncheck('unexpected_source_errors_identity_and_timing',unexpected_input_errors)\ncheck('typeerror_len_fallback_other_len_error_propagation',len_fallback_and_errors)\ncheck('public_keyword_and_bool_length_forms',public_keyword_and_bool_counts)\ncheck('negative_source_error_precedence_observation',negative_error_precedence_observation)\nprint(json.dumps({'module':recipes.__file__,'results':results},ensure_ascii=True))\n",
+    "source_sha256": "bef6993739e4c17ffdeb121c011e6e4cc6ee4bb5e2fba52e79738ecae7055b84",
+    "reproduction": "将 source 保存为 probe.py，将指定 more_itertools 包复制到独立目录；设置 PYTHONPATH 与 PROBE_COPY 后用 Python 3.12 -B 运行。无需联网或额外安装。",
+    "probe_development_corrections": [
+      {
+        "description": "首版探针先假定仅有 __index__ 的计数对象是本机 deque(maxlen=...) 支持的合法长度。原生 deque 控制在调用候选前就以 TypeError 拒绝，且 base 相同，因此该假定不成立，不能据此报告候选公共协议回归。",
+        "correction": "将这两个错误的“必须支持”断言撤为单独观察组，直接分别记录原生 deque 和每份 tail 的错误类别；另外用原有原生路径实际支持的 int 子类与 IntEnum 验证整数协议。未修改候选或使用隐藏评分。",
+        "initial_affected_group_results": {
+          "base": [
+            {
+              "id": "nonnegative_index_only_count_unsized_protocol",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            },
+            {
+              "id": "negative_index_only_count_unsized_valueerror",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            }
+          ],
+          "A": [
+            {
+              "id": "nonnegative_index_only_count_unsized_protocol",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            },
+            {
+              "id": "negative_index_only_count_unsized_valueerror",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            }
+          ],
+          "B": [
+            {
+              "id": "nonnegative_index_only_count_unsized_protocol",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            },
+            {
+              "id": "negative_index_only_count_unsized_valueerror",
+              "status": "fail",
+              "error": "TypeError",
+              "message": "an integer is required"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "probe_results": {
+    "base": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\base\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "negative_plain_integer_sized_unsized_is_valueerror",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "ValueError not raised"
+          },
+          {
+            "id": "zero_length_sized_unsized",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "ordinary_and_oversize_sized_unsized_outputs",
+            "status": "pass",
+            "detail": {
+              "sized_unsized_results_checked": 72
+            }
+          },
+          {
+            "id": "supported_int_subclass_intenum_counts",
+            "status": "fail",
+            "error": "AssertionError",
+            "message": "ValueError not raised"
+          },
+          {
+            "id": "index_only_count_native_baseline_observation",
+            "status": "pass",
+            "detail": {
+              "-1": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "0": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "2": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "8": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              }
+            }
+          },
+          {
+            "id": "iterator_protocol_original_references_lazy_eager_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unexpected_source_errors_identity_and_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "typeerror_len_fallback_other_len_error_propagation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_and_bool_length_forms",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "negative_source_error_precedence_observation",
+            "status": "pass",
+            "detail": {
+              "error": "RuntimeError",
+              "original_source_error": true,
+              "events": [
+                "len"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "A": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\A\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "negative_plain_integer_sized_unsized_is_valueerror",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "zero_length_sized_unsized",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "ordinary_and_oversize_sized_unsized_outputs",
+            "status": "pass",
+            "detail": {
+              "sized_unsized_results_checked": 72
+            }
+          },
+          {
+            "id": "supported_int_subclass_intenum_counts",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "index_only_count_native_baseline_observation",
+            "status": "pass",
+            "detail": {
+              "-1": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "0": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "2": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "8": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              }
+            }
+          },
+          {
+            "id": "iterator_protocol_original_references_lazy_eager_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unexpected_source_errors_identity_and_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "typeerror_len_fallback_other_len_error_propagation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_and_bool_length_forms",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "negative_source_error_precedence_observation",
+            "status": "pass",
+            "detail": {
+              "error": "RuntimeError",
+              "original_source_error": true,
+              "events": [
+                "len"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "B": {
+      "command": [
+        "{PYTHON_RUNTIME}\\python.exe",
+        "-B",
+        "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\probe.py"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "output": {
+        "module": "{USER_HOME}\\AppData\\Local\\Temp\\blind-v4-pair03-review-h1bzgstj\\B\\more_itertools\\recipes.py",
+        "results": [
+          {
+            "id": "negative_plain_integer_sized_unsized_is_valueerror",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "zero_length_sized_unsized",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "ordinary_and_oversize_sized_unsized_outputs",
+            "status": "pass",
+            "detail": {
+              "sized_unsized_results_checked": 72
+            }
+          },
+          {
+            "id": "supported_int_subclass_intenum_counts",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "index_only_count_native_baseline_observation",
+            "status": "pass",
+            "detail": {
+              "-1": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "0": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "2": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              },
+              "8": {
+                "native_deque": {
+                  "error": "TypeError"
+                },
+                "tail_unsized": {
+                  "error": "TypeError"
+                }
+              }
+            }
+          },
+          {
+            "id": "iterator_protocol_original_references_lazy_eager_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "unexpected_source_errors_identity_and_timing",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "typeerror_len_fallback_other_len_error_propagation",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "public_keyword_and_bool_length_forms",
+            "status": "pass",
+            "detail": null
+          },
+          {
+            "id": "negative_source_error_precedence_observation",
+            "status": "pass",
+            "detail": {
+              "error": "ValueError",
+              "original_source_error": false,
+              "events": []
+            }
+          }
+        ]
+      }
+    }
+  },
+  "probe_summary": {
+    "functional_groups_per_variant": 8,
+    "observational_groups_per_variant": 2,
+    "A_functional_passed": 8,
+    "B_functional_passed": 8,
+    "base_functional_passed": 6,
+    "baseline_control": "base 的两组失败都包含负整数或负整数子类的有长度输入，复现题面漏检；其余有效路径通过。两侧在八组行为要求上均通过。72 个普通及超长请求输出对照涵盖 list、tuple、str、bytes、range、deque 与对应迭代器；数量只描述覆盖，未用于排名。",
+    "observations": "__index__-only 计数在原生 deque、base、A、B 上均 TypeError。负长度配故障 __len__ 时 base/A 为原 RuntimeError 且查询一次 len，B 为 ValueError 且不查询 len。观察组仅记录边界，不作为缺陷断言。"
+  },
+  "source_immutability": {
+    "files_verified": 121,
+    "all_audited_bytes_unchanged": true,
+    "hash_algorithm": "SHA-256",
+    "source_hashes_before": {
+      "tasks-pair03.json": "beb0bbbf096eed378bd92543b4dd4aaf73c89c6746387d9b5a976eab3cb16c98",
+      "03\\task.json": "20a1c6b567d168e1f964ff1aa14612bd7e4ed94e22db0d5e7221684a8f07c6ef",
+      "03\\A.patch": "61779431de4d5545665b638e010798276117d59f7bb1d2b88469f0aa134aedd2",
+      "03\\B.patch": "e95138953dadc5404c17fa0d7a0115d7c9f2e084484b5b6687c0b5c7e96deebb",
+      "03\\base\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\base\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\base\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\base\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\base\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\base\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\base\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\base\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\base\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\base\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\base\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\base\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\base\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\base\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\base\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\base\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\base\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\base\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\base\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\base\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\base\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\base\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\base\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\base\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\base\\more_itertools\\recipes.py": "e32043683f5f718de35ee4c27293f2c32f9ca6666437fe5659e68258490efb54",
+      "03\\base\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\base\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\base\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\base\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\base\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\base\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\base\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\base\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\base\\tests\\test_recipes.py": "4f0b60cba9ed44f8941530769e6c2d81fd65532dcf4ab6eef8ee2b9947ac6726",
+      "03\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\base\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\base\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\base\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\base\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "03\\A\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\A\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\A\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\A\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\A\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\A\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\A\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\A\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\A\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\A\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\A\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\A\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\A\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\A\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\A\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\A\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\A\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\A\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\A\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\A\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\A\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\A\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\A\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\A\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\A\\more_itertools\\recipes.py": "970981f0ffa8248c135f134ab30d28cd1bed4ec077888f3bb2dff30568a6ef7e",
+      "03\\A\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\A\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\A\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\A\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\A\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\A\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\A\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\A\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\A\\tests\\test_recipes.py": "689f40d03fa2d77e922a2f60eaa5eab74382c913a594b5a35e3c5fcac68f8c9b",
+      "03\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\A\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\A\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\A\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\A\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "03\\B\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\B\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\B\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\B\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\B\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\B\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\B\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\B\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\B\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\B\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\B\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\B\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\B\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\B\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\B\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\B\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\B\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\B\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\B\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\B\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\B\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\B\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\B\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\B\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\B\\more_itertools\\recipes.py": "8aa99706721960922264176bce31f69443341ef7582b02e715e2d152c9addc0d",
+      "03\\B\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\B\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\B\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\B\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\B\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\B\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\B\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\B\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\B\\tests\\test_recipes.py": "61504804f319cb782b56208ac1aaf2bb41b98b236cf4e3ad48fbacc7394ee32a",
+      "03\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\B\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\B\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\B\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\B\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0"
+    },
+    "source_hashes_after": {
+      "tasks-pair03.json": "beb0bbbf096eed378bd92543b4dd4aaf73c89c6746387d9b5a976eab3cb16c98",
+      "03\\task.json": "20a1c6b567d168e1f964ff1aa14612bd7e4ed94e22db0d5e7221684a8f07c6ef",
+      "03\\A.patch": "61779431de4d5545665b638e010798276117d59f7bb1d2b88469f0aa134aedd2",
+      "03\\B.patch": "e95138953dadc5404c17fa0d7a0115d7c9f2e084484b5b6687c0b5c7e96deebb",
+      "03\\base\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\base\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\base\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\base\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\base\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\base\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\base\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\base\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\base\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\base\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\base\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\base\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\base\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\base\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\base\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\base\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\base\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\base\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\base\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\base\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\base\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\base\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\base\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\base\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\base\\more_itertools\\recipes.py": "e32043683f5f718de35ee4c27293f2c32f9ca6666437fe5659e68258490efb54",
+      "03\\base\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\base\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\base\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\base\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\base\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\base\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\base\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\base\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\base\\tests\\test_recipes.py": "4f0b60cba9ed44f8941530769e6c2d81fd65532dcf4ab6eef8ee2b9947ac6726",
+      "03\\base\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\base\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\base\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\base\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\base\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "03\\A\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\A\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\A\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\A\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\A\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\A\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\A\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\A\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\A\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\A\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\A\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\A\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\A\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\A\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\A\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\A\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\A\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\A\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\A\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\A\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\A\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\A\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\A\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\A\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\A\\more_itertools\\recipes.py": "970981f0ffa8248c135f134ab30d28cd1bed4ec077888f3bb2dff30568a6ef7e",
+      "03\\A\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\A\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\A\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\A\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\A\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\A\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\A\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\A\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\A\\tests\\test_recipes.py": "689f40d03fa2d77e922a2f60eaa5eab74382c913a594b5a35e3c5fcac68f8c9b",
+      "03\\A\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\A\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\A\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\A\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\A\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0",
+      "03\\B\\.gitattributes": "8e0056260cb5f4479f0ab03770e7b8d43e3403462a12d665641ff5b99e3d6de4",
+      "03\\B\\.gitignore": "961f3588d7b5752df4ed52e61ab79e4046989268edf29462d89f2c0e143041d0",
+      "03\\B\\.readthedocs.yaml": "ccd84b50bf3b8792d7eeb2500470e0c3d0ead95c12fbca11bead3ae5ad01b550",
+      "03\\B\\LICENSE": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+      "03\\B\\Makefile": "dde0dd3f3ddc7d89d31d6b54b3efaf98380e11388495d08f4d1bcf9cae7856aa",
+      "03\\B\\MANIFEST.in": "6994da7bced1d690bd5175528fdd79df0185c269c7b1dde739f719254d4e70d4",
+      "03\\B\\pyproject.toml": "9f42e75e2409e8d09cf57e1f575130a6084f49de570d847bb9cae7813485af52",
+      "03\\B\\README.rst": "94a39a3f8ed00bbc7f3d1f90f0b2dec5193b5ace648195825142ef508ae4e8ce",
+      "03\\B\\setup.cfg": "309de2d8409ea9c61b8cd1509a70ef7727184a549f8bd86562fd7ff8ff74b67f",
+      "03\\B\\tox.ini": "fc9173081557ba89093d617b5e082bd9cf278717dbf3e8cb8d50bf571aa1e9d2",
+      "03\\B\\.github\\PULL_REQUEST_TEMPLATE.md": "8b82e360cd409afddd1f7f08a240f5c4f40e2e9f8d807f275efe7f33eb446ef4",
+      "03\\B\\docs\\api.rst": "4f067564cee11d63686a471dab2b060829bede8655350303c34c52cac9b9f4bf",
+      "03\\B\\docs\\conf.py": "2d0c0ec85ded2644cd2f6b48997aa722c7f5e729c398ccc0163b6be3c7819c08",
+      "03\\B\\docs\\index.rst": "9c4321710f0df7cb20f9a4f5d598e86309a82224fc166eb25b9b3fafebe85908",
+      "03\\B\\docs\\license.rst": "f4a8d4c0f47ec36904fba4fb1f7be3fcaa045cc3fdd4766200ba755d892f0d18",
+      "03\\B\\docs\\make.bat": "1e37476b6c285fb58fae433c13361f82f1720e43fcb499b42b9c718a7ae1d5d7",
+      "03\\B\\docs\\Makefile": "95f4fa50d01692b423c545d9fad53fc977ce116433c67f627d003fc441486a28",
+      "03\\B\\docs\\requirements.txt": "7d9f9b3c25e96ddc47c2680ba57563df6a1ac3496bb6a2e5f9cfb01c76bff4c6",
+      "03\\B\\docs\\testing.rst": "d6bce97abf158183c0f853a64b68b170a567474331f02b20bcd9797ae6f8a80c",
+      "03\\B\\docs\\toctree.rst": "278cb4e971ef7920c9fff534c75eb847fd7ae2ee424e70347d1cef2fce367cd7",
+      "03\\B\\docs\\versions.rst": "b87c86ec917d5f86e8db74cbae2a2f8505518d4aade3ab41b185f10641a6fa72",
+      "03\\B\\more_itertools\\more.py": "9c4160868f8f83a7b69a503b4b5f76c2a145a016ec2ad40f40c04e490265fdc6",
+      "03\\B\\more_itertools\\more.pyi": "1cb3bfd1f3a030b6779c618a083af570c89e7f744ea11b6dfd2bdfe0ff771997",
+      "03\\B\\more_itertools\\py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\B\\more_itertools\\recipes.py": "8aa99706721960922264176bce31f69443341ef7582b02e715e2d152c9addc0d",
+      "03\\B\\more_itertools\\recipes.pyi": "fe7e86b57610ccb23a638c22ee651f57224bc5ed5ddbb8e59efa5edcd1afa311",
+      "03\\B\\more_itertools\\__init__.py": "19cb2d318e8d45eb7d56136a55f1452c9469d21597571c31d752aa8232a2c07b",
+      "03\\B\\more_itertools\\__init__.pyi": "e41dde4f338dd4106e38ba1bd6f09f97211bda549deaeb17410f82bfe85791e0",
+      "03\\B\\requirements\\development.txt": "ea11594e2c832b2e83248bbb1626b61a42805b87dbcbcfe5fa8a20de5b71dcb9",
+      "03\\B\\requirements\\packaging.txt": "97b220a7178d25af426928a961b7fe09b7ef2567ae2e6ce9dc8e6a730ea27ab5",
+      "03\\B\\requirements\\testing.txt": "cd26741c111c100de91fa68c6e9ba865348645da9b70c0b6672ff0f17f87ec6f",
+      "03\\B\\requirements\\typechecks.txt": "33eff4300845d30859eace31f902fc365134650e4521b5c9cd299db7d426133e",
+      "03\\B\\tests\\test_more.py": "104cfa27f49775dddb99475c6c2f472b99240179cc1a5e15f81397e815b265e0",
+      "03\\B\\tests\\test_recipes.py": "61504804f319cb782b56208ac1aaf2bb41b98b236cf4e3ad48fbacc7394ee32a",
+      "03\\B\\tests\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "03\\B\\.github\\ISSUE_TEMPLATE\\other-issues.md": "e21f2c602f76e451b79a728e394e5195ada112c0555ded517f5f758d5009f41e",
+      "03\\B\\.github\\ISSUE_TEMPLATE\\propose-a-new-itertool.md": "6f0f79660cbd5ef98afe03f80e4c281e5016e71ec4d65aed68b3cbe4009a78d3",
+      "03\\B\\.github\\workflows\\python-app.yml": "b53c972e7b5badf8b380360158f25f1275d58eaf3a4ed8d33c3a91059e8ef7ad",
+      "03\\B\\docs\\_static\\theme_overrides.css": "b78b73585650d7960a0552c33c2d3220fd65217e8223c7701f35f1f778b1f6b0"
+    },
+    "includes": "只包含对应 base/A/B 全部常规文件、task.json、A.patch、B.patch 与 tasks-pair03.json；文件枚举仅为字节校验。"
+  },
+  "limitations": [
+    "这是指定公开任务及源码上的局部盲审，不是全项目认证；未运行候选测试套件或隐藏 grader，没有模型 CLI、网络或委派，也未修改真实项目源码。",
+    "本轮未读取标签、成本、skill、其他生产结果、参考修复或旧轮揭盲。审查员已有先前案例开发及匿名 pair 审阅背景，不能声称从未接触整个项目；本 pair 判断没有使用跨 pair 或跨轮标签推断。",
+    "只验证 Python 3.12.14 的有限输入和记录的整数长度形式。无限输入、超出本机 deque 范围的巨大长度、非整数长度和其他 Python 版本未建立新契约，不把这些未测范围当作候选缺陷。",
+    "双重非法输入的异常优先级没有明示；报告保留实际差异而不将一侧的 fail-fast 或另一侧的旧顺序自动判优。"
+  ]
+}

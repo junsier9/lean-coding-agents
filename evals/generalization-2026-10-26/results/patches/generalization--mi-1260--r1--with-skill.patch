@@ -1,0 +1,119 @@
+diff --git a/more_itertools/recipes.py b/more_itertools/recipes.py
+index cad5f7e..fbb83ad 100644
+--- a/more_itertools/recipes.py
++++ b/more_itertools/recipes.py
+@@ -1470,6 +1470,7 @@ def running_mean(iterable, *, maxlen=None):
+     if maxlen is None:
+         return map(truediv, accumulate(iterator), count(1))
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1515,6 +1516,7 @@ def running_min(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=min)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1560,6 +1562,7 @@ def running_max(iterable, *, maxlen=None):
+     if maxlen is None:
+         return accumulate(iterator, func=max)
+ 
++    maxlen = _index(maxlen)
+     if maxlen <= 0:
+         raise ValueError('Window size should be positive')
+ 
+@@ -1589,8 +1592,11 @@ def running_statistics(iterable, *, maxlen=None):
+     but not complex numbers which are unorderable.
+     """
+ 
+-    # fmt: off
+     t0, t1, t2, t3 = tee(iterable, 4)
++    if maxlen is not None:
++        maxlen = _index(maxlen)
++
++    # fmt: off
+     return map(
+         Stats,
+         count(1) if maxlen is None else chain(range(1, maxlen), repeat(maxlen)),
+diff --git a/tests/test_recipes.py b/tests/test_recipes.py
+index e6a0a57..a8a6cb1 100644
+--- a/tests/test_recipes.py
++++ b/tests/test_recipes.py
+@@ -1588,6 +1588,73 @@ def grow_to_window(data, maxlen):
+         yield data[i:j]
+ 
+ 
++class RunningWindowSizeTests(TestCase):
++    functions = (
++        mi.running_min,
++        mi.running_max,
++        mi.running_mean,
++        mi.running_median,
++        mi.running_statistics,
++    )
++
++    def test_non_integer(self):
++        class IntOnly:
++            def __int__(self):
++                return 3
++
++        for func in self.functions:
++            for maxlen in (2.5, 3.0, '3', Decimal(3), Fraction(3), IntOnly()):
++                for data in ([], [4, 3, 7]):
++                    with self.subTest(func=func, maxlen=maxlen, data=data):
++                        iterator = iter(data)
++                        with self.assertRaises(TypeError):
++                            func(iterator, maxlen=maxlen)
++                        self.assertEqual(list(iterator), data)
++
++    def test_non_positive(self):
++        for func in self.functions:
++            for maxlen in (0, -1, False):
++                for data in ([], [4, 3, 7]):
++                    with self.subTest(func=func, maxlen=maxlen, data=data):
++                        with self.assertRaisesRegex(
++                            ValueError, 'Window size should be positive'
++                        ):
++                            func(iter(data), maxlen=maxlen)
++
++    def test_index_protocol(self):
++        class Index:
++            def __init__(self, value):
++                self.value = value
++
++            def __index__(self):
++                return self.value
++
++        for func in self.functions:
++            for size in (1, 2, 3, 20):
++                for data in ([], [4, 3, 7, 0, 8, 1, 6, 2, 9, 5]):
++                    with self.subTest(func=func, size=size, data=data):
++                        self.assertEqual(
++                            list(func(iter(data), maxlen=Index(size))),
++                            list(func(iter(data), maxlen=size)),
++                        )
++            for size in (0, -1):
++                with self.subTest(func=func, size=size):
++                    with self.assertRaises(ValueError):
++                        func([], maxlen=Index(size))
++            with self.subTest(func=func, size=2.5):
++                with self.assertRaises(TypeError):
++                    func([], maxlen=Index(2.5))
++
++    def test_none(self):
++        for func in self.functions:
++            for data in ([], [4, 3, 7, 0, 8, 1]):
++                with self.subTest(func=func, data=data):
++                    self.assertEqual(
++                        list(func(iter(data), maxlen=None)),
++                        list(func(iter(data))),
++                    )
++
++
+ class RunningMeanTests(TestCase):
+     def test_basic(self):
+         for i, (iterable, expected) in enumerate(

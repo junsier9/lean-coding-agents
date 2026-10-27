@@ -1,0 +1,1441 @@
+{
+  "preflight_before_sha256": "644543ff0a28a3e9c3a15747bece9e0111c4473bf467441dc06a83bd7b8e57eb",
+  "preflight_after_sha256": "3cd03d43a286753a7413393c265b6e68f2b7dbfdedca10fcc4ce899d1b309226",
+  "only_requested_root_block_changed": true,
+  "fixtures": [
+    {
+      "layout": "top-level",
+      "frozen_test_roots": [
+        "tests"
+      ],
+      "overlay_files": [
+        "conftest.py",
+        "pytest.ini",
+        "tests/conftest.py",
+        "tests/fixtures/expected.txt",
+        "tests/test_existing.py",
+        "tests/test_regression.py"
+      ],
+      "production_path": "fixture_package/logic.py",
+      "base_production_sha256": "81c39670c4b19842f26b519fe197fe5406ed038ecfb8d605297076ef3dbda9ba",
+      "fix_production_sha256": "66c1f25def9d9ffab2d1f57dd46d35094e5c421880da6a4f5214fa39f2410994",
+      "base_grade_production_preserved": true,
+      "fix_grade_production_preserved": true,
+      "complete_test_fixture_config_overlay_identical": true,
+      "base": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 1,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [
+          {
+            "test": "tests.test_regression::test_new_regression",
+            "stage": "call",
+            "type": "",
+            "message": "assert 1 == 2\n +  where 1 = value()"
+          }
+        ],
+        "exit_code": 1,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\base.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\base-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\base-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\base-grade\\pytest.ini",
+          "tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\base.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\base.xml",
+        "seconds": 0.437
+      },
+      "fix": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [],
+        "exit_code": 0,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\fix.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\fix-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\fix-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\fix-grade\\pytest.ini",
+          "tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\fix.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\top-level\\logs\\fix.xml",
+        "seconds": 0.344
+      }
+    },
+    {
+      "layout": "package-tests",
+      "frozen_test_roots": [
+        "toolz/tests"
+      ],
+      "overlay_files": [
+        "conftest.py",
+        "pytest.ini",
+        "toolz/tests/conftest.py",
+        "toolz/tests/fixtures/expected.txt",
+        "toolz/tests/test_existing.py",
+        "toolz/tests/test_regression.py"
+      ],
+      "production_path": "toolz/logic.py",
+      "base_production_sha256": "81c39670c4b19842f26b519fe197fe5406ed038ecfb8d605297076ef3dbda9ba",
+      "fix_production_sha256": "66c1f25def9d9ffab2d1f57dd46d35094e5c421880da6a4f5214fa39f2410994",
+      "base_grade_production_preserved": true,
+      "fix_grade_production_preserved": true,
+      "complete_test_fixture_config_overlay_identical": true,
+      "base": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 1,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [
+          {
+            "test": "toolz.tests.test_regression::test_new_regression",
+            "stage": "call",
+            "type": "",
+            "message": "assert 1 == 2\n +  where 1 = value()"
+          }
+        ],
+        "exit_code": 1,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\base.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\base-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\base-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\base-grade\\pytest.ini",
+          "toolz/tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\base.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\base.xml",
+        "seconds": 0.344
+      },
+      "fix": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [],
+        "exit_code": 0,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\fix.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\fix-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\fix-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\fix-grade\\pytest.ini",
+          "toolz/tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\fix.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\package-tests\\logs\\fix.xml",
+        "seconds": 0.344
+      }
+    },
+    {
+      "layout": "sandbox-tests",
+      "frozen_test_roots": [
+        "toolz/sandbox/tests"
+      ],
+      "overlay_files": [
+        "conftest.py",
+        "pytest.ini",
+        "toolz/sandbox/tests/conftest.py",
+        "toolz/sandbox/tests/fixtures/expected.txt",
+        "toolz/sandbox/tests/test_existing.py",
+        "toolz/sandbox/tests/test_regression.py"
+      ],
+      "production_path": "toolz/logic.py",
+      "base_production_sha256": "81c39670c4b19842f26b519fe197fe5406ed038ecfb8d605297076ef3dbda9ba",
+      "fix_production_sha256": "66c1f25def9d9ffab2d1f57dd46d35094e5c421880da6a4f5214fa39f2410994",
+      "base_grade_production_preserved": true,
+      "fix_grade_production_preserved": true,
+      "complete_test_fixture_config_overlay_identical": true,
+      "base": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 1,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [
+          {
+            "test": "toolz.sandbox.tests.test_regression::test_new_regression",
+            "stage": "call",
+            "type": "",
+            "message": "assert 1 == 2\n +  where 1 = value()"
+          }
+        ],
+        "exit_code": 1,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\base.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\base-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\base-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\base-grade\\pytest.ini",
+          "toolz/sandbox/tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\base.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\base.xml",
+        "seconds": 0.344
+      },
+      "fix": {
+        "tests_collected": 2,
+        "tests_ran": 2,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "assertion_failures": 0,
+        "failures": [],
+        "exit_code": 0,
+        "command": [
+          "C:\\Users\\ASUS\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "-m",
+          "pytest",
+          "-q",
+          "-o",
+          "addopts=",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "pytest_timeout",
+          "--timeout=60",
+          "--junitxml=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\fix.xml",
+          "--rootdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\fix-grade",
+          "--confcutdir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\fix-grade",
+          "-c",
+          "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\fix-grade\\pytest.ini",
+          "toolz/sandbox/tests"
+        ],
+        "log_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\fix.log",
+        "junit_path": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-overlay-validation-b1798de0b741468cb4f9489ad3537d78\\fixtures\\sandbox-tests\\logs\\fix.xml",
+        "seconds": 0.344
+      }
+    }
+  ],
+  "existing_manifest_audit": [
+    {
+      "manifest": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\eligible.json",
+      "count": 61,
+      "cases": [
+        {
+          "id": "mi-1305",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1269",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1279",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1278",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1270",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1253",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1251",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1200",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1193",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1308",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-458",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-424",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-406",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-403",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-401",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-410",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-416",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-onetoone-empty",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-336",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-302",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1260",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1276",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1261",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1248",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1211",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1128",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1125",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1088",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1082",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "mi-1028",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-428",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-418",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-438",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-443-table",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-389",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-404",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-474",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "boltons-pearson-zero",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-01-click-2811",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 31,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-02-click-2730",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 31,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-03-click-2724",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 31,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-04-click-2680",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 31,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-05-click-2421",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 23,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-06-click-2417",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 23,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-07-click-2333",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 23,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-08-click-2219",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 23,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-09-click-2058",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 22,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-12-itsdangerous-296",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 8,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-14-itsdangerous-154",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 9,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-15-itsdangerous-133",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 9,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-16-pluggy-545",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 13,
+          "frozen_test_roots": [
+            "testing"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-24-click-1566",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 20,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-25-click-1551",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 21,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-26-click-1478",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-27-click-1354",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 22,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-28-click-1304",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-29-click-1142",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 22,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-31-click-999",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-32-click-994",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-33-click-874",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "b-34-click-794",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 18,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        }
+      ]
+    },
+    {
+      "manifest": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\eligible-extra-a.json",
+      "count": 33,
+      "cases": [
+        {
+          "id": "extra-a-mi-1294",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1285",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1223",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1216",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1194",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1182",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1153",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1119",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1118",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-1117",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-944",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-650",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-mi-917",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 6,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-513",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-475",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-472",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-468",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-467",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-462",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-450",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-445",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-437",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-407",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-349",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-338",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-332",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-298",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-178",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-144",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-114",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 33,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-128",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 36,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-247",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a-boltons-451",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 37,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        }
+      ]
+    },
+    {
+      "manifest": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\lean-full-validation-b148d5d8f3a84c3d8b8ccbe5fc0c5c67\\eligible-extra-a2.json",
+      "count": 9,
+      "cases": [
+        {
+          "id": "extra-a2-boltons-32",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 3,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-boltons-64",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 23,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3884",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 60,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3865",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 60,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3805",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 48,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3678",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 45,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3578",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 32,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3493",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 32,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        },
+        {
+          "id": "extra-a2-click-3484",
+          "files_identical": true,
+          "roots_identical": true,
+          "overlay_file_count": 32,
+          "frozen_test_roots": [
+            "tests"
+          ],
+          "added_files": [],
+          "removed_files": []
+        }
+      ]
+    }
+  ],
+  "existing_cases_checked": 103,
+  "manifest_mismatch_count": 0
+}

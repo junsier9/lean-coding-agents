@@ -1,0 +1,13 @@
+{
+  "completed_at": "2026-10-27T09:40:40.219598+00:00",
+  "evidence_class": "known_development_only",
+  "native_attempts": 12,
+  "contract_accepted": 11,
+  "normal_completions": 11,
+  "full_body_outputs": 12,
+  "usage_complete": 11,
+  "potential_trace_flags": 0,
+  "closed_v5_failure_preserved": true,
+  "development_gate_passed": false,
+  "no_fresh_generalization_efficiency_or_production_claim": true
+}

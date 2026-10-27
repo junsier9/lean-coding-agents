@@ -1,0 +1,111 @@
+diff --git a/boltons/tbutils.py b/boltons/tbutils.py
+index 54b4397..0903cd8 100644
+--- a/boltons/tbutils.py
++++ b/boltons/tbutils.py
+@@ -75,13 +75,18 @@ class Callpoint(object):
+         self.line = line
+ 
+     def to_dict(self):
+-        "Get a :class:`dict` copy of the Callpoint. Useful for serialization."
++        """Get a JSON-serializable :class:`dict` copy of the Callpoint.
++
++        Deferred source lines are resolved to strings in the copy.
++        """
+         ret = {}
+         for slot in self.__slots__:
+             try:
+                 ret[slot] = getattr(self, slot)
+             except AttributeError:
+                 pass
++        if isinstance(ret.get('line'), _DeferredLine):
++            ret['line'] = str(ret['line'])
+         return ret
+ 
+     @classmethod
+diff --git a/tests/test_tbutils.py b/tests/test_tbutils.py
+index 84f6725..b8fe5aa 100644
+--- a/tests/test_tbutils.py
++++ b/tests/test_tbutils.py
+@@ -1,13 +1,17 @@
+ # -*- coding: utf-8 -*-
+ 
++import json
+ import sys
+ 
++import pytest
++
+ try:
+     from cStringIO import StringIO
+ except:
+     from io import StringIO
+ 
+-from boltons.tbutils import (TracebackInfo,
++from boltons.tbutils import (Callpoint,
++                             TracebackInfo,
+                              ExceptionInfo,
+                              print_exception,
+                              fix_print_exception,
+@@ -15,6 +19,63 @@ from boltons.tbutils import (TracebackInfo,
+                              ContextualExceptionInfo)
+ 
+ 
++@pytest.mark.parametrize('line', [None, '', u'    value = "\u6e90\u7801"'])
++def test_callpoint_to_dict_plain_line(line):
++    callpoint = Callpoint('example', 'example.py', 'example_func', 12, 34,
++                         line=line)
++    expected = {'module_name': 'example', 'module_path': 'example.py',
++                'func_name': 'example_func', 'lineno': 12, 'lasti': 34,
++                'line': line}
++
++    assert json.loads(json.dumps(callpoint.to_dict())) == expected
++    assert callpoint.line is line
++
++
++@pytest.mark.parametrize('callpoint_type', [Callpoint, ContextualCallpoint])
++def test_callpoint_to_dict_deferred_line(callpoint_type):
++    local_value = 42
++    callpoint = callpoint_type.from_current()
++    deferred_line = callpoint.line
++    assert not hasattr(deferred_line, '_line')
++
++    exported = callpoint.to_dict()
++    assert exported['line'] == '    callpoint = callpoint_type.from_current()'
++    for field in ('func_name', 'lineno', 'module_name', 'module_path', 'lasti'):
++        assert exported[field] == getattr(callpoint, field)
++    assert json.loads(json.dumps(exported)) == exported
++    assert callpoint.line is deferred_line
++    assert callpoint.to_dict() == exported
++
++    if callpoint_type is ContextualCallpoint:
++        assert exported['locals']['local_value'] == '42'
++        assert any(item['line'] == '    local_value = 42'
++                   for item in exported['pre_lines'])
++        assert any(item['line'] == '    exported = callpoint.to_dict()'
++                   for item in exported['post_lines'])
++
++
++@pytest.mark.parametrize('info_type', [ExceptionInfo, ContextualExceptionInfo])
++def test_exception_info_to_dict_json(info_type):
++    def fail():
++        raise ValueError('serialization failure')
++
++    try:
++        fail()
++    except ValueError:
++        exc_info = info_type.from_current()
++
++    exported = json.loads(json.dumps(exc_info.to_dict()))
++    assert set(exported) == set(['exc_type', 'exc_msg', 'exc_tb'])
++    assert exported['exc_type'] == 'ValueError'
++    assert exported['exc_msg'] == 'serialization failure'
++    assert exported['exc_tb'] == json.loads(json.dumps(exc_info.tb_info.to_dict()))
++    frames = exported['exc_tb']['frames']
++    assert len(frames) == 2
++    assert frames[0]['line'] == '        fail()'
++    assert frames[-1]['func_name'] == 'fail'
++    assert frames[-1]['line'] == "        raise ValueError('serialization failure')"
++
++
+ 
+ def test_exception_info():
+     # test ExceptionInfo and TracebackInfo and hooks, via StringIOs

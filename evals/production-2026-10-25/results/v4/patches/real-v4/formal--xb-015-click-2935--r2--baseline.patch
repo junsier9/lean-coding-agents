@@ -1,0 +1,100 @@
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index cdb5822..37a15db 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -567,7 +567,7 @@ def _resolve_context(
+                     with cmd.make_context(
+                         name, args, parent=ctx, resilient_parsing=True
+                     ) as sub_ctx:
+-                        args = ctx._protected_args + ctx.args
++                        args = sub_ctx._protected_args + sub_ctx.args
+                         ctx = sub_ctx
+                 else:
+                     sub_ctx = ctx
+@@ -586,7 +586,7 @@ def _resolve_context(
+                             allow_interspersed_args=False,
+                             resilient_parsing=True,
+                         ) as sub_sub_ctx:
+-                            args = sub_ctx.args
++                            args = sub_sub_ctx.args
+                             sub_ctx = sub_sub_ctx
+ 
+                     ctx = sub_ctx
+diff --git a/tests/test_shell_completion.py b/tests/test_shell_completion.py
+index 3511f07..ebce2bd 100644
+--- a/tests/test_shell_completion.py
++++ b/tests/test_shell_completion.py
+@@ -40,6 +40,51 @@ def test_group():
+     assert _get_words(cli, [], "-") == ["-a", "--help"]
+ 
+ 
++@pytest.mark.parametrize(
++    ("args", "incomplete", "expect"),
++    [
++        (["outer"], "", ["inner", "other"]),
++        (["outer"], "--", ["--outer", "--help"]),
++        (["outer", "inner"], "", ["run"]),
++        (["outer", "inner"], "--", ["--inner", "--help"]),
++        (["outer", "--outer", "x", "inner"], "--", ["--inner", "--help"]),
++        (["outer", "inner", "--inner", "x", "run"], "--", ["--format", "--help"]),
++        (["outer", "inner", "run", "--format"], "j", ["json"]),
++        (["outer", "inner", "run", "--format=json"], "--", ["--help"]),
++        (["outer", "inner", "run"], "", ["all", "selected"]),
++    ],
++)
++def test_nested_group(args, incomplete, expect):
++    cli = Group(
++        "cli",
++        params=[Option(["--root"])],
++        commands=[
++            Group(
++                "outer",
++                params=[Option(["--outer"])],
++                commands=[
++                    Group(
++                        "inner",
++                        params=[Option(["--inner"])],
++                        commands=[
++                            Command(
++                                "run",
++                                params=[
++                                    Option(["--format"], type=Choice(["text", "json"])),
++                                    Argument(["target"], type=Choice(["all", "selected"])),
++                                ],
++                            )
++                        ],
++                    ),
++                    Command("other"),
++                ],
++            ),
++            Command("root-command"),
++        ],
++    )
++    assert _get_words(cli, args, incomplete) == expect
++
++
+ def test_group_command_same_option():
+     cli = Group(
+         "cli", params=[Option(["-a"])], commands=[Command("x", params=[Option(["-a"])])]
+@@ -56,8 +101,8 @@ def test_chained():
+         chain=True,
+         commands=[
+             Command("set", params=[Option(["-y"])]),
+-            Command("start"),
+-            Group("get", commands=[Command("full")]),
++            Command("start", params=[Option(["-z"], type=Choice(["a", "b"]))]),
++            Group("get", commands=[Command("full", params=[Option(["--full"])])]),
+         ],
+     )
+     assert _get_words(cli, [], "") == ["get", "set", "start"]
+@@ -67,6 +112,10 @@ def test_chained():
+     assert _get_words(cli, ["get"], "") == ["full", "set", "start"]
+     assert _get_words(cli, ["get", "full"], "") == ["set", "start"]
+     assert _get_words(cli, ["get"], "s") == ["set", "start"]
++    assert _get_words(cli, ["set", "start"], "-") == ["-z", "--help"]
++    assert _get_words(cli, ["set", "-y", "1", "start"], "-") == ["-z", "--help"]
++    assert _get_words(cli, ["set", "start", "-z"], "a") == ["a"]
++    assert _get_words(cli, ["get", "full"], "--") == ["--full", "--help"]
+ 
+ 
+ def test_help_option():

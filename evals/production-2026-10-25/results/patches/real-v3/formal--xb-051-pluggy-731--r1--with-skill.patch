@@ -1,0 +1,68 @@
+diff --git a/src/pluggy/_manager.py b/src/pluggy/_manager.py
+index 448d5af..0a7c8f3 100644
+--- a/src/pluggy/_manager.py
++++ b/src/pluggy/_manager.py
+@@ -194,8 +194,12 @@ class PluginManager:
+             The plugin name. If the name is blocked from registering, returns
+             ``None``.
+ 
+-        If the plugin is already registered, raises a :exc:`ValueError`.
++        If the plugin is ``None`` or already registered, raises a
++        :exc:`ValueError`.
+         """
++        if plugin is None:
++            raise ValueError("Plugin cannot be None")
++
+         plugin_name = name or self.get_canonical_name(plugin)
+ 
+         if plugin_name in self._name2plugin:
+diff --git a/testing/test_pluginmanager.py b/testing/test_pluginmanager.py
+index c35d686..73cff17 100644
+--- a/testing/test_pluginmanager.py
++++ b/testing/test_pluginmanager.py
+@@ -29,6 +29,45 @@ def test_plugin_double_register(pm: PluginManager) -> None:
+         pm.register(42, name="def")
+ 
+ 
++@pytest.mark.parametrize("name", [None, "invalid"])
++def test_register_none(pm: PluginManager, name: str | None) -> None:
++    plugin_name = name or pm.get_canonical_name(None)
++
++    with pytest.raises(ValueError, match="Plugin cannot be None"):
++        pm.register(None, name=name)
++
++    assert pm.list_name_plugin() == []
++    assert not pm.is_registered(None)
++    assert pm.get_plugins() == set()
++    assert not pm.is_blocked(plugin_name)
++
++    plugin = object()
++    assert pm.register(plugin, name=plugin_name) == plugin_name
++    assert pm.is_registered(plugin)
++    assert pm.get_plugins() == {plugin}
++
++
++@pytest.mark.parametrize("name", ["registered", "blocked"])
++def test_register_none_preserves_registry(he_pm: PluginManager, name: str) -> None:
++    class Plugin:
++        @hookimpl
++        def he_method1(self, arg: int) -> int:
++            return arg + 1
++
++    plugin = Plugin()
++    he_pm.register(plugin, name="registered")
++    he_pm.set_blocked("blocked")
++
++    with pytest.raises(ValueError, match="Plugin cannot be None"):
++        he_pm.register(None, name=name)
++
++    assert he_pm.list_name_plugin() == [("registered", plugin), ("blocked", None)]
++    assert he_pm.get_plugins() == {plugin}
++    assert he_pm.is_registered(plugin)
++    assert he_pm.is_blocked("blocked")
++    assert he_pm.hook.he_method1(arg=1) == [2]
++
++
+ def test_pm(pm: PluginManager) -> None:
+     """Basic registration with objects"""
+ 

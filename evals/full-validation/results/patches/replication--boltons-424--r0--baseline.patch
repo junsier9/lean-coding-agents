@@ -1,0 +1,124 @@
+diff --git a/boltons/setutils.py b/boltons/setutils.py
+index 3ed5ab3..5bf0af0 100644
+--- a/boltons/setutils.py
++++ b/boltons/setutils.py
+@@ -390,16 +390,20 @@ class IndexedSet(MutableSet):
+         return self
+ 
+     def iter_slice(self, start, stop, step=None):
+-        "iterate over a slice of the set"
++        """Iterate over a slice of the set.
++
++        Negative steps select a forward window in the reversed set.
++        """
+         iterable = self
+-        if start is not None:
+-            start = self._get_real_index(start)
+-        if stop is not None:
+-            stop = self._get_real_index(stop)
+-        if step is not None and step < 0:
+-            step = -step
+-            iterable = reversed(self)
+-        return islice(iterable, start, stop, step)
++        if step is not None:
++            step = operator.index(step)
++            if step < 0:
++                step = -step
++                iterable = reversed(self)
++        size = len(self)
++        start, stop, step = slice(start, stop, step).indices(size)
++        # islice limits step sizes; steps beyond the set length are equivalent.
++        return islice(iterable, start, stop, min(step, size or 1))
+ 
+     # list operations
+     def __getitem__(self, index):
+diff --git a/tests/test_setutils.py b/tests/test_setutils.py
+index b095ea7..fecb476 100644
+--- a/tests/test_setutils.py
++++ b/tests/test_setutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ 
+ from boltons.setutils import IndexedSet, _MISSING, complement
+ 
+@@ -21,6 +21,79 @@ def test_indexed_set_basic():
+     assert x[2:4:-1] == IndexedSet([8, 7])
+ 
+ 
++def test_indexed_set_slice_after_pop():
++    x = IndexedSet(range(10))
++    x.pop(2)
++    assert x.dead_indices
++
++    assert x[1:4] == IndexedSet([1, 3, 4])
++    assert x[-3:] == IndexedSet([7, 8, 9])
++    assert x[2:4:-1] == IndexedSet([7, 6])
++
++
++@mark.parametrize('size, removed', [
++    (0, ()),
++    (1, ()),
++    (1, (0,)),
++    (10, ()),
++    (10, (2,)),
++    (32, (0, 3, 4, 12)),  # leading, adjacent, and separated holes
++    (32, (3, 4, 5, 6, 7, 12)),  # compaction followed by another hole
++])
++@mark.parametrize('step', [None, 1, 2, 100, 10**100, -1, -2, -100, -10**100])
++def test_indexed_set_slice_windows(size, removed, step):
++    x = IndexedSet(range(size))
++    for item in removed:
++        x.remove(item)
++    values = list(x)
++    fresh = IndexedSet(values)
++    items_before = x.item_list[:]
++    bounds = [None, -10**100, -size - 1, -size, -3, -1,
++              0, 1, 3, size, size + 1, 10**100]
++    # Negative steps select a forward window in the reversed sequence.
++    reference = values if step is None or step > 0 else values[::-1]
++    reference_step = None if step is None else abs(step)
++
++    for start in bounds:
++        for stop in bounds:
++            window = slice(start, stop, step)
++            expected = reference[start:stop:reference_step]
++            assert list(x[window]) == list(fresh[window]) == expected
++            assert list(x.iter_slice(start, stop, step)) == expected
++
++    assert x.item_list == items_before
++    assert list(x) == values
++
++
++def test_indexed_set_slice_index_protocol():
++    class Index:
++        def __init__(self, value):
++            self.value = value
++
++        def __index__(self):
++            return self.value
++
++    x = IndexedSet(range(10))
++    x.pop(2)
++    assert list(x[Index(-5):Index(100):Index(2)]) == [5, 7, 9]
++    assert list(x[Index(1):Index(5):Index(-2)]) == [8, 6]
++
++
++@mark.parametrize('window, error', [
++    (slice(None, None, 0), ValueError),
++    (slice(1.5, None), TypeError),
++    (slice(None, 1.5), TypeError),
++    (slice(None, None, 1.5), TypeError),
++])
++def test_indexed_set_slice_invalid(window, error):
++    x = IndexedSet(range(10))
++    x.pop(2)
++    with raises(error):
++        x[window]
++    with raises(error):
++        x.iter_slice(window.start, window.stop, window.step)
++
++
+ def test_indexed_set_rsub():
+     "From #252"
+     assert (set('abc') - IndexedSet('bcd')) == {'a'}

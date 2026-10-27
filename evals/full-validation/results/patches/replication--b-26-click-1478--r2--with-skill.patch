@@ -1,0 +1,113 @@
+diff --git a/CHANGES.rst b/CHANGES.rst
+index 14534e4..f75bd44 100644
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -38,8 +38,9 @@ Unreleased
+     ``CliRunner.invoke``. :issue:`1435`
+ -   Fix ``TypeError`` raised when using bool flags and specifying
+     ``type=bool``. :issue:`1287`
+--   Newlines in option help text are replaced with spaces before
+-    re-wrapping to avoid uneven line breaks. :issue:`834`
++-   Preserve paragraph breaks in option help text. Single newlines are
++    replaced with spaces before re-wrapping to avoid uneven line breaks.
++    :issue:`834`
+ -   ``MissingParameter`` exceptions are printable in the Python
+     interpreter. :issue:`1139`
+ -   Fix how default values for file-type options are shown during
+diff --git a/click/core.py b/click/core.py
+index a4351e8..95c07b0 100644
+--- a/click/core.py
++++ b/click/core.py
+@@ -945,8 +945,7 @@ class Command(BaseCommand):
+         for param in self.get_params(ctx):
+             rv = param.get_help_record(ctx)
+             if rv is not None:
+-                part_a, part_b = rv
+-                opts.append((part_a, part_b.replace('\n', ' ')))
++                opts.append(rv)
+ 
+         if opts:
+             with formatter.section('Options'):
+diff --git a/click/formatting.py b/click/formatting.py
+index a3d6a4d..dc854ee 100644
+--- a/click/formatting.py
++++ b/click/formatting.py
+@@ -198,7 +198,8 @@ class HelpFormatter(object):
+                 self.write(' ' * (first_col + self.current_indent))
+ 
+             text_width = max(self.width - first_col - 2, 10)
+-            lines = iter(wrap_text(second, text_width).splitlines())
++            lines = iter(wrap_text(second, text_width,
++                                   preserve_paragraphs=True).splitlines())
+             if lines:
+                 self.write(next(lines) + '\n')
+                 for line in lines:
+diff --git a/docs/documentation.rst b/docs/documentation.rst
+index 982ad42..516172d 100644
+--- a/docs/documentation.rst
++++ b/docs/documentation.rst
+@@ -14,6 +14,9 @@ Help Texts
+ Commands and options accept help arguments.  In the case of commands, the
+ docstring of the function is automatically used if provided.
+ 
++Option help text preserves paragraphs separated by blank lines.  Line
++breaks within a paragraph are rewrapped to fit the terminal width.
++
+ Simple example:
+ 
+ .. click:example::
+diff --git a/tests/test_options.py b/tests/test_options.py
+index bad4f42..4b677ce 100644
+--- a/tests/test_options.py
++++ b/tests/test_options.py
+@@ -422,8 +422,48 @@ def test_multiline_help(runner):
+ 
+     result = runner.invoke(cmd, ['--help'])
+     assert result.exit_code == 0
+-    out = result.output.splitlines()
+-    assert '  --foo TEXT  hello  i am  multiline' in out
++    assert result.output.splitlines() == [
++        'Usage: cmd [OPTIONS]',
++        '',
++        'Options:',
++        '  --foo TEXT  hello',
++        ' ' * 14,
++        '              i am',
++        ' ' * 14,
++        '              multiline',
++        '  --help      Show this message and exit.',
++    ]
++
++
++@pytest.mark.parametrize('terminal_width, expected', [
++    (44, [
++        'This is a paragraph with an',
++        'early line break.',
++        '',
++        'Another paragraph with more',
++        'words to wrap.',
++    ]),
++    (60, [
++        'This is a paragraph with an early line break.',
++        '',
++        'Another paragraph with more words to wrap.',
++    ]),
++])
++def test_multiline_help_rewrapping(runner, terminal_width, expected):
++    @click.command()
++    @click.option('--foo', help='This is a paragraph\nwith an early line break.'
++                  '\n\nAnother paragraph with\nmore words to wrap.')
++    def cmd(foo):
++        pass
++
++    result = runner.invoke(cmd, ['--help'], terminal_width=terminal_width)
++    assert result.exit_code == 0
++    lines = result.output.splitlines()
++    assert lines[3] == '  --foo TEXT  ' + expected[0]
++    assert lines[4:-1] == [' ' * 14 + line for line in expected[1:]]
++    assert lines[-1] == '  --help      Show this message and exit.'
++    assert all(len(line) <= terminal_width for line in lines)
++
+ 
+ def test_argument_custom_class(runner):
+     class CustomArgument(click.Argument):

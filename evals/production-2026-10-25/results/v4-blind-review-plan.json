@@ -1,0 +1,67 @@
+{
+  "planned_at": "2026-10-24T22:24:29.666344+00:00",
+  "protocol_v4_sha256": "D8C56960C4CAC7C4A6BA3E73ED8A4CEEF0F448BB6CCABA36E2A8077CA164E746",
+  "selection_seed": 20261026,
+  "label_seed": 20261027,
+  "sampling_frame": "sorted case IDs within each frozen batch",
+  "v4_native_model_calls_at_selection": 0,
+  "selected": [
+    {
+      "pair": "01",
+      "phase": "formal",
+      "case_id": "extra-a-mi-1118",
+      "repeat": 0
+    },
+    {
+      "pair": "02",
+      "phase": "formal",
+      "case_id": "extra-a3-funcy-187",
+      "repeat": 0
+    },
+    {
+      "pair": "03",
+      "phase": "formal",
+      "case_id": "extra-a-mi-1194",
+      "repeat": 0
+    },
+    {
+      "pair": "04",
+      "phase": "formal",
+      "case_id": "xb-033-pydash-265",
+      "repeat": 0
+    },
+    {
+      "pair": "05",
+      "phase": "replication",
+      "case_id": "xb-012-click-3152",
+      "repeat": 0
+    },
+    {
+      "pair": "06",
+      "phase": "replication",
+      "case_id": "xb-047-pydash-243",
+      "repeat": 0
+    },
+    {
+      "pair": "07",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-128",
+      "repeat": 0
+    },
+    {
+      "pair": "08",
+      "phase": "replication",
+      "case_id": "b-28-click-1304",
+      "repeat": 0
+    }
+  ],
+  "reviewer": "Independent Codex agent, hidden labels/costs/skill/reference fix",
+  "rubric": [
+    "Preserve documented caller/producer behavior including affected public calling forms and failure paths",
+    "Guards/copies/retries/wrappers need current requirements",
+    "Do not use fewer lines or more tests as a quality score",
+    "Corroborate uncertain findings with source/probes"
+  ],
+  "release_review_gate": "No confirmed unsafe or unjustified additional treatment machinery; source/probe resolve material uncertainty",
+  "not_a_universal_correctness_or_redundancy_proof": true
+}

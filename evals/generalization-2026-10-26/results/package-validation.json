@@ -1,0 +1,21 @@
+{
+  "archive": ".local/v5-review-package/lean-coding-0.4.0-dev.5.zip",
+  "archive_sha256": "177DA879856EDE36B614C00BAE56068D5415D9471EA40BC4FE0D0F1223021527",
+  "entries": [
+    "lean-coding/SKILL.md",
+    "lean-coding/agents/openai.yaml",
+    "lean-coding/LICENSE",
+    "lean-coding/NOTICE.txt"
+  ],
+  "files_sha256": {
+    "SKILL.md": "87339E154142B56E3836D3A5DB28A198F686945CA30A1DA7FEDD248E5A521256",
+    "agents/openai.yaml": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A",
+    "LICENSE": "FC57D087DCB51E869A7CA4AD1F0E446C2AF04A966062DBDF1C41F1B6B4E0B83B",
+    "NOTICE.txt": "67629C4869325082B1AC5578A688D41D02F1BCB1F4354AB31BDDDDCE82CF88DA"
+  },
+  "install_and_rollback_verified": true,
+  "runtime_files": 2,
+  "notices": 2,
+  "status": "unqualified_development_review_only",
+  "external_publication": false
+}

@@ -1,0 +1,51 @@
+diff --git a/app.py b/app.py
+index 345c5e4..e08f059 100644
+--- a/app.py
++++ b/app.py
+@@ -1,15 +1,37 @@
+-from db import TransferError, InsufficientFunds, balance
++from db import TransferError, InsufficientFunds
+ 
+ def transfer(conn, source, destination, cents):
++    """Commit a complete transfer without taking over a caller's transaction."""
++    if conn.in_transaction:
++        raise TransferError("active transaction")
+     if type(cents) is not int or cents <= 0:
+         raise TransferError("cents")
+     if source == destination:
+         raise TransferError("same account")
+-    if balance(conn, source) < cents:
+-        raise InsufficientFunds("balance")
+-    conn.execute("UPDATE accounts SET balance=balance-? WHERE id=?", (cents, source))
+-    conn.commit()
+-    balance(conn, destination)
+-    conn.execute("UPDATE accounts SET balance=balance+? WHERE id=?", (cents, destination))
+-    conn.execute("INSERT INTO audit VALUES (?,?,?)", (source, destination, cents))
+-    conn.commit()
++
++    # Explicit SQL also works when the connection uses SQLite autocommit mode.
++    conn.execute("BEGIN IMMEDIATE")
++    try:
++        source_account = conn.execute(
++            "SELECT id, balance FROM accounts WHERE id=?", (source,)
++        ).fetchone()
++        destination_account = conn.execute(
++            "SELECT id, balance FROM accounts WHERE id=?", (destination,)
++        ).fetchone()
++        if source_account is None or destination_account is None:
++            raise TransferError("unknown account")
++        # Compare stored identities too: SQLite can resolve different Python
++        # values (for example, 1 and "1") to the same account.
++        if source_account[0] == destination_account[0]:
++            raise TransferError("same account")
++        if source_account[1] < cents:
++            raise InsufficientFunds("balance")
++        conn.execute("UPDATE accounts SET balance=balance-? WHERE id=?", (cents, source))
++        conn.execute("UPDATE accounts SET balance=balance+? WHERE id=?", (cents, destination))
++        conn.execute("INSERT INTO audit VALUES (?,?,?)", (source, destination, cents))
++        conn.execute("COMMIT")
++    except BaseException:
++        # Some SQLite errors (such as RAISE(ROLLBACK) triggers) already roll back.
++        if conn.in_transaction:
++            conn.execute("ROLLBACK")
++        raise

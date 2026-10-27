@@ -1,0 +1,71 @@
+diff --git a/src/cachetools/__init__.py b/src/cachetools/__init__.py
+index 3e043a8..185cb2c 100644
+--- a/src/cachetools/__init__.py
++++ b/src/cachetools/__init__.py
+@@ -358,12 +358,10 @@ class RRCache(Cache):
+ 
+     def popitem(self):
+         """Remove and return a random `(key, value)` pair."""
+-        try:
+-            key = self.__choice(self.__keys)
+-        except IndexError:
++        if not self.__keys:
+             raise KeyError("%s is empty" % type(self).__name__) from None
+-        else:
+-            return (key, self.pop(key))
++        key = self.__choice(self.__keys)
++        return (key, self.pop(key))
+ 
+     def clear(self):
+         Cache.clear(self)
+diff --git a/tests/test_rr.py b/tests/test_rr.py
+index 43917d7..f9b7d9b 100644
+--- a/tests/test_rr.py
++++ b/tests/test_rr.py
+@@ -1,5 +1,6 @@
+ import random
+ import unittest
++import unittest.mock
+ 
+ from cachetools import RRCache
+ 
+@@ -86,3 +87,39 @@ class RRCacheTest(unittest.TestCase, CacheTestMixin):
+     def test_rr_default_choice(self):
+         cache = RRCache[int, int](maxsize=2)
+         self.assertIs(cache.choice, random.choice)
++
++    def test_rr_popitem_empty(self):
++        for choice in (random.choice, min, max, lambda seq: next(iter(seq))):
++            for emptying in (None, "popitem", "clear"):
++                with self.subTest(choice=choice, emptying=emptying):
++                    select = unittest.mock.Mock(wraps=choice)
++                    cache = RRCache[int, int](maxsize=2, choice=select)
++                    if emptying is not None:
++                        cache[1] = 1
++                        getattr(cache, emptying)()
++                        select.reset_mock()
++
++                    with self.assertRaises(KeyError) as cm:
++                        cache.popitem()
++
++                    self.assertEqual(("RRCache is empty",), cm.exception.args)
++                    self.assertIsNone(cm.exception.__cause__)
++                    self.assertTrue(cm.exception.__suppress_context__)
++                    self.assertEqual(0, len(cache))
++                    self.assertEqual(0, cache.currsize)
++                    select.assert_not_called()
++
++    def test_rr_popitem_choice_error(self):
++        for error in (ValueError("test"), StopIteration("test"), IndexError("test")):
++            with self.subTest(error=error):
++                select = unittest.mock.Mock(side_effect=error)
++                cache = RRCache[int, int](maxsize=2, choice=select)
++                cache.update({1: 1, 2: 2})
++
++                with self.assertRaises(type(error)) as cm:
++                    cache.popitem()
++
++                self.assertIs(error, cm.exception)
++                self.assertEqual({1: 1, 2: 2}, dict(cache))
++                self.assertEqual(2, cache.currsize)
++                select.assert_called_once_with([1, 2])

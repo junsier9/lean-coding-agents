@@ -1,0 +1,57 @@
+diff --git a/src/pydash/strings.py b/src/pydash/strings.py
+index 8208426..c37570e 100644
+--- a/src/pydash/strings.py
++++ b/src/pydash/strings.py
+@@ -896,9 +896,13 @@ def number_format(
+         int_part = num_parts[0]
+         dec_part = (num_parts + [""])[1]
+ 
+-        # Reverse the integer part, chop it into groups of 3, join on `order_separator`, and then
+-        # un-reverse the string.
+-        int_part = order_separator.join(chop(int_part[::-1], 3))[::-1]
++        sign = ""
++        if int_part.startswith("-"):
++            sign = "-"
++            int_part = int_part[1:]
++
++        # Group digits from the right without including the sign or reversing the separator.
++        int_part = sign + order_separator.join(chop_right(int_part, 3))
+ 
+         text = decimal_separator.join(pyd.compact([int_part, dec_part]))
+ 
+diff --git a/tests/test_strings.py b/tests/test_strings.py
+index 0fe8985..b4961ca 100644
+--- a/tests/test_strings.py
++++ b/tests/test_strings.py
+@@ -1,3 +1,4 @@
++from decimal import Decimal
+ import re
+ from urllib.parse import parse_qsl, urlsplit
+ 
+@@ -440,6 +441,26 @@ def test_lower_first(case, expected):
+         ((1234, 2), "1,234.00"),
+         ((1234, 1), "1,234.0"),
+         ((1234, 2, ",", "."), "1.234,00"),
++        ((-99,), "-99"),
++        ((-100,), "-100"),
++        ((-999,), "-999"),
++        ((-1000,), "-1,000"),
++        ((-999999,), "-999,999"),
++        ((-1000000,), "-1,000,000"),
++        ((-1234567890,), "-1,234,567,890"),
++        ((-999, 2), "-999.00"),
++        ((-999.25, 2), "-999.25"),
++        ((-999.999, 2), "-1,000.00"),
++        ((-1234567.125, 3), "-1,234,567.125"),
++        ((-0.125, 3), "-0.125"),
++        ((-0.0, 2), "-0.00"),
++        ((Decimal("-999.25"), 2), "-999.25"),
++        ((Decimal("-999.995"), 2), "-1,000.00"),
++        ((-999.25, 2, ",", "."), "-999,25"),
++        ((-1234567.125, 3, ",", "."), "-1.234.567,125"),
++        ((-1234567.125, 3, "<decimal>", "<group>"), "-1<group>234<group>567<decimal>125"),
++        ((1234567.125, 3, "<decimal>", "<group>"), "1<group>234<group>567<decimal>125"),
++        ((-999999.25, 2, ".", ""), "-999999.25"),
+         (("1234",), ""),
+     ],
+ )

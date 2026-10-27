@@ -1,0 +1,144 @@
+diff --git a/src/click/shell_completion.py b/src/click/shell_completion.py
+index cdb5822..6c39d5e 100644
+--- a/src/click/shell_completion.py
++++ b/src/click/shell_completion.py
+@@ -567,8 +567,8 @@ def _resolve_context(
+                     with cmd.make_context(
+                         name, args, parent=ctx, resilient_parsing=True
+                     ) as sub_ctx:
+-                        args = ctx._protected_args + ctx.args
+                         ctx = sub_ctx
++                        args = ctx._protected_args + ctx.args
+                 else:
+                     sub_ctx = ctx
+ 
+@@ -586,8 +586,8 @@ def _resolve_context(
+                             allow_interspersed_args=False,
+                             resilient_parsing=True,
+                         ) as sub_sub_ctx:
+-                            args = sub_ctx.args
+                             sub_ctx = sub_sub_ctx
++                            args = sub_ctx.args
+ 
+                     ctx = sub_ctx
+                     args = [*sub_ctx._protected_args, *sub_ctx.args]
+diff --git a/tests/test_shell_completion.py b/tests/test_shell_completion.py
+index 3511f07..3801b4d 100644
+--- a/tests/test_shell_completion.py
++++ b/tests/test_shell_completion.py
+@@ -50,6 +50,76 @@ def test_group_command_same_option():
+     assert _get_words(cli, ["-a", "a", "x", "-a", "a"], "-") == ["--help"]
+ 
+ 
++@pytest.mark.parametrize(
++    ("args", "incomplete", "expect"),
++    [
++        (["outer"], "", ["inner", "sibling"]),
++        (["outer", "inner"], "", ["leaf", "list"]),
++        (["outer", "inner"], "li", ["list"]),
++        (["outer", "inner"], "--", ["--inner", "--help"]),
++        (["outer", "inner", "--inner", "value"], "--", ["--help"]),
++        (["outer", "inner", "leaf"], "--", ["--leaf", "--help"]),
++        (["outer", "inner", "leaf", "--leaf"], "o", ["one"]),
++        (["outer", "inner", "leaf", "--leaf", "one"], "--", ["--help"]),
++    ],
++)
++def test_nested_group(args, incomplete, expect):
++    cli = Group(
++        "cli",
++        params=[Option(["--root"])],
++        commands=[
++            Group(
++                "outer",
++                params=[Option(["--outer"])],
++                commands=[
++                    Command("sibling"),
++                    Group(
++                        "inner",
++                        params=[Option(["--inner"])],
++                        commands=[
++                            Command(
++                                "leaf",
++                                params=[
++                                    Option(["--leaf"], type=Choice(["one", "two"]))
++                                ],
++                            ),
++                            Command("list"),
++                        ],
++                    ),
++                ],
++            )
++        ],
++    )
++    assert _get_words(cli, args, incomplete) == expect
++
++
++def test_nested_group_context():
++    def callback(*args, **kwargs):
++        pytest.fail("Completion must not invoke callbacks.")
++
++    def complete(ctx, param, incomplete):
++        assert ctx.command is leaf
++        assert ctx.parent.command is inner
++        assert ctx.parent.params == {"name": "inner-value"}
++        assert ctx.parent.parent.command is cli
++        assert ctx.parent.parent.params == {"name": "root-value"}
++        return [ctx.command_path]
++
++    leaf = Command(
++        "leaf",
++        callback=callback,
++        params=[Option(["--name"], shell_complete=complete)],
++    )
++    inner = Group(
++        "inner", callback=callback, params=[Option(["--name"])], commands=[leaf]
++    )
++    cli = Group("cli", callback=callback, params=[Option(["--name"])], commands=[inner])
++    args = ["--name", "root-value", "inner", "--name", "inner-value", "leaf", "--name"]
++    original_args = args.copy()
++    assert _get_words(cli, args, "") == ["cli inner leaf"]
++    assert args == original_args
++
++
+ def test_chained():
+     cli = Group(
+         "cli",
+@@ -69,6 +139,38 @@ def test_chained():
+     assert _get_words(cli, ["get"], "s") == ["set", "start"]
+ 
+ 
++@pytest.mark.parametrize("nested", [False, True])
++def test_chained_current_command(nested):
++    cli = Group(
++        "cli",
++        chain=True,
++        commands=[
++            Command("first", params=[Option(["--first"])]),
++            Command("second", params=[Option(["--second"], type=Choice(["value"]))]),
++            Command("third", params=[Option(["--third"])]),
++        ],
++    )
++    prefix = []
++
++    if nested:
++        cli = Group("cli", commands=[Group("outer", commands={"chain": cli})])
++        prefix = ["outer", "chain"]
++
++    assert _get_words(cli, [*prefix, "first", "second"], "--") == [
++        "--second",
++        "--help",
++    ]
++    assert _get_words(cli, [*prefix, "first", "second", "--second"], "") == ["value"]
++    assert _get_words(
++        cli, [*prefix, "first", "--first", "value", "second"], "--"
++    ) == ["--second", "--help"]
++    assert _get_words(cli, [*prefix, "first", "second", "third"], "--") == [
++        "--third",
++        "--help",
++    ]
++    assert _get_words(cli, [*prefix, "first", "second"], "") == ["third"]
++
++
+ def test_help_option():
+     cli = Group("cli", commands=[Command("with"), Command("no", add_help_option=False)])
+     assert _get_words(cli, ["with"], "--") == ["--help"]

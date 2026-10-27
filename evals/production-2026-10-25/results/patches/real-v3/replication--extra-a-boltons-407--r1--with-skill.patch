@@ -1,0 +1,75 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 15b14a3..021cf3a 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -138,8 +138,11 @@ class BarrelList(list):
+             self._balance_list(0)
+         else:
+             list_idx, rel_idx = self._translate_index(index)
++            # Let list.insert handle out-of-range indices.
+             if list_idx is None:
+-                raise IndexError()
++                list_idx, rel_idx = 0, index
++            elif index >= len(self):
++                rel_idx = index
+             self.lists[list_idx].insert(rel_idx, item)
+             self._balance_list(list_idx)
+         return
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index b70977b..cbb4ddd 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -51,6 +53,45 @@ def test_barrel_list():
+     bl3[:20:2] = range(0, -10, -1)
+     assert bl3[6] == -3  # some truly tricky stepping/slicing works
+ 
++
++@pytest.mark.parametrize('size', [0, 10, 100000])
++def test_barrel_list_insert_boundaries(size):
++    for index in (-1000000, -size - 1, -size, 1 - size, -1, 0,
++                  1, size // 2, size - 1, size, size + 1, 1000000):
++        bl = BarrelList(range(size))
++        bl._balance_list(0)
++        if size == 100000:
++            assert len(bl.lists) > 1
++        expected = list(bl)
++
++        expected.insert(index, 'inserted')
++        assert bl.insert(index, 'inserted') is None
++
++        assert list(bl) == expected, index
++        assert len(bl) == size + 1
++
++
++@pytest.mark.parametrize('size', [0, 10, 100000])
++@pytest.mark.parametrize('index, error', [
++    (-1000000.5, TypeError),
++    (1000000.5, TypeError),
++    (-sys.maxsize - 2, OverflowError),
++    (sys.maxsize + 1, OverflowError),
++])
++def test_barrel_list_insert_invalid_index(size, index, error):
++    bl = BarrelList(range(size))
++    bl._balance_list(0)
++    expected = list(bl)
++
++    with pytest.raises(error):
++        expected.insert(index, 'inserted')
++    with pytest.raises(error):
++        bl.insert(index, 'inserted')
++
++    assert list(bl) == expected
++    assert len(bl) == size
++
++
+ def test_sort_barrel_list():
+     bl = BarrelList(reversed(range(100000)))
+     bl.pop(50000)

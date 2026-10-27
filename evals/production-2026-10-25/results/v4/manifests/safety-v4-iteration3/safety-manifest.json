@@ -1,0 +1,283 @@
+{
+  "phase": "safety",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "xhigh"
+  },
+  "skill_sha256": "3E2F5741D362835FAE6FB9255A9831B2F0BF82FB8B5D12DC7759087F66F2470A",
+  "cases": {
+    "h01": "3B1A10B02C9EE2558D8DFA989D95C21E75BB894802B9A299DF7DC3803ABA5849",
+    "h02": "309DE703C0D6F24F2FBD55AABC7BF912C29CA6FBA6E1A8B5B88C6AEBF7D6AF35",
+    "h03": "DD48904898EAE1FBF3778BE4106D4B8CFE6FD59FC11F2C832902E23DA5BA81EB",
+    "h04": "F42243492994A68AA8A6B0BAFCE17ADAD448493DF6FD84D2E93D82C19A2A6FE2",
+    "h05": "6178E55CE4483DD244FC477DE20CAF99E6FEF7AC7E3E5AF9918C7DF812CE5ED1",
+    "h06": "8C8C2906122831862D555EC5AADFFDC0E9BE5DFEF6B2596D42944690690FB861",
+    "h07": "45691E4FF781FEDBE4052981497F0C6396E1618424974551B58E524DDFE215E6",
+    "h08": "A15A86C515D36EF78E97391DDFEB57E6860C7B64EA6E0B5D11D13C8C33E34235",
+    "h09": "77450DA6AB240EA886DBA6C58DF669399943346BAA68176DA14337EB7BE1B735",
+    "h10": "6AB8144D4C69B3888CE5AA500AD2FD01C1685C1C1B72791095CE7BA3C5E4F503",
+    "h11": "63447DFC542B8EE1888D919B51ECE4155AB2F77D8B1AB4C9220D91F619934D58",
+    "h12": "2C969240351A9F96568FE91C9A2CD6466C9C7A103C8D4C7B6EC222B914440D95"
+  },
+  "seed": 20261025,
+  "repeats": 3,
+  "arms": [
+    "with-skill"
+  ],
+  "workers": 3,
+  "schedule": [
+    {
+      "case_id": "h03",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h12",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h07",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h10",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h06",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h02",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h01",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h02",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h11",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h03",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h07",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h09",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h11",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h05",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h01",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h01",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h08",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h09",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h08",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h02",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h10",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h06",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h06",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h10",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h04",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h05",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h04",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h08",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h12",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h04",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h11",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h05",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h07",
+      "repeat": 1,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h12",
+      "repeat": 2,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h09",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    },
+    {
+      "case_id": "h03",
+      "repeat": 0,
+      "arms": [
+        "with-skill"
+      ]
+    }
+  ],
+  "grading_contract": "synthetic-unittest-normal-and-O-v1;upstream-frozen"
+}

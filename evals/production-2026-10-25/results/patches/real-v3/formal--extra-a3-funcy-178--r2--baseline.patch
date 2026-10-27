@@ -1,0 +1,118 @@
+diff --git a/funcy/flow.py b/funcy/flow.py
+index d6dbb2a..3ce95c8 100644
+--- a/funcy/flow.py
++++ b/funcy/flow.py
+@@ -1,4 +1,3 @@
+-from collections.abc import Hashable
+ from datetime import datetime, timedelta
+ import time
+ import threading
+@@ -220,10 +219,12 @@ def once_per(*argnames):
+         def wrapper(*args, **kwargs):
+             with lock:
+                 values = tuple(get_arg(name, args, kwargs) for name in argnames)
+-                if isinstance(values, Hashable):
+-                    done, add = done_set, done_set.add
+-                else:
++                try:
++                    hash(values)
++                except TypeError:
+                     done, add = done_list, done_list.append
++                else:
++                    done, add = done_set, done_set.add
+ 
+                 if values not in done:
+                     add(values)
+diff --git a/tests/test_flow.py b/tests/test_flow.py
+index 2dfeb7b..941033d 100644
+--- a/tests/test_flow.py
++++ b/tests/test_flow.py
+@@ -241,6 +241,88 @@ def test_once_per_args():
+     assert calls == [1, 2, 1]
+ 
+ 
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args],
++                         ids=['once_per', 'once_per_args'])
++@pytest.mark.parametrize('first, equal, different', [
++    pytest.param([1], [1], [2], id='list'),
++    pytest.param({'a': 1, 'b': 2}, {'b': 2, 'a': 1}, {'a': 2, 'b': 2}, id='dict'),
++    pytest.param({1, 2}, {2, 1}, {1, 3}, id='set'),
++    pytest.param(([1],), ([1],), ([2],), id='tuple-list'),
++    pytest.param(({'a': 1},), ({'a': 1},), ({'a': 2},), id='tuple-dict'),
++    pytest.param(({1},), ({1},), ({2},), id='tuple-set'),
++    pytest.param({'items': [{'values': {1, 2}}]}, {'items': [{'values': {2, 1}}]},
++                 {'items': [{'values': {1, 3}}]}, id='nested-containers'),
++])
++def test_once_per_unhashable(deco, first, equal, different):
++    calls = []
++
++    @deco
++    def call(n):
++        calls.append(n)
++        return len(calls)
++
++    assert first is not equal
++    assert call(first) == 1
++    assert call(n=equal) is None
++    assert call(different) == 2
++    assert call(n=different) is None
++    assert call(42) == 3
++    assert call(n=42) is None
++    assert call(equal) is None
++    assert calls == [first, different, 42]
++
++
++def test_once_per_unhashable_selected_argument():
++    calls = []
++
++    @once_per('n')
++    def call(n, x=None):
++        calls.append((n, x))
++
++    call([1], {'a': 1})
++    call(n=[1], x={'a': 2})
++    call([2], {'a': 1})
++    assert calls == [([1], {'a': 1}), ([2], {'a': 1})]
++
++
++@pytest.mark.parametrize('deco', [once_per('n', 'x'), once_per_args],
++                         ids=['once_per', 'once_per_args'])
++def test_once_per_unhashable_argument_combinations(deco):
++    calls = []
++    default = {'values': {1, 2}}
++
++    @deco
++    def call(n, x=default):
++        calls.append((n, x))
++        return len(calls)
++
++    assert call([1]) == 1
++    assert call(n=[1], x={'values': {2, 1}}) is None
++    assert call([1], {'values': {1, 3}}) == 2
++    assert call([2]) == 3
++    assert call(n=[1]) is None
++    assert len(calls) == 3
++
++
++@pytest.mark.parametrize('deco', [once_per('n'), once_per_args],
++                         ids=['once_per', 'once_per_args'])
++@pytest.mark.parametrize('value', [1, [1]], ids=['hashable', 'unhashable'])
++def test_once_per_function_type_error(deco, value):
++    calls = []
++    error = TypeError('from the decorated function')
++
++    @deco
++    def call(n):
++        calls.append(n)
++        raise error
++
++    with pytest.raises(TypeError) as exc:
++        call(value)
++    assert exc.value is error
++    assert call(value) is None
++    assert calls == [value]
++
++
+ def test_wrap_with():
+     calls = []
+ 

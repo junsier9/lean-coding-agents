@@ -1,0 +1,20 @@
+from auth import PermissionDenied
+
+class TenantService:
+    def __init__(self, repository, authorizer):
+        self.repository = repository
+        self.authorizer = authorizer
+        self.cache = {}
+
+    def get(self, principal, tenant, doc_id):
+        if not isinstance(tenant, str) or not tenant.strip():
+            raise ValueError("tenant")
+        if not isinstance(doc_id, str) or not doc_id.strip():
+            raise ValueError("doc_id")
+        key = (tenant, doc_id)
+        if key in self.cache:
+            return self.cache[key]
+        self.authorizer.ensure(principal, tenant)
+        if key not in self.cache:
+            self.cache[key] = self.repository.get(tenant, doc_id)
+        return self.cache[key]

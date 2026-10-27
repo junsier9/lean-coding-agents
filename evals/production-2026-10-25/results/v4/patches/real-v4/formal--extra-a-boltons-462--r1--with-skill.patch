@@ -1,0 +1,93 @@
+diff --git a/boltons/namedutils.py b/boltons/namedutils.py
+index 0311f81..ea5245d 100644
+--- a/boltons/namedutils.py
++++ b/boltons/namedutils.py
+@@ -160,7 +160,7 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
+                 field_names[index] = '_%d' % index
+             seen.add(name)
+     for name in [typename] + field_names:
+-        if not all(c.isalnum() or c == '_' for c in name):
++        if not name or not all(c.isalnum() or c == '_' for c in name):
+             raise ValueError('Type names and field names can only contain '
+                              'alphanumeric characters and underscores: %r'
+                              % name)
+@@ -319,7 +319,7 @@ def namedlist(typename, field_names, verbose=False, rename=False):
+                 field_names[index] = '_%d' % index
+             seen.add(name)
+     for name in [typename] + field_names:
+-        if not all(c.isalnum() or c == '_' for c in name):
++        if not name or not all(c.isalnum() or c == '_' for c in name):
+             raise ValueError('Type names and field names can only contain '
+                              'alphanumeric characters and underscores: %r'
+                              % name)
+diff --git a/tests/test_namedutils.py b/tests/test_namedutils.py
+index e2230a7..2acc715 100644
+--- a/tests/test_namedutils.py
++++ b/tests/test_namedutils.py
+@@ -1,5 +1,7 @@
+ from pickle import loads, dumps
+ 
++import pytest
++
+ from boltons.namedutils import namedlist, namedtuple
+ 
+ Point = namedtuple('Point', 'x, y', rename=True)
+@@ -24,3 +26,58 @@ def test_namedlist_pickle():
+ def test_namedtuple_pickle():
+     p = Point(x=10, y=20)
+     assert p == loads(dumps(p))
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++@pytest.mark.parametrize('rename', [False, True])
++def test_empty_typename(factory, rename):
++    with pytest.raises(ValueError):
++        factory('', ['value'], rename=rename)
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++@pytest.mark.parametrize('fields', [[''], ['', 'y'], ['x', '']])
++def test_empty_field_name(factory, fields):
++    with pytest.raises(ValueError):
++        factory('Point', fields)
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++def test_empty_field_names_renamed(factory):
++    record_type = factory('Record', ['', 'value', ''], rename=True)
++    record = record_type(1, value=2, _2=3)
++
++    assert record_type._fields == ('_0', 'value', '_2')
++    assert (record._0, record.value, record._2) == (1, 2, 3)
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++@pytest.mark.parametrize('name', ['bad-name', 'bad name', 'bad.name'])
++def test_invalid_name_characters(factory, name):
++    with pytest.raises(ValueError):
++        factory(name, ['value'])
++    with pytest.raises(ValueError):
++        factory('Record', [name])
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++@pytest.mark.parametrize('rename', [False, True])
++@pytest.mark.parametrize('fields', ['x, y_2', ['x', 'y_2']])
++def test_valid_names(factory, rename, fields):
++    point_type = factory('_Point2', fields, rename=rename)
++    point = point_type(1, y_2=2)
++
++    assert point_type.__name__ == '_Point2'
++    assert point_type._fields == ('x', 'y_2')
++    assert (point.x, point.y_2) == (1, 2)
++    assert tuple(point) == (1, 2)
++    assert repr(point) == '_Point2(x=1, y_2=2)'
++
++
++@pytest.mark.parametrize('factory', [namedtuple, namedlist])
++@pytest.mark.parametrize('fields', ['', []])
++def test_empty_field_collection(factory, fields):
++    record_type = factory('Record', fields)
++
++    assert record_type._fields == ()
++    assert tuple(record_type()) == ()

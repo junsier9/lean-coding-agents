@@ -1,0 +1,68 @@
+diff --git a/src/click/termui.py b/src/click/termui.py
+index 042fc4b..a023f42 100644
+--- a/src/click/termui.py
++++ b/src/click/termui.py
+@@ -596,9 +596,9 @@ def style(
+     if underline is not None:
+         bits.append(f"\033[{4 if underline else 24}m")
+     if overline is not None:
+-        bits.append(f"\033[{53 if underline else 55}m")
++        bits.append(f"\033[{53 if overline else 55}m")
+     if italic is not None:
+-        bits.append(f"\033[{5 if underline else 23}m")
++        bits.append(f"\033[{3 if italic else 23}m")
+     if blink is not None:
+         bits.append(f"\033[{5 if blink else 25}m")
+     if reverse is not None:
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+index 23b3709..de09560 100644
+--- a/tests/test_utils.py
++++ b/tests/test_utils.py
+@@ -67,8 +67,10 @@ def test_echo_custom_file():
+         ({"bold": True}, "\x1b[1mx y\x1b[0m"),
+         ({"dim": True}, "\x1b[2mx y\x1b[0m"),
+         ({"underline": True}, "\x1b[4mx y\x1b[0m"),
+-        ({"overline": True}, "\x1b[55mx y\x1b[0m"),
+-        ({"italic": True}, "\x1b[23mx y\x1b[0m"),
++        ({"overline": True}, "\x1b[53mx y\x1b[0m"),
++        ({"overline": False}, "\x1b[55mx y\x1b[0m"),
++        ({"italic": True}, "\x1b[3mx y\x1b[0m"),
++        ({"italic": False}, "\x1b[23mx y\x1b[0m"),
+         ({"blink": True}, "\x1b[5mx y\x1b[0m"),
+         ({"reverse": True}, "\x1b[7mx y\x1b[0m"),
+         ({"strikethrough": True}, "\x1b[9mx y\x1b[0m"),
+@@ -80,6 +82,34 @@ def test_styling(styles, ref):
+     assert click.unstyle(ref) == "x y"
+ 
+ 
++@pytest.mark.parametrize(
++    ("underline", "underline_code"),
++    [(None, ""), (True, "\x1b[4m"), (False, "\x1b[24m")],
++)
++@pytest.mark.parametrize(
++    ("overline", "overline_code"),
++    [(None, ""), (True, "\x1b[53m"), (False, "\x1b[55m")],
++)
++@pytest.mark.parametrize(
++    ("italic", "italic_code"),
++    [(None, ""), (True, "\x1b[3m"), (False, "\x1b[23m")],
++)
++@pytest.mark.parametrize("reset", [True, False])
++def test_style_independent_attributes(
++    underline, underline_code, overline, overline_code, italic, italic_code, reset
++):
++    styled = click.style(
++        "x y", underline=underline, overline=overline, italic=italic, reset=reset
++    )
++    expected = underline_code + overline_code + italic_code + "x y"
++
++    if reset:
++        expected += "\x1b[0m"
++
++    assert styled == expected
++    assert click.unstyle(styled) == "x y"
++
++
+ @pytest.mark.parametrize(("text", "expect"), [("\x1b[?25lx y\x1b[?25h", "x y")])
+ def test_unstyle_other_ansi(text, expect):
+     assert click.unstyle(text) == expect

@@ -1,0 +1,124 @@
+diff --git a/more_itertools/more.py b/more_itertools/more.py
+index c850a73..a53be6e 100644
+--- a/more_itertools/more.py
++++ b/more_itertools/more.py
+@@ -658,13 +658,16 @@ def one(iterable, too_short=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
+-            msg = (
+-                f'Expected exactly one item in iterable, but got {first!r}, '
+-                f'{second!r}, and perhaps more.'
+-            )
+-            raise too_long or ValueError(msg)
++            if too_long is None:
++                too_long = ValueError(
++                    'Expected exactly one item in iterable, but got '
++                    f'{first!r}, {second!r}, and perhaps more.'
++                )
++            raise too_long
+         return first
+-    raise too_short or ValueError('too few items in iterable (expected 1)')
++    if too_short is None:
++        too_short = ValueError('too few items in iterable (expected 1)')
++    raise too_short
+ 
+ 
+ def raise_(exception, *args):
+@@ -3681,11 +3684,12 @@ def only(iterable, default=None, too_long=None):
+     iterator = iter(iterable)
+     for first in iterator:
+         for second in iterator:
+-            msg = (
+-                f'Expected exactly one item in iterable, but got {first!r}, '
+-                f'{second!r}, and perhaps more.'
+-            )
+-            raise too_long or ValueError(msg)
++            if too_long is None:
++                too_long = ValueError(
++                    'Expected exactly one item in iterable, but got '
++                    f'{first!r}, {second!r}, and perhaps more.'
++                )
++            raise too_long
+         return first
+     return default
+ 
+diff --git a/tests/test_more.py b/tests/test_more.py
+index 4e5f27f..94902b2 100644
+--- a/tests/test_more.py
++++ b/tests/test_more.py
+@@ -4386,6 +4386,74 @@ class OnlyTests(TestCase):
+         )
+ 
+ 
++class OneOnlyExceptionTests(TestCase):
++    def test_custom_exception_instances(self):
++        class FalsyError(Exception):
++            def __bool__(self):
++                return False
++
++        for func, values, keyword in (
++            (mi.one, [], 'too_short'),
++            (mi.one, [1, 2], 'too_long'),
++            (mi.only, [1, 2], 'too_long'),
++        ):
++            for error in (RuntimeError('custom'), FalsyError('custom')):
++                with self.subTest(func=func, keyword=keyword, error=error):
++                    with self.assertRaises(type(error)) as caught:
++                        func(iter(values), **{keyword: error})
++                    self.assertIs(caught.exception, error)
++
++    def test_custom_exception_does_not_format_items(self):
++        class BrokenRepr:
++            def __repr__(self):
++                raise RuntimeError('repr failed')
++
++        item = BrokenRepr()
++        for func in (mi.one, mi.only):
++            for values in ([item, 2, 3], [1, item, 3]):
++                for error in (OverflowError, OverflowError('custom')):
++                    with self.subTest(func=func, error=error):
++                        iterator = iter(values)
++                        with self.assertRaises(OverflowError) as caught:
++                            func(iterator, too_long=error)
++                        if isinstance(error, BaseException):
++                            self.assertIs(caught.exception, error)
++                        self.assertEqual(next(iterator), 3)
++
++    def test_default_exception_messages(self):
++        too_long_message = (
++            'Expected exactly one item in iterable, '
++            "but got 'foo', 'bar', and perhaps more."
++        )
++        for func, values, keyword, message in (
++            (
++                mi.one,
++                [],
++                'too_short',
++                'too few items in iterable (expected 1)',
++            ),
++            (mi.one, ['foo', 'bar', 'baz'], 'too_long', too_long_message),
++            (mi.only, ['foo', 'bar', 'baz'], 'too_long', too_long_message),
++        ):
++            for kwargs in ({}, {keyword: None}):
++                with self.subTest(func=func, kwargs=kwargs):
++                    with self.assertRaises(ValueError) as caught:
++                        func(values, **kwargs)
++                    self.assertEqual(str(caught.exception), message)
++
++    def test_default_exception_preserves_repr_failure(self):
++        class BrokenRepr:
++            def __repr__(self):
++                raise RuntimeError('repr failed')
++
++        item = BrokenRepr()
++        for func in (mi.one, mi.only):
++            for values in ([item, 2], [1, item]):
++                with self.subTest(func=func):
++                    with self.assertRaisesRegex(RuntimeError, 'repr failed'):
++                        func(values)
++
++
+ class IchunkedTests(TestCase):
+     def test_even(self):
+         iterable = (str(x) for x in range(10))

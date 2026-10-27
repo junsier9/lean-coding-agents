@@ -1,0 +1,181 @@
+diff --git a/boltons/socketutils.py b/boltons/socketutils.py
+index 86e7187..1b3a34e 100644
+--- a/boltons/socketutils.py
++++ b/boltons/socketutils.py
+@@ -638,22 +638,32 @@ class NetstringSocket(object):
+         self._msgsize_maxsize = len(str(maxsize)) + 1  # len(str()) == log10
+ 
+     def read_ns(self, timeout=_UNSET, maxsize=_UNSET):
++        """Read one netstring, using instance defaults for omitted arguments.
++
++        *timeout* applies to each receive operation, and *maxsize* limits
++        the payload size for this call.
++        """
+         if timeout is _UNSET:
+             timeout = self.timeout
++        if maxsize is _UNSET:
++            maxsize = self.maxsize
++            msgsize_maxsize = self._msgsize_maxsize
++        else:
++            msgsize_maxsize = len(str(maxsize)) + 1
+ 
+         size_prefix = self.bsock.recv_until(b':',
+-                                            timeout=self.timeout,
+-                                            maxsize=self._msgsize_maxsize)
++                                            timeout=timeout,
++                                            maxsize=msgsize_maxsize)
+         try:
+             size = int(size_prefix)
+         except ValueError:
+             raise NetstringInvalidSize('netstring message size must be valid'
+                                        ' integer, not %r' % size_prefix)
+ 
+-        if size > self.maxsize:
+-            raise NetstringMessageTooLong(size, self.maxsize)
+-        payload = self.bsock.recv_size(size)
+-        if self.bsock.recv(1) != b',':
++        if size > maxsize:
++            raise NetstringMessageTooLong(size, maxsize)
++        payload = self.bsock.recv_size(size, timeout=timeout)
++        if self.bsock.recv(1, timeout=timeout) != b',':
+             raise NetstringProtocolError("expected trailing ',' after message")
+ 
+         return payload
+diff --git a/tests/test_socketutils.py b/tests/test_socketutils.py
+index 90d988d..c16e0c6 100644
+--- a/tests/test_socketutils.py
++++ b/tests/test_socketutils.py
+@@ -8,7 +8,9 @@ import threading
+ from boltons.socketutils import (BufferedSocket,
+                                  NetstringSocket,
+                                  ConnectionClosed,
++                                 NetstringInvalidSize,
+                                  NetstringMessageTooLong,
++                                 NetstringProtocolError,
+                                  MessageTooLong,
+                                  Timeout)
+ 
+@@ -246,6 +248,123 @@ def test_timeout_setters_getters():
+     assert bs.gettimeout() is None
+ 
+ 
++@pytest.mark.parametrize('default_maxsize, maxsize, size', [
++    (8, 10, 10),
++    (8, 100, 100),
++    (100, 3, 3),
++    (100, 0, 0),
++])
++def test_netstring_maxsize_override(default_maxsize, maxsize, size):
++    x, y = socket.socketpair()
++    try:
++        client = NetstringSocket(x, maxsize=default_maxsize)
++        payload = b'a' * size
++        y.sendall(str(size).encode('ascii') + b':' + payload + b',')
++        assert client.read_ns(maxsize=maxsize) == payload
++        assert client.maxsize == default_maxsize
++
++        size = default_maxsize + 1
++        y.sendall(str(size).encode('ascii') + b':')
++        with pytest.raises(NetstringMessageTooLong,
++                           match='%s > %s' % (size, default_maxsize)):
++            client.read_ns()
++    finally:
++        x.close()
++        y.close()
++
++
++@pytest.mark.parametrize('default_maxsize, maxsize, size', [
++    (100, 3, 4),
++    (100, 0, 1),
++    (9, 10, 11),
++])
++def test_netstring_maxsize_override_rejects(default_maxsize, maxsize, size):
++    x, y = socket.socketpair()
++    try:
++        client = NetstringSocket(x, maxsize=default_maxsize)
++        y.sendall(str(size).encode('ascii') + b':')
++        y.shutdown(socket.SHUT_WR)
++        with pytest.raises(NetstringMessageTooLong,
++                           match='%s > %s' % (size, maxsize)):
++            client.read_ns(maxsize=maxsize)
++    finally:
++        x.close()
++        y.close()
++
++
++@pytest.mark.parametrize('data', [b'', b'1:', b'1:a'])
++@pytest.mark.parametrize('timeout, default_timeout, error_type', [
++    (0, 0.1, socket.error),
++    (0.01, 0, Timeout),
++])
++def test_netstring_timeout_override(data, timeout, default_timeout, error_type):
++    x, y = socket.socketpair()
++    try:
++        x.settimeout(default_timeout)
++        client = NetstringSocket(x, timeout=default_timeout)
++        y.sendall(data)
++        with pytest.raises(error_type) as exc:
++            client.read_ns(timeout)
++        if timeout == 0:
++            assert exc.value.errno == errno.EWOULDBLOCK
++        assert client.timeout == default_timeout
++        assert client.bsock.gettimeout() == default_timeout
++    finally:
++        x.close()
++        y.close()
++
++
++@pytest.mark.parametrize('data', [b'', b'1:', b'1:a'])
++def test_netstring_default_timeout(data):
++    x, y = socket.socketpair()
++    try:
++        x.setblocking(False)
++        client = NetstringSocket(x)
++        client.settimeout(0.01)
++        y.sendall(data)
++        with pytest.raises(Timeout):
++            client.read_ns()
++    finally:
++        x.close()
++        y.close()
++
++
++def test_netstring_timeout_none():
++    x, y = socket.socketpair()
++    try:
++        x.setblocking(False)
++        client = NetstringSocket(x, timeout=0.1)
++        y.sendall(b'1:a,')
++        assert NetstringSocket.read_ns(self=client, timeout=None) == b'a'
++        assert x.gettimeout() is None
++        assert client.timeout == 0.1
++        assert client.bsock.gettimeout() == 0
++    finally:
++        x.close()
++        y.close()
++
++
++@pytest.mark.parametrize('data, error_type', [
++    (b'x:', NetstringInvalidSize),
++    (b'123:', MessageTooLong),
++    (b'1:ax', NetstringProtocolError),
++    (b'1:a', NetstringProtocolError),
++    (b'2:a', ConnectionClosed),
++])
++def test_netstring_protocol_errors_with_overrides(data, error_type):
++    x, y = socket.socketpair()
++    try:
++        client = NetstringSocket(x, maxsize=100)
++        y.sendall(data)
++        y.shutdown(socket.SHUT_WR)
++        with pytest.raises(error_type) as exc:
++            client.read_ns(timeout=0.1, maxsize=9)
++        assert type(exc.value) is error_type
++    finally:
++        x.close()
++        y.close()
++
++
+ def netstring_server(server_socket):
+     "A basic netstring server loop, supporting a few operations"
+     running = True

@@ -1,0 +1,51 @@
+{
+  "recorded_at_before_unblinding": "2026-10-25T06:30:00.361556+00:00",
+  "prespecified_pairs": 8,
+  "reviews_complete": 8,
+  "source_hashes_rechecked": 2030,
+  "all_source_hashes_match": true,
+  "mapping_not_exposed_to_parent_or_reviewer_before_all8_complete": true,
+  "raw_reviews": {
+    "01": {
+      "raw_review_sha256": "2BF7EAE18F7B251625E495EC33F64B3292D61C5582A42DFF8165A5A68E722494",
+      "files_rechecked": 121,
+      "all_checked_bytes_match": true
+    },
+    "02": {
+      "raw_review_sha256": "C820029C25A787E2DA05BD83FDAC15281E36EAA52B6D36B8079606F6455B95FB",
+      "files_rechecked": 208,
+      "all_checked_bytes_match": true
+    },
+    "03": {
+      "raw_review_sha256": "9A61E0CDEC4F67C56C633D15BF10C8953BF701E65F5F7064AA690414CB52D32E",
+      "files_rechecked": 121,
+      "all_checked_bytes_match": true
+    },
+    "04": {
+      "raw_review_sha256": "BF8E468566E106231E0F9F61E0440C2A4A40CB58846E9A9BAE33828039B58C40",
+      "files_rechecked": 232,
+      "all_checked_bytes_match": true
+    },
+    "05": {
+      "raw_review_sha256": "0521462FD947B45F7A58663E024353FEFFE3A59FA9DEB53EED89D11129A223C2",
+      "files_rechecked": 436,
+      "all_checked_bytes_match": true
+    },
+    "06": {
+      "raw_review_sha256": "181C0F62EDDE9B6DA4BFA27F67936062F154C58C643F4D1C8DF97B75887C17DF",
+      "files_rechecked": 232,
+      "all_checked_bytes_match": true
+    },
+    "07": {
+      "raw_review_sha256": "730AE111EB2B03C2E1B35DC5085AC9220441698D96602D87F14B949BF3A3CFF5",
+      "files_rechecked": 334,
+      "all_checked_bytes_match": true
+    },
+    "08": {
+      "raw_review_sha256": "73512F49C99EF741B3E480F520DC01B61536C740C751B5D1148C59FDBFDA577D",
+      "files_rechecked": 346,
+      "all_checked_bytes_match": true
+    }
+  },
+  "labels_read_in_this_step": false
+}

@@ -1,0 +1,145 @@
+diff --git a/src/cachetools/_cachedmethod.py b/src/cachetools/_cachedmethod.py
+index 4e4f940..6a34a30 100644
+--- a/src/cachetools/_cachedmethod.py
++++ b/src/cachetools/_cachedmethod.py
+@@ -93,11 +93,18 @@ class _DescriptorBase:
+ 
+             return unbound
+         elif self.__attrname is not None:
+-            # replace descriptor instance with wrapper in instance dict
++            attrname = self.__attrname
++            for cls in type(obj).__mro__:
++                if attrname in cls.__dict__:
++                    if cls.__dict__[attrname] is not self:
++                        # Keep base wrappers separate without shadowing overrides.
++                        attrname = f"{attrname}.{id(self)}"
++                    break
++            # replace descriptor instance only when normal lookup resolves to it
+             try:
+                 # In case of a race condition where another thread already replaced
+                 # the descriptor, prefer the initial wrapper.
+-                wrapper = obj.__dict__.setdefault(self.__attrname, wrapper)
++                wrapper = obj.__dict__.setdefault(attrname, wrapper)
+             except AttributeError:
+                 # not all objects have __dict__ (e.g. class defines slots)
+                 msg = (
+diff --git a/tests/test_cachedmethod.py b/tests/test_cachedmethod.py
+index 727a317..3c39950 100644
+--- a/tests/test_cachedmethod.py
++++ b/tests/test_cachedmethod.py
+@@ -728,6 +728,115 @@ class UnboundMethodTest(unittest.TestCase):
+         self.assertEqual(len(cached.cache), 0)
+ 
+ 
++class InheritanceMethodTest(unittest.TestCase):
++    def decorator_options(self):
++        for info in (False, True):
++            for lock, condition in (
++                (False, False),
++                (True, False),
++                (False, True),
++                (True, True),
++            ):
++                options: dict[str, Any] = {"info": info}
++                if lock:
++                    options["lock"] = lambda self: self.lock
++                if condition:
++                    options["condition"] = lambda self: self.cond
++                yield options
++
++    def base_class(self, options):
++        class Base:
++            def __init__(self):
++                self.base_cache = Cache(4)
++                self.child_cache = Cache(4)
++                self.lock = CountedLock()
++                self.cond = CountedCondition()
++                self.calls = []
++
++            @cachedmethod(lambda self: self.base_cache, **options)
++            def get(self, value):
++                self.calls.append(("base", value))
++                return value
++
++        return Base
++
++    def test_undecorated_override(self):
++        for options in self.decorator_options():
++            with self.subTest(**options):
++                Base = self.base_class(options)
++
++                class Child(Base):
++                    def get(self, value):
++                        self.calls.append(("child", value))
++                        return 2 * super().get(value)
++
++                cached = Child()
++                self.assertEqual(cached.get(1), 2)
++                self.assertEqual(cached.get(1), 2)
++                self.assertEqual(cached.get(2), 4)
++                self.assertEqual(
++                    cached.calls,
++                    [
++                        ("child", 1),
++                        ("base", 1),
++                        ("child", 1),
++                        ("child", 2),
++                        ("base", 2),
++                    ],
++                )
++                parent = super(Child, cached).get
++                self.assertIs(parent, super(Child, cached).get)
++                if options["info"]:
++                    self.assertEqual(parent.cache_info(), (1, 2, 4, 2))
++
++    def test_decorated_override(self):
++        for options in self.decorator_options():
++            for parent_first in (False, True):
++                with self.subTest(**options, parent_first=parent_first):
++                    Base = self.base_class(options)
++
++                    class Child(Base):
++                        @cachedmethod(lambda self: self.child_cache, **options)
++                        def get(self, value):
++                            self.calls.append(("child", value))
++                            return 2 * super().get(value)
++
++                    cached = Child()
++                    if parent_first:
++                        parent = super(Child, cached).get
++                    child = cached.get
++                    self.assertEqual(child(1), 2)
++                    self.assertEqual(cached.get(1), 2)
++                    parent = super(Child, cached).get
++                    self.assertIs(child, cached.get)
++                    self.assertIs(parent, super(Child, cached).get)
++                    self.assertIsNot(parent, child)
++                    self.assertEqual(cached.calls, [("child", 1), ("base", 1)])
++                    self.assertEqual(Base.get(cached, 1), 1)
++                    if options["info"]:
++                        self.assertEqual(child.cache_info(), (1, 1, 4, 1))
++                        self.assertEqual(parent.cache_info(), (1, 1, 4, 1))
++
++                    child.cache_clear()
++                    self.assertEqual(len(cached.child_cache), 0)
++                    self.assertEqual(len(cached.base_cache), 1)
++                    if options["info"]:
++                        self.assertEqual(child.cache_info(), (0, 0, 4, 0))
++                        self.assertEqual(parent.cache_info(), (1, 1, 4, 1))
++                    self.assertEqual(cached.get(1), 2)
++                    if options["info"]:
++                        self.assertEqual(child.cache_info(), (0, 1, 4, 1))
++                        self.assertEqual(parent.cache_info(), (2, 1, 4, 1))
++
++                    parent.cache_clear()
++                    self.assertEqual(len(cached.base_cache), 0)
++                    self.assertEqual(cached.get(1), 2)
++                    self.assertEqual(super(Child, cached).get(2), 2)
++                    if options["info"]:
++                        self.assertEqual(child.cache_info(), (1, 1, 4, 1))
++                        self.assertEqual(parent.cache_info(), (0, 1, 4, 1))
++
++
+ class AutospecTest(unittest.TestCase):
+     def test_autospec_no_warnings(self):
+ 

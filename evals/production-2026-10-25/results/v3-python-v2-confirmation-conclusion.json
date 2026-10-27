@@ -1,0 +1,20 @@
+{
+  "completed_at": "2026-10-25T01:09:56.146959+00:00",
+  "candidate": "v3-python-v2",
+  "skill_sha256": "026AC9BA9667BD0F1D369F2536D337AEAED14A275276BE347CEE940A8350F3AE",
+  "development_passed_after_documented_oracle_repair": true,
+  "production_contracts_passed": true,
+  "real_quality_qualified": false,
+  "stable_at_least10percent_benefit": {
+    "token": false,
+    "time": false
+  },
+  "real_valid_runs": 240,
+  "real_task_count": 40,
+  "production_release_qualified": false,
+  "remaining_qualification": [
+    "Independent blinded patch review",
+    "Installation and rollback package verification"
+  ],
+  "scope": "Observed tested configuration; no universal correctness or unattended deployment claim"
+}

@@ -1,0 +1,21 @@
+diff --git a/app.py b/app.py
+index 9bb1bbf..f784eac 100644
+--- a/app.py
++++ b/app.py
+@@ -6,8 +6,14 @@ def process(store, payload, hook=None):
+     Saving is the side effect; earlier failures must not persist a row.
+     """
+     validate(payload)
+-    owned = dict(payload)
++    owned = payload
+     if hook is not None:
++        owned = {
++            "sku": payload["sku"],
++            "quantity": payload["quantity"],
++            "labels": list(payload["labels"]),
++        }
+         hook(owned)
+-    record = Record(owned["sku"], owned["quantity"], owned["labels"])
++        validate(owned)
++    record = Record(owned["sku"], owned["quantity"], tuple(owned["labels"]))
+     return store.save(record)

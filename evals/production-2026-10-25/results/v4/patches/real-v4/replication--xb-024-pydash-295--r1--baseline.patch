@@ -1,0 +1,64 @@
+diff --git a/src/pydash/collections.py b/src/pydash/collections.py
+index dd9ed0f..99c22e4 100644
+--- a/src/pydash/collections.py
++++ b/src/pydash/collections.py
+@@ -1456,7 +1456,7 @@ def reduce_(collection, iteratee=None, accumulator=None):
+     .. versionchanged:: 4.0.0
+         Removed aliases ``foldl`` and ``inject``.
+     """
+-    iterable = iterator(collection)
++    iterable = iter(iterator(collection))
+ 
+     if accumulator is None:
+         try:
+diff --git a/tests/test_collections.py b/tests/test_collections.py
+index 3dd7b87..389c145 100644
+--- a/tests/test_collections.py
++++ b/tests/test_collections.py
+@@ -1,6 +1,7 @@
+ from collections import namedtuple
+ import math
+ from operator import attrgetter, itemgetter, methodcaller
++from types import MappingProxyType
+ 
+ import pytest
+ 
+@@ -823,6 +824,38 @@ def test_reduce_(case, expected):
+     assert _.reduce_(*case) == expected
+ 
+ 
++@parametrize("mapping_type", [dict, MappingProxyType])
++def test_reduce_mapping_without_accumulator(mapping_type):
++    collection = mapping_type({"a": 10, "b": 3, "c": 2})
++    calls = []
++
++    def subtract(accumulator, value, key):
++        calls.append((accumulator, value, key))
++        return accumulator - value
++
++    assert _.reduce_(collection, subtract) == 5
++    assert calls == [(10, 3, "b"), (7, 2, "c")]
++
++
++@parametrize("mapping_type", [dict, MappingProxyType])
++@parametrize("value", [0, None, object()])
++def test_reduce_mapping_single_value(mapping_type, value):
++    def iteratee(*args):
++        pytest.fail("A singleton mapping must not call the iteratee")
++
++    assert _.reduce_(mapping_type({"only": value}), iteratee) is value
++
++
++@parametrize("mapping_type", [dict, MappingProxyType])
++def test_reduce_empty_mapping(mapping_type):
++    collection = mapping_type({})
++
++    with pytest.raises(TypeError, match=r"^reduce_\(\) of empty sequence with no initial value$"):
++        _.reduce_(collection)
++
++    assert _.reduce_(collection, helpers.reduce_iteratee0, 0) == 0
++
++
+ @parametrize("case,exception", [(([],), TypeError)])
+ def test_reduce_raise(case, exception):
+     raised = False

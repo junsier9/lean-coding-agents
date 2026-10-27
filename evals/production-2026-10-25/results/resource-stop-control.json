@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-25T00:06:18.193000+00:00",
+  "applies_to": "v4 only; v3 runner source unchanged",
+  "native_model_calls_before_control": 0,
+  "condition": "Parent writes .local/production-resource-stop.json only after an actual provider-limit observation",
+  "effect": "Stop new workspace preparation, letting already completed client checkpoints finish grading",
+  "actual_local_probe": "Allowed before marker; blocked before workspace after marker; original function called exactly once",
+  "native_model_calls_in_probe": 0,
+  "source_sha256": {
+    "resource_gate.py": "00DA0277A8EEA454C1C1816F356E20001456DEC8F783BA911AE6D758C5E3A0BB",
+    "controller_v4.py": "7F8E5F0D878002BB4BC72C51DB965040EBE2660203AAFBDCB9E20353C9A1835C",
+    "run_v4_development.py": "E5D45D6F829D861AE02AFC285EBE6924810FC0F51127993DF7DB12835F9DA579"
+  },
+  "does_not_purchase_reset_or_substitute": true
+}

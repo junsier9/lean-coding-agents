@@ -1,0 +1,150 @@
+diff --git a/boltons/dictutils.py b/boltons/dictutils.py
+index d4dd1db..bff0d29 100644
+--- a/boltons/dictutils.py
++++ b/boltons/dictutils.py
+@@ -266,6 +266,18 @@ class OrderedMultiDict(dict):
+         "Return a shallow copy of the dictionary."
+         return self.__class__(self.iteritems(multi=True))
+ 
++    def __copy__(self):
++        return self.copy()
++
++    def __deepcopy__(self, memo):
++        from copy import deepcopy
++
++        ret = self.__class__.__new__(self.__class__)
++        # Register the copy before copying values that may refer back to self.
++        memo[id(self)] = ret
++        ret.__setstate__(deepcopy(self.__getstate__(), memo))
++        return ret
++
+     @classmethod
+     def fromkeys(cls, keys, default=None):
+         """Create a dictionary from a list of keys, with all the values
+diff --git a/tests/test_dictutils.py b/tests/test_dictutils.py
+index b9df65f..fadf723 100644
+--- a/tests/test_dictutils.py
++++ b/tests/test_dictutils.py
+@@ -1,7 +1,10 @@
++import copy
++import pickle
+ import sys
+ import pytest
+ 
+ from boltons.dictutils import OMD, OneToOne, ManyToMany, FrozenDict, subdict, FrozenHashError
++from boltons.dictutils import FastIterOrderedMultiDict
+ 
+ 
+ _ITEMSETS = [[],
+@@ -86,6 +89,111 @@ def test_copy():
+     return
+ 
+ 
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('copier', [copy.copy, copy.deepcopy])
++@pytest.mark.parametrize('itemset', _ITEMSETS)
++def test_omd_standard_copy(dict_type, copier, itemset):
++    original = dict_type(itemset)
++    clone = copier(original)
++
++    assert type(clone) is dict_type
++    assert clone is not original
++    assert clone.items(multi=True) == itemset
++    for key in original:
++        assert clone.getlist(key) == original.getlist(key)
++
++    clone.add('a', 'new')
++    assert original.items(multi=True) == itemset
++    assert clone.poplast('a') == 'new'
++    assert clone.items(multi=True) == itemset
++    clone.clear()
++    assert original.items(multi=True) == itemset
++
++
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++def test_omd_shallow_copy_values(dict_type):
++    first = {'nested': [1]}
++    second = [2]
++    original = dict_type([('a', first), ('b', second), ('a', second)])
++
++    clone = copy.copy(original)
++
++    assert clone.getlist('a')[0] is first
++    assert clone.getlist('a')[1] is second
++    assert clone['b'] is second
++    clone.getlist('a')[0]['nested'].append(3)
++    assert first['nested'] == [1, 3]
++    clone.popall('a')
++    assert original.getlist('a') == [first, second]
++
++
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++def test_omd_deepcopy_values(dict_type):
++    first = {'nested': [1]}
++    second = [2]
++    original = dict_type([('a', first), ('b', second), ('a', second)])
++
++    clone = copy.deepcopy(original)
++
++    assert clone.items(multi=True) == original.items(multi=True)
++    assert clone.getlist('a')[0] is not first
++    assert clone.getlist('a')[0]['nested'] is not first['nested']
++    assert clone['b'] is not second
++    assert clone['b'] is clone.getlist('a')[1]
++    clone.getlist('a')[0]['nested'].append(3)
++    clone['b'].append(4)
++    assert first == {'nested': [1]}
++    assert second == [2]
++
++
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++def test_omd_deepcopy_recursive_values(dict_type):
++    original = dict_type()
++    original.add('a', original)
++    original.add('b', [original])
++    original.add('a', original)
++
++    clone = copy.deepcopy(original)
++
++    assert clone is not original
++    assert clone.keys(multi=True) == ['a', 'b', 'a']
++    assert clone.getlist('a')[0] is clone
++    assert clone.getlist('a')[1] is clone
++    assert clone['b'][0] is clone
++    assert original['a'] is original
++
++
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++def test_omd_deepcopy_keys(dict_type):
++    class Key:
++        pass
++
++    key = Key()
++    original = dict_type([(key, [key]), ('b', 2), (key, key)])
++
++    clone = copy.deepcopy(original)
++
++    copied_key = clone.keys()[0]
++    assert copied_key is not key
++    assert clone.keys(multi=True) == [copied_key, 'b', copied_key]
++    assert clone.getlist(copied_key)[0][0] is copied_key
++    assert clone[copied_key] is copied_key
++
++
++@pytest.mark.parametrize('dict_type', [OMD, FastIterOrderedMultiDict])
++@pytest.mark.parametrize('protocol', range(pickle.HIGHEST_PROTOCOL + 1))
++def test_omd_pickle_protocols(dict_type, protocol):
++    itemset = [('a', [1]), ('b', {'nested': [2]}), ('a', [3])]
++    original = dict_type(itemset)
++
++    restored = pickle.loads(pickle.dumps(original, protocol=protocol))
++
++    assert type(restored) is dict_type
++    assert restored is not original
++    assert restored.items(multi=True) == itemset
++    assert restored.getlist('a') == original.getlist('a')
++
++
+ def test_omd_pickle():
+     import pickle
+ 

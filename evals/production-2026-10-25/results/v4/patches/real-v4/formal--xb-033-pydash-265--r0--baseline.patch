@@ -1,0 +1,81 @@
+diff --git a/src/pydash/arrays.py b/src/pydash/arrays.py
+index b430da7..fcfcf08 100644
+--- a/src/pydash/arrays.py
++++ b/src/pydash/arrays.py
+@@ -2552,7 +2552,7 @@ def xor_by(array, *lists, **kwargs):
+ 
+     iteratee, lists = parse_iteratee("iteratee", *lists, **kwargs)
+ 
+-    return xor(
++    return xor_by(
+         uniq(
+             difference_by(
+                 array + lists[0],
+@@ -2561,6 +2561,7 @@ def xor_by(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        iteratee=iteratee,
+     )
+ 
+ 
+@@ -2617,6 +2618,7 @@ def xor_with(array, *lists, **kwargs):
+             )
+         ),
+         *lists[1:],
++        comparator=comp,
+     )
+ 
+ 
+diff --git a/tests/test_arrays.py b/tests/test_arrays.py
+index 73dd87d..5558374 100644
+--- a/tests/test_arrays.py
++++ b/tests/test_arrays.py
+@@ -950,6 +950,47 @@ def test_xor_with(case, expected):
+     assert _.xor_with(*case) == expected
+ 
+ 
++@parametrize(
++    "xor_func,rule,keyword",
++    [
++        (_.xor_by, lambda item: item["x"], "iteratee"),
++        (_.xor_by, "x", "iteratee"),
++        (_.xor_with, lambda left, right: left["x"] == right["x"], "comparator"),
++    ],
++)
++@parametrize("use_keyword", [False, True])
++@parametrize(
++    "arrays,expected",
++    [
++        (
++            ([{"x": 1}, {"x": 4}], [{"x": 2}], [{"x": 1, "other": True}, {"x": 3}]),
++            [{"x": 4}, {"x": 2}, {"x": 3}],
++        ),
++        (
++            (
++                [{"x": 1}, {"x": 4}],
++                [{"x": 2}],
++                [{"x": 1, "other": True}, {"x": 3}],
++                [{"x": 2, "other": True}, {"x": 5}],
++            ),
++            [{"x": 4}, {"x": 3}, {"x": 5}],
++        ),
++    ],
++)
++def test_xor_multiple_arrays_preserves_comparison_rule(
++    xor_func, rule, keyword, use_keyword, arrays, expected
++):
++    original_arrays = tuple(array[:] for array in arrays)
++
++    if use_keyword:
++        result = xor_func(*arrays, **{keyword: rule})
++    else:
++        result = xor_func(*arrays, rule)
++
++    assert result == expected
++    assert arrays == original_arrays
++
++
+ @parametrize(
+     "case,expected",
+     [

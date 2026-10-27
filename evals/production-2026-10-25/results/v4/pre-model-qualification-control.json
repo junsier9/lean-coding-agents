@@ -1,0 +1,18 @@
+{
+  "recorded_at": "2026-10-25T02:09:36.980943+00:00",
+  "fresh_confirmation_model_calls": 0,
+  "pre_frozen_criteria_or_statistics_changed": false,
+  "actual_checks": [
+    "Complete first-study relative-quality gates pass but observed90.0%/88.3% fails absolute95% release gate",
+    "Incomplete current v4 evidence refused before either qualification file is written"
+  ],
+  "qualification_code_sha256": "B1729D99A10FD7BA5DBF6CDF0D87CE3265CEA5D024F207A35CF892C45A01DD00",
+  "controller_sha256": "8836432FB9166A370C1CF250923E01DAB8D6FE29DD3C0F285DC300A6C7468A22",
+  "aggregate_policy": "All release gates required; stronger>=10% publicity additionally requires its same endpoint criterion in both batches. Narrow benefit predicate is never a standalone release gate.",
+  "hash_binding": "This separate pre-model control binds the final release-decision code; the running controller remains byte-identical to its launch source.",
+  "actual_running_controller_file_matches_launch_source_snapshot": true,
+  "initial_control_snapshot_retained_privately": true,
+  "chronology_check": "The final qualifier checks this timestamp against all240 fresh native attempt start times",
+  "actual_final_code_negative_probes_pass": true,
+  "trace_review_binding": "Exact raw-v4 flag hash and full occurrence multiset, reviewed benign; trace count and study identity must match all planned v4 attempts"
+}

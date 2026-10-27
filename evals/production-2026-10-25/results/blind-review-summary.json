@@ -1,0 +1,222 @@
+{
+  "unblinded_at": "2026-10-25T00:15:19.749501+00:00",
+  "prespecified_pairs": 8,
+  "review_plan_sha256": "B2BA6B77D65D63EE14C978FD6E51EF2E9D4645CDD8ECE5534A0DF2A4674907A7",
+  "label_assignment_sha256": "1A9AA533F15EE1C89B54548D8784434D34E017B8ECC98CBAA0A6A936EC1A8C01",
+  "reviewer_received_labels_costs_skill_or_hidden_fixes": false,
+  "native_model_or_network_calls_during_review": 0,
+  "equivalent_pairs": 7,
+  "preferred_skill_pairs": 1,
+  "preferred_baseline_pairs": 0,
+  "no_confirmed_unsafe_or_unjustified_treatment_machinery": true,
+  "entries": [
+    {
+      "pair": "01",
+      "phase": "formal",
+      "case_id": "extra-a-mi-944",
+      "repeat": 0,
+      "comparison": "same",
+      "preferred_arm": null,
+      "review_raw_sha256": "B11648A2EC97352CDDF2F667A7A7E7C460A2B9F8209B526AEBF1C9B3CF0575ED",
+      "public_report": "blind-reviews/pair01.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 114,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "02",
+      "phase": "formal",
+      "case_id": "extra-a3-funcy-93",
+      "repeat": 0,
+      "comparison": "same",
+      "preferred_arm": null,
+      "review_raw_sha256": "E02863ED1489BEACD757793D33875D25461DBD0AEC11795AE00EA38DA24B665E",
+      "public_report": "blind-reviews/pair02.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 204,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "03",
+      "phase": "formal",
+      "case_id": "extra-a2-click-3805",
+      "repeat": 0,
+      "comparison": "same",
+      "preferred_arm": null,
+      "review_raw_sha256": "0E275111332C3D26A0DB3FF9DA7FB97CCA7CB97B8CCD2DFC9E1D4A46F05E7F73",
+      "public_report": "blind-reviews/pair03.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 501,
+        "all_audited_bytes_unchanged": true,
+        "production_python_modules_AST_compared": 17
+      }
+    },
+    {
+      "pair": "04",
+      "phase": "formal",
+      "case_id": "xb-053-pluggy-646",
+      "repeat": 0,
+      "comparison": "same",
+      "preferred_arm": null,
+      "review_raw_sha256": "F75E8D129FE9993954566F2AC6105CE56EE1F16C0B8175899465ACE9F6DFCB70",
+      "public_report": "blind-reviews/pair04.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 207,
+        "all_audited_bytes_unchanged": true
+      }
+    },
+    {
+      "pair": "05",
+      "phase": "replication",
+      "case_id": "xb-038-pydash-258",
+      "repeat": 0,
+      "comparison": "same",
+      "preferred_arm": null,
+      "review_raw_sha256": "E1050E63F8B44C4575F5307D6C818E1CFF3ABD8CFB2B335D83F5742477AD8103",
+      "public_report": "blind-reviews/pair05.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 231,
+        "all_audited_bytes_unchanged": true,
+        "production_python_modules_AST_compared": 15
+      }
+    },
+    {
+      "pair": "06",
+      "phase": "replication",
+      "case_id": "xb-070-w3lib-40",
+      "repeat": 0,
+      "comparison": "A/B 的 w3lib/html.py 字节相同；局部行为相同，均修复题面实体解码错误，并保留输入编码及非预期错误的传播。",
+      "preferred_arm": null,
+      "review_raw_sha256": "27B80E01A293989B49CEA11C4BC4F98CE751DB3FFEDB70EE370EA8D435C2BBF8",
+      "public_report": "blind-reviews/pair06.json",
+      "review_findings_by_arm": {
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 100,
+        "all_audited_bytes_unchanged": true,
+        "hash_algorithm": "SHA-256",
+        "includes": "对应 base/A/B 全部常规文件、task.json、A.patch、B.patch 和 tasks-pairXX.json；只为字节校验列举所有文件，未读取其他结果。"
+      }
+    },
+    {
+      "pair": "07",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-468",
+      "repeat": 0,
+      "comparison": "两侧都修复空 Bits 往返、空切片和零位宽。偏好 B 的兼容性范围：它只特判真正空的 from_hex 输入，A 同时将原先 ValueError 的非空前缀 token 0x 归一为零。没有证据把该输入放宽描述为安全漏洞。",
+      "preferred_arm": "with-skill",
+      "review_raw_sha256": "4E9DC0839886136A1B0E1614D8B8F78085046269189BADD063DB70877CC5B99E",
+      "public_report": "blind-reviews/pair07.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 1
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 340,
+        "all_audited_bytes_unchanged": true,
+        "hash_algorithm": "SHA-256",
+        "includes": "对应 base/A/B 全部常规文件、task.json、A.patch、B.patch 和 tasks-pairXX.json；只为字节校验列举所有文件，未读取其他结果。"
+      }
+    },
+    {
+      "pair": "08",
+      "phase": "replication",
+      "case_id": "extra-a-boltons-114",
+      "repeat": 0,
+      "comparison": "A/B 的目标生产文件去除文档字符串后 AST 相同；局部行为相同。两侧只在导出副本中解析已知 DeferredLine，使正常及上下文诊断可 JSON 序列化，未发现已确认不安全修改或无需求依据的机制。",
+      "preferred_arm": null,
+      "review_raw_sha256": "1D5D1EACA999E62609FB84C6840FA2050AF71A988A2F07E802684D63887819C5",
+      "public_report": "blind-reviews/pair08.json",
+      "review_findings_by_arm": {
+        "baseline": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        },
+        "with-skill": {
+          "confirmed_unsafe": 0,
+          "unjustified_machinery": 0
+        }
+      },
+      "source_immutability": {
+        "files_verified": 316,
+        "all_audited_bytes_unchanged": true,
+        "hash_algorithm": "SHA-256",
+        "includes": "对应 base/A/B 全部常规文件、task.json、A.patch、B.patch 和 tasks-pairXX.json；只为字节校验列举所有文件，未读取其他结果。"
+      }
+    }
+  ],
+  "limits": [
+    "Eight prespecified artifact pairs are not a proof of absence of defects on other runs.",
+    "Pair07 baseline broadens prefix-only input acceptance without a current requirement; syntax policy remains partly unspecified and is not described as a security vulnerability.",
+    "Artifact probes, including pair03 on two Python versions, are not additional native Codex trials or independent efficiency observations."
+  ],
+  "reviews_completed_before_parent_unblinding": 8,
+  "parent_source_hashes_rechecked": 2013,
+  "parent_source_hashes_match": true
+}

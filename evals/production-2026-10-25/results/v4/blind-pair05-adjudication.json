@@ -1,0 +1,53 @@
+{
+  "adjudicated_at": "2026-10-25T05:43:40.685373+00:00",
+  "pair": "05",
+  "review_remains_blinded": true,
+  "parent_has_not_read_v4_labels": true,
+  "review_raw_sha256": "0521462FD947B45F7A58663E024353FEFFE3A59FA9DEB53EED89D11129A223C2",
+  "parent_probe_raw_sha256": "C53940E2C245439192D5DE611C7A226D69ABD8CA4E35B3628A1A65E4F1ACBD2E",
+  "parent_source_hashes_rechecked": 436,
+  "parent_source_hashes_match": true,
+  "both_blinded_variants_have_confirmed_regression": true,
+  "explicit_attached_value_contract": "The task requires explicit option values; base parser documents fully consuming an explicit attached value.",
+  "independently_reproduced_examples": [
+    {
+      "argv": [
+        "--opt=--other"
+      ],
+      "base": [
+        "--other",
+        false
+      ],
+      "A": [
+        "flag",
+        true
+      ],
+      "B": [
+        "flag",
+        true
+      ]
+    },
+    {
+      "argv": [
+        "-o--other"
+      ],
+      "base": [
+        "--other",
+        false
+      ],
+      "A": [
+        "flag",
+        true
+      ],
+      "B": [
+        "flag",
+        true
+      ]
+    }
+  ],
+  "release_review_requirement_met_for_this_pair": false,
+  "all_eight_reviews_complete": false,
+  "frozen_case_scores_or_native_outputs_edited": false,
+  "skill_or_model_inputs_grader_or_statistics_changed": false,
+  "public_note": "This is a confirmed calling-behavior regression, not a claim of a security exploit. Ambiguous separate-token prefix policy is not asserted as an additional defect. All planned data remain included."
+}

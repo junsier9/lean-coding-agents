@@ -1,0 +1,30 @@
+{
+  "completed_at": "2026-10-25T17:32:09.089223+00:00",
+  "client_date": "2026-10-26",
+  "native_attempts": 303,
+  "real_task_attempts": 240,
+  "all_native_work_complete": true,
+  "all_source_report_hashes_still_match_qualification": true,
+  "qualification_report_copies_byte_identical": true,
+  "production_assistant_qualified": false,
+  "failed_release_gates": [
+    "real_quality",
+    "same_endpoint_positive",
+    "blinded_review"
+  ],
+  "evidence_integrity_pass": true,
+  "raw_artifacts_checked": 2409,
+  "both_statistical_analyses_reproduced": {
+    "formal": true,
+    "replication": true
+  },
+  "private_archive_sha256": "0D53D88242BABBEEB81A280957251EACCEFE491247EEDFF197A976820F2FB8BB",
+  "private_archive_entries": 5930,
+  "private_archive_bytes": 30858835,
+  "candidate_package": "dist/lean-coding-0.3.0-rc.3.zip",
+  "candidate_package_sha256": "26C53E4BAC39BEDD23C3720BC161387E4F93BD74FAE7975E110D9764F545A6BB",
+  "historical_canonical_v2_unchanged": true,
+  "no_global_skill_installation_or_external_publication": true,
+  "qualification_report_sha256": "159860E797D28D458E0D5CEAB8BF4AF90ED1D442A84FECB8EBAC855B7839F94F",
+  "scope": "Delivery metadata only; intentionally excluded from native evidence index and archive to avoid self-reference. Indexed data and source reports were not changed after qualification."
+}

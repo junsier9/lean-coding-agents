@@ -1,0 +1,51 @@
+diff --git a/tests/test_html.py b/tests/test_html.py
+index 01feedf..3995922 100644
+--- a/tests/test_html.py
++++ b/tests/test_html.py
+@@ -42,6 +42,29 @@ class RemoveEntitiesTest(unittest.TestCase):
+         self.assertEqual(replace_entities('x&#153;y', encoding='cp1252'), u'x\u2122y')
+         self.assertEqual(replace_entities('x&#x99;y', encoding='cp1252'), u'x\u2122y')
+ 
++    def test_invalid_windows1252_entities(self):
++        # These bytes have no character mapping in Windows-1252.
++        for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):
++            for entity in ('&#%d;' % number, '&#x%x;' % number,
++                           '&#X%X;' % number):
++                text = u'\u00a3%s&amp;&#153;' % entity
++                for source in (text, text.encode('utf-8')):
++                    self.assertEqual(replace_entities(source), u'\u00a3&\u2122')
++                    self.assertEqual(replace_entities(source, remove_illegal=True),
++                                     u'\u00a3&\u2122')
++                    self.assertEqual(replace_entities(source, remove_illegal=False),
++                                     u'\u00a3%s&\u2122' % entity)
++
++    def test_invalid_windows1252_entities_without_semicolon(self):
++        for number in (0x81, 0x8d, 0x8f, 0x90, 0x9d):
++            for entity in ('&#%d' % number, '&#x%x' % number,
++                           '&#X%X' % number):
++                text = u'x%sy' % entity
++                for source in (text, text.encode('ascii')):
++                    self.assertEqual(replace_entities(source), text)
++                    self.assertEqual(replace_entities(source, remove_illegal=True), text)
++                    self.assertEqual(replace_entities(source, remove_illegal=False), text)
++
+     def test_missing_semicolon(self):
+         for entity, result in (
+                 ('&lt&lt!', '<<!',),
+diff --git a/w3lib/html.py b/w3lib/html.py
+index b9d660e..cacd6a6 100644
+--- a/w3lib/html.py
++++ b/w3lib/html.py
+@@ -81,10 +81,9 @@ def replace_entities(text, keep=(), remove_illegal=True, encoding='utf-8'):
+             # interpreted by browsers as representing the characters mapped
+             # to bytes 80-9F in the Windows-1252 encoding. For more info
+             # see: http://en.wikipedia.org/wiki/Character_encodings_in_HTML
+-            if 0x80 <= number <= 0x9f:
+-                return six.int2byte(number).decode('cp1252')
+-
+             try:
++                if 0x80 <= number <= 0x9f:
++                    return six.int2byte(number).decode('cp1252')
+                 return six.unichr(number)
+             except ValueError:
+                 pass

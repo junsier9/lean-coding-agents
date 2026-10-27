@@ -1,0 +1,60 @@
+diff --git a/boltons/mathutils.py b/boltons/mathutils.py
+index ae3ecd9..65a5de9 100644
+--- a/boltons/mathutils.py
++++ b/boltons/mathutils.py
+@@ -170,8 +170,10 @@ class Bits:
+         if type(k) is slice:
+             return Bits(self.as_bin()[k])
+         if type(k) is int:
+-            if k >= self.len:
++            if k < -self.len or k >= self.len:
+                 raise IndexError(k)
++            if k < 0:
++                k += self.len
+             return bool((1 << (self.len - k - 1)) & self.val)
+         raise TypeError(type(k))
+ 
+diff --git a/tests/test_mathutils.py b/tests/test_mathutils.py
+index 3cf7dbf..341e1b7 100644
+--- a/tests/test_mathutils.py
++++ b/tests/test_mathutils.py
+@@ -1,4 +1,4 @@
+-from pytest import raises
++from pytest import mark, raises
+ from boltons.mathutils import clamp, ceil, floor, Bits
+ import math
+ 
+@@ -112,6 +112,33 @@ def test_bits():
+         Bits('101'))
+ 
+ 
++@mark.parametrize('binary', ['0', '1', '10', '01', '0000100', '10101'])
++def test_bits_integer_indexing(binary):
++    bits = Bits(binary)
++    for index, bit in enumerate(binary):
++        expected = bit == '1'
++        assert bits[index] is expected
++        assert bits[index - len(bits)] is expected
++        assert Bits.__getitem__(self=bits, k=index - len(bits)) is expected
++
++
++@mark.parametrize('binary', ['', '0', '1', '10', '01', '0000100', '10101'])
++def test_bits_index_out_of_range(binary):
++    bits = Bits(binary)
++    for index in (-len(bits) - 1, -len(bits) - 100, len(bits), len(bits) + 100):
++        with raises(IndexError) as exc_info:
++            bits[index]
++        assert exc_info.value.args == (index,)
++
++
++def test_bits_slicing():
++    bits = Bits('0010110')
++    assert bits[-4:-1] == Bits('011')
++    assert bits[::-1] == Bits('0110100')
++    assert bits[::2] == Bits('0110')
++    assert bits[-20:20] == bits
++
++
+ def test_bits_len_bound():
+     # The largest value representable in n bits is 2 ** n - 1, so 2 ** n must
+     # be rejected rather than silently producing an over-long Bits.

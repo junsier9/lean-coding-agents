@@ -1,0 +1,85 @@
+diff --git a/src/pydash/numerical.py b/src/pydash/numerical.py
+index 830942b..77a17f5 100644
+--- a/src/pydash/numerical.py
++++ b/src/pydash/numerical.py
+@@ -209,7 +209,7 @@ def mean(collection):
+         collection: Collection to process.
+ 
+     Returns:
+-        Result of mean.
++        Result of mean, or ``NaN`` for an empty collection.
+ 
+     Example:
+ 
+@@ -283,7 +283,7 @@ def mean_by(collection, iteratee=None):
+         iteratee: Iteratee applied per iteration.
+ 
+     Returns:
+-        Result of mean.
++        Result of mean, or ``NaN`` for an empty collection.
+ 
+     Example:
+ 
+@@ -292,7 +292,9 @@ def mean_by(collection, iteratee=None):
+ 
+     .. versionadded:: 4.0.0
+     """
+-    return sum_by(collection, iteratee) / len(collection)
++    total = sum_by(collection, iteratee)
++    length = len(collection)
++    return total / length if length else float("nan")
+ 
+ 
+ def ceil(x: NumberT, precision: int = 0) -> float:
+diff --git a/tests/test_numerical.py b/tests/test_numerical.py
+index e0c25ef..d58482a 100644
+--- a/tests/test_numerical.py
++++ b/tests/test_numerical.py
+@@ -114,12 +114,20 @@ def test_max_default(collection, default, expected):
+     [
+         ([1, 2, 3, 4, 5], 3),
+         ([0, 0.5, 1], 0.5),
++        ([0, 0], 0),
++        ({"a": 2, "b": 4}, 3),
+     ],
+ )
+ def test_mean(case, expected):
+     assert _.mean(case) == expected
+ 
+ 
++@parametrize("collection", [[], {}])
++def test_mean_empty(collection):
++    assert math.isnan(_.mean(collection))
++    assert math.isnan(_.chain(collection).mean().value())
++
++
+ @parametrize(
+     "case,expected",
+     [
+@@ -127,12 +135,26 @@ def test_mean(case, expected):
+         (([{"b": 4}, {"b": 5}, {"b": 6}], "b"), 5),
+         (([0, 0.5, 1],), 0.5),
+         (({"one": {"a": 1}, "two": {"a": 2}, "three": {"a": 3}}, "a"), 2),
++        (([{"b": 0}, {"b": 0}], "b"), 0),
++        (([1, 2, 3], lambda value: value * 2), 4),
+     ],
+ )
+ def test_mean_by(case, expected):
+     assert _.mean_by(*case) == expected
+ 
+ 
++@parametrize("collection", [[], {}])
++@parametrize("iteratee", [None, "b", lambda value: 1 / 0])
++def test_mean_by_empty(collection, iteratee):
++    assert math.isnan(_.mean_by(collection, iteratee))
++    assert math.isnan(_.chain(collection).mean_by(iteratee).value())
++
++
++def test_mean_by_iteratee_exception():
++    with pytest.raises(ZeroDivisionError):
++        _.mean_by([0], lambda value: 1 / value)
++
++
+ @parametrize(
+     "case,expected",
+     [

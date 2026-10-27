@@ -1,0 +1,76 @@
+diff --git a/boltons/listutils.py b/boltons/listutils.py
+index 15b14a3..d05d09d 100644
+--- a/boltons/listutils.py
++++ b/boltons/listutils.py
+@@ -139,7 +139,7 @@ class BarrelList(list):
+         else:
+             list_idx, rel_idx = self._translate_index(index)
+             if list_idx is None:
+-                raise IndexError()
++                list_idx, rel_idx = 0, 0
+             self.lists[list_idx].insert(rel_idx, item)
+             self._balance_list(list_idx)
+         return
+diff --git a/tests/test_listutils.py b/tests/test_listutils.py
+index b70977b..f63333a 100644
+--- a/tests/test_listutils.py
++++ b/tests/test_listutils.py
+@@ -1,5 +1,7 @@
+ import sys
+ 
++import pytest
++
+ from boltons.listutils import SplayList, BarrelList
+ 
+ 
+@@ -59,6 +61,50 @@ def test_sort_barrel_list():
+     assert bl[0] == 0
+     assert bl[-1] == 99999
+ 
++
++@pytest.mark.parametrize('segmented', [False, True])
++@pytest.mark.parametrize('index', [-1000000, -101, -100, -99, -50, -1, 0])
++def test_barrel_list_insert_negative_indices(index, segmented):
++    expected = list(range(100))
++    bl = BarrelList(expected)
++    if segmented:
++        bl._size_factor = 4
++        bl._balance_list(0)
++        assert len(bl.lists) > 1
++
++    expected.insert(index, 'inserted')
++    assert bl.insert(index, 'inserted') is None
++    assert list(bl) == expected
++    assert len(bl) == len(expected)
++
++
++def test_barrel_list_repeated_insert_before_start():
++    expected = list(range(100))
++    bl = BarrelList(expected)
++    bl._size_factor = 4
++    bl._balance_list(0)
++    initial_segments = len(bl.lists)
++    assert initial_segments > 1
++
++    for item in range(-1, -101, -1):
++        index = -10 * len(expected)
++        expected.insert(index, item)
++        bl.insert(index, item)
++        assert list(bl) == expected
++        assert len(bl) == len(expected)
++
++    assert len(bl.lists) > initial_segments
++    with pytest.raises(IndexError):
++        bl[index]
++    with pytest.raises(IndexError):
++        bl[index] = None
++    with pytest.raises(IndexError):
++        del bl[index]
++    with pytest.raises(IndexError):
++        bl.pop(index)
++    assert list(bl) == expected
++
++
+ # roughly increasing random integers
+ # [ord(i) * x for i, x in zip(os.urandom(1024), range(1024))]
+ TEST_INTS = [0, 74, 96, 183, 456, 150, 1098, 665, 1752, 1053, 190,

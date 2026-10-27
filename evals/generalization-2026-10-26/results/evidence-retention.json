@@ -1,0 +1,12 @@
+{
+  "retained_at": "2026-10-27T09:02:26.099671+00:00",
+  "private_archive": ".local/generalization-v5-evidence.zip",
+  "archive_sha256": "1BDD2C3F4C221774E85CA83C99EB085D869D3C7E325E9EA1AA5300DC06F59725",
+  "bytes": 16071850,
+  "entries": 2739,
+  "archive_crc_and_all_entry_hashes_verified": true,
+  "native_run_raw_directories": 72,
+  "public_upload_of_private_archive": false,
+  "included": "Native raw traces/checkpoints/records, source archive inputs, grade logs, frozen fixtures, public export patches, neutral review inputs/reports",
+  "excluded": "Dependencies bound separately by file hash; OS/runtime import trace; .git/cache directories; complete arbitrary untracked workspace files. Live source workspaces are retained locally."
+}

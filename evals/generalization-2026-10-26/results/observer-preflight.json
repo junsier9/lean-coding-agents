@@ -1,0 +1,111 @@
+{
+  "native_model_calls": 0,
+  "known_traces": [
+    {
+      "run": "development--d09--r0--with-skill",
+      "sha256": "0A6E8F57562760F96A59C8C48E213AA09F6327CD333EF4AAFECA0DE3B6EDA853",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 7,
+          "item_id": "item_2",
+          "type": "command_execution"
+        }
+      ],
+      "thread_ids": [
+        "01a174a0-9648-7e21-a95c-071a8dc24ab8"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    },
+    {
+      "run": "development--d09--r1--with-skill",
+      "sha256": "DAFEEE43E7ACFDCBAA8800542F67A2F09635023B6DD964B9103C0CFEBB4471C0",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 7,
+          "item_id": "item_2",
+          "type": "command_execution"
+        }
+      ],
+      "thread_ids": [
+        "01a1749f-d7fd-7011-9e51-c962117026dd"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    },
+    {
+      "run": "development--d09--r2--with-skill",
+      "sha256": "2A52D3371020395ACD1B83514BAA7A698052A56655710B27E5749092A41324D3",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 9,
+          "item_id": "item_4",
+          "type": "mcp_tool_call"
+        }
+      ],
+      "thread_ids": [
+        "01a17498-52d9-7903-890c-12e54c733cb9"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    },
+    {
+      "run": "development--d10--r0--with-skill",
+      "sha256": "D83A3F3CD7DBBB329362C8872E666C098ED5FFCB015FF313C5C7B1295B6DAE9F",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 5,
+          "item_id": "item_1",
+          "type": "command_execution"
+        }
+      ],
+      "thread_ids": [
+        "01a1749f-b394-7822-85d8-e88fd98bdd8a"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    },
+    {
+      "run": "development--d10--r1--with-skill",
+      "sha256": "1E28ECEFAEC885A26D5FA424C979891AA525C849E472B6C633297E82B52D2274",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 5,
+          "item_id": "item_1",
+          "type": "command_execution"
+        }
+      ],
+      "thread_ids": [
+        "01a17498-52d9-7f92-979f-03d760487535"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    },
+    {
+      "run": "development--d10--r2--with-skill",
+      "sha256": "1872E9381B4EC1B4278C7EA07314AEF0885687FFC807B1DDD7724AD91E85A91C",
+      "body_visible": true,
+      "proof": [
+        {
+          "event_line": 7,
+          "item_id": "item_2",
+          "type": "command_execution"
+        }
+      ],
+      "thread_ids": [
+        "01a17498-52da-7261-b64d-67410e248e4b"
+      ],
+      "malformed_lines": [],
+      "method": "completed-tool-result-full-body-v1"
+    }
+  ],
+  "synthetic_positive_probes": 4,
+  "synthetic_negative_probes": 4,
+  "observer_sha256": "E16E533B563DFF4997016DF027658C50FD9D9DDB7AA70B88748578F0FA87B199",
+  "all_passed": true
+}
