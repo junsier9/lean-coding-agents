@@ -1,0 +1,27 @@
+{
+  "version": "0.7.1-beta.1",
+  "candidate": "v7-1-python",
+  "status": "experimental_beta_unqualified",
+  "price": "free",
+  "license": "MIT",
+  "supported_scope": "Codex + existing Python code maintenance involving redundant defenses",
+  "archive": "lean-coding-0.7.1-beta.1.zip",
+  "archive_sha256": "5A00B66CA71C3C65714CB442DBDE0ABE67842E56DC04587143DD17D65F564612",
+  "files_sha256": {
+    "LICENSE": "A16B7B7F3CADF1069FAB7A7F866EAB53920C7D480C8DD81F0751DD7DFC1C7BA9",
+    "SKILL.md": "B6DABCBC73C16EA12E95EB5F5D3E578848E000897B6164FCA4E86841DB73BEDE",
+    "agents/openai.yaml": "E786C393174A36E6CAD32DD46325844B3036FC65619117984EBA926A93274E1A"
+  },
+  "development_attempts": 6,
+  "development_end_to_end_success": 6,
+  "development_gate_passed": true,
+  "evidence_class": "known_revealed_development_only",
+  "development_summary_sha256": "AD222CF297F29CCB4C6F3AED113AB4CAA1EB1914ABAED3502903B2B3E4F3E688",
+  "beta_quality_gate_passed": false,
+  "production_assistant_qualified": false,
+  "stable_efficiency_benefit_proven": false,
+  "claude_tested": false,
+  "prior_failures_preserved": true,
+  "publication_decision": "Early free experimental preview; original quality gates remain unpassed",
+  "global_skill_directory_modified": false
+}

@@ -1,0 +1,38 @@
+{
+  "name": "Lean Coding — Codex Python Beta",
+  "package_version": "0.7.1-beta.1",
+  "platform_version_observed_in_draft": "1.0",
+  "agensi_submitted": true,
+  "agensi_live": false,
+  "status_observed": "Pending Review / In review",
+  "observed_at_utc": "2026-10-28T02:46:01.504385+00:00",
+  "local_date": "2026-10-28",
+  "timezone": "Asia/Singapore",
+  "pricing": "Free",
+  "creator": "June",
+  "creator_profile": "https://www.agensi.io/creators/sier-jun",
+  "management_url": "https://www.agensi.io/dashboard#my-skills",
+  "public_listing_url": null,
+  "archive": "lean-coding-0.7.1-beta.1.zip",
+  "archive_sha256": "5A00B66CA71C3C65714CB442DBDE0ABE67842E56DC04587143DD17D65F564612",
+  "skill_sha256": "B6DABCBC73C16EA12E95EB5F5D3E578848E000897B6164FCA4E86841DB73BEDE",
+  "categories": [
+    "Code Quality & Review",
+    "Testing & Debugging"
+  ],
+  "tags": [
+    "code-review",
+    "testing"
+  ],
+  "permissions": [
+    "Terminal / Shell",
+    "Read Files",
+    "Write Files"
+  ],
+  "description_and_demo_checked_before_submission": true,
+  "platform_generated_demo_and_claims_cleared": true,
+  "beta_quality_gate_passed": false,
+  "production_assistant_qualified": false,
+  "stable_efficiency_benefit_proven": false,
+  "limits": "Submission accepted; approval and public availability have not been observed. Original qualification scores unchanged."
+}
